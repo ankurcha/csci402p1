@@ -167,6 +167,7 @@ Lock::Release()
 	        
     	//owner = NULL;
 	    //mutex->V();
+	    }
 	}else{
 	    DEBUG('t', "owner != currentThread and tried release on lock");
 	    printf("\nOwner !=currentThread caught\n");
