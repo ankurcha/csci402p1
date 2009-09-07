@@ -120,6 +120,7 @@ void
 Lock::Acquire()
 {
 	#ifdef CHANGED
+	Thread *thread;
     IntStatus oldLevel = interrupt->SetLevel(IntOff);
     
     if(!islocked){
@@ -146,6 +147,7 @@ void
 Lock::Release() 
 {
 	#ifdef CHANGED
+	Thread *thread;
     IntStatus oldLevel = interrupt->SetLevel(IntOff);
     
     //ASSERT(this->owner == Currentthread);
