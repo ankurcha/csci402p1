@@ -1,0 +1,334 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configurationDescriptor version="62">
+  <logicalFolder name="root" displayName="root" projectFiles="true">
+    <df name="code" root=".">
+      <df name="bin">
+        <in>coff.h</in>
+        <in>coff2flat.c</in>
+        <in>coff2noff.c</in>
+        <in>d.c</in>
+        <in>disasm.c</in>
+        <in>encode.h</in>
+        <in>execute.c</in>
+        <in>instr.h</in>
+        <in>int.h</in>
+        <in>main.c</in>
+        <in>noff.h</in>
+        <in>opstrings.c</in>
+        <in>out.c</in>
+        <in>system.c</in>
+      </df>
+      <df name="filesys">
+        <in>directory.cc</in>
+        <in>directory.h</in>
+        <in>filehdr.cc</in>
+        <in>filehdr.h</in>
+        <in>filesys.cc</in>
+        <in>filesys.h</in>
+        <in>fstest.cc</in>
+        <in>openfile.cc</in>
+        <in>openfile.h</in>
+        <in>synchdisk.cc</in>
+        <in>synchdisk.h</in>
+      </df>
+      <df name="machine">
+        <in>console.cc</in>
+        <in>console.h</in>
+        <in>disk.cc</in>
+        <in>disk.h</in>
+        <in>interrupt.cc</in>
+        <in>interrupt.h</in>
+        <in>machine.cc</in>
+        <in>machine.h</in>
+        <in>mipssim.cc</in>
+        <in>mipssim.h</in>
+        <in>network.cc</in>
+        <in>network.h</in>
+        <in>stats.cc</in>
+        <in>stats.h</in>
+        <in>sysdep.cc</in>
+        <in>sysdep.h</in>
+        <in>timer.cc</in>
+        <in>timer.h</in>
+        <in>translate.cc</in>
+        <in>translate.h</in>
+      </df>
+      <df name="network">
+        <in>nettest.cc</in>
+        <in>post.cc</in>
+        <in>post.h</in>
+      </df>
+      <df name="threads">
+        <in>bool.h</in>
+        <in>copyright.h</in>
+        <in>list.cc</in>
+        <in>list.h</in>
+        <in>main.cc</in>
+        <in>scheduler.cc</in>
+        <in>scheduler.h</in>
+        <in>switch.h</in>
+        <in>synch.cc</in>
+        <in>synch.h</in>
+        <in>synchlist.cc</in>
+        <in>synchlist.h</in>
+        <in>system.cc</in>
+        <in>system.h</in>
+        <in>thread.cc</in>
+        <in>thread.h</in>
+        <in>threadtest.cc</in>
+        <in>utility.cc</in>
+        <in>utility.h</in>
+      </df>
+      <df name="userprog">
+        <in>addrspace.cc</in>
+        <in>addrspace.h</in>
+        <in>bitmap.cc</in>
+        <in>bitmap.h</in>
+        <in>exception.cc</in>
+        <in>progtest.cc</in>
+        <in>synchconsole.cc</in>
+        <in>synchconsole.h</in>
+        <in>syscall.h</in>
+        <in>table.h</in>
+      </df>
+      <df name="vm">
+      </df>
+    </df>
+    <logicalFolder name="ExternalFiles"
+                   displayName="Important Files"
+                   projectFiles="false">
+      <itemPath>Makefile-code.mk</itemPath>
+      <itemPath>makefile</itemPath>
+    </logicalFolder>
+  </logicalFolder>
+  <sourceRootList>
+    <Elem>.</Elem>
+  </sourceRootList>
+  <projectmakefile>Makefile-code.mk</projectmakefile>
+  <confs>
+    <conf name="Default" type="0">
+      <toolsSet>
+        <developmentServer>ankurcha@aludra.usc.edu:22</developmentServer>
+        <compilerSet>GNU|GNU</compilerSet>
+        <platform>0</platform>
+      </toolsSet>
+      <makefileType>
+        <makeTool>
+          <buildCommandWorkingDir>.</buildCommandWorkingDir>
+          <buildCommand>$(MAKE) -f Makefile</buildCommand>
+          <cleanCommand>$(MAKE) -f Makefile clean</cleanCommand>
+          <executablePath></executablePath>
+          <cTool>
+            <incDir>
+              <pElem>threads</pElem>
+            </incDir>
+          </cTool>
+          <ccTool>
+            <incDir>
+              <pElem>threads</pElem>
+            </incDir>
+          </ccTool>
+        </makeTool>
+      </makefileType>
+      <item path="bin/coff2flat.c" ex="false" tool="0">
+        <cTool>
+          <incDir>
+            <pElem>userprog</pElem>
+            <pElem>machine</pElem>
+            <pElem>filesys</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="bin/disasm.c" ex="false" tool="0">
+        <cTool>
+          <incDir>
+            <pElem>userprog</pElem>
+            <pElem>machine</pElem>
+            <pElem>filesys</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="bin/main.c" ex="false" tool="0">
+        <cTool>
+          <incDir>
+            <pElem>userprog</pElem>
+            <pElem>machine</pElem>
+            <pElem>filesys</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="bin/out.c" ex="false" tool="0">
+        <cTool>
+          <incDir>
+            <pElem>userprog</pElem>
+            <pElem>machine</pElem>
+            <pElem>filesys</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="bin/system.c" ex="false" tool="0">
+        <cTool>
+          <incDir>
+            <pElem>userprog</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <folder path="code/filesys">
+        <ccTool>
+          <incDir>
+            <pElem>machine</pElem>
+          </incDir>
+        </ccTool>
+      </folder>
+      <folder path="code/network">
+        <ccTool>
+          <incDir>
+            <pElem>machine</pElem>
+          </incDir>
+        </ccTool>
+      </folder>
+      <folder path="code/threads">
+        <ccTool>
+          <incDir>
+            <pElem>machine</pElem>
+          </incDir>
+        </ccTool>
+      </folder>
+      <item path="filesys/directory.cc" ex="false" tool="1">
+        <ccTool>
+          <incDir>
+            <pElem>userprog</pElem>
+            <pElem>filesys</pElem>
+          </incDir>
+        </ccTool>
+      </item>
+      <item path="filesys/filehdr.cc" ex="false" tool="1">
+        <ccTool>
+          <incDir>
+            <pElem>userprog</pElem>
+            <pElem>filesys</pElem>
+          </incDir>
+        </ccTool>
+      </item>
+      <item path="filesys/filesys.cc" ex="false" tool="1">
+        <ccTool>
+          <incDir>
+            <pElem>userprog</pElem>
+            <pElem>filesys</pElem>
+          </incDir>
+        </ccTool>
+      </item>
+      <item path="filesys/openfile.cc" ex="false" tool="1">
+        <ccTool>
+          <incDir>
+            <pElem>userprog</pElem>
+            <pElem>filesys</pElem>
+          </incDir>
+        </ccTool>
+      </item>
+      <item path="machine/console.cc" ex="false" tool="1">
+        <ccTool>
+          <incDir>
+            <pElem>machine</pElem>
+          </incDir>
+        </ccTool>
+      </item>
+      <item path="machine/disk.cc" ex="false" tool="1">
+        <ccTool>
+          <incDir>
+            <pElem>machine</pElem>
+          </incDir>
+        </ccTool>
+      </item>
+      <item path="machine/interrupt.cc" ex="false" tool="1">
+        <ccTool>
+          <incDir>
+            <pElem>machine</pElem>
+          </incDir>
+        </ccTool>
+      </item>
+      <item path="machine/machine.cc" ex="false" tool="1">
+        <ccTool>
+          <incDir>
+            <pElem>machine</pElem>
+          </incDir>
+        </ccTool>
+      </item>
+      <item path="machine/mipssim.cc" ex="false" tool="1">
+        <ccTool>
+          <incDir>
+            <pElem>machine</pElem>
+          </incDir>
+        </ccTool>
+      </item>
+      <item path="machine/network.cc" ex="false" tool="1">
+        <ccTool>
+          <incDir>
+            <pElem>machine</pElem>
+          </incDir>
+        </ccTool>
+      </item>
+      <item path="machine/sysdep.cc" ex="false" tool="1">
+        <ccTool>
+          <incDir>
+            <pElem>machine</pElem>
+          </incDir>
+        </ccTool>
+      </item>
+      <item path="machine/timer.cc" ex="false" tool="1">
+        <ccTool>
+          <incDir>
+            <pElem>machine</pElem>
+          </incDir>
+        </ccTool>
+      </item>
+      <item path="machine/translate.cc" ex="false" tool="1">
+        <ccTool>
+          <incDir>
+            <pElem>userprog</pElem>
+            <pElem>machine</pElem>
+            <pElem>filesys</pElem>
+          </incDir>
+        </ccTool>
+      </item>
+      <item path="userprog/addrspace.cc" ex="false" tool="1">
+        <ccTool>
+          <incDir>
+            <pElem>bin</pElem>
+            <pElem>filesys</pElem>
+            <pElem>machine</pElem>
+          </incDir>
+        </ccTool>
+      </item>
+      <item path="userprog/bitmap.cc" ex="false" tool="1">
+        <ccTool>
+          <incDir>
+            <pElem>filesys</pElem>
+          </incDir>
+        </ccTool>
+      </item>
+      <item path="userprog/exception.cc" ex="false" tool="1">
+        <ccTool>
+          <incDir>
+            <pElem>machine</pElem>
+          </incDir>
+        </ccTool>
+      </item>
+      <item path="userprog/progtest.cc" ex="false" tool="1">
+        <ccTool>
+          <incDir>
+            <pElem>filesys</pElem>
+            <pElem>machine</pElem>
+          </incDir>
+        </ccTool>
+      </item>
+      <item path="userprog/synchconsole.cc" ex="false" tool="1">
+        <ccTool>
+          <incDir>
+            <pElem>machine</pElem>
+          </incDir>
+        </ccTool>
+      </item>
+    </conf>
+  </confs>
+</configurationDescriptor>
