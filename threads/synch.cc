@@ -104,7 +104,9 @@ Lock::Lock(char* debugName) {
 	#ifdef CHANGED
 	name = debugName;
 	owner = NULL;
-	mutex = new Semaphore(name,1);
+	//mutex = new Semaphore(name,1);
+	islocked = false;
+	queue = new List;
 	numWaiting = 0;
 	#endif
 }
@@ -120,12 +122,23 @@ Lock::Acquire()
 	#ifdef CHANGED
     IntStatus oldLevel = interrupt->SetLevel(IntOff);
     
-    if(owner == NULL){          //First one in
-        owner = currentThread;  //Make this the owner
-    }
-    mutex->P(); // Owner get it others go to sleep .. SWEET!!
-    numWaiting++; //Increment the number of threads waiting on this lock
+    if(!islocked){
+        islocked = true;
+        
     
+        if(owner == NULL){          //First one in
+            owner = currentThread;  //Make this the owner
+        }
+    
+        if(owner !=currentThread){
+            queue->Append((void *)currentThread);	// so go to sleep
+        	currentThread->Sleep();
+        	numWaiting++;
+        }else{
+            numWaiting++;
+        }
+            //mutex->P(); // Owner get it others go to sleep .. SWEET!!
+    }
     (void) interrupt->SetLevel(oldLevel);
 	#endif
 }
@@ -138,11 +151,22 @@ Lock::Release()
     //ASSERT(this->owner == Currentthread);
     if( this->owner == currentThread ){
         DEBUG('t', "owner = currentThread");
-    	owner = NULL;
-	    mutex->V();
-	    numWaiting--;
+    	thread = (Thread *)queue->Remove();
+        if (thread != NULL){	   // make thread ready, consuming the V immediately
+	        scheduler->ReadyToRun(thread);
+	        numWaiting--;
+	    }else{
+	        //No more threads waiting
+	        if(numWaiting <= 0){
+	            islocked = false;
+	        }else{
+	            numWaiting--;
+	        }
+	        
+    	//owner = NULL;
+	    //mutex->V();
 	}else{
-	    DEBUG('t', "owner != currentThread");
+	    DEBUG('t', "owner != currentThread and tried release on lock");
 	    printf("\nOwner !=currentThread caught\n");
 	}
 	

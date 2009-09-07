@@ -80,9 +80,11 @@ class Lock {
   private:
     char* name;				// for debugging
     #ifdef CHANGED
-    Semaphore *mutex;
+    //Semaphore *mutex;
     Thread *owner;
     int numWaiting;
+    List *queue;
+    bool islocked;
     #endif
     // plus some other stuff you'll need to define
 };
