@@ -112,7 +112,7 @@ Lock::Lock(char* debugName) {
 }
 Lock::~Lock() {
 	#ifdef CHANGED
-	delete mutex;
+	//delete mutex;
 	#endif
 }
 
