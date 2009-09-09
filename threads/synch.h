@@ -138,6 +138,7 @@ class Condition {
 
   private:
     char* name;
-    List *queue;
+    List* queue;
+    Lock* CVLock;
 };
 #endif // SYNCH_H
