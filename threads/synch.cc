@@ -124,7 +124,7 @@ void Lock::Acquire()
 
     // check if we already own this lock, if we do, do nothing
     if(owner == currentThread) {
-        interrupt->SetLevel(oldLevel);
+        (void) interrupt->SetLevel(oldLevel);
         return;
     }
 
@@ -134,9 +134,12 @@ void Lock::Acquire()
         queue->Append((void *)currentThread);
         numWaiting++;
 
-        interrupt->SetLevel(oldLevel);
+        //(void)interrupt->SetLevel(oldLevel);
+        DEBUG('t', "Did not get lock going to sleep\n");
         currentThread->Sleep();
-        oldLevel = interrupt->SetLevel(IntOff);
+        
+        //oldLevel = interrupt->SetLevel(IntOff);
+        //(void)interrupt->SetLevel(oldLevel);
     }
     //the above loop exited, so the lock it ours (mwa ha ha)
 
@@ -145,6 +148,7 @@ void Lock::Acquire()
     if(owner != NULL) {
         // this shouldn't happen
         //TODO print error message
+        DEBUG('t',"owner !=NULL");
     }
     owner = currentThread;
 
