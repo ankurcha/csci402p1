@@ -1,5 +1,5 @@
 #ifdef CHANGED
-#include "patient.cc"
+#include "patient.h"
 
 
 
