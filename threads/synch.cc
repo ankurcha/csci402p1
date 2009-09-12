@@ -109,73 +109,86 @@ Lock::Lock(char* debugName) {
   numWaiting = 0;
 #endif
 }
+
 Lock::~Lock() {
 #ifdef CHANGED
   delete queue;
 #endif
 }
 
-void
-Lock::Acquire()
+void Lock::Acquire()
 {
 #ifdef CHANGED
-  Thread *thread;
-  IntStatus oldLevel = interrupt->SetLevel(IntOff);
-  
-  if(!islocked){
+    //disable interrupts to make this atomic
+    IntStatus oldLevel = interrupt->SetLevel(IntOff);
+
+    // check if we already own this lock, if we do, do nothing
+    if(owner == currentThread) {
+        (void) interrupt->SetLevel(oldLevel);
+        return;
+    }
+
+    while(islocked) {
+        // put ourselves on the queue and sleep, must restore interrupts
+        //  before sleeping so context switches will happen
+        queue->Append((void *)currentThread);
+        numWaiting++;
+
+        //(void)interrupt->SetLevel(oldLevel);
+        DEBUG('t', "Did not get lock going to sleep\n");
+        currentThread->Sleep();
+        
+        //oldLevel = interrupt->SetLevel(IntOff);
+        //(void)interrupt->SetLevel(oldLevel);
+    }
+    //the above loop exited, so the lock it ours (mwa ha ha)
+
     islocked = true;
     
-    
-    if(owner == NULL){          //First one in
-      owner = currentThread;  //Make this the owner
+    if(owner != NULL) {
+        // this shouldn't happen
+        //TODO print error message
+        DEBUG('t',"owner !=NULL");
     }
-    
-    if(owner !=currentThread){
-      queue->Append((void *)currentThread);	// so go to sleep
-      currentThread->Sleep();
-      numWaiting++;
-    }else{
-      numWaiting++;
-    }
-  }
-  (void) interrupt->SetLevel(oldLevel);
+    owner = currentThread;
+
+    (void) interrupt->SetLevel(oldLevel);
+    //we are done, interrupts are back to previous status
 #endif
 }
 
-void
-Lock::Release() 
+void Lock::Release() 
 {
 #ifdef CHANGED
-  Thread *thread;
-  IntStatus oldLevel = interrupt->SetLevel(IntOff);
-  
-  if( this->owner == currentThread ){
-    DEBUG('t', "owner = currentThread");
-    thread = (Thread *)queue->Remove();
-    if (thread != NULL){	   // make thread ready, consuming the V immediately
-      scheduler->ReadyToRun(thread);
-      numWaiting--;
+    Thread *thread;
+    IntStatus oldLevel = interrupt->SetLevel(IntOff);
+    
+    if( this->owner == currentThread ){
+        DEBUG('t', "owner = currentThread");
+        thread = (Thread *)queue->Remove();
+        if (thread != NULL){  // make thread ready, consuming the V immediately
+            scheduler->ReadyToRun(thread);
+            numWaiting--;
+        }else{
+            //No more threads waiting
+            if(numWaiting <= 0){
+                islocked = false;
+            }else{
+                numWaiting--;
+            }
+        }
     }else{
-      //No more threads waiting
-      if(numWaiting <= 0){
-	islocked = false;
-      }else{
-	numWaiting--;
-      }
+        DEBUG('t', "owner != currentThread and tried release on lock");
     }
-  }else{
-    DEBUG('t', "owner != currentThread and tried release on lock");
-  }
-  
-  if(numWaiting == 0){ //Reset ownership - make it free for use
-    owner = NULL;
-  }
-  (void) interrupt->SetLevel(oldLevel);
+    
+    if(numWaiting == 0){ //Reset ownership - make it free for use
+        owner = NULL;
+    }
+    (void) interrupt->SetLevel(oldLevel);
 #endif
 }
 
-bool 
-  Lock::isHeldByCurrentThread()
+bool Lock::isHeldByCurrentThread()
 {
 #ifdef CHANGED
   if( owner == currentThread )
