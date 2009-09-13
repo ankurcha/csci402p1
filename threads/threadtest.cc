@@ -12,6 +12,7 @@
 #include "copyright.h"
 #include "system.h"
 #include "test_code.cc"
+#include "patient.h"
 
 //----------------------------------------------------------------------
 // SimpleThread
@@ -51,5 +52,8 @@ ThreadTest()
     
     DEBUG('t', "TestSuite");
     TestSuite();
+
+    printf("TESTING HOSPITAL APP");
+    Patient *p = new Patient();
 }
 
