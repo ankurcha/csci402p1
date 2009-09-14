@@ -16,7 +16,7 @@
 
 #ifndef SYNCH_H
 #define SYNCH_H
-
+#define CHANGED
 #include "copyright.h"
 #include "thread.h"
 #include "list.h"
