@@ -12,7 +12,7 @@
 #include "copyright.h"
 #include "system.h"
 #include "test_code.cc"
-#include "patient.h"
+#include "HospitalManagement.cc"
 
 //----------------------------------------------------------------------
 // SimpleThread
@@ -54,6 +54,7 @@ ThreadTest()
     TestSuite();
 
     printf("TESTING HOSPITAL APP");
-    Patient p;
+
+    HospINIT();
 }
 
