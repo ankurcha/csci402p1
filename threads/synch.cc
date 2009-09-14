@@ -144,7 +144,7 @@ void Lock::Acquire()
     
     if(owner != NULL) {
         // this shouldn't happen
-        //TODO print error message
+        DEBUG('t', "lock found unlocked with non-null owner");
     }
     owner = currentThread;
 
@@ -156,10 +156,10 @@ void Lock::Acquire()
 void Lock::Release() 
 {
 #ifdef CHANGED
-    Thread *thread;
+    Thread* thread;
     IntStatus oldLevel = interrupt->SetLevel(IntOff);
     
-    if( this->owner == currentThread ){
+    if( owner == currentThread ){
         DEBUG('t', "owner = currentThread");
         thread = (Thread *)queue->Remove();
         if (thread != NULL){  // make thread ready, consuming the V immediately
