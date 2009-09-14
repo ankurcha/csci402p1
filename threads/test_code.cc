@@ -3,6 +3,7 @@
 
 #include "copyright.h"
 #include "system.h"
+//#define CHANGED
 #ifdef CHANGED
 #include "synch.h"
 #endif
