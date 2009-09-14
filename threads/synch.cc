@@ -115,6 +115,7 @@ Lock::Lock(char* debugName) {
   this->semaphore = new Semaphore(semName, 1);
 #endif
 }
+
 Lock::~Lock() {
 #ifdef CHANGED
   //delete queue;
@@ -122,8 +123,7 @@ Lock::~Lock() {
 #endif
 }
 
-void
-Lock::Acquire()
+void Lock::Acquire()
 {
 #ifdef CHANGED
   //ASSERT(!(this->isHeldByCurrentThread()));
@@ -158,8 +158,7 @@ Lock::Acquire()
 #endif
 }
 
-void
-Lock::Release() 
+void Lock::Release() 
 {
 #ifdef CHANGED
   /*
@@ -215,7 +214,6 @@ bool
     return true;
   else
     return false;
-
 #endif
 }
 
