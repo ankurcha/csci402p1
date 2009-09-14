@@ -54,6 +54,6 @@ ThreadTest()
     TestSuite();
 
     printf("TESTING HOSPITAL APP");
-    Patient *p = new Patient();
+    Patient p;
 }
 
