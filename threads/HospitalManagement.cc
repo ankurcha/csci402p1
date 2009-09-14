@@ -27,10 +27,10 @@ struct Hospital{
 }h;
 
 struct Patient{
-    int tokenNumber = -1;
-    int doctor_id = -1;
-    int prescription = -1;
-    int fees = -1;
+    int tokenNumber ;
+    int doctor_id ;
+    int prescription;
+    int fees;
 };
 
 SynchList *waitqueue = new SynchList;
