@@ -71,7 +71,7 @@ void initHospital(){
     
 }
 
-void patient(){
+void patient(int id){
 //    //TODO: Code for the patient
 //    //1. Come to hospital
 //    printf("Patient:%s :Arrived at the Hospital",patient_id);
@@ -108,7 +108,7 @@ void patient(){
 }
 
 
-void receptionist(){
+void receptionist(int id){
 //    int token = Random()%h.totalPatients;
 //    while(waitingPatients > 0){
 //        token = Random()%h.totalPatients;
@@ -126,12 +126,34 @@ void receptionist(){
         //There are ppl waiting for a lock
         //Acquire lock for the token counter
         tokenCounterLock->Acquire();
+            printf("Generate token number\n");
             tokenCounter++;
         tokenCounterLock->Release();
 
         //Wake up patient
+        printf("Waking up Patient\n");
         waitPatientsCV->Signal(waitPatients);
         numWaiting--;
     }
     numWaitingLock->Release();
+}
+
+void HospINIT(){
+    Thread *t;
+    char *name;
+    int i;
+
+    // Test 1
+
+    printf("Starting Test 1\n");
+
+    t = new Thread("patient_0");
+    t->Fork((VoidFunctionPtr) patient, 0);
+
+    t = new Thread("receptionist_0");
+    t->Fork((VoidFunctionPtr) receptionist, 0);
+
+    t = new Thread("patient_1");
+    t->Fork((VoidFunctionPtr) patient, 1);
+
 }
