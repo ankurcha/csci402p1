@@ -2,7 +2,6 @@
 #define MINPATIENTS 20
 #define MAXPATIENTS 100
 
-
 #include "list.h"
 #include "synchlist.h"
 #define MINDOCTORS 4
@@ -18,12 +17,6 @@ struct Hospital{
     int totalPharm;
     int totalHospMan;
     int totalPatients;
-//    //SynchList *TokenQueue;
-//    Lock *R2R_tokencounter;//Lock to access tokencounter
-//    int tokenCounter = 0;
-//    Lock *P2P_token;//Lock to get the newly assigned token number
-//    Lock *waitqueue;
-//    Patient *patients;
 }h;
 
 struct Patient{
@@ -32,6 +25,10 @@ struct Patient{
     int prescription;
     int fees;
 };
+
+int tokencount = 0;
+Lock *R2RLock = new Lock("R2RLock");
+
 
 SynchList *waitqueue = new SynchList;
 int tokenCounter= 0;
@@ -42,6 +39,9 @@ Condition *waitPatientsCV = new Condition("WaitingPatientsCV");
 
 int numWaiting = 0;
 Lock *numWaitingLock = new Lock("Num Waiting Lock");
+
+Lock *receptionistSleeping = new Lock("ReceptionistSleepingLock");
+Condition *receptionistSleepingCV = new Condition("receptionistSleepingCV");
 
 //int waitingPatients = 0; //Shared variable use with rwPlock
 //Lock *rwPlock = new Lock("Reception Waiting Lock");
@@ -71,71 +71,48 @@ void initHospital(){
     
 }
 
-void patient(int id){
-//    //TODO: Code for the patient
-//    //1. Come to hospital
-//    printf("Patient:%s :Arrived at the Hospital",patient_id);
-//    Patient *me = new Patient();
-//    //2. Meet receptionist
-//    //  2.1 Stand in queue to be allocated token number
-//    rwPlock->Acquire();
-//        waitingPatients++; //increment the count of patients waiting
-//    rwPlock->Release();
-//    reception->Wait(h.waitqueue); // Wait for token to be set into tokenPass
-//
-//    //Token has been set and I am waiting for it.
-//
-//
-//
-//    //  2.2 Goto sleep till someone wakes you up and gives you a token number
-//    printf("Patient:%s : Aquired Token %d",patient_id,me->tokenNumber);
-//    //3. Generate a number to select doctor
-//    int selected_doctor = Random() % h.totalDocs;
-//    //  3.1 Wait in line to meet doctor
-    printf("Patient:%s :Arrived at the Hospital",currentThread->getName());
-    Patient *me = new Patient();
-    me->tokenNumber = -1;
-    numWaitingLock->Acquire();
-        numWaiting++;
-    numWaitingLock->Release();
-    //Wait for token number from receptionist
-    waitPatients->Acquire();
-    waitPatientsCV->Wait(waitPatients);
-        //Now the token Number should be available
-    me->tokenNumber = tokenCounter;
-    printf("Patient:%s : Aquired Token %d",currentThread->getName(),me->tokenNumber);
+Lock *R2PLock = new Lock("R2PLock");
+Condition *R2PLockCV = new Condition("R2PLockCV");
+Condition *R2RLockCV = new Condition("R2RLockCV");
 
+int availableTokens;
+int neededTokens = 0;
+void patient(int id){
+
+  R2PLock->Acquire();
+  neededTokens++;
+  if(availableTokens <= 0){
+    printf("\n%s going to wait...\n",currentThread->getName());
+    R2PLockCV->Wait(R2PLock);
+    printf("\n%s back to Life!!",currentThread->getName());
+  }
+  printf("\n%s: I'm awake",currentThread->getName());
+  Patient me;
+  me.tokenNumber = tokencount;
+  //neededTokens--;
+  availableTokens--;
+  printf("\n%s: Acquired Token=%d\n",currentThread->getName(),me.tokenNumber);
+  R2PLock->Release();
+  printf("\n%s Exiting\n",currentThread->getName());
 }
 
 
 void receptionist(int id){
-//    int token = Random()%h.totalPatients;
-//    while(waitingPatients > 0){
-//        token = Random()%h.totalPatients;
-//        //wake a patient up and give it a token number
-//
-//        //patient->tokenNumber = token;
-//        rwPlock->Acquire();
-//        waitingPatients--;
-//        rwPlock->Release();
-//
-//    }
 
-    numWaitingLock->Acquire();
-    if(numWaiting>0){
-        //There are ppl waiting for a lock
-        //Acquire lock for the token counter
-        tokenCounterLock->Acquire();
-            printf("Generate token number\n");
-            tokenCounter++;
-        tokenCounterLock->Release();
-
-        //Wake up patient
-        printf("Waking up Patient\n");
-        waitPatientsCV->Signal(waitPatients);
-        numWaiting--;
+  while(neededTokens>0){
+    R2RLock->Acquire();
+    R2PLock->Acquire();
+    printf("\n%s: Generating token = %d\n",currentThread->getName(),++tokencount);
+    availableTokens++;
+    neededTokens--;
+    //Signal a waiting patient on a R2PLock
+    printf("\n%s: Sending Signal to Patients\n",currentThread->getName());
+    R2PLockCV->Signal(R2PLock);
     }
-    numWaitingLock->Release();
+  //R2RLock->Release();
+    //R2RLock->Acquire();
+  R2RLockCV->Wait(R2RLock);
+  R2RLock->Release();
 }
 
 void HospINIT(){
@@ -150,10 +127,14 @@ void HospINIT(){
     t = new Thread("patient_0");
     t->Fork((VoidFunctionPtr) patient, 0);
 
+    t = new Thread("patient_1");
+    t->Fork((VoidFunctionPtr) patient, 1);
+    
+    t = new Thread("patient_2");
+    t->Fork((VoidFunctionPtr) patient,2);
+
     t = new Thread("receptionist_0");
     t->Fork((VoidFunctionPtr) receptionist, 0);
 
-    t = new Thread("patient_1");
-    t->Fork((VoidFunctionPtr) patient, 1);
 
 }

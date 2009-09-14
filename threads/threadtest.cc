@@ -13,7 +13,7 @@
 #include "system.h"
 #include "test_code.cc"
 #include "HospitalManagement.cc"
-
+//#include "syncListImplementation.cc"
 //----------------------------------------------------------------------
 // SimpleThread
 // 	Loop 5 times, yielding the CPU to another ready thread 
@@ -29,8 +29,8 @@ SimpleThread(int which)
     int num;
     
     for (num = 0; num < 5; num++) {
-	printf("*** thread %d looped %d times\n", which, num);
-        currentThread->Yield();
+      //	printf("*** thread %d looped %d times\n", which, num);
+      //   currentThread->Yield();
     }
 }
 
@@ -43,7 +43,8 @@ SimpleThread(int which)
 void
 ThreadTest()
 {
-    DEBUG('t', "Entering SimpleTest");
+  /*
+     DEBUG('t', "Entering SimpleTest");
 
     Thread *t = new Thread("forked thread");
 
@@ -51,9 +52,14 @@ ThreadTest()
     SimpleThread(0);
     
     DEBUG('t', "TestSuite");
-    TestSuite();
+    //TestSuite();
 
-    printf("TESTING HOSPITAL APP");
+    
+
+  */
+
+  //startTest();
+printf("\nTESTING HOSPITAL APP\n");
 
     HospINIT();
 }

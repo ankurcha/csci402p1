@@ -79,13 +79,16 @@ class Lock {
 
   private:
     char* name;				// for debugging
-    #ifdef CHANGED
+#ifdef CHANGED
     //Semaphore *mutex;
-    Thread *owner;
-    int numWaiting;
+  /*  Thread *owner;
+      int numWaiting;
     List *queue;
     bool islocked;
-    #endif
+  */  
+  Thread *holder;
+  Semaphore *semaphore;  
+#endif
     // plus some other stuff you'll need to define
 };
 
@@ -122,23 +125,24 @@ class Lock {
 // thread gets a chance to run.
 
 class Condition {
-  public:
-    Condition(char* debugName);		// initialize condition to 
+public:
+  Condition(char* debugName);		// initialize condition to 
 					// "no one waiting"
-    ~Condition();			// deallocate the condition
-    char* getName() { return (name); }
+  ~Condition();			// deallocate the condition
+  char* getName() { return (name); }
     
-    void Wait(Lock *conditionLock); 	// these are the 3 operations on 
+  void Wait(Lock *conditionLock); 	// these are the 3 operations on 
 					// condition variables; releasing the 
 					// lock and going to sleep are 
 					// *atomic* in Wait()
-    void Signal(Lock *conditionLock);   // conditionLock must be held by
-    void Broadcast(Lock *conditionLock);// the currentThread for all of 
+  void Signal(Lock *conditionLock);   // conditionLock must be held by
+  void Broadcast(Lock *conditionLock);// the currentThread for all of 
 					// these operations
-
-  private:
-    char* name;
-    List* queue;
-    Lock* CVLock;
+  
+private:
+  char* name;
+  //List* queue;
+  List* waiters;
+  Lock* CVLock;
 };
 #endif // SYNCH_H
