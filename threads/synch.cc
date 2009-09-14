@@ -109,78 +109,88 @@ Lock::Lock(char* debugName) {
   numWaiting = 0;
 #endif
 }
+
 Lock::~Lock() {
 #ifdef CHANGED
   delete queue;
 #endif
 }
 
-void
-Lock::Acquire()
+void Lock::Acquire()
 {
 #ifdef CHANGED
-  Thread *thread;
-  IntStatus oldLevel = interrupt->SetLevel(IntOff);
-  
-  if(!islocked){
+    //disable interrupts to make this atomic
+    IntStatus oldLevel = interrupt->SetLevel(IntOff);
+    
+    // do nothing if I already own this lock
+    if(owner == currentThread) {
+        DEBUG('t', "thread attempted to reacquire lock %s", name);
+        (void) interrupt->SetLevel(oldLevel);
+        return;
+    }
+
+    while(islocked) {
+        // put ourselves on the queue and sleep
+        queue->Append((void*) currentThread);
+        numWaiting++;
+        currentThread->Sleep();
+
+        // we awake!  break the loop if we own the lock
+        if(owner == currentThread) {
+            break;
+        }
+    }
+    // the above loop exited, so the lock is ours (mwa ha ha)
+
     islocked = true;
-    
-    if(owner == NULL){          //First one in
-      owner = currentThread;  //Make this the owner
-    }
-    
-    if(owner !=currentThread){
-      queue->Append((void *)currentThread);	// so go to sleep
-      currentThread->Sleep();
-      numWaiting++;
-    }else{
-      numWaiting++;
-    }
-  }
-  (void) interrupt->SetLevel(oldLevel);
+    owner = currentThread;
+
+    (void) interrupt->SetLevel(oldLevel);
+    // we are done, interrupts are back to previous status
 #endif
 }
 
-void
-Lock::Release() 
+void Lock::Release() 
 {
 #ifdef CHANGED
-  Thread *thread;
-  IntStatus oldLevel = interrupt->SetLevel(IntOff);
-  
-  if( this->owner == currentThread ){
-    DEBUG('t', "owner = currentThread");
-    thread = (Thread *)queue->Remove();
-    if (thread != NULL){	   // make thread ready, consuming the V immediately
-      scheduler->ReadyToRun(thread);
-      numWaiting--;
-    }else{
-      //No more threads waiting
-      if(numWaiting <= 0){
-	islocked = false;
-      }else{
-	numWaiting--;
-      }
+    // disable interrupts to make this atomic
+    IntStatus oldLevel = interrupt->SetLevel(IntOff);
+
+    // check that we own the lock we wish to Release
+    if(owner != currentThread) {
+        DEBUG('t', "ERROR: thread other than owner tried to Release lock %s", name);
+        (void) interrupt->SetLevel(oldLevel);
+        return;
     }
-  }else{
-    DEBUG('t', "owner != currentThread and tried release on lock");
-  }
-  
-  if(numWaiting == 0){ //Reset ownership - make it free for use
-    owner = NULL;
-  }
-  (void) interrupt->SetLevel(oldLevel);
+    
+    DEBUG('t', "owner == currentThread");
+    
+    // if someone is waiting on this lock, give it to them
+    if(numWaiting > 0) {
+        Thread* thread = (Thread *)queue->Remove();
+        numWaiting--;
+        if(thread != NULL) {
+            owner = thread;
+            scheduler->ReadyToRun(thread);
+        } else {
+            DEBUG('t', "ERROR: NULL thread waiting for lock %s!", name);
+        }
+    } else { // no one is waiting, open the lock
+        islocked = false;
+        owner = NULL;
+    }
+
+    (void) interrupt->SetLevel(oldLevel);
 #endif
 }
 
-bool 
-  Lock::isHeldByCurrentThread()
+bool Lock::isHeldByCurrentThread()
 {
 #ifdef CHANGED
-  if( owner == currentThread )
-    return true;
-  else
-    return false;
+    if( owner == currentThread )
+        return true;
+    else
+        return false;
 #endif
 }
 
