@@ -12,8 +12,7 @@
 #include "copyright.h"
 #include "system.h"
 #include "test_code.cc"
-#include "HospitalManagement.cc"
-//#include "syncListImplementation.cc"
+#include "syncListImplementation.cc"
 //----------------------------------------------------------------------
 // SimpleThread
 // 	Loop 5 times, yielding the CPU to another ready thread 
@@ -50,17 +49,16 @@ ThreadTest()
 
     t->Fork(SimpleThread, 1);
     SimpleThread(0);
-    
-    DEBUG('t', "TestSuite");
-    //TestSuite();
-
-    
-
   */
+  //    DEBUG('t', "TestSuite");
+  //  TestSuite();
+
+    
+
 
   //startTest();
-printf("\nTESTING HOSPITAL APP\n");
-
+    printf("\nTESTING HOSPITAL APP\n");
+    
     HospINIT();
 }
 
