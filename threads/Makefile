@@ -241,7 +241,8 @@ threadtest.o: ../threads/threadtest.cc ../threads/copyright.h \
   /usr/include/v7/sys/psr.h /usr/include/sys/fsr.h ../threads/thread.h \
   ../threads/scheduler.h ../threads/list.h ../machine/interrupt.h \
   ../threads/list.h ../machine/stats.h ../machine/timer.h \
-  ../threads/utility.h ../threads/test_code.cc ../threads/synch.h
+  ../threads/utility.h ../threads/test_code.cc ../threads/synch.h \
+  ../threads/syncListImplementation.cc ../threads/synchlist.h
 interrupt.o: ../machine/interrupt.cc \
   /usr/sfw/lib/gcc/sparc-sun-solaris2.10/3.4.3/include/stdio.h \
   /usr/include/stdarg.h /usr/include/iso/stdarg_iso.h \

@@ -91,7 +91,7 @@ struct Receptionist {
   
 };
 
-Receptionist receptionists[] = new Receptionist[MAXRCP];
+Receptionist receptionists[MAXRCP];
 
 Lock *RecLineLock = new Lock("RecLineLock");
 
