@@ -16,7 +16,6 @@
 
 #ifndef SYNCH_H
 #define SYNCH_H
-//#define CHANGED
 #include "copyright.h"
 #include "thread.h"
 #include "list.h"
@@ -81,13 +80,11 @@ class Lock {
     char* name;				// for debugging
 #ifdef CHANGED
     //Semaphore *mutex;
-  /*  Thread *owner;
-      int numWaiting;
+    Thread *owner;
+    int numWaiting;
     List *queue;
     bool islocked;
-  */  
-  Thread *holder;
-  Semaphore *semaphore;  
+  
 #endif
     // plus some other stuff you'll need to define
 };
@@ -141,8 +138,8 @@ public:
   
 private:
   char* name;
-  //List* queue;
-  List* waiters;
+  List* queue;
+  //List* waiters;
   Lock* CVLock;
 };
 #endif // SYNCH_H
