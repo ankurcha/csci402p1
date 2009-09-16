@@ -12,7 +12,8 @@
 #include "copyright.h"
 #include "system.h"
 #include "test_code.cc"
-#include "syncListImplementation.cc"
+#include "init.cc"
+//#include "syncListImplementation.cc"
 //----------------------------------------------------------------------
 // SimpleThread
 // 	Loop 5 times, yielding the CPU to another ready thread 

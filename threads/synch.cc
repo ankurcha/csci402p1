@@ -128,22 +128,22 @@ void Lock::Acquire()
         return;
     }
 
-    while(islocked) {
+    if(islocked) {
         // put ourselves on the queue and sleep
         queue->Append((void*) currentThread);
         numWaiting++;
         currentThread->Sleep();
 
         // we awake!  break the loop if we own the lock
-        if(owner == currentThread) {
-            break;
-        }
-    }
+        //if(owner == currentThread) {
+	//  break;
+        //}
+    }else{
     // the above loop exited, so the lock is ours (mwa ha ha)
 
-    islocked = true;
-    owner = currentThread;
-
+      islocked = true;
+      owner = currentThread;
+    }
     (void) interrupt->SetLevel(oldLevel);
     // we are done, interrupts are back to previous status
 #endif
@@ -162,14 +162,14 @@ void Lock::Release()
         return;
     }
 
-    DEBUG('t', "owner == currentThread");
+    //DEBUG('t', "owner == currentThread");
 
     // if someone is waiting on this lock, give it to them
     if(numWaiting > 0) {
         Thread* thread = (Thread *)queue->Remove();
         numWaiting--;
         if(thread != NULL) {
-            owner = thread;
+	  //owner = thread;
             scheduler->ReadyToRun(thread);
         } else {
             DEBUG('t', "ERROR: NULL thread waiting for lock %s!", name);
