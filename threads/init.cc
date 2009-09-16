@@ -80,7 +80,7 @@ struct Doctor {
         doctorBreakLock = new Lock("doctorBreakLock");
         doctorBreakCV = new Condition("doctorBreakLock"); 
     }
-}
+};
 
 struct DoorBoy {
     int state;
@@ -103,7 +103,7 @@ struct DoorBoy {
         doorboyBreakLock = new Lock("doorboyBreakLock");
         doorboyBreakCV = new Condition("doorboyBreakCV");
     }
-}
+};
 
 int MAX_DOCTORS;
 int RECP_MAX;
@@ -182,7 +182,7 @@ void patients(int ID){
     doorboys[myDoctor].LineLock->Acquire();
     //2. Wait on the line -- to be woken up by the bell boy
     printf("P_%d : Waiting for doorboy to tell me to go\n",ID);
-    doorboys.[myDoctor].LineCV->Wait(doorboys[myDoctor].LineLock);
+    doorboys[myDoctor].LineCV->Wait(doorboys[myDoctor].LineLock);
     
     //doctor told the door boy to wake me up for consultation, he is waiting for me to respond
     //Now I have to provide my token numeber to the doctor as he is ready for me, I must acquire
