@@ -36,11 +36,63 @@ struct Receptionists{
 	}
 };
 
+struct Doctor {
+	int state;
+	int currentPrescription;
+	int currentFees;
+	int currentPatientToken;
+	Lock *patientRespondLock;
+	Condition *patientRespondCV;
+	Lock *patientPrescriptionLock;
+	Condition *patientPrescriptionCV;
+	Lock *doctorBreakLock;
+	Condition *doctorBreakCV;
+	
+	Doctor(){
+		state = FREE;
+		currentPatientToken = -1;
+		currentPrescription = -1;
+		currentFees = -1;
+		patientRespondLock = new Lock("patientRespondLock");
+		patientRespondCV = new Condition("patientRespondCV");
+		patientPrescriptionLock = new Lock("patientPrescriptionLock");
+		patientPrescriptionCV = new Condition("patientPrescriptionCV");
+		doctorBreakLock = new Lock("doctorBreakLock");
+		doctorBreakCV = new Condition("doctorBreakLock"); 
+	}
+}
+
+struct DoorBoy {
+	int state;
+	int peopleInLine;
+	Lock *LineLock;
+	Condition *LineCV;
+	Lock *doorboyWaitLock;
+	Condition *doorboyWaitCV;
+	
+	Lock *doorboyBreakLock;
+	Condition *doorboyBreakCV;
+	
+	DoorBoy(){
+		state = FREE;
+		peopleInLine = 0;
+		LineLock = new Lock("LineLock");
+		LineCV = new Condition("LineCV");
+		doorboyWaitLock = new Lock("doorboyWaitLock");
+		doorboyWaitCV = new Condition("doorboyWaitCV");
+		doorboyBreakLock = new Lock("doorboyBreakLock");
+		doorboyBreakCV = new Condition("doorboyBreakCV");
+	}
+}
+
 int MAX_DOCTORS;
 int RECP_MAX;
 int MAX_PATIENTS;
 
 Receptionists receptionists[3];
+DoorBoy doorboys[3];
+Doctor doctors[3];
+
 int TokenCounter;
 
 Lock *AllLinesLock = new Lock("AllLineLock");
@@ -49,6 +101,7 @@ Lock *TokenCounterLock = new Lock("TokenCounterLock");
 void patients(int ID){
 	int myToken;
 	int myDoctor;
+	int myPrescription;
 	printf("P_%d:Attempt to acquire AllLinesLock...",ID);
 	AllLinesLock->Acquire();
 	printf("success\n");
@@ -104,13 +157,41 @@ void patients(int ID){
 	
 	//Calculate which doctor I want to see
 	myDoctor = Random() % MAX_DOCTORS;
+	printf("P_%d : Going to meet doctor D_%d\n",ID,myDoctor);
 	//1. Acquire doc's line lock
+	doorboys[myDoctor].LineLock->Acquire();
 	//2. Wait on the line -- to be woken up by the bell boy
-	//3. Wait for the doctor to wake you up
-	//4. get Consulted
+	printf("P_%d : Waiting for doorboy to tell me to go\n",ID);
+	doorboys.[myDoctor].LineCV->Wait(doorboys[myDoctor].LineLock);
+	
+	//doctor told the door boy to wake me up for consultation, he is waiting for me to respond
+	//Now I have to provide my token numeber to the doctor as he is ready for me, I must acquire
+	//lock for that and then provide all the information befor i proceed
+	doctors[myDoctor].patientRespondLock->Acquire();
+	//I can release the line lock so that other people may also join in
+	doorboys[myDoctor].LineLock->Acquire();
+	//The doctor is waiting for me to provide my info, oblige him!!
+	printf("P_%d : Consulting Doctor D_%d now...\n",ID,myDoctor);
+	doctors[myDoctor].currentPatientToken = myToken;
+	doctors[myDoctor].patientRespondCV->Wait(doctors[myDoctor].patientRespondLock);
+	//Consultation in process....
+	//4. Consultation finished, now I have to get the prescription from the doctor
+	//The doctor would be waiting for me to take this
+	printf("P_%d : Consultation finished!!\n",ID);
+	doctors[myDoctor].patientPrescriptionLock->Acquire();
+	myPrescription = doctors[myDoctor].currentPrescription;
+	printf("P_%d : Got prescription# %d\n",ID,myPrescription);
+	//Signal the doctor that I have taken the prescription
+	doctors[myDoctor].patientPrescriptionCV->Signal(doctors[myDoctor].patientPrescriptionLock);
+	doctors[myDoctor].patientRespondLock->Release();
 	//5. goto cashier similar to 1 - 5
+	//---WAITING FOR MAX TO FILL IN-----
 	//6. goto pharmacy  1 - 5
 	//7. get out - die die die( ;) )
+}
+
+void doctor(int ID){
+	
 }
 
 void receptionist(int ID){
@@ -189,6 +270,8 @@ void hospitalManager(int ID){
 			currentThread->Yield();
 		}
 		//I am on rounds now, Time to kick some ass
+		
+		//1. Check on the Receptionists
 		for (int i=0; i<RECP_MAX; i++) {//Check for waiting patients
 			if (receptionists[i].peopleInLine > 0 && receptionists[i].state == SLEEPING) {
 				//Wake up this receptionist up
@@ -198,5 +281,7 @@ void hospitalManager(int ID){
 				
 			}
 		}
+		//2. Query Cashiers
+		//3. Query pharmacy
 	}
 }
