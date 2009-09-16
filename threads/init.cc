@@ -20,6 +20,9 @@ struct Receptionists{
 	Lock *receptionistWaitLock;
 	Condition *receptionistWaitCV;
 	
+	Lock *ReceptionistBreakLock;
+	Condition *ReceptionistBreakCV;
+	
 	Receptionists(){
 		peopleInLine = 0;
 		state = FREE;
@@ -27,6 +30,8 @@ struct Receptionists{
 		LineLock = new Lock("LineLock");
 		receptionistWaitLock = new Lock("receptionistWaitLock");
 		receptionistWaitCV = new Condition("receptionistWaitCV");
+		ReceptionistBreakCV = new Condition("ReceptionistBreakCV");
+		ReceptionistBreakLock = new Lock("ReceptionistBreakLock");
 		currentToken = 0;
 	}
 };
@@ -36,10 +41,10 @@ int RECP_MAX;
 int MAX_PATIENTS;
 
 Receptionists receptionists[3];
+int TokenCounter;
 
 Lock *AllLinesLock = new Lock("AllLineLock");
 Lock *TokenCounterLock = new Lock("TokenCounterLock");
-int TokenCounter;
 
 void patients(int ID){
 	int myToken;
@@ -86,11 +91,7 @@ void patients(int ID){
 	receptionists[shortestline].peopleInLine--;
 	//signal receptionist that i am ready to take the token
 	
-	//receptionists[shortestline]->receptionCV->Signal(receptionists[shortestline]->LineLock);
-	
 	//wait for the receptionist to prepare token for me, till then I wait
-	//receptionists[shortestline]receptionCV->Wait(receptionists[shortestline]->LineLock);
-	
 	//token is ready just read it -- print it out in our case
 	myToken = receptionists[shortestline].currentToken;
 	printf("P_%d: My token is %d\n",ID,myToken);
@@ -139,10 +140,14 @@ void receptionist(int ID){
 			receptionists[ID].receptionistWaitLock->Release();
 		}else {
 			//My Line is empty
+			DEBUG('t',"No Patients, going on break...");
+			printf("R_%d Going to sleep\n",ID);
 			receptionists[ID].state = SLEEPING;
-			//printf("\nWaiting...\n");
-			DEBUG('t',"I slept - looping");
-			//Loop again
+			receptionists[ID].ReceptionistBreakLock->Acquire();
+			receptionists[ID].ReceptionistBreakCV->Wait(receptionists[ID].ReceptionistBreakLock);
+			//HospitalManager kicked my ass for sleeping on the job!!
+			receptionists[ID].ReceptionistBreakLock->Release();
+			//Loop back!!
 		}
 	}
 }
@@ -153,20 +158,6 @@ void INIT(){
 	char *temp;
 	Thread *t;
 	
-	//for (i=0; i<MAX_PATIENTS; i++) {
-//		sprintf(temp,"patient_%d",i);
-//		
-//		t = new Thread(temp);
-//		t->Fork((VoidFunctionPtr) patients, 0);
-//	}
-//	
-//	for (i=0; i<RECP_MAX; i++) {
-//		sprintf(temp,"receptionist_%d",i);
-//		
-//		receptionists[i] = new Receptionists();
-//		t = new Thread(temp);
-//		t->Fork((VoidFunctionPtr) receptionist, 0);
-//	}
 	t = new Thread("patient_0");
     t->Fork((VoidFunctionPtr) patients, 0);
 	
@@ -181,8 +172,6 @@ void INIT(){
 	
 }
 
-
-
 void HospINIT() {
 	
 	MAX_DOCTORS = 5;
@@ -192,3 +181,22 @@ void HospINIT() {
 	INIT(); // initiate threads
 }
 
+void hospitalManager(int ID){
+	int sleeptime = Random() % 300;
+	while (true) {
+		//Sleep for some random amount of time
+		while (sleeptime > 0) {
+			currentThread->Yield();
+		}
+		//I am on rounds now, Time to kick some ass
+		for (int i=0; i<RECP_MAX; i++) {//Check for waiting patients
+			if (receptionists[i].peopleInLine > 0 && receptionists[i].state == SLEEPING) {
+				//Wake up this receptionist up
+				receptionists[ID].ReceptionistBreakLock->Acquire();
+				receptionists[ID].ReceptionistBreakCV->Broadcast(receptionists[ID].ReceptionistBreakLock);
+				receptionists[ID].ReceptionistBreakLock->Release();
+				
+			}
+		}
+	}
+}
