@@ -54,7 +54,7 @@ struct Casher {
         lineLength = 0;
         state = FREE;
     }
-}
+};
 
 struct Doctor {
     int state;
