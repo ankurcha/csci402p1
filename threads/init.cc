@@ -46,7 +46,7 @@ struct Receptionists{
 };
 
 // shared data struct related to a Cashier
-struct Casher {
+struct Cashier {
     int lineLength;
     int state;
 
