@@ -123,7 +123,7 @@ void Lock::Acquire()
 
     // do nothing if I already own this lock
     if(owner == currentThread) {
-        DEBUG('t', "thread attempted to reacquire lock %s", name);
+        printf("thread attempted to reacquire lock %s", name);
         (void) interrupt->SetLevel(oldLevel);
         return;
     }
@@ -157,7 +157,7 @@ void Lock::Release()
 
     // check that we own the lock we wish to Release
     if(owner != currentThread) {
-        DEBUG('t', "ERROR: thread other than owner tried to Release lock %s", name);
+        printf("ERROR: thread other than owner tried to Release lock %s", name);
         (void) interrupt->SetLevel(oldLevel);
         return;
     }
@@ -172,7 +172,7 @@ void Lock::Release()
 	  //owner = thread;
             scheduler->ReadyToRun(thread);
         } else {
-            DEBUG('t', "ERROR: NULL thread waiting for lock %s!", name);
+            printf("ERROR: NULL thread waiting for lock %s!", name);
         }
     } else { // no one is waiting, open the lock
         islocked = false;
