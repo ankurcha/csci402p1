@@ -1,15 +1,25 @@
 /*
  *  init.cpp
+ *
+ *  Hospital management simulation threads
  *  
  *
  *  Created by Ankur Chauhan on 9/15/09.
+ *  USC CSCI 402 Operating Systems
+ *  Group 11
+ *    Ankur Chauhan, ankurcha
+ *    Max Pflueger, pflueger
+ *    Aneesha Mathew, aneesham
  *
  */
+
+#include "system.h"
 
 #define BUSY 0
 #define FREE 1
 #define SLEEPING 2
 
+//shared data struct related to a Receptionist
 struct Receptionists{
     int peopleInLine;
     int state;
@@ -34,6 +44,17 @@ struct Receptionists{
         currentToken = 0;
     }
 };
+
+// shared data struct related to a Cashier
+struct Casher {
+    int lineLength;
+    int state;
+
+    Cashier() {
+        lineLength = 0;
+        state = FREE;
+    }
+}
 
 int MAX_DOCTORS;
 int RECP_MAX;
@@ -148,6 +169,11 @@ void receptionist(int ID){
             receptionists[ID].ReceptionistBreakLock->Release();
             //Loop back!!
         }
+    }
+}
+
+void cashier(int ID) {
+    while(true) {
     }
 }
 
