@@ -123,27 +123,31 @@ void Lock::Acquire()
 
     // do nothing if I already own this lock
     if(owner == currentThread) {
-        printf("thread attempted to reacquire lock %s", name);
+        printf("thread attempted to reacquire lock %s\n", name);
         (void) interrupt->SetLevel(oldLevel);
         return;
     }
 
-    if(islocked) {
+    while(islocked) {
         // put ourselves on the queue and sleep
         queue->Append((void*) currentThread);
         numWaiting++;
         currentThread->Sleep();
 
         // we awake!  break the loop if we own the lock
-        //if(owner == currentThread) {
-	//  break;
-        //}
-    }else{
+        if(owner == currentThread) {
+	    break;
+        } else {
+            // this thread should not wake without owning the lock,
+            //  but just in case
+            printf("thread waiting on lock %s was woken without ownership\n", name);
+        }
+    }
     // the above loop exited, so the lock is ours (mwa ha ha)
 
-      islocked = true;
-      owner = currentThread;
-    }
+    islocked = true;
+    owner = currentThread;
+    
     (void) interrupt->SetLevel(oldLevel);
     // we are done, interrupts are back to previous status
 #endif
@@ -157,7 +161,7 @@ void Lock::Release()
 
     // check that we own the lock we wish to Release
     if(owner != currentThread) {
-        printf("ERROR: thread other than owner tried to Release lock %s", name);
+        printf("ERROR: thread other than owner tried to Release lock %s\n", name);
         (void) interrupt->SetLevel(oldLevel);
         return;
     }
@@ -169,10 +173,10 @@ void Lock::Release()
         Thread* thread = (Thread *)queue->Remove();
         numWaiting--;
         if(thread != NULL) {
-	  //owner = thread;
+	    owner = thread;
             scheduler->ReadyToRun(thread);
         } else {
-            printf("ERROR: NULL thread waiting for lock %s!", name);
+            printf("ERROR: NULL thread waiting for lock %s!\n", name);
         }
     } else { // no one is waiting, open the lock
         islocked = false;
