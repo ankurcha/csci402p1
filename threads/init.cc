@@ -140,6 +140,36 @@ struct Cashier {
     }
 };
 
+Lock *ClerkLinesLock= new Lock("ClerkLineLock");
+Lock *PaymentLock= new Lock("PaymentLock");
+int totalsales=0;
+
+struct PharmacyClerks{
+	int patientsInLine;
+	int state;
+	int payment;
+	int fee;
+	int patPrescription;
+	Condition *ClerkCV;
+	
+	Condition *ClerkBreakCV;
+	Lock* ClerkTransLock;
+    Condition* ClerkTransCV;
+  
+  
+  PharmacyClerks(){
+  	patientsInLine= 0;
+  	state=FREE;
+  	payment=0;
+  	fee=20;
+  	patPrescription=0;
+  ClerkCV= new Condition("ClerkCV");
+  ClerkBreakCV=new Condition("ClerkBreakCV");
+ ClerkTransLock=new Lock("ClerkTransLock");
+  ClerkTransCV=new Condition("ClerkTransCV");
+}  
+}clerks[3];
+
 struct Doctor {
     int state;
     int currentPrescription;
@@ -199,6 +229,7 @@ struct DoorBoy {
 int MAX_DOCTORS;
 int RECP_MAX;
 int MAX_PATIENTS;
+int MAX_CLERKS;
 
 //TODO: these can't be static -- all pray the dynamic heap gods!!
 Receptionists receptionists[3];
@@ -424,7 +455,62 @@ void patients(int ID){
 
     //6. goto pharmacy  1 - 5
     ////////  Interaction with Pharmacy Clerk ////////
+// ------------------------------------------------------------------------
+     printf("P_%d:Attempt to acquire ClerkLinesLock...",ID);
+    ClerkLinesLock->Acquire();
+    printf("success\n");
+    int shortestclerkline = 0;
+     int length = 0;
+    //Find shortest Line
+    for (int i=0; i<MAX_CLERKS; i++) {
+        if(clerks[i].patientsInLine < length){
+            length = clerks[i].patientsInLine;
+            shortestclerkline = i;
+        }
+    }
+    printf("P_%d: found shortest line PC_%d len: %d\n",ID,shortestclerkline,length);
+    if (length >0) {
+        //wait in line for my turn
+        clerks[shortestclerkline].patientsInLine++;
+        clerks[shortestclerkline].ClerkTransLock->Acquire();
+        ClerkLinesLock->Release();
+        clerks[shortestclerkline].ClerkCV->Wait(clerks[shortestclerkline].ClerkTransLock);
+        printf("P_%d: ClerkLinesLock Released, Now Waiting for signal by PharmacyClerk\n",ID);
+    }else { //No one else in line
+        switch (clerks[shortestclerkline].state) {
+            case FREE: 
+            case BUSY:
+            case SLEEPING:
+                //wait in line
+                clerks[shortestclerkline].patientsInLine++;
+                clerks[shortestclerkline].ClerkCV->Wait(clerks[shortestclerkline].ClerkTransLock);
+                printf("P_%d: ClerkLinesLock Released, Now Waiting for signal by CLerk\n",ID);
+                break;
+            default:
+                break;
+        } 
+    }
+    
+    printf("P_%d Got woken up, got out of line and going to the PHarmacy CLerk to give prescription\n",ID);
+    clerks[shortestclerkline].patientsInLine--;
+    //signal ParmacyClerk that i am ready to give Prescription
+    clerks[shortestclerkline].ClerkTransLock->Acquire();
+                //Entered the line no need to hold all lines others may now continue
+     ClerkLinesLock->Release();
+    //wait for the PharmacyClerk to Get the prescription from me.. so I wait
+     clerks[shortestclerkline].patPrescription = myPrescription;
 
+    // wait for clerk to give cost
+    clerks[shortestclerkline].ClerkTransCV->Signal(clerks[shortestclerkline].ClerkTransLock);
+    clerks[shortestclerkline].ClerkTransCV->Wait(clerks[shortestclerkline].ClerkTransLock);
+
+    // provide the money
+    
+    clerks[shortestclerkline].payment = clerks[shortestclerkline].fee;
+
+    // done
+    clerks[shortestclerkline].ClerkTransCV->Signal(clerks[shortestclerkline].ClerkTransLock);
+    clerks[shortestclerkline].ClerkTransLock->Release();
     //7. get out - die die die( ;) )
 }
 
@@ -515,6 +601,48 @@ void cashier(int ID) {
 }
 
 
+void Clerk(int ID){
+	while(true){
+		ClerkLinesLock->Acquire();
+        
+        if(clerks[ID].patientsInLine > 0) { // someone in line
+            //signal the first person
+            clerks[ID].ClerkCV->Signal(ClerkLinesLock);
+        } else { // noone in line
+            // go on break
+            clerks[ID].ClerkBreakCV->Wait(ClerkLinesLock);
+            ClerkLinesLock->Release();
+            continue;
+        }
+        
+        // I have a patient
+        // acquire the transaction Lock for further transactions
+        //  with the patient
+        clerks[ID].ClerkTransLock->Acquire();
+        ClerkLinesLock->Release();
+
+        // waiting for patient to give prescription
+        clerks[ID].ClerkTransCV->Wait(clerks[ID].ClerkTransLock);
+
+         // patient gives prescription:
+         printf("C_%d: gave Medicines!\n",ID);
+        //TODO: lookup the total cost with priscription
+                        
+        clerks[ID].ClerkTransCV->Signal(clerks[ID].ClerkTransLock);
+        // wait for payment
+        clerks[ID].ClerkTransCV->Wait(clerks[ID].ClerkTransLock);
+        //Collect payment
+
+        // add this payment to our total collected
+        PaymentLock->Acquire();
+        totalsales += clerks[ID].payment;
+        PaymentLock->Release();
+             
+
+        clerks[ID].ClerkTransLock->Release();
+	}
+	}
+
 void hospitalManager(int ID){
     printf("H_%d : Alive",ID);
     int sleeptime = Random() % 30;
@@ -574,6 +702,7 @@ void HospINIT() {
     MAX_DOCTORS = 1;
     RECP_MAX = 1;
     MAX_PATIENTS = 3;
+    MAX_CLERKS =3;
     
     INIT(); // initiate threads
 }
