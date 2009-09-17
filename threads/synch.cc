@@ -209,46 +209,59 @@ Condition::~Condition() {
 
 void Condition::Wait(Lock* conditionLock) {
 #ifdef CHANGED
-  IntStatus oldLevel = interrupt->SetLevel(IntOff);
+    IntStatus oldLevel = interrupt->SetLevel(IntOff);
 
-  if(CVLock !=NULL && conditionLock != CVLock){
-    DEBUG('t',"Lock Mismatch");
-  }
+    // check that this thread owns the lock, boot the cheaters
+    if(!conditionLock->isHeldByCurrentThread()){
+        printf("Lock not held by thread, Wait failed on CV %s", name);
+        return;
+    }
 
-  if(!conditionLock->isHeldByCurrentThread()){
-    DEBUG('t',"Lock not held by thread");
-    return;
-  }
+    // Store Lock for the First Waiter
+    if(CVLock == NULL){
+        CVLock = conditionLock;
+    }
 
-  if(CVLock == NULL){ //Store Lock for the First Waiter
-    CVLock = conditionLock;
-  }
-  queue->Append((void*) currentThread);
-  conditionLock->Release();
-  currentThread->Sleep();
-  conditionLock->Acquire();
-  (void) interrupt->SetLevel(oldLevel);
+    // check for lock mismatch
+    if(conditionLock != CVLock){
+        printf("ERROR: Lock Mismatch for Wait on CV %s", name);
+    }
+
+    // let this thread wait
+    queue->Append((void*) currentThread);
+    conditionLock->Release();
+    currentThread->Sleep();
+    conditionLock->Acquire();
+
+    (void) interrupt->SetLevel(oldLevel);
 #endif
 }
 
 void Condition::Signal(Lock* conditionLock) {
 #ifdef CHANGED
- IntStatus oldLevel = interrupt->SetLevel(IntOff);
+    IntStatus oldLevel = interrupt->SetLevel(IntOff);
+    
+    // if no one is waiting, do nothing
+    if(queue->IsEmpty()) {
+        (void) interrupt->SetLevel(oldLevel);
+        return;
+    }
 
-  if(!queue->IsEmpty()){
+    // someone is waiting...
     if(CVLock != conditionLock){
-      DEBUG('t',"Lock Mismatch");
-      return;
-    }else{
-      Thread *thread = (Thread *)queue->Remove();
-      scheduler->ReadyToRun(thread);
+        printf("ERROR: Lock Mismatch for condition %s", name);
+        return;
+    } else {
+        Thread *thread = (Thread *)queue->Remove();
+        scheduler->ReadyToRun(thread);
     }
-    if(queue->IsEmpty()){
-      CVLock = NULL;
-    }
-  }
 
-  (void) interrupt->SetLevel(oldLevel);
+    // did that clear the queue?
+    if(queue->IsEmpty()){
+        CVLock = NULL;
+    }
+
+    (void) interrupt->SetLevel(oldLevel);
 #endif
 }
 void Condition::Broadcast(Lock* conditionLock) {
