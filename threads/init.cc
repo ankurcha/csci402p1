@@ -316,6 +316,33 @@ void cashier(int ID) {
     }
 }
 
+
+void hospitalManager(int ID){
+    int sleeptime = Random() % 300;
+    while (true) {
+            //Sleep for some random amount of time
+        while (sleeptime > 0) {
+            currentThread->Yield();
+        }
+            //I am on rounds now, Time to kick some ass
+        
+            //1. Check on the Receptionists
+        for (int i=0; i<RECP_MAX; i++) {//Check for waiting patients
+            if (receptionists[i].peopleInLine > 0 && receptionists[i].state == SLEEPING) {
+                    //Wake up this receptionist up
+                receptionists[ID].ReceptionistBreakLock->Acquire();
+                receptionists[ID].ReceptionistBreakCV->Broadcast(receptionists[ID].ReceptionistBreakLock);
+                receptionists[ID].ReceptionistBreakLock->Release();
+                
+            }
+        }
+            //2. Query Cashiers
+            //3. Query pharmacy
+    }
+}
+
+
+
 void INIT(){
     
     int i = 0;
@@ -348,28 +375,3 @@ void HospINIT() {
     
     INIT(); // initiate threads
 }
-
-void hospitalManager(int ID){
-    int sleeptime = Random() % 300;
-    while (true) {
-        //Sleep for some random amount of time
-        while (sleeptime > 0) {
-            currentThread->Yield();
-        }
-        //I am on rounds now, Time to kick some ass
-        
-        //1. Check on the Receptionists
-        for (int i=0; i<RECP_MAX; i++) {//Check for waiting patients
-            if (receptionists[i].peopleInLine > 0 && receptionists[i].state == SLEEPING) {
-                //Wake up this receptionist up
-                receptionists[ID].ReceptionistBreakLock->Acquire();
-                receptionists[ID].ReceptionistBreakCV->Broadcast(receptionists[ID].ReceptionistBreakLock);
-                receptionists[ID].ReceptionistBreakLock->Release();
-                
-            }
-        }
-        //2. Query Cashiers
-        //3. Query pharmacy
-    }
-}
-
