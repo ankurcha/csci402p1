@@ -156,7 +156,7 @@ struct Doctor {
         currentPatientToken = -1;
         currentPrescription = -1;
         currentFees = -1;
-        Lock *DoctorStateChangeLock = new Lock("DoctorStateChangeLock");
+        DoctorStateChangeLock = new Lock("DoctorStateChangeLock");
         patientRespondLock = new Lock("patientRespondLock");
         patientRespondCV = new Condition("patientRespondCV");
         patientPrescriptionLock = new Lock("patientPrescriptionLock");
@@ -212,10 +212,13 @@ Lock *TokenCounterLock = new Lock("TokenCounterLock");
 
 void doorboy(int ID){
     while (true) {
+        printf("DB_%d: Alive\n",ID);
         doorboys[ID].state = FREE;
             //Acquire the lock to get the state of the line and take decision
         doorboys[ID].LineLock->Acquire();
+        printf("DB_%d: Checking for Patients\n",ID);
         if (doorboys[ID].peopleInLine > 0) {
+            printf("DB_%d: Found %d people on my line\n",ID,doorboys[ID].peopleInLine);
                 //Service them
                 //The doorboy discovers that the patient is waiting and then
                 //goes onto wait for the doctor to give the word to send the
@@ -242,20 +245,25 @@ void doorboy(int ID){
             
         }else {
                 //No one to service for my doctor, check the state of the doctor
-            if (doctors[ID].DoctorStateChangeLock == SLEEPING) {
+            printf("DB_%d: Found no one in the line, checking to see if I can go sleep\n",ID);
+            doctors[ID].DoctorStateChangeLock->Acquire();
+            if (doctors[ID].state == SLEEPING) {
                 doorboys[ID].LineLock->Release();//Let others get into the queue
                     //The doorboy cannot go on a break when the doctor is not there
+                doctors[ID].DoctorStateChangeLock->Release();
                 continue;
             }else {
                     //The doctor is in either in BUSY or FREE, then I can go on a break
-                doorboyBreakLock->Acquire();
+                doorboys[ID].doorboyBreakLock->Acquire();
                 doorboys[ID].state = SLEEPING;
                 doorboys[ID].LineLock->Release(); // Let others enter the queue
-                doorboyBreakCV->Wait(doorboyBreakLock);
+                doctors[ID].DoctorStateChangeLock->Release();
+                printf("DB_%d: ZZZZzzzzz....\n",ID);
+                doorboys[ID].doorboyBreakCV->Wait(doorboys[ID].doorboyBreakLock);
                     //I will be woken up by the manager only!!
                     //OK I got woken up, Time to release locks, change state and
                     //go back to work - by now there are people dying on the floor!
-                doorboyBreakLock->Release();
+                doorboys[ID].doorboyBreakLock->Release();
                 continue;
             }
 
@@ -264,6 +272,7 @@ void doorboy(int ID){
 
         
     }
+    printf("DB_%d: Dying...AAAaaaahhhhhhhhh!!\n",ID);
 }
 
 void patients(int ID){
@@ -500,15 +509,14 @@ void INIT(){
     t = new Thread("receptionist_0");
     t->Fork((VoidFunctionPtr) receptionist, 0);
     
-    t = new Thread("hospital_0");
-    t->Fork((VoidFunctionPtr) hospitalManager, 0);
-    
+    t = new Thread("doorboy_0");
+    t->Fork((VoidFunctionPtr) doorboy, 0);
     
 }
 
 void HospINIT() {
     
-    MAX_DOCTORS = 5;
+    MAX_DOCTORS = 1;
     RECP_MAX = 1;
     MAX_PATIENTS = 3;
     
