@@ -104,10 +104,8 @@ int feesPaid = 0;
 struct Cashier {
     // line CV and length
     int lineLength;
-    Lock *lineLock;
     Condition* lineCV;
-    int state;
-    int paid;
+
     // transaction lock, CV, and variables protected by the former
     Lock* transLock;
     Condition* transCV;
@@ -120,11 +118,10 @@ struct Cashier {
 
     Cashier() {
         lineLength = 0;
-        state = FREE;
         patToken = 0;
         fee = 0;
-        paid = false;
-        lineLock = new Lock("Cashier.lineLock");
+        payment = 0;
+
         lineCV = new Condition("Cashier.lineCV");
         transLock = new Lock("Cashier.transLock");
         transCV = new Condition("Cashier.transCV");
@@ -132,7 +129,6 @@ struct Cashier {
     }
 
     ~Cashier() {
-        delete lineLock;
         delete lineCV;
         delete transLock;
         delete transCV;
