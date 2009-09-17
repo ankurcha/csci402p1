@@ -94,12 +94,14 @@ struct Receptionists{
     }
 };
 
+// global for all cashiers
+Lock* cashierLineLock = new Lock("cashierLineLock");
+Lock* feesPaidLock = new Lock("feesPaidLock");
+int feesPaid = 0;
+
 // shared data struct related to a Cashier
 struct Cashier {
-    int state;
-    
-    // line lock, CV, and length
-    Lock* lineLock;
+    // line CV and length
     int lineLength;
     Condition* lineCV;
 
@@ -108,7 +110,7 @@ struct Cashier {
     Condition* transCV;
     int patToken;
     int fee;
-    bool paid;
+    int payment;
 
     // cashier's CV for going on break
     Condition* breakCV;
@@ -184,10 +186,6 @@ struct DoorBoy {
     }
 };
 
-// global for all fees collected by cashiers
-Lock* feesPaidLock = new Lock("feesPaidLock");
-int feesPaid = 0;
-
 int MAX_DOCTORS;
 int RECP_MAX;
 int MAX_PATIENTS;
@@ -196,7 +194,8 @@ int MAX_PATIENTS;
 Receptionists receptionists[3];
 DoorBoy doorboys[3];
 Doctor doctors[3];
-Cashier cashiers[3];
+const int numCashiers = 3;
+Cashier cashiers[numCashiers];
 
 int TokenCounter;
 
@@ -207,11 +206,15 @@ void patients(int ID){
     int myToken;
     int myDoctor;
     int myPrescription;
+
+    ////// Begin interaction with Receptionist ///////
+
     printf("P_%d:Attempt to acquire AllLinesLock...",ID);
     AllLinesLock->Acquire();
     printf("success\n");
     int shortestline = 0;
     int len = 0;
+    //TODO: this is a bug
     //Find shortest Line
     for (int i=0; i<RECP_MAX; i++) {
         if(receptionists[i].peopleInLine < len){
@@ -260,6 +263,8 @@ void patients(int ID){
     //Release Line Lock
     receptionists[shortestline].LineLock->Release();
     
+    /////// Interaction with Doctor and Doorboy ///////
+
     //Calculate which doctor I want to see
     myDoctor = Random() % MAX_DOCTORS;
     printf("P_%d : Going to meet doctor D_%d\n",ID,myDoctor);
@@ -289,9 +294,48 @@ void patients(int ID){
     //Signal the doctor that I have taken the prescription
     doctors[myDoctor].patientPrescriptionCV->Signal(doctors[myDoctor].patientPrescriptionLock);
     doctors[myDoctor].patientRespondLock->Release();
-    //5. goto cashier similar to 1 - 5
-    //---WAITING FOR MAX TO FILL IN-----
+
+    /////////  Interaction with Cashier ////////
+    
+    cashierLineLock->Acquire();
+    
+    // find the shortest line
+    int myCashier = 0;
+    int sLen = cashiers[0].lineLength;
+    for(int i=1; i < numCashiers; ++i) {
+        if(cashiers[i].lineLength < sLen) {
+            myCashier = i;
+            sLen = cashiers[i].lineLength;
+        }
+    }
+
+    //if(sLen > 0) {get in line} else {get in line}
+    // there are a lot of cases here, but they all result in us getting in line
+    cashiers[myCashier].lineLength ++;
+    cashiers[myCashier].lineCV->Wait(cashierLineLock);
+    cashiers[myCashier].lineLength --;
+
+    //// APPROACH THE DESK ////
+    cashierLineLock->Release();
+    cashiers[myCashier].transLock->Acquire();
+
+    // provide token to cashier
+    cashiers[myCashier].patToken = myToken;
+
+    // wait for cashier to come back with the fee
+    cashiers[myCashier].transCV->Signal(cashiers[myCashier].transLock);
+    cashiers[myCashier].transCV->Wait(cashiers[myCashier].transLock);
+
+    // provide the money
+    cashiers[myCashier].payment = cashiers[myCashier].fee;
+
+    // done
+    cashiers[myCashier].transCV->Signal(cashiers[myCashier].transLock);
+    cashiers[myCashier].transLock->Release();
+
     //6. goto pharmacy  1 - 5
+    ////////  Interaction with Pharmacy Clerk ////////
+
     //7. get out - die die die( ;) )
 }
 
@@ -340,15 +384,15 @@ void receptionist(int ID){
 
 void cashier(int ID) {
     while(true) {
-        cashiers[ID].lineLock->Acquire();
+        cashierLineLock->Acquire();
         
         if(cashiers[ID].lineLength > 0) { // someone in line
             //signal person on top
-            cashiers[ID].lineCV->Signal(cashiers[ID].lineLock);
+            cashiers[ID].lineCV->Signal(cashierLineLock);
         } else { // noone in line
             // go on break
-            cashiers[ID].breakCV->Wait(cashiers[ID].lineLock);
-            cashiers[ID].lineLock->Release();
+            cashiers[ID].breakCV->Wait(cashierLineLock);
+            cashierLineLock->Release();
             continue;
         }
         
@@ -356,7 +400,7 @@ void cashier(int ID) {
         // acquire transLock and use it to govern transactions
         //  with the patient
         cashiers[ID].transLock->Acquire();
-        cashiers[ID].lineLock->Release();
+        cashierLineLock->Release();
 
         // waiting for patient to deposit its token in patToken
         cashiers[ID].transCV->Wait(cashiers[ID].transLock);
@@ -369,15 +413,14 @@ void cashier(int ID) {
         // wait for payment
         cashiers[ID].transCV->Wait(cashiers[ID].transLock);
 
-        //TODO add this payment to our total collected
-        if(cashiers[ID].paid) {
-            feesPaidLock->Acquire();
-            feesPaid += cashiers[ID].fee;
-            feesPaidLock->Release();
-        } else {
+        // add this payment to our total collected
+        feesPaidLock->Acquire();
+        feesPaid += cashiers[ID].payment;
+        feesPaidLock->Release();
+        if(cashiers[ID].payment < cashiers[ID].fee) {
             printf("ERROR: call security, that patient didin't pay!");
-        }
-        
+        }        
+
         cashiers[ID].transLock->Release();
     }
 }
