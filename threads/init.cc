@@ -52,19 +52,27 @@ struct Receptionists{
 struct Cashier {
     int state;
     
+    // line lock, CV, and length
     Lock* lineLock;
     int lineLength;
     Condition* lineCV;
 
+    // transaction lock, CV, and variables protected by the former
     Lock* transLock;
     Condition* transCV;
     int patToken;
+    int fee;
+    bool paid;
 
+    // cashier's CV for going on break
     Condition* breakCV;
 
     Cashier() {
         lineLength = 0;
         state = FREE;
+        patToken = 0;
+        fee = 0;
+        paid = false;
         lineLock = new Lock("Cashier.lineLock");
         lineCV = new Condition("Cashier.lineCV");
         transLock = new Lock("Cashier.transLock");
@@ -129,6 +137,10 @@ struct DoorBoy {
         doorboyBreakCV = new Condition("doorboyBreakCV");
     }
 };
+
+// global for all fees collected by cashiers
+Lock* feesPaidLock = new Lock("feesPaidLock");
+int feesPaid = 0;
 
 int MAX_DOCTORS;
 int RECP_MAX;
@@ -304,13 +316,21 @@ void cashier(int ID) {
         cashiers[ID].transCV->Wait(cashiers[ID].transLock);
 
         //TODO lookup value for cashiers[ID].patToken in the token table
-        //TODO tell patient the fee
+        cashiers[ID].fee = 42;
+        // tell patient the fee
         
         cashiers[ID].transCV->Signal(cashiers[ID].transLock);
         // wait for payment
         cashiers[ID].transCV->Wait(cashiers[ID].transLock);
 
         //TODO add this payment to our total collected
+        if(cashiers[ID].paid) {
+            feesPaidLock->Acquire();
+            feesPaid += cashiers[ID].fee;
+            feesPaidLock->Release();
+        } else {
+            printf("ERROR: call security, that patient didin't pay!");
+        }
         
         cashiers[ID].transLock->Release();
     }
