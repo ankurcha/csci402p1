@@ -284,7 +284,7 @@ void cashier(int ID) {
     while(true) {
         cashiers[ID].lineLock->Acquire();
         
-        if(cashiers[ID].lineLenth > 0) { // someone in line
+        if(cashiers[ID].lineLength > 0) { // someone in line
             //signal person on top
             cashiers[ID].lineCV->Signal(cashiers[ID].lineLock);
         } else { // noone in line
