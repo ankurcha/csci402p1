@@ -218,6 +218,15 @@ void doorboy(int ID){
         doorboys[ID].LineLock->Acquire();
         printf("DB_%d: Checking for Patients\n",ID);
         if (doorboys[ID].peopleInLine > 0) {
+            doctors[ID].DoctorStateChangeLock->Acquire();
+                //In case the doctor is sleeping just wait till he is back and
+                //only then proceed.
+            if (doctors[ID].state == SLEEPING) {
+                printf("DB_%d: Checking for the doctor\n",ID);
+                doctors[ID].DoctorStateChangeLock->Release();
+                doorboys[ID].LineLock->Release();
+                continue;
+            }
             printf("DB_%d: Found %d people on my line\n",ID,doorboys[ID].peopleInLine);
                 //Service them
                 //The doorboy discovers that the patient is waiting and then
@@ -258,7 +267,7 @@ void doorboy(int ID){
                 doorboys[ID].state = SLEEPING;
                 doorboys[ID].LineLock->Release(); // Let others enter the queue
                 doctors[ID].DoctorStateChangeLock->Release();
-                printf("DB_%d: ZZZZzzzzz....\n",ID);
+                printf("DB_%d: Yawn!!...ZZZZzzzzz....\n",ID);
                 doorboys[ID].doorboyBreakCV->Wait(doorboys[ID].doorboyBreakLock);
                     //I will be woken up by the manager only!!
                     //OK I got woken up, Time to release locks, change state and
