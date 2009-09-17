@@ -104,8 +104,10 @@ int feesPaid = 0;
 struct Cashier {
     // line CV and length
     int lineLength;
+    Lock *lineLock;
     Condition* lineCV;
-
+    int state;
+    int paid;
     // transaction lock, CV, and variables protected by the former
     Lock* transLock;
     Condition* transCV;
