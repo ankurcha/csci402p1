@@ -25,7 +25,8 @@ struct node {
 };
 
 
-struct linkedlist { //Used for storing the <token,fees> pairs
+struct linkedlist { 
+//Used for storing the <token,fees> pairs
     node* head;
     int length;
     
