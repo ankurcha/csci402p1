@@ -165,8 +165,8 @@ void patients(int ID){
     if (len >0) {
         //wait in line for my turn
         receptionists[shortestline].peopleInLine++;
-        receptionists[shortestline].LineLock->Acquire();
         AllLinesLock->Release();
+        receptionists[shortestline].LineLock->Acquire();
         receptionists[shortestline].receptionCV->Wait(receptionists[shortestline].LineLock);
         printf("P_%d: AllLinesLock Released, Now Waiting for signal by Receptionist\n",ID);
     }else { //No one else in line
@@ -284,7 +284,7 @@ void cashier(int ID) {
     while(true) {
         cashiers[ID].lineLock->Acquire();
         
-        if(cashiers[ID].lineLenth > 0) { // someone in line
+        if(cashiers[ID].lineLength > 0) { // someone in line
             //signal person on top
             cashiers[ID].lineCV->Signal(cashiers[ID].lineLock);
         } else { // noone in line
@@ -333,6 +333,10 @@ void INIT(){
     
     t = new Thread("receptionist_0");
     t->Fork((VoidFunctionPtr) receptionist, 0);
+    
+    t = new Thread("hospital_0");
+    t->Fork((VoidFunctionPtr) hospitalManager, 0);
+    
     
 }
 
