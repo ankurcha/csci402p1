@@ -21,13 +21,16 @@
 
 //shared data struct related to a Receptionist
 struct Receptionists{
-    int peopleInLine;
     int state;
+    
     Condition *receptionCV;
+
     Lock *LineLock;
-    int currentToken;
+    int peopleInLine;
+
     Lock *receptionistWaitLock;
     Condition *receptionistWaitCV;
+    int currentToken;
     
     Lock *ReceptionistBreakLock;
     Condition *ReceptionistBreakCV;
@@ -47,12 +50,34 @@ struct Receptionists{
 
 // shared data struct related to a Cashier
 struct Cashier {
-    int lineLength;
     int state;
+    
+    Lock* lineLock;
+    int lineLength;
+    Condition* lineCV;
+
+    Lock* transLock;
+    Condition* transCV;
+    int patToken;
+
+    Condition* breakCV;
 
     Cashier() {
         lineLength = 0;
         state = FREE;
+        lineLock = new Lock("Cashier.lineLock");
+        lineCV = new Condition("Cashier.lineCV");
+        transLock = new Lock("Cashier.transLock");
+        transCV = new Condition("Cashier.transCV");
+        breakCV = new Condition("Cashier.breakCV");
+    }
+
+    ~Cashier() {
+        delete lineLock;
+        delete lineCV;
+        delete transLock;
+        delete transCV;
+        delete breakCV;
     }
 };
 
@@ -109,9 +134,11 @@ int MAX_DOCTORS;
 int RECP_MAX;
 int MAX_PATIENTS;
 
+//TODO: these can't be static
 Receptionists receptionists[3];
 DoorBoy doorboys[3];
 Doctor doctors[3];
+Cashier cashiers[3];
 
 int TokenCounter;
 
@@ -255,6 +282,37 @@ void receptionist(int ID){
 
 void cashier(int ID) {
     while(true) {
+        cashiers[ID].lineLock->Acquire();
+        
+        if(cashiers[ID].lineLenth > 0) { // someone in line
+            //signal person on top
+            cashiers[ID].lineCV->Signal(cashiers[ID].lineLock);
+        } else { // noone in line
+            // go on break
+            cashiers[ID].breakCV->Wait(cashiers[ID].lineLock);
+            cashiers[ID].lineLock->Release();
+            continue;
+        }
+        
+        // I have a patient
+        // acquire transLock and use it to govern transactions
+        //  with the patient
+        cashiers[ID].transLock->Acquire();
+        cashiers[ID].lineLock->Release();
+
+        // waiting for patient to deposit its token in patToken
+        cashiers[ID].transCV->Wait(cashiers[ID].transLock);
+
+        //TODO lookup value for cashiers[ID].patToken in the token table
+        //TODO tell patient the fee
+        
+        cashiers[ID].transCV->Signal(cashiers[ID].transLock);
+        // wait for payment
+        cashiers[ID].transCV->Wait(cashiers[ID].transLock);
+
+        //TODO add this payment to our total collected
+        
+        cashiers[ID].transLock->Release();
     }
 }
 
