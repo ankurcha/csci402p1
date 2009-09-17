@@ -19,7 +19,53 @@
 #define FREE 1
 #define SLEEPING 2
 
+struct node {
+    int key, value;
+    node* next;
+};
+
+
+struct linkedlist { //Used for storing the <token,fees> pairs
+    node* head;
+    int length;
+    
+    void append(int key, int val){
+        if (head == NULL) {
+            head = new node;
+            head->key = key;
+            head->value = val;
+            head->next = NULL;
+            this->length++;
+        }else {
+            node *p = new node;
+            p->key = key;
+            p->value = val;
+            p->next = head;
+            head = p;
+            this->length++;
+        }
+    }
+    
+    int getValue(int key){
+        node *p = head;
+        if(head!=NULL){
+            while (p!=NULL) {
+                if (p->key == key) {
+                    return p->value;
+                }else {
+                    p = p->next;
+                }
+            }//End of While
+        }else{
+                //empty list
+            return -1;
+        }
+    }
+};
+
+
 //shared data struct related to a Receptionist
+
 struct Receptionists{
     int state;
     
@@ -165,8 +211,8 @@ void patients(int ID){
     if (len >0) {
         //wait in line for my turn
         receptionists[shortestline].peopleInLine++;
-        AllLinesLock->Release();
         receptionists[shortestline].LineLock->Acquire();
+        AllLinesLock->Release();
         receptionists[shortestline].receptionCV->Wait(receptionists[shortestline].LineLock);
         printf("P_%d: AllLinesLock Released, Now Waiting for signal by Receptionist\n",ID);
     }else { //No one else in line
@@ -318,17 +364,22 @@ void cashier(int ID) {
 
 
 void hospitalManager(int ID){
-    int sleeptime = Random() % 300;
+    printf("H_%d : Alive",ID);
+    int sleeptime = Random() % 30;
     while (true) {
+        sleeptime = Random() % 30;
             //Sleep for some random amount of time
+        printf("H_%d : Sleeping for %d cycles\n",ID,sleeptime);
         while (sleeptime > 0) {
             currentThread->Yield();
         }
             //I am on rounds now, Time to kick some ass
-        
+        printf("H_%d : Going on rounds\n",ID);
             //1. Check on the Receptionists
+        printf("H_%d : Checking receptionists\n",ID);
         for (int i=0; i<RECP_MAX; i++) {//Check for waiting patients
             if (receptionists[i].peopleInLine > 0 && receptionists[i].state == SLEEPING) {
+                printf("H_%d : found R_%d sleeping and %d waiting\n",ID,i,receptionists[i].peopleInLine);
                     //Wake up this receptionist up
                 receptionists[ID].ReceptionistBreakLock->Acquire();
                 receptionists[ID].ReceptionistBreakCV->Broadcast(receptionists[ID].ReceptionistBreakLock);
