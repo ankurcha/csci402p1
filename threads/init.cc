@@ -140,10 +140,14 @@ struct Doctor {
     int currentPrescription;
     int currentFees;
     int currentPatientToken;
+    Lock *DoctorStateChangeLock;
+    
     Lock *patientRespondLock;
     Condition *patientRespondCV;
+    
     Lock *patientPrescriptionLock;
     Condition *patientPrescriptionCV;
+    
     Lock *doctorBreakLock;
     Condition *doctorBreakCV;
     
@@ -152,6 +156,7 @@ struct Doctor {
         currentPatientToken = -1;
         currentPrescription = -1;
         currentFees = -1;
+        Lock *DoctorStateChangeLock = new Lock("DoctorStateChangeLock");
         patientRespondLock = new Lock("patientRespondLock");
         patientRespondCV = new Condition("patientRespondCV");
         patientPrescriptionLock = new Lock("patientPrescriptionLock");
@@ -164,8 +169,10 @@ struct Doctor {
 struct DoorBoy {
     int state;
     int peopleInLine;
+    
     Lock *LineLock;
     Condition *LineCV;
+    
     Lock *doorboyWaitLock;
     Condition *doorboyWaitCV;
     
@@ -192,7 +199,7 @@ int MAX_DOCTORS;
 int RECP_MAX;
 int MAX_PATIENTS;
 
-//TODO: these can't be static
+//TODO: these can't be static -- all pray the dynamic heap gods!!
 Receptionists receptionists[3];
 DoorBoy doorboys[3];
 Doctor doctors[3];
@@ -202,6 +209,62 @@ int TokenCounter;
 
 Lock *AllLinesLock = new Lock("AllLineLock");
 Lock *TokenCounterLock = new Lock("TokenCounterLock");
+
+void doorboy(int ID){
+    while (true) {
+        doorboys[ID].state = FREE;
+            //Acquire the lock to get the state of the line and take decision
+        doorboys[ID].LineLock->Acquire();
+        if (doorboys[ID].peopleInLine > 0) {
+                //Service them
+                //The doorboy discovers that the patient is waiting and then
+                //goes onto wait for the doctor to give the word to send the
+                //next person in.
+                //Let others enter the queue, so release the lock
+            doorboys[ID].LineLock->Release();
+                //Acquire the wait-for-the-doctor lock
+            doorboys[ID].doorboyWaitLock->Acquire();
+                //Wait for the doctor to call for the next person
+            doorboys[ID].doorboyWaitCV->Wait(doorboys[ID].doorboyWaitLock);
+                //OK, now I got the signal from the doctor to send the next
+                //person in, I have to tell this to the patient so that he can
+                //proceed to the doctor
+            doctors[ID].patientRespondLock->Acquire();
+            doorboys[ID].doorboyWaitLock->Release(); // I don't need to wait for
+                                                     //the doctor now!!
+            //Tell the patient to get up and go see the doctor
+            doctors[ID].patientRespondCV->Signal(doctors[ID].patientRespondLock);
+                //The patient will now go in, I can release the lock
+            doctors[ID].patientRespondLock->Release();
+                //All my job is done, I'll go after something more meaningful in
+                //life now!!
+            continue;
+            
+        }else {
+                //No one to service for my doctor, check the state of the doctor
+            if (doctors[ID].DoctorStateChangeLock == SLEEPING) {
+                doorboys[ID].LineLock->Release();//Let others get into the queue
+                    //The doorboy cannot go on a break when the doctor is not there
+                continue;
+            }else {
+                    //The doctor is in either in BUSY or FREE, then I can go on a break
+                doorboyBreakLock->Acquire();
+                doorboys[ID].state = SLEEPING;
+                doorboys[ID].LineLock->Release(); // Let others enter the queue
+                doorboyBreakCV->Wait(doorboyBreakLock);
+                    //I will be woken up by the manager only!!
+                    //OK I got woken up, Time to release locks, change state and
+                    //go back to work - by now there are people dying on the floor!
+                doorboyBreakLock->Release();
+                continue;
+            }
+
+            
+        }
+
+        
+    }
+}
 
 void patients(int ID){
     int myToken;
@@ -267,14 +330,18 @@ void patients(int ID){
     doorboys[myDoctor].LineLock->Acquire();
     //2. Wait on the line -- to be woken up by the bell boy
     printf("P_%d : Waiting for doorboy to tell me to go\n",ID);
+        //Add to the number of people waiting on the line
+    doorboys[myDoctor].peopleInLine++;
     doorboys[myDoctor].LineCV->Wait(doorboys[myDoctor].LineLock);
-    
     //doctor told the door boy to wake me up for consultation, he is waiting for me to respond
     //Now I have to provide my token numeber to the doctor as he is ready for me, I must acquire
     //lock for that and then provide all the information befor i proceed
     doctors[myDoctor].patientRespondLock->Acquire();
     //I can release the line lock so that other people may also join in
-    doorboys[myDoctor].LineLock->Acquire();
+    //Also I should decrement the number of people in the line, as I am getting out of the line
+    doorboys[myDoctor].peopleInLine--;
+        //Now release the lock on the line and enter the consultation room
+    doorboys[myDoctor].LineLock->Release();
     //The doctor is waiting for me to provide my info, oblige him!!
     printf("P_%d : Consulting Doctor D_%d now...\n",ID,myDoctor);
     doctors[myDoctor].currentPatientToken = myToken;
@@ -284,6 +351,7 @@ void patients(int ID){
     //The doctor would be waiting for me to take this
     printf("P_%d : Consultation finished!!\n",ID);
     doctors[myDoctor].patientPrescriptionLock->Acquire();
+        //Take prescription form the doctor
     myPrescription = doctors[myDoctor].currentPrescription;
     printf("P_%d : Got prescription# %d\n",ID,myPrescription);
     //Signal the doctor that I have taken the prescription
@@ -296,7 +364,7 @@ void patients(int ID){
 }
 
 void doctor(int ID){
-    
+        //TODO: Someone needs to do this....I wonder who??? The Fairy thread maybe!!
 }
 
 void receptionist(int ID){
