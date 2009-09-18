@@ -97,7 +97,7 @@ void patients(int ID){
     //Now I have to provide my token numeber to the doctor as he is ready for 
     // me, I must acquire lock for that and then provide all the information 
     // befor i proceed
-    doctors[myDoctor].patientRespondLock->Acquire();
+    doctors[myDoctor].transLock->Acquire();
     //I can release the line lock so that other people may also join in
     //Also I should decrement the number of people in the line, as I am 
     // getting out of the line
@@ -106,20 +106,19 @@ void patients(int ID){
     doctors[myDoctor].LineLock->Release();
     //The doctor is waiting for me to provide my info, oblige him!!
     printf("P_%d : Consulting Doctor D_%d now...\n",ID,myDoctor);
-    doctors[myDoctor].currentPatientToken = myToken;
-    doctors[myDoctor].patientRespondCV->Wait(doctors[myDoctor].patientRespondLock);
+    doctors[myDoctor].patientToken = myToken;
+    doctors[myDoctor].transCV->Wait(doctors[myDoctor].transLock);
     //Consultation in process....
     //4. Consultation finished, now I have to get the prescription from the doctor
     //The doctor would be waiting for me to take this
-    printf("P_%d : Consultation finished!!\n",ID);
-    doctors[myDoctor].patientPrescriptionLock->Acquire();
         //Take prescription form the doctor
-    myPrescription = doctors[myDoctor].currentPrescription;
-    printf("P_%d : Got prescription# %d\n",ID,myPrescription);
+    myPrescription = doctors[myDoctor].prescription;
+    cout<<"P_"<<ID<<" : Consultation finished and  Got prescription# "
+    <<myPrescription<<endl;
     //Signal the doctor that I have taken the prescription
-    doctors[myDoctor].patientPrescriptionCV->
-                Signal(doctors[myDoctor].patientPrescriptionLock);
-    doctors[myDoctor].patientRespondLock->Release();
+    doctors[myDoctor].transCV->
+                Signal(doctors[myDoctor].transLock);
+    doctors[myDoctor].transLock->Release();
 
     ////////////////////////////////////////////
     /////////  Interaction with Cashier ////////

@@ -101,6 +101,10 @@ Lock* cashierLineLock = new Lock("cashierLineLock");
 Lock* feesPaidLock = new Lock("feesPaidLock");
 int feesPaid = 0;
 
+// list mapping patient tokens to consultFees
+Lock* feeListLock = new Lock("feeListLock");
+linkedlist *feeList = new linkedlist();
+
 // shared data struct related to a Cashier
 struct Cashier {
     // line CV and length
@@ -142,32 +146,34 @@ Lock *PaymentLock= new Lock("PaymentLock");
 int totalsales=0;
 
 struct PharmacyClerks{
-	int patientsInLine;
-	int state;
-	int payment;
-	int fee;
-	int patPrescription;
-	Condition *ClerkCV;
-	
-	Condition *ClerkBreakCV;
-	Lock* ClerkTransLock;
+    int patientsInLine;
+    int state;
+    int payment;
+    int fee;
+    int patPrescription;
+    Condition *ClerkCV;
+    
+    Condition *ClerkBreakCV;
+    Lock* ClerkTransLock;
     Condition* ClerkTransCV;
   
   
-  PharmacyClerks(){
-  	patientsInLine= 0;
-  	state=FREE;
-  	payment=0;
-  	fee=20;
-  	patPrescription=0;
-  ClerkCV= new Condition("ClerkCV");
-  ClerkBreakCV=new Condition("ClerkBreakCV");
- ClerkTransLock=new Lock("ClerkTransLock");
-  ClerkTransCV=new Condition("ClerkTransCV");
-}  
-}clerks[3];
+    PharmacyClerks(){
+        patientsInLine= 0;
+        state=FREE;
+        payment=0;
+        fee=20;
+        patPrescription=0;
+
+        ClerkCV= new Condition("ClerkCV");
+        ClerkBreakCV=new Condition("ClerkBreakCV");
+        ClerkTransLock=new Lock("ClerkTransLock");
+        ClerkTransCV=new Condition("ClerkTransCV");
+    }  
+};
 
 struct Doctor {
+/*<<<<<<< HEAD
     int state;
     int currentPrescription;
     int currentFees;
@@ -209,6 +215,42 @@ Lock *DoorBoyLineLock = new Lock("DoorBoyLineLock");
 Condition *DoorBoyLineCV = new Condition("DoorBoyLineCV");
 int DoorBoyLineLength = 0;
 int WakingDoctorID;
+=======*/
+    //transaction lock and CV and variables protected
+    Lock* transLock;
+    Condition* transCV;
+    int peopleInLine;
+    
+    Lock *LineLock;
+    Condition *LineCV;
+    
+    int prescription;
+    int patientToken;
+    
+    Doctor() {
+        prescription = -1;
+        patientToken = -1;
+        
+        peopleInLine = 0;
+        LineLock = new Lock("LineLock");
+        LineCV = new Condition("LineCV");
+        
+        transLock = new Lock("Doctor.transLock");
+        transCV = new Condition("Doctor.transCV");
+    }
+
+    ~Doctor() {
+        delete transLock;
+        delete transCV;
+    }
+};
+
+// globals to track the queue of doorboys waiting to service doctors
+Lock* doorboyLineLock = new Lock("doorboyLineLock");
+Condition* doorboyLineCV = new Condition("doorboyLineCV");
+int doorboyLineLength = 0;
+int wakingDoctorID = 0;
+    //>>>>>>> 082339a48eae82aafe61d634e7e1f37609b2eee1
 
 struct DoorBoy {
     int state;
@@ -233,11 +275,15 @@ int MAX_PATIENTS;
 int MAX_CLERKS;
 
 //TODO: these can't be static -- all pray the dynamic heap gods!!
-Receptionists receptionists[3];
-DoorBoy doorboys[3];
-Doctor doctors[3];
+const int numRecs = 3;
+const int numDoctors = 4;
 const int numCashiers = 3;
+const int numClerks = 3;
+Receptionists receptionists[numRecs];
+DoorBoy doorboys[numDoctors];
+Doctor doctors[numDoctors];
 Cashier cashiers[numCashiers];
+PharmacyClerks clerks[numClerks];
 
 int TokenCounter;
 
@@ -252,14 +298,14 @@ void doorboy(int ID){
         printf("DB_%d: Alive\n",ID);
         doorboys[ID].state = FREE;
             //Get into the doorboyLine till some doctor asks for me
-        DoorBoyLineLock->Acquire();
-        DoorBoyLineLength++;
+        doorboyLineLock->Acquire();
+        doorboyLineLength++;
         cout << "DB_"<<ID<<": Waiting for some doctor to wake me up.\n" ;
-        DoorBoyLineCV->Wait(DoorBoyLineLock);
+        doorboyLineCV->Wait(doorboyLineLock);
             //Some doctor woke me up, lets check who
-        currentCallingDoctor =  WakingDoctorID;
-        DoorBoyLineLength--;
-        DoorBoyLineLock->Release();
+        currentCallingDoctor =  wakingDoctorID;
+        doorboyLineLength--;
+        doorboyLineLock->Release();
             //Acquire the lock to get the state of the line and take decision
         doctors[currentCallingDoctor].LineLock->Acquire();
         printf("DB_%d: Checking for Patients\n",ID);
@@ -270,18 +316,18 @@ void doorboy(int ID){
                 <<": Found "<<doctors[currentCallingDoctor].peopleInLine
                 <<" waiting in line for D_"<<currentCallingDoctor<<endl;
         
-            doctors[currentCallingDoctor].DoctorStateChangeLock->Acquire();
+                //doctors[currentCallingDoctor].DoctorStateChangeLock->Acquire();
                 //In case the doctor is sleeping just wait till he is back and
                 //only then proceed.
         
-            if (doctors[ID].state == SLEEPING) {
-                printf("DB_%d: D_%d is not in...!\n",ID,currentCallingDoctor);
-                doctors[currentCallingDoctor].DoctorStateChangeLock->Release();
-                doctors[currentCallingDoctor].LineLock->Release();
-                continue;
-            }
+            //if (doctors[ID].state == SLEEPING) {
+//                printf("DB_%d: D_%d is not in...!\n",ID,currentCallingDoctor);
+//                doctors[currentCallingDoctor].DoctorStateChangeLock->Release();
+//                doctors[currentCallingDoctor].LineLock->Release();
+//                continue;
+//            }
                 //The doctor is available to take patients
-            doctors[currentCallingDoctor].DoctorStateChangeLock->Release();
+                //doctors[currentCallingDoctor].DoctorStateChangeLock->Release();
             
                 //Now wake the patient up to go to the doctor
             cout << "DB_"<<ID<<"Tell patient to go to doctor D_"
@@ -299,19 +345,19 @@ void doorboy(int ID){
                 //No one to service for my doctor, check the state of the doctor
             cout<<"DB_"<<ID<<"Found no one in the line, checking to see if I can"
                 <<" go sleep\n";
-            doctors[ID].DoctorStateChangeLock->Acquire();
-            if (doctors[currentCallingDoctor].state == SLEEPING) {
-                    //Let others get into the queue
-                doctors[currentCallingDoctor].LineLock->Release();
-                    //The doorboy cannot go on a break when the doctor is not in
-                doctors[ID].DoctorStateChangeLock->Release();
-                continue;
-            }else {
+//            doctors[ID].DoctorStateChangeLock->Acquire();
+//            if (doctors[currentCallingDoctor].state == SLEEPING) {
+//                    //Let others get into the queue
+//                doctors[currentCallingDoctor].LineLock->Release();
+//                    //The doorboy cannot go on a break when the doctor is not in
+//                doctors[ID].DoctorStateChangeLock->Release();
+//                continue;
+//            }else {
                     //The doctor is in either in BUSY or FREE, then I can go on a break
                 doorboys[ID].doorboyBreakLock->Acquire();
                 doorboys[ID].state = SLEEPING;
                 doctors[ID].LineLock->Release(); // Let others enter the queue
-                doctors[ID].DoctorStateChangeLock->Release();
+                //doctors[ID].DoctorStateChangeLock->Release();
                 printf("DB_%d: Yawn!!...ZZZZzzzzz....\n",ID);
                 doorboys[ID].doorboyBreakCV->Wait(doorboys[ID].doorboyBreakLock);
                     //I will be woken up by the manager only!!
@@ -319,18 +365,74 @@ void doorboy(int ID){
                     //go back to work - by now there are people dying on the floor!
                 doorboys[ID].doorboyBreakLock->Release();
                 continue;
-            }
-
-            
         }
 
         
-    }
+    }//End of while
     printf("DB_%d: Dying...AAAaaaahhhhhhhhh!!\n",ID);
 }
 
 void doctor(int ID){
-        //TODO: Someone needs to do this....I wonder who??? The Fairy thread maybe!!
+    // acquire a doorboy
+    doorboyLineLock->Acquire();
+
+    // assure that there is a doorboy in line
+    while(doorboyLineLength <= 0) {
+        printf("Doctor could not find a doorboy!\n");
+        doorboyLineLock->Release();
+        currentThread->Yield();
+        doorboyLineLock->Acquire();
+    }
+    
+    // pull the next doorboy off the line
+    wakingDoctorID = ID;
+    doorboyLineCV->Signal(doorboyLineLock);
+
+    // acquire the transaction lock and wait for the doorboy to arrive
+    doctors[ID].transLock->Acquire();
+    doorboyLineLock->Release();
+
+    //////  DOORBOY INTERACTION  //////
+    doctors[ID].transCV->Wait(doctors[ID].transLock);
+
+    // go on break if so inclined
+    // 5-15 yields
+    
+        //if( go on break ) { //TODO: Go on Break
+        int numYields = 5 + (Random() % 11);
+        for(int i=0; i < numYields; ++i) {
+            currentThread->Yield();
+        }
+        // }
+
+    // inform the doorboy that I am ready for a patient
+    doctors[ID].transCV->Signal(doctors[ID].transLock);
+
+    //////  PATIENT INTERACTION  //////
+    // and wait for that patient to arrive
+    doctors[ID].transCV->Wait(doctors[ID].transLock);
+
+    // consult: 10-20 yields
+    numYields = 10 + (Random() % 11);
+    for(int i=0; i < numYields; ++i) {
+        currentThread->Yield();  // I see ... mm hmm ... does it hurt here? ...
+    }
+
+    // give prescription to patient
+    doctors[ID].prescription = Random() % 100;
+
+    // put consultation fees into the data structure for the cashier ($50-$250)
+    int consultFee = 50 + (Random() % 201);
+    feeListLock->Acquire();
+    feeList->append(doctors[ID].patientToken, consultFee);
+    feeListLock->Release();
+
+    // pass the prescription to the patient and wait for them to leave
+    doctors[ID].transCV->Signal(doctors[ID].transLock);
+    doctors[ID].transCV->Wait(doctors[ID].transLock);
+
+    // done, the patient has left
+    doctors[ID].transLock->Release();
 }
 
 void receptionist(int ID){
@@ -418,8 +520,8 @@ void cashier(int ID) {
 
 
 void Clerk(int ID){
-	while(true){
-		ClerkLinesLock->Acquire();
+    while(true){
+        ClerkLinesLock->Acquire();
         
         if(clerks[ID].patientsInLine > 0) { // someone in line
             //signal the first person
@@ -456,8 +558,8 @@ void Clerk(int ID){
              
 
         clerks[ID].ClerkTransLock->Release();
-	}
-	}
+    }
+}
 
 void hospitalManager(int ID){
     printf("H_%d : Alive",ID);
