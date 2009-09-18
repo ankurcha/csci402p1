@@ -99,6 +99,10 @@ Lock* cashierLineLock = new Lock("cashierLineLock");
 Lock* feesPaidLock = new Lock("feesPaidLock");
 int feesPaid = 0;
 
+// list mapping patient tokens to consultFees
+Lock* feeListLock = new Lock("feeListLock");
+linkedlist feeList = new linkedlist();
+
 // shared data struct related to a Cashier
 struct Cashier {
     // line CV and length
@@ -167,35 +171,31 @@ struct PharmacyClerks{
 };
 
 struct Doctor {
-    int state;
-    int currentPrescription;
-    int currentFees;
-    int currentPatientToken;
-    Lock *DoctorStateChangeLock;
+    //transaction lock and CV and variables protected
+    Lock* transLock;
+    Condition* transCV;
+    int prescription;
+    int patientToken;
     
-    Lock *patientRespondLock;
-    Condition *patientRespondCV;
-    
-    Lock *patientPrescriptionLock;
-    Condition *patientPrescriptionCV;
-    
-    Lock *doctorBreakLock;
-    Condition *doctorBreakCV;
-    
-    Doctor(){
-        state = FREE;
-        currentPatientToken = -1;
-        currentPrescription = -1;
-        currentFees = -1;
-        DoctorStateChangeLock = new Lock("DoctorStateChangeLock");
-        patientRespondLock = new Lock("patientRespondLock");
-        patientRespondCV = new Condition("patientRespondCV");
-        patientPrescriptionLock = new Lock("patientPrescriptionLock");
-        patientPrescriptionCV = new Condition("patientPrescriptionCV");
-        doctorBreakLock = new Lock("doctorBreakLock");
-        doctorBreakCV = new Condition("doctorBreakLock"); 
+    Doctor() {
+        prescription = -1;
+        patientToken = -1;
+
+        transLock = new Lock("Doctor.transLock");
+        transCV = new Condition("Doctor.transCV");
+    }
+
+    ~Doctor() {
+        delete transLock;
+        delete transCV;
     }
 };
+
+// globals to track the queue of doorboys waiting to service doctors
+Lock* doorboyLineLock = new Lock("doorboyLineLock");
+Condition* doorboyLineCV = new Condition("doorboyLineCV");
+int doorboyLineLength = 0;
+int wakingDoctorID = 0;
 
 struct DoorBoy {
     int state;
@@ -229,12 +229,11 @@ int MAX_CLERKS;
 
 //TODO: these can't be static -- all pray the dynamic heap gods!!
 const int numRecs = 3;
-const int numDoorboys = 3;
-const int numDoctors = 3;
+const int numDoctors = 4;
 const int numCashiers = 3;
 const int numClerks = 3;
 Receptionists receptionists[numRecs];
-DoorBoy doorboys[numDoorboys];
+DoorBoy doorboys[numDoctors];
 Doctor doctors[numDoctors];
 Cashier cashiers[numCashiers];
 PharmacyClerks clerks[numClerks];
@@ -321,7 +320,65 @@ void doorboy(int ID){
 }
 
 void doctor(int ID){
-        //TODO: Someone needs to do this....I wonder who??? The Fairy thread maybe!!
+    // acquire a doorboy
+    doorboyLineLock->Acquire();
+
+    // assure that there is a doorboy in line
+    while(doorboyLineLength <= 0) {
+        printf("Doctor could not find a doorboy!\n");
+        doorboyLineLock->Release();
+        currentThread->Yield();
+        doorboyLineLock->Acquire();
+    }
+    
+    // pull the next doorboy off the line
+    wakingDoctorID = ID;
+    doorboyLineCV->Signal(doorboyLineLock);
+
+    // acquire the transaction lock and wait for the doorboy to arrive
+    doctors[ID].transLock->Acquire();
+    doorboyLineLock->Release();
+
+    //////  DOORBOY INTERACTION  //////
+    doctors[ID].transCV->Wait(doctors[ID].transLock);
+
+    // go on break if so inclined
+    // 5-15 yields
+    if( go on break ) { //TODO
+        int numYields = 5 + (Random() % 11);
+        for(int i=0; i < numYields; ++i) {
+            currentThread->Yield();
+        }
+    }
+
+    // inform the doorboy that I am ready for a patient
+    doctors[ID].transLock->Signal(doctors[ID].transLock);
+
+    //////  PATIENT INTERACTION  //////
+    // and wait for that patient to arrive
+    doctors[ID].transCV->Wait(doctors[ID].transLock);
+
+    // consult: 10-20 yields
+    int numYields = 10 + (Random() % 11);
+    for(int i=0; i < numYields; ++i) {
+        currentThread->Yield();  // I see ... mm hmm ... does it hurt here? ...
+    }
+
+    // give prescription to patient
+    doctors[ID].prescription = Random() % 100;
+
+    // put consultation fees into the data structure for the cashier ($50-$250)
+    int consultFee = 50 + (Random() % 201);
+    feeListLock->Acquire();
+    feeList->append(doctors[ID].patientToken, consultFee);
+    feeListLock->Release();
+
+    // pass the prescription to the patient and wait for them to leave
+    doctors[ID].transLock->Signal(doctors[ID].transLock);
+    doctors[ID].transCV->Wait(doctors[ID].transLock);
+
+    // done, the patient has left
+    doctors[ID].transLock->Release();
 }
 
 void receptionist(int ID){
