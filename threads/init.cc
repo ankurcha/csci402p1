@@ -358,7 +358,7 @@ void doctor(int ID){
         for(int i=0; i < numYields; ++i) {
             currentThread->Yield();
         }
-        // }
+    }
 
     // inform the doorboy that I am ready for a patient
     doctors[ID].transCV->Signal(doctors[ID].transLock);
@@ -368,7 +368,7 @@ void doctor(int ID){
     doctors[ID].transCV->Wait(doctors[ID].transLock);
 
     // consult: 10-20 yields
-    numYields = 10 + (Random() % 11);
+    int numYields = 10 + (Random() % 11);
     for(int i=0; i < numYields; ++i) {
         currentThread->Yield();  // I see ... mm hmm ... does it hurt here? ...
     }
@@ -530,13 +530,18 @@ void hospitalManager(int ID){
         printf("H_%d : Going on rounds\n",ID);
             //1. Check on the Receptionists
         printf("H_%d : Checking receptionists\n",ID);
+        int patientsWaiting=0;
+        for (int j=0; j<RECP_MAX; j++) {
+            patientsWaiting += receptionists[j].peopleInLine;
+        }
+        
         for (int i=0; i<RECP_MAX; i++) {//Check for waiting patients
             if (receptionists[i].peopleInLine > 0 && receptionists[i].state == SLEEPING) {
                 printf("H_%d : found R_%d sleeping and %d waiting\n",ID,i,receptionists[i].peopleInLine);
                     //Wake up this receptionist up
                     //receptionists[ID].ReceptionistBreakLock->Acquire();
                 receptionists[ID].LineLock->Acquire();
-                receptionists[ID].ReceptionistBreakCV->Broadcast(receptionists[ID].LineLock);
+                receptionists[ID].ReceptionistBreakCV->Signal(receptionists[ID].LineLock);
                 receptionists[ID].LineLock->Release();
                 
             }
