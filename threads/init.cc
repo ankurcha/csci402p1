@@ -140,30 +140,31 @@ Lock *PaymentLock= new Lock("PaymentLock");
 int totalsales=0;
 
 struct PharmacyClerks{
-	int patientsInLine;
-	int state;
-	int payment;
-	int fee;
-	int patPrescription;
-	Condition *ClerkCV;
-	
-	Condition *ClerkBreakCV;
-	Lock* ClerkTransLock;
+    int patientsInLine;
+    int state;
+    int payment;
+    int fee;
+    int patPrescription;
+    Condition *ClerkCV;
+    
+    Condition *ClerkBreakCV;
+    Lock* ClerkTransLock;
     Condition* ClerkTransCV;
   
   
-  PharmacyClerks(){
-  	patientsInLine= 0;
-  	state=FREE;
-  	payment=0;
-  	fee=20;
-  	patPrescription=0;
-  ClerkCV= new Condition("ClerkCV");
-  ClerkBreakCV=new Condition("ClerkBreakCV");
- ClerkTransLock=new Lock("ClerkTransLock");
-  ClerkTransCV=new Condition("ClerkTransCV");
-}  
-}clerks[3];
+    PharmacyClerks(){
+        patientsInLine= 0;
+        state=FREE;
+        payment=0;
+        fee=20;
+        patPrescription=0;
+
+        ClerkCV= new Condition("ClerkCV");
+        ClerkBreakCV=new Condition("ClerkBreakCV");
+        ClerkTransLock=new Lock("ClerkTransLock");
+        ClerkTransCV=new Condition("ClerkTransCV");
+    }  
+};
 
 struct Doctor {
     int state;
@@ -227,11 +228,16 @@ int MAX_PATIENTS;
 int MAX_CLERKS;
 
 //TODO: these can't be static -- all pray the dynamic heap gods!!
-Receptionists receptionists[3];
-DoorBoy doorboys[3];
-Doctor doctors[3];
+const int numRecs = 3;
+const int numDoorboys = 3;
+const int numDoctors = 3;
 const int numCashiers = 3;
+const int numClerks = 3;
+Receptionists receptionists[numRecs];
+DoorBoy doorboys[numDoorboys];
+Doctor doctors[numDoctors];
 Cashier cashiers[numCashiers];
+PharmacyClerks clerks[numClerks];
 
 int TokenCounter;
 
@@ -401,8 +407,8 @@ void cashier(int ID) {
 
 
 void Clerk(int ID){
-	while(true){
-		ClerkLinesLock->Acquire();
+    while(true){
+        ClerkLinesLock->Acquire();
         
         if(clerks[ID].patientsInLine > 0) { // someone in line
             //signal the first person
@@ -439,8 +445,8 @@ void Clerk(int ID){
              
 
         clerks[ID].ClerkTransLock->Release();
-	}
-	}
+    }
+}
 
 void hospitalManager(int ID){
     printf("H_%d : Alive",ID);
