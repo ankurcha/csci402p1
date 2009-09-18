@@ -343,8 +343,8 @@ void doctor(int ID){
     doctors[ID].transCV->Wait(doctors[ID].transLock);
 
     // go on break if so inclined
-    // 5-15 yields
-    if( go on break ) { //TODO
+    if(Random() % 100 > 49) { // go on break
+        // 5-15 yields
         int numYields = 5 + (Random() % 11);
         for(int i=0; i < numYields; ++i) {
             currentThread->Yield();
