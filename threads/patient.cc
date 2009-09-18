@@ -14,7 +14,9 @@ void patients(int ID){
     int myDoctor;
     int myPrescription;
 
+    //////////////////////////////////////////////////
     ////// Begin interaction with Receptionist ///////
+    //////////////////////////////////////////////////
 
     printf("P_%d:Attempt to acquire AllLinesLock...",ID);
     AllLinesLock->Acquire();
@@ -34,8 +36,10 @@ void patients(int ID){
         receptionists[shortestline].peopleInLine++;
         AllLinesLock->Release();
         receptionists[shortestline].LineLock->Acquire();
-        receptionists[shortestline].receptionistWaitCV->Wait(receptionists[shortestline].LineLock);
-        printf("P_%d: AllLinesLock Released, Now Waiting for signal by Receptionist\n",ID);
+        receptionists[shortestline].receptionistWaitCV->
+                    Wait(receptionists[shortestline].LineLock);
+        printf("P_%d: AllLinesLock Released, Now Waiting for signal by " 
+                + "Receptionist\n",ID);
     }else { //No one else in line
         switch (receptionists[shortestline].state) {
             case FREE:
@@ -46,8 +50,10 @@ void patients(int ID){
                 //Entered the line no need to hold all lines others may now continue
                 AllLinesLock->Release();
                 receptionists[shortestline].LineLock->Acquire();
-                receptionists[shortestline].receptionistWaitCV->Wait(receptionists[shortestline].LineLock);
-                printf("P_%d: AllLinesLock Released, Now Waiting for signal by Receptionist\n",ID);
+                receptionists[shortestline].receptionistWaitCV->
+                            Wait(receptionists[shortestline].LineLock);
+                printf("P_%d: AllLinesLock Released, Now Waiting for signal "
+                        + "by Receptionist\n",ID);
                 break;
             default:
                 break;
@@ -63,11 +69,14 @@ void patients(int ID){
     myToken = receptionists[shortestline].currentToken;
     printf("P_%d: My token is %d..yeah!!\n",ID,myToken);
     //Done, signal receptionist that he can proceed 
-    receptionists[shortestline].receptionistWaitCV->Signal(receptionists[shortestline].LineLock);
+    receptionists[shortestline].receptionistWaitCV->
+                Signal(receptionists[shortestline].LineLock);
     //Release Line Lock
     receptionists[shortestline].LineLock->Release();
     
+    ///////////////////////////////////////////////////
     /////// Interaction with Doctor and Doorboy ///////
+    ///////////////////////////////////////////////////
 
     //Calculate which doctor I want to see
     myDoctor = Random() % MAX_DOCTORS;
@@ -79,12 +88,15 @@ void patients(int ID){
         //Add to the number of people waiting on the line
     doorboys[myDoctor].peopleInLine++;
     doorboys[myDoctor].LineCV->Wait(doorboys[myDoctor].LineLock);
-    //doctor told the door boy to wake me up for consultation, he is waiting for me to respond
-    //Now I have to provide my token numeber to the doctor as he is ready for me, I must acquire
-    //lock for that and then provide all the information befor i proceed
+    //doctor told the door boy to wake me up for consultation, he is waiting 
+    // for me to respond
+    //Now I have to provide my token numeber to the doctor as he is ready for 
+    // me, I must acquire lock for that and then provide all the information 
+    // befor i proceed
     doctors[myDoctor].patientRespondLock->Acquire();
     //I can release the line lock so that other people may also join in
-    //Also I should decrement the number of people in the line, as I am getting out of the line
+    //Also I should decrement the number of people in the line, as I am 
+    // getting out of the line
     doorboys[myDoctor].peopleInLine--;
         //Now release the lock on the line and enter the consultation room
     doorboys[myDoctor].LineLock->Release();
@@ -101,10 +113,13 @@ void patients(int ID){
     myPrescription = doctors[myDoctor].currentPrescription;
     printf("P_%d : Got prescription# %d\n",ID,myPrescription);
     //Signal the doctor that I have taken the prescription
-    doctors[myDoctor].patientPrescriptionCV->Signal(doctors[myDoctor].patientPrescriptionLock);
+    doctors[myDoctor].patientPrescriptionCV->
+                Signal(doctors[myDoctor].patientPrescriptionLock);
     doctors[myDoctor].patientRespondLock->Release();
 
+    ////////////////////////////////////////////
     /////////  Interaction with Cashier ////////
+    ////////////////////////////////////////////
     
     cashierLineLock->Acquire();
     
@@ -142,14 +157,15 @@ void patients(int ID){
     cashiers[myCashier].transCV->Signal(cashiers[myCashier].transLock);
     cashiers[myCashier].transLock->Release();
 
-    //6. goto pharmacy  1 - 5
+    //////////////////////////////////////////////////
     ////////  Interaction with Pharmacy Clerk ////////
-// ------------------------------------------------------------------------
-     printf("P_%d:Attempt to acquire ClerkLinesLock...",ID);
+    //////////////////////////////////////////////////
+    
+    printf("P_%d:Attempt to acquire ClerkLinesLock...",ID);
     ClerkLinesLock->Acquire();
     printf("success\n");
     int shortestclerkline = 0;
-     int length = 0;
+    int length = 0;
     //Find shortest Line
     for (int i=0; i<MAX_CLERKS; i++) {
         if(clerks[i].patientsInLine < length){
@@ -163,8 +179,10 @@ void patients(int ID){
         clerks[shortestclerkline].patientsInLine++;
         clerks[shortestclerkline].ClerkTransLock->Acquire();
         ClerkLinesLock->Release();
-        clerks[shortestclerkline].ClerkCV->Wait(clerks[shortestclerkline].ClerkTransLock);
-        printf("P_%d: ClerkLinesLock Released, Now Waiting for signal by PharmacyClerk\n",ID);
+        clerks[shortestclerkline].ClerkCV->
+                    Wait(clerks[shortestclerkline].ClerkTransLock);
+        printf("P_%d: ClerkLinesLock Released, Now Waiting for signal by "
+                + "PharmacyClerk\n",ID);
     }else { //No one else in line
         switch (clerks[shortestclerkline].state) {
             case FREE: 
@@ -173,14 +191,16 @@ void patients(int ID){
                 //wait in line
                 clerks[shortestclerkline].patientsInLine++;
                 clerks[shortestclerkline].ClerkCV->Wait(clerks[shortestclerkline].ClerkTransLock);
-                printf("P_%d: ClerkLinesLock Released, Now Waiting for signal by CLerk\n",ID);
+                printf("P_%d: ClerkLinesLock Released, Now Waiting for signal "
+                        + "by CLerk\n",ID);
                 break;
             default:
                 break;
         } 
     }
     
-    printf("P_%d Got woken up, got out of line and going to the PHarmacy CLerk to give prescription\n",ID);
+    printf("P_%d Got woken up, got out of line and going to the PHarmacy "
+            + "CLerk to give prescription\n",ID);
     clerks[shortestclerkline].patientsInLine--;
     //signal ParmacyClerk that i am ready to give Prescription
     clerks[shortestclerkline].ClerkTransLock->Acquire();
@@ -190,15 +210,21 @@ void patients(int ID){
      clerks[shortestclerkline].patPrescription = myPrescription;
 
     // wait for clerk to give cost
-    clerks[shortestclerkline].ClerkTransCV->Signal(clerks[shortestclerkline].ClerkTransLock);
-    clerks[shortestclerkline].ClerkTransCV->Wait(clerks[shortestclerkline].ClerkTransLock);
+    clerks[shortestclerkline].ClerkTransCV->
+                Signal(clerks[shortestclerkline].ClerkTransLock);
+    clerks[shortestclerkline].ClerkTransCV->
+                Wait(clerks[shortestclerkline].ClerkTransLock);
 
     // provide the money
     
     clerks[shortestclerkline].payment = clerks[shortestclerkline].fee;
 
     // done
-    clerks[shortestclerkline].ClerkTransCV->Signal(clerks[shortestclerkline].ClerkTransLock);
+    clerks[shortestclerkline].ClerkTransCV->
+                Signal(clerks[shortestclerkline].ClerkTransLock);
     clerks[shortestclerkline].ClerkTransLock->Release();
+
     //7. get out - die die die( ;) )
 }
+
+
