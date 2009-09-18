@@ -330,17 +330,19 @@ void receptionist(int ID){
             //Acquire token lock
             TokenCounterLock->Acquire();
             //Increment token Counter
-            TokenCounter++;
                 //Take token for patient
-            receptionists[ID].currentToken = TokenCounter;
+            printf("R_%d: Generating Token...\n",ID);
+            receptionists[ID].currentToken = ++TokenCounter;
                 //New Token Available with the receptionist
             TokenCounterLock->Release();
                 //Wake one waiting patient up
-            receptionists[ID].receptionistWaitCV->Signal(receptionists[ID].LineLock);            
-            AllLinesLock->Release();
+            receptionists[ID].receptionCV->Signal(receptionists[ID].LineLock);            
             //Sleep till you get Acknowledgement
             receptionists[ID].receptionistWaitCV->Wait(receptionists[ID].LineLock);
+                        AllLinesLock->Release();
             //Patient successfully got the token, go back to work: Loop again
+            printf("R_%d: Continue to next Patient\n",ID);
+            receptionists[ID].LineLock->Release();
         }else {
             //My Line is empty
             DEBUG('t',"No Patients, going on break...");
