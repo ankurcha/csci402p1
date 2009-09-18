@@ -9,6 +9,8 @@
 //  Max Pflueger, pflueger
 //  Aneesha Mathew, aneesham
 
+using namespace std;
+
 void patients(int ID){
     int myToken;
     int myDoctor;
@@ -36,8 +38,8 @@ void patients(int ID){
         receptionists[shortestline].peopleInLine++;
         AllLinesLock->Release();
         receptionists[shortestline].LineLock->Acquire();
-        printf("P_%d: AllLinesLock Released, Now Waiting for signal by"
-               + "Receptionist\n",ID);
+        cout<<"P_"<<ID<<": AllLinesLock Released,"
+            <<"Now Waiting for signal by Receptionist\n";
         receptionists[shortestline].receptionCV->Wait(
                                         receptionists[shortestline].LineLock);
     }else { //No one else in line
@@ -84,12 +86,12 @@ void patients(int ID){
     myDoctor = Random() % MAX_DOCTORS;
     printf("P_%d : Going to meet doctor D_%d\n",ID,myDoctor);
     //1. Acquire doc's line lock
-    doorboys[myDoctor].LineLock->Acquire();
+    doctors[myDoctor].LineLock->Acquire();
     //2. Wait on the line -- to be woken up by the bell boy
-    printf("P_%d : Waiting for doorboy to tell me to go\n",ID);
+    printf("P_%d : Join line and Waiting for doorboy to tell me to go\n",ID);
         //Add to the number of people waiting on the line
-    doorboys[myDoctor].peopleInLine++;
-    doorboys[myDoctor].LineCV->Wait(doorboys[myDoctor].LineLock);
+    doctors[myDoctor].peopleInLine++;
+    doctors[myDoctor].LineCV->Wait(doctors[myDoctor].LineLock);
     //doctor told the door boy to wake me up for consultation, he is waiting 
     // for me to respond
     //Now I have to provide my token numeber to the doctor as he is ready for 
@@ -99,9 +101,9 @@ void patients(int ID){
     //I can release the line lock so that other people may also join in
     //Also I should decrement the number of people in the line, as I am 
     // getting out of the line
-    doorboys[myDoctor].peopleInLine--;
+    doctors[myDoctor].peopleInLine--;
         //Now release the lock on the line and enter the consultation room
-    doorboys[myDoctor].LineLock->Release();
+    doctors[myDoctor].LineLock->Release();
     //The doctor is waiting for me to provide my info, oblige him!!
     printf("P_%d : Consulting Doctor D_%d now...\n",ID,myDoctor);
     doctors[myDoctor].currentPatientToken = myToken;
@@ -183,8 +185,8 @@ void patients(int ID){
         ClerkLinesLock->Release();
         clerks[shortestclerkline].ClerkCV->
                     Wait(clerks[shortestclerkline].ClerkTransLock);
-        printf("P_%d: ClerkLinesLock Released, Now Waiting for signal by "
-                + "PharmacyClerk\n",ID);
+        cout<<"P_"<<ID<<": ClerkLinesLock Released, Now Waiting for signal by "
+            <<"PharmacyClerk\n";
     }else { //No one else in line
         switch (clerks[shortestclerkline].state) {
             case FREE: 
@@ -193,16 +195,16 @@ void patients(int ID){
                 //wait in line
                 clerks[shortestclerkline].patientsInLine++;
                 clerks[shortestclerkline].ClerkCV->Wait(clerks[shortestclerkline].ClerkTransLock);
-                printf("P_%d: ClerkLinesLock Released, Now Waiting for signal "
-                        + "by CLerk\n",ID);
+                cout<<"P_"<<ID<<": ClerkLinesLock Released, Now Waiting for "
+                <<"signal by CLerk\n";
                 break;
             default:
                 break;
         } 
     }
     
-    printf("P_%d Got woken up, got out of line and going to the PHarmacy "
-            + "CLerk to give prescription\n",ID);
+    cout<<"P_"<<ID<<" Got woken up, got out of line and going to the PHarmacy "
+        <<"CLerk to give prescription\n";
     clerks[shortestclerkline].patientsInLine--;
     //signal ParmacyClerk that i am ready to give Prescription
     clerks[shortestclerkline].ClerkTransLock->Acquire();
