@@ -173,49 +173,6 @@ struct PharmacyClerks{
 };
 
 struct Doctor {
-/*<<<<<<< HEAD
-    int state;
-    int currentPrescription;
-    int currentFees;
-    int currentPatientToken;
-    int peopleInLine;
-    Lock *LineLock;
-    Condition *LineCV;
-    
-    Lock *DoctorStateChangeLock;
-    
-    Lock *patientRespondLock;
-    Condition *patientRespondCV;
-    
-    Lock *patientPrescriptionLock;
-    Condition *patientPrescriptionCV;
-    
-    Lock *doctorBreakLock;
-    Condition *doctorBreakCV;
-    
-    Doctor(){
-        state = FREE;
-        currentPatientToken = -1;
-        currentPrescription = -1;
-        currentFees = -1;
-        peopleInLine = 0;
-        LineLock = new Lock("LineLock");
-        LineCV = new Condition("LineCV");
-        DoctorStateChangeLock = new Lock("DoctorStateChangeLock");
-        patientRespondLock = new Lock("patientRespondLock");
-        patientRespondCV = new Condition("patientRespondCV");
-        patientPrescriptionLock = new Lock("patientPrescriptionLock");
-        patientPrescriptionCV = new Condition("patientPrescriptionCV");
-        doctorBreakLock = new Lock("doctorBreakLock");
-        doctorBreakCV = new Condition("doctorBreakLock"); 
-    }
-};
-
-Lock *DoorBoyLineLock = new Lock("DoorBoyLineLock");
-Condition *DoorBoyLineCV = new Condition("DoorBoyLineCV");
-int DoorBoyLineLength = 0;
-int WakingDoctorID;
-=======*/
     //transaction lock and CV and variables protected
     Lock* transLock;
     Condition* transCV;
@@ -250,7 +207,6 @@ Lock* doorboyLineLock = new Lock("doorboyLineLock");
 Condition* doorboyLineCV = new Condition("doorboyLineCV");
 int doorboyLineLength = 0;
 int wakingDoctorID = 0;
-    //>>>>>>> 082339a48eae82aafe61d634e7e1f37609b2eee1
 
 struct DoorBoy {
     int state;
@@ -396,9 +352,8 @@ void doctor(int ID){
     doctors[ID].transCV->Wait(doctors[ID].transLock);
 
     // go on break if so inclined
-    // 5-15 yields
-    
-        //if( go on break ) { //TODO: Go on Break
+    if(Random() % 100 > 49) { // go on break
+        // 5-15 yields
         int numYields = 5 + (Random() % 11);
         for(int i=0; i < numYields; ++i) {
             currentThread->Yield();
