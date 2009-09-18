@@ -69,28 +69,27 @@ struct linkedlist {
 
 struct Receptionists{
     int state;
-    
-    Condition *receptionCV;
 
-    Lock *LineLock;
     int peopleInLine;
+    
+    Lock *LineLock;
+    Condition *receptionCV;
+    Condition *receptionistWaitCV; //Wait using LineLock
+    Condition *ReceptionistBreakCV; //Break using LineLock
 
-    Lock *receptionistWaitLock;
-    Condition *receptionistWaitCV;
     int currentToken;
     
-    Lock *ReceptionistBreakLock;
-    Condition *ReceptionistBreakCV;
+    
     
     Receptionists(){
         peopleInLine = 0;
         state = FREE;
-        receptionCV = new Condition("receptionCV");
+
         LineLock = new Lock("LineLock");
-        receptionistWaitLock = new Lock("receptionistWaitLock");
+        receptionCV = new Condition("receptionCV");
         receptionistWaitCV = new Condition("receptionistWaitCV");
         ReceptionistBreakCV = new Condition("ReceptionistBreakCV");
-        ReceptionistBreakLock = new Lock("ReceptionistBreakLock");
+            //        ReceptionistBreakLock = new Lock("ReceptionistBreakLock");
         currentToken = 0;
     }
 };
@@ -297,8 +296,7 @@ void patients(int ID){
     AllLinesLock->Acquire();
     printf("success\n");
     int shortestline = 0;
-    int len = 0;
-    //TODO: this is a bug
+    int len = receptionists[0].peopleInLine;
     //Find shortest Line
     for (int i=0; i<RECP_MAX; i++) {
         if(receptionists[i].peopleInLine < len){
@@ -310,9 +308,9 @@ void patients(int ID){
     if (len >0) {
         //wait in line for my turn
         receptionists[shortestline].peopleInLine++;
-        receptionists[shortestline].LineLock->Acquire();
         AllLinesLock->Release();
-        receptionists[shortestline].receptionCV->Wait(receptionists[shortestline].LineLock);
+        receptionists[shortestline].LineLock->Acquire();
+        receptionists[shortestline].receptionistWaitCV->Wait(receptionists[shortestline].LineLock);
         printf("P_%d: AllLinesLock Released, Now Waiting for signal by Receptionist\n",ID);
     }else { //No one else in line
         switch (receptionists[shortestline].state) {
@@ -321,10 +319,10 @@ void patients(int ID){
             case SLEEPING:
                 //wait in line
                 receptionists[shortestline].peopleInLine++;
-                receptionists[shortestline].LineLock->Acquire();
                 //Entered the line no need to hold all lines others may now continue
                 AllLinesLock->Release();
-                receptionists[shortestline].receptionCV->Wait(receptionists[shortestline].LineLock);
+                receptionists[shortestline].LineLock->Acquire();
+                receptionists[shortestline].receptionistWaitCV->Wait(receptionists[shortestline].LineLock);
                 printf("P_%d: AllLinesLock Released, Now Waiting for signal by Receptionist\n",ID);
                 break;
             default:
@@ -339,11 +337,9 @@ void patients(int ID){
     //wait for the receptionist to prepare token for me, till then I wait
     //token is ready just read it -- print it out in our case
     myToken = receptionists[shortestline].currentToken;
-    printf("P_%d: My token is %d\n",ID,myToken);
+    printf("P_%d: My token is %d..yeah!!\n",ID,myToken);
     //Done, signal receptionist that he can proceed 
-    receptionists[shortestline].receptionistWaitLock->Acquire();
-    receptionists[shortestline].receptionistWaitCV->Signal(receptionists[shortestline].receptionistWaitLock);
-    receptionists[shortestline].receptionistWaitLock->Release();
+    receptionists[shortestline].receptionistWaitCV->Signal(receptionists[shortestline].LineLock);
     //Release Line Lock
     receptionists[shortestline].LineLock->Release();
     
@@ -445,28 +441,27 @@ void receptionist(int ID){
             TokenCounterLock->Acquire();
             //Increment token Counter
             TokenCounter++;
+                //Take token for patient
             receptionists[ID].currentToken = TokenCounter;
-            //New Token Available with the receptionist
+                //New Token Available with the receptionist
             TokenCounterLock->Release();
-            //Wake one waiting patient up
-            receptionists[ID].receptionistWaitLock->Acquire();
-            receptionists[ID].receptionCV->Signal(receptionists[ID].LineLock);
+                //Wake one waiting patient up
+            receptionists[ID].receptionistWaitCV->Signal(receptionists[ID].LineLock);            
             AllLinesLock->Release();
-            receptionists[ID].LineLock->Release();
             //Sleep till you get Acknowledgement
-            receptionists[ID].receptionistWaitCV->Wait(receptionists[ID].receptionistWaitLock);
+            receptionists[ID].receptionistWaitCV->Wait(receptionists[ID].LineLock);
             //Patient successfully got the token, go back to work: Loop again
-            receptionists[ID].receptionistWaitLock->Release();
         }else {
             //My Line is empty
             DEBUG('t',"No Patients, going on break...");
             printf("R_%d Going to sleep\n",ID);
             receptionists[ID].state = SLEEPING;
-            receptionists[ID].ReceptionistBreakLock->Acquire();
-            receptionists[ID].ReceptionistBreakCV->Wait(receptionists[ID].ReceptionistBreakLock);
+            receptionists[ID].LineLock->Acquire();
+            receptionists[ID].ReceptionistBreakCV->Wait(receptionists[ID].LineLock);
+            receptionists[ID].LineLock->Release();
             //HospitalManager kicked my ass for sleeping on the job!!
-            receptionists[ID].ReceptionistBreakLock->Release();
             //Loop back!!
+            continue;
         }
     }
 }
@@ -533,9 +528,10 @@ void hospitalManager(int ID){
             if (receptionists[i].peopleInLine > 0 && receptionists[i].state == SLEEPING) {
                 printf("H_%d : found R_%d sleeping and %d waiting\n",ID,i,receptionists[i].peopleInLine);
                     //Wake up this receptionist up
-                receptionists[ID].ReceptionistBreakLock->Acquire();
-                receptionists[ID].ReceptionistBreakCV->Broadcast(receptionists[ID].ReceptionistBreakLock);
-                receptionists[ID].ReceptionistBreakLock->Release();
+                    //receptionists[ID].ReceptionistBreakLock->Acquire();
+                receptionists[ID].LineLock->Acquire();
+                receptionists[ID].ReceptionistBreakCV->Broadcast(receptionists[ID].LineLock);
+                receptionists[ID].LineLock->Release();
                 
             }
         }
