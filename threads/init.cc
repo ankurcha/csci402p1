@@ -225,22 +225,37 @@ struct DoorBoy {
     }
 };
 
-int MAX_DOCTORS;
-int RECP_MAX;
-int MAX_PATIENTS;
-int MAX_CLERKS;
-int MAX_CASHIER;
+const int MAX_DOCTORS = 20;
+const int MIN_DOCTORS = 5;
+
+const int MAX_DOORB = 20;
+const int MIN_DOORB = 5;
+
+const int MIN_PATIENTS = 100;
+const int MAX_PATIENTS = 20;
+
+const int RECP_MIN = 10;
+const int RECP_MAX = 5;
+
+const int MAX_CLERKS = 10;
+const int MIN_CLERKS = 5;
+
+const int MAX_CASHIER = 10;
+const int MIN_CASHIER = 5;
+
+const int totalHospMan = 1;
 
 //TODO: these can't be static -- all pray the dynamic heap gods!!
 const int numRecs = 3;
 const int numDoctors = 4;
 const int numCashiers = 3;
 const int numClerks = 3;
-Receptionists receptionists[numRecs];
-DoorBoy doorboys[numDoctors];
-Doctor doctors[numDoctors];
-Cashier cashiers[numCashiers];
-PharmacyClerks clerks[numClerks];
+
+Receptionists receptionists[RECP_MAX];
+DoorBoy doorboys[MAX_DOORB];
+Doctor doctors[MAX_DOCTORS];
+Cashier cashiers[MAX_CASHIER];
+PharmacyClerks clerks[MAX_CLERKS];
 
 int TokenCounter;
 
@@ -300,7 +315,7 @@ void doorboy(int ID){
             
         }else {
                 //No one to service for my doctor, check the state of the doctor
-            cout<<"DB_"<<ID<<"Found no one in the line, checking to see if I can"
+            cout<<"DB_"<<ID<<": Found no one in the line, checking to see if I can"
                 <<" go sleep\n";
 //            doctors[ID].DoctorStateChangeLock->Acquire();
 //            if (doctors[currentCallingDoctor].state == SLEEPING) {
@@ -335,7 +350,7 @@ void doctor(int ID){
 
     // assure that there is a doorboy in line
     while(doorboyLineLength <= 0) {
-        printf("Doctor could not find a doorboy!\n");
+            //printf("Doctor could not find a doorboy!\n");
         doorboyLineLock->Release();
         currentThread->Yield();
         doorboyLineLock->Acquire();
@@ -412,7 +427,7 @@ void receptionist(int ID){
             receptionists[ID].receptionCV->Signal(receptionists[ID].LineLock);            
             //Sleep till you get Acknowledgement
             receptionists[ID].receptionistWaitCV->Wait(receptionists[ID].LineLock);
-                        AllLinesLock->Release();
+            AllLinesLock->Release();
             //Patient successfully got the token, go back to work: Loop again
             printf("R_%d: Continue to next Patient\n",ID);
             receptionists[ID].LineLock->Release();
@@ -424,6 +439,7 @@ void receptionist(int ID){
             receptionists[ID].LineLock->Acquire();
             receptionists[ID].ReceptionistBreakCV->Wait(receptionists[ID].LineLock);
             receptionists[ID].LineLock->Release();
+            AllLinesLock->Release();
             //HospitalManager kicked my ass for sleeping on the job!!
             //Loop back!!
             continue;
@@ -432,14 +448,17 @@ void receptionist(int ID){
 }
 
 void cashier(int ID) {
+    cout<<"Cash_"<<ID<<": Alive!!"<<endl;
     while(true) {
         cashierLineLock->Acquire();
         
         if(cashiers[ID].lineLength > 0) { // someone in line
             //signal person on top
+            cout<<"Cash_"<<ID<<": someone in my line..."<<endl;
             cashiers[ID].lineCV->Signal(cashierLineLock);
         } else { // noone in line
             // go on break
+            cout<<"Cash_"<<ID<<": No one in line..."<<endl;
             cashiers[ID].breakCV->Wait(cashierLineLock);
             cashierLineLock->Release();
             continue;
@@ -518,17 +537,23 @@ void Clerk(int ID){
 }
 
 void hospitalManager(int ID){
-    printf("H_%d : Alive",ID);
-    int sleeptime = Random() % 30;
+    printf("H_%d : Alive\n",ID);
+    int sleeptime = Random() % 300;
+    
     while (true) {
-        sleeptime = Random() % 30;
+        sleeptime = Random() % 300;
             //Sleep for some random amount of time
         printf("H_%d : Sleeping for %d cycles\n",ID,sleeptime);
-        while (sleeptime > 0) {
+        do{
+                //printf("H_0: Yield()");
             currentThread->Yield();
-        }
+            sleeptime--;
+        }while (sleeptime > 0);
             //I am on rounds now, Time to kick some ass
         printf("H_%d : Going on rounds\n",ID);
+        
+            
+            
             //1. Check on the Receptionists
         printf("H_%d : Checking receptionists\n",ID);
         int patientsWaiting=0;
@@ -536,119 +561,198 @@ void hospitalManager(int ID){
             patientsWaiting += receptionists[j].peopleInLine;
         }
         
-        for (int i=0; i<RECP_MAX; i++) {//Check for waiting patients
-            if (receptionists[i].peopleInLine > 0 && receptionists[i].state == SLEEPING) {
-                printf("H_%d : found R_%d sleeping and %d waiting\n",ID,i,receptionists[i].peopleInLine);
+        if (patientsWaiting > 1) {
+            for (int j=0; j<RECP_MAX; j++) {
+                receptionists[j].LineLock->Acquire();
+                receptionists[j].ReceptionistBreakCV->Signal(
+                                                         receptionists[j].LineLock);
+                receptionists[j].LineLock->Release();
+            }
+        }
+        //for (int i=0; i<RECP_MAX; i++) {//Check for waiting patients
+//            if (receptionists[i].peopleInLine > 0 && 
+//                receptionists[i].state == SLEEPING) {
+//                printf("H_%d : found R_%d sleeping and %d waiting\nKicking Ass\n",
+//                       ID,i,receptionists[i].peopleInLine);
+//                    //Wake up this receptionist up
+//                    //receptionists[ID].ReceptionistBreakLock->Acquire();
+//                receptionists[i].LineLock->Acquire();
+//                receptionists[i].ReceptionistBreakCV->Signal(
+//                                                    receptionists[ID].LineLock);
+//                receptionists[i].LineLock->Release();
+//                
+//            }
+//        }
+            //2. Query Cashiers
+        printf("H_%d : Checking cashiers\n",ID);
+        for (int i=0; i<MAX_CASHIER; i++) {//Check for waiting patients
+            if (cashiers[i].lineLength > 0 ) {
+                printf("H_%d : found C_%d sleeping and %d waiting\nKicking Ass\n",
+                       ID,i,cashiers[i].lineLength);
                     //Wake up this receptionist up
                     //receptionists[ID].ReceptionistBreakLock->Acquire();
-                receptionists[ID].LineLock->Acquire();
-                receptionists[ID].ReceptionistBreakCV->Signal(receptionists[ID].LineLock);
-                receptionists[ID].LineLock->Release();
+                cashierLineLock->Acquire();
+                cashiers[i].breakCV->Broadcast(cashierLineLock);
+                cashierLineLock->Release();
                 
             }
         }
-            //2. Query Cashiers
+            //Query cashiers for total sales
+        feesPaidLock->Acquire();
+        cout << "Total fees collected by cashiers: "<<feesPaid<<endl;
+        feesPaidLock->Release();
+        
+        
             //3. Query pharmacy
+        
+        printf("H_%d : Checking clerks\n",ID);
+        for (int i=0; i<MAX_CLERKS; i++) {//Check for waiting patients
+            if (clerks[i].patientsInLine > 0 ) {
+                printf("H_%d : found CL_%d sleeping and %d waiting\nKicking Ass\n",
+                       ID,i,clerks[i].patientsInLine);
+                    //Wake up this receptionist up
+                ClerkLinesLock->Acquire();
+                clerks[i].ClerkBreakCV->Broadcast(ClerkLinesLock);
+                ClerkLinesLock->Release();
+            }
+        }
+            //Query cashiers for total sales
+        PaymentLock->Acquire();
+        cout << "Total amount collected by clerks: "<<totalsales<<endl;
+        PaymentLock->Release();
+        currentThread->Yield();
+        
+            //Check on the doorboys
+        printf("H_%d : Checking doorboys\n",ID);
+        for (int i=0; i<MAX_CLERKS; i++) {//Check for waiting patients
+            if (doctors[i].peopleInLine > 0 ) {
+                printf("H_%d : found Doorboy sleeping and %d waiting\nKicking Ass\n",
+                       ID,doctors[i].peopleInLine);
+                    //Wake up this receptionist up
+                doctors[i].LineLock->Acquire();
+                doorboys[ID].doorboyBreakCV->Broadcast(doctors[i].LineLock);
+                doctors[i].LineLock->Release();
+            }
+        }        
     }
 }
 
 
 
-//void INIT(){
-//    
-//    int i = 0;
-//    char *temp;
-//    Thread *t;
-//    
-//    t = new Thread("patient_0");
-//    t->Fork((VoidFunctionPtr) patients, 0);
-//    
-//    t = new Thread("patient_1");
-//    t->Fork((VoidFunctionPtr) patients, 1);
-//    
-//    t = new Thread("patient_2");
-//    t->Fork((VoidFunctionPtr) patients, 2);
-//    
-//    t = new Thread("receptionist_0");
-//    t->Fork((VoidFunctionPtr) receptionist, 0);
-//    
-//    t = new Thread("doorboy_0");
-//    t->Fork((VoidFunctionPtr) doorboy, 0);
-//    
-//}
+void INIT(){
+    
+    int i = 0;
+    char *temp;
+    Thread *t;
+    
+    t = new Thread("patient_0");
+    t->Fork((VoidFunctionPtr) patients, 0);
+    
+    t = new Thread("patient_1");
+    t->Fork((VoidFunctionPtr) patients, 1);
+    
+    t = new Thread("patient_2");
+    t->Fork((VoidFunctionPtr) patients, 2);
+    
+    t = new Thread("receptionist_0");
+    t->Fork((VoidFunctionPtr) receptionist, 0);
+    
+    t = new Thread("doorboy_0");
+    t->Fork((VoidFunctionPtr) doorboy, 0);
+    
+    t = new Thread("cashier_0");
+    t->Fork((VoidFunctionPtr) cashier, 0);
+    
+    t = new Thread("clerk_0");
+    t->Fork((VoidFunctionPtr) Clerk, 0);
+    
+    t = new Thread("doctor_0");
+    t->Fork((VoidFunctionPtr) doctor, 0);
+    
+    t = new Thread("hospitalManager_0");
+    t->Fork((VoidFunctionPtr) hospitalManager, 0);
+    
+}
 
 void HospINIT() {
     
-    int totalHospMan = 1;
-    int MAXDOCTORS=10;
-    int MINDOCTORS=4;
-    int MAX_DOORB;
-    int MAXRCP=3;
-    int MINRCP=5;
-    int MAXPAT=100;
-    int MINPAT=20;
+        //int totalHospMan = 1;
+     int MAXDOCTORS=10,MAXCASHIER,MAXCLERKS;
+     int MINDOCTORS=4;
+     int MAXDOORB;
+     int RECPMAX=5;
+     int RECPMIN=3;
+     int MAXPATIENTS=25;
+     int MINPATIENTS=20;
     
     
     int i = 0;
-    char *temp = new char[100];
+    char temp[] = "NACHOS_THREAD";
     Thread *t;
     
-      
-        //2. Receptionists
-    RECP_MAX= Random() % (MAXRCP - MINRCP +1) + MINRCP ;
-    for(i=0;i<RECP_MAX;i++)
-    {
-        sprintf(temp,"Receptionist_%d",i);
-        t=new Thread(temp);
-        t->Fork((VoidFunctionPtr) receptionist, i);
-    }
-    
-        //3. Cashiers
-    MAX_CASHIER = Random() % (MAXRCP - MINRCP +1) + MINRCP ;
-    for(i=0;i<MAX_CASHIER;i++)
-    {
-        sprintf(temp,"Cashier_%d",i);
-        t=new Thread(temp);
-        t->Fork((VoidFunctionPtr) cashier, i);
-    }
-    
-        //4. DoorBoys
-    MAX_DOORB = MAX_DOCTORS;
-    for(i=0;i<MAX_DOORB;i++)
-    {
-        sprintf(temp,"DoorBoy_%d",i);
-        t=new Thread(temp);
-        t->Fork((VoidFunctionPtr) doorboy, i);
-    }
-    
-        //5. Pharmacys
-    MAX_CLERKS= Random() % (MAXRCP - MINRCP +1) + MINRCP ;
-    for(i=0;i<MAX_CLERKS;i++)
-    {
-        sprintf(temp,"PharmacyClerk_%d",i);
-        t=new Thread(temp);
-        t->Fork((VoidFunctionPtr) Clerk, i);
-    }
-        //1. Doctors
-    MAX_DOCTORS = Random() % (MAXDOCTORS - MINDOCTORS + 1) + MINDOCTORS;
-    for(i=0;i<MAX_DOCTORS;i++)
-    {
-        sprintf(temp,"Doctor_%d",i);
-        t=new Thread(temp);
-        t->Fork((VoidFunctionPtr) doctor, i);
-    }
-    
-    
-        //6. HospitalManager
-    t = new Thread("HospitalManager_0");
-    t->Fork((VoidFunctionPtr) hospitalManager, 0);
-    
-        //7. Patients
-    MAX_PATIENTS = Random() % (MAXPAT - MINPAT +1) + MINPAT ;
-    for(i=0;i<MAX_PATIENTS;i++)
-    {
-        sprintf(temp,"Patients_%d",i);
-        t=new Thread(temp);
-        t->Fork((VoidFunctionPtr) patients, i);
-    }
+   //   
+//        //2. Receptionists
+//    RECPMAX= (Random() % (RECP_MAX - RECP_MIN +1) + RECP_MIN) ;
+//    cout << "Creating "<<RECPMAX<<" Receptionists\n";
+//    for(i=0;i<RECPMAX;i++)
+//    {
+//        t = new Thread(temp);
+//        t->Fork((VoidFunctionPtr) receptionist, i);
+//    }
+//    
+//        //3. Cashiers
+//    MAXCASHIER = (Random() % (MAX_CASHIER - MIN_CASHIER +1) + MIN_CASHIER) ;
+//    cout << "Creating "<<MAXCASHIER<<" Cashiers\n";
+//    for(i=0;i<MAXCASHIER;i++)
+//    {
+//     
+//        t=new Thread(temp);
+//        t->Fork((VoidFunctionPtr) cashier, i);
+//    }
+//    
+//        //4. DoorBoys
+//    MAXDOCTORS = (Random() % (MAX_DOCTORS - MIN_DOCTORS + 1) + MIN_DOCTORS);
+//    MAXDOORB = MAXDOCTORS;
+//    cout << "Creating "<<MAXDOORB<<" Doorboys\n";
+//    for(i=0;i<MAXDOORB;i++)
+//    {
+//     
+//        t=new Thread(temp);
+//        t->Fork((VoidFunctionPtr) doorboy, i);
+//    }
+//    
+//        //5. Pharmacys
+//    MAXCLERKS= (Random() % (MAX_CLERKS - MIN_CLERKS +1) + MIN_CLERKS) ;
+//    cout << "Creating "<<MAXCLERKS<<" Clerks\n";
+//    for(i=0;i<MAXCLERKS;i++)
+//    {
+//     
+//        t=new Thread(temp);
+//        t->Fork((VoidFunctionPtr) Clerk, i);
+//    }
+//        //1. Doctors
+//    cout << "Creating "<< MAXDOCTORS<<" Doctors\n";
+//    for(i=0;i<MAX_DOCTORS;i++)
+//    {
+//     
+//        t=new Thread(temp);
+//        t->Fork((VoidFunctionPtr) doctor, i);
+//    }
+//        //7. Patients
+//    MAXPATIENTS = Random() % (MAX_PATIENTS - MIN_PATIENTS +1) + MIN_PATIENTS;
+//    MAXPATIENTS = MAXPATIENTS % MAX_PATIENTS;
+//    cout << "Creating "<<MAXPATIENTS<<" Patients\n";
+//    for(i=0;i<MAXPATIENTS;i++)
+//    {
+//     
+//        t=new Thread(temp);
+//        t->Fork((VoidFunctionPtr) patients, i);
+//    }
+//
+//        //6. HospitalManager
+//    cout << "Creating 1 Hospital Manager\n";
+//        //t = new Thread("HospitalManager_0");
+//        //t->Fork((VoidFunctionPtr) hospitalManager, 0);
+//    
+        INIT();
 }

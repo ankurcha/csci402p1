@@ -20,7 +20,7 @@ void patients(int ID){
     ////// Begin interaction with Receptionist ///////
     //////////////////////////////////////////////////
 
-    printf("P_%d:Attempt to acquire AllLinesLock...",ID);
+    printf("P_%d:Attempt to acquire AllLinesLock...\n",ID);
     AllLinesLock->Acquire();
     printf("success\n");
     int shortestline = 0;
@@ -83,7 +83,7 @@ void patients(int ID){
     ///////////////////////////////////////////////////
 
     //Calculate which doctor I want to see
-    myDoctor = Random() % MAX_DOCTORS;
+    myDoctor = (int)(Random()*100) % MAX_DOCTORS;
     printf("P_%d : Going to meet doctor D_%d\n",ID,myDoctor);
     //1. Acquire doc's line lock
     doctors[myDoctor].LineLock->Acquire();
