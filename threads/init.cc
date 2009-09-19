@@ -222,11 +222,11 @@ const int MIN_DOCTORS = 5;
 const int MAX_DOORB = MAX_DOCTORS;
 const int MIN_DOORB = MIN_DOCTORS;
 
-const int MIN_PATIENTS = 20;
 const int MAX_PATIENTS = 100;
+const int MIN_PATIENTS = 20;
 
-const int RECP_MIN = 5;
-const int RECP_MAX = 3;
+const int RECP_MAX = 5;
+const int RECP_MIN = 3;
 
 const int MAX_CLERKS = 5;
 const int MIN_CLERKS = 3;
