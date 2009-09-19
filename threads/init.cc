@@ -229,6 +229,7 @@ int MAX_DOCTORS;
 int RECP_MAX;
 int MAX_PATIENTS;
 int MAX_CLERKS;
+int MAX_CASHIER;
 
 //TODO: these can't be static -- all pray the dynamic heap gods!!
 const int numRecs = 3;
@@ -553,35 +554,101 @@ void hospitalManager(int ID){
 
 
 
-void INIT(){
+//void INIT(){
+//    
+//    int i = 0;
+//    char *temp;
+//    Thread *t;
+//    
+//    t = new Thread("patient_0");
+//    t->Fork((VoidFunctionPtr) patients, 0);
+//    
+//    t = new Thread("patient_1");
+//    t->Fork((VoidFunctionPtr) patients, 1);
+//    
+//    t = new Thread("patient_2");
+//    t->Fork((VoidFunctionPtr) patients, 2);
+//    
+//    t = new Thread("receptionist_0");
+//    t->Fork((VoidFunctionPtr) receptionist, 0);
+//    
+//    t = new Thread("doorboy_0");
+//    t->Fork((VoidFunctionPtr) doorboy, 0);
+//    
+//}
+
+void HospINIT() {
+    
+    int totalHospMan = 1;
+    int MAXDOCTORS=10;
+    int MINDOCTORS=4;
+    int MAX_DOORB;
+    int MAXRCP=3;
+    int MINRCP=5;
+    int MAXPAT=100;
+    int MINPAT=20;
+    
     
     int i = 0;
     char *temp;
     Thread *t;
     
-    t = new Thread("patient_0");
-    t->Fork((VoidFunctionPtr) patients, 0);
+        //1. Doctors
+    MAX_DOCTORS = Random() % (MAXDOCTORS - MINDOCTORS + 1) + MINDOCTORS;
+    for(i=0;i<MAX_DOCTORS;i++)
+    {
+        sprintf(temp,"Doctor_%d",i);
+        t=new Thread(temp);
+        t->Fork((VoidFunctionPtr) doctor, i);
+    }
     
-    t = new Thread("patient_1");
-    t->Fork((VoidFunctionPtr) patients, 1);
+        
+        //2. Receptionists
+    RECP_MAX= Random() % (MAXRCP - MINRCP +1) + MINRCP ;
+    for(i=0;i<RECP_MAX;i++)
+    {
+        sprintf(temp,"Receptionist_%d",i);
+        t=new Thread(temp);
+        t->Fork((VoidFunctionPtr) receptionist, i);
+    }
     
-    t = new Thread("patient_2");
-    t->Fork((VoidFunctionPtr) patients, 2);
+        //3. Cashiers
+    MAX_CASHIER = Random() % (MAXRCP - MINRCP +1) + MINRCP ;
+    for(i=0;i<MAX_CASHIER;i++)
+    {
+        sprintf(temp,"Cashier_%d",i);
+        t=new Thread(temp);
+        t->Fork((VoidFunctionPtr) cashier, i);
+    }
     
-    t = new Thread("receptionist_0");
-    t->Fork((VoidFunctionPtr) receptionist, 0);
+        //4. DoorBoys
+    MAX_DOORB = MAX_DOCTORS;
+    for(i=0;i<MAX_DOORB;i++)
+    {
+        sprintf(temp,"DoorBoy_%d",i);
+        t=new Thread(temp);
+        t->Fork((VoidFunctionPtr) doorboy, i);
+    }
     
-    t = new Thread("doorboy_0");
-    t->Fork((VoidFunctionPtr) doorboy, 0);
+        //5. Pharmacys
+    MAX_CLERKS= Random() % (MAXRCP - MINRCP +1) + MINRCP ;
+    for(i=0;i<MAX_CLERKS;i++)
+    {
+        sprintf(temp,"PharmacyClerk_%d",i);
+        t=new Thread(temp);
+        t->Fork((VoidFunctionPtr) Clerk, i);
+    }
     
-}
-
-void HospINIT() {
+        //6. HospitalManager
+    t = new Thread("HospitalManager_0");
+    t->Fork((VoidFunctionPtr) hospitalManager, 0);
     
-    MAX_DOCTORS = 1;
-    RECP_MAX = 1;
-    MAX_PATIENTS = 3;
-    MAX_CLERKS =3;
-    
-    INIT(); // initiate threads
+        //7. Patients
+    MAX_PATIENTS = Random() % (MAXPAT - MINPAT +1) + MINPAT ;
+    for(i=0;i<MAX_PATIENTS;i++)
+    {
+        sprintf(temp,"Patients_%d",i);
+        t=new Thread(temp);
+        t->Fork((VoidFunctionPtr) patients, i);
+    }
 }
