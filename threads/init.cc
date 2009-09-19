@@ -296,65 +296,68 @@ void doorboy(int ID){
 }
 
 void doctor(int ID){
-    // acquire a doorboy
-    doorboyLineLock->Acquire();
-
-    // assure that there is a doorboy in line
-    while(doorboyLineLength <= 0) {
-        printf("Doctor could not find a doorboy!\n");
-        doorboyLineLock->Release();
-        currentThread->Yield();
+    while(true) {
+        // acquire a doorboy
         doorboyLineLock->Acquire();
-    }
-    
-    // pull the next doorboy off the line
-    wakingDoctorID = ID;
-    doorboyLineCV->Signal(doorboyLineLock);
 
-    // acquire the transaction lock and wait for the doorboy to arrive
-    doctors[ID].transLock->Acquire();
-    doorboyLineLock->Release();
-
-    //////  DOORBOY INTERACTION  //////
-    doctors[ID].transCV->Wait(doctors[ID].transLock);
-
-    // go on break if so inclined
-    if(Random() % 100 > 49) { // go on break
-        // 5-15 yields
-        int numYields = 5 + (Random() % 11);
-        for(int i=0; i < numYields; ++i) {
+        // assure that there is a doorboy in line
+        while(doorboyLineLength <= 0) {
+            printf("Doctor could not find a doorboy!\n");
+            doorboyLineLock->Release();
             currentThread->Yield();
+            doorboyLineLock->Acquire();
         }
-    }
+        
+        // pull the next doorboy off the line
+        wakingDoctorID = ID;
+        doorboyLineCV->Signal(doorboyLineLock);
 
-    // inform the doorboy that I am ready for a patient
-    doctors[ID].transCV->Signal(doctors[ID].transLock);
+        // acquire the transaction lock and wait for the doorboy to arrive
+        doctors[ID].transLock->Acquire();
+        doorboyLineLock->Release();
 
-    //////  PATIENT INTERACTION  //////
-    // and wait for that patient to arrive
-    doctors[ID].transCV->Wait(doctors[ID].transLock);
+        //////  DOORBOY INTERACTION  //////
+        doctors[ID].transCV->Wait(doctors[ID].transLock);
 
-    // consult: 10-20 yields
-    int numYields = 10 + (Random() % 11);
-    for(int i=0; i < numYields; ++i) {
-        currentThread->Yield();  // I see ... mm hmm ... does it hurt here? ...
-    }
+        // go on break if so inclined
+        if(Random() % 100 > 49) { // go on break
+            // 5-15 yields
+            int numYields = 5 + (Random() % 11);
+            for(int i=0; i < numYields; ++i) {
+                currentThread->Yield();
+            }
+        }
 
-    // give prescription to patient
-    doctors[ID].prescription = Random() % 100;
+        // inform the doorboy that I am ready for a patient
+        doctors[ID].transCV->Signal(doctors[ID].transLock);
 
-    // put consultation fees into the data structure for the cashier ($50-$250)
-    int consultFee = 50 + (Random() % 201);
-    feeListLock->Acquire();
-    feeList->append(doctors[ID].patientToken, consultFee);
-    feeListLock->Release();
+        //////  PATIENT INTERACTION  //////
+        // and wait for that patient to arrive
+        doctors[ID].transCV->Wait(doctors[ID].transLock);
 
-    // pass the prescription to the patient and wait for them to leave
-    doctors[ID].transCV->Signal(doctors[ID].transLock);
-    doctors[ID].transCV->Wait(doctors[ID].transLock);
+        // consult: 10-20 yields
+        int numYields = 10 + (Random() % 11);
+        for(int i=0; i < numYields; ++i) {
+            currentThread->Yield();  // I see ... mm hmm ... does it hurt here? ...
+        }
 
-    // done, the patient has left
-    doctors[ID].transLock->Release();
+        // give prescription to patient
+        doctors[ID].prescription = Random() % 100;
+
+        // put consultation fees into the data structure for the cashier ($50-$250)
+        int consultFee = 50 + (Random() % 201);
+        feeListLock->Acquire();
+        feeList->append(doctors[ID].patientToken, consultFee);
+        feeListLock->Release();
+
+        // pass the prescription to the patient and wait for them to leave
+        doctors[ID].transCV->Signal(doctors[ID].transLock);
+        doctors[ID].transCV->Wait(doctors[ID].transLock);
+
+        // done, the patient has left
+        doctors[ID].transLock->Release();
+
+    } //end while
 }
 
 void receptionist(int ID){
