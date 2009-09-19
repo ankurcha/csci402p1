@@ -262,8 +262,8 @@ void doorboy(int ID){
         // Inform the doctor that I have arrived, and wait for him to take 
         //  a break, if he so chooses
         doctors[myDoctor].transLock->Acquire();
-        doctors[myDoctor].transCV->Signal();
-        doctors[myDoctor].transCV->Wait();
+        doctors[myDoctor].transCV->Signal(doctors[myDoctor].transLock);
+        doctors[myDoctor].transCV->Wait(doctors[myDoctor].transLock);
         
         ///// PATIENT LINE /////
         //Acquire the lock to get the state of the line and take decision
