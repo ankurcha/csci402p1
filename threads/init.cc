@@ -173,14 +173,14 @@ struct PharmacyClerks{
 };
 
 struct Doctor {
+    // line lock and CV and protected variables
+    Lock *LineLock;
+    Condition *LineCV;
+    int peopleInLine;
+    
     //transaction lock and CV and variables protected
     Lock* transLock;
     Condition* transCV;
-    int peopleInLine;
-    
-    Lock *LineLock;
-    Condition *LineCV;
-    
     int prescription;
     int patientToken;
     
@@ -209,18 +209,9 @@ int doorboyLineLength = 0;
 int wakingDoctorID = 0;
 
 struct DoorBoy {
-    int state;
-    Lock *doorboyWaitLock;
-    Condition *doorboyWaitCV;
-    
-    Lock *doorboyBreakLock;
     Condition *doorboyBreakCV;
     
     DoorBoy(){
-        state = FREE;
-        doorboyWaitLock = new Lock("doorboyWaitLock");
-        doorboyWaitCV = new Condition("doorboyWaitCV");
-        doorboyBreakLock = new Lock("doorboyBreakLock");
         doorboyBreakCV = new Condition("doorboyBreakCV");
     }
 };
@@ -246,6 +237,7 @@ const int MIN_CASHIER = 5;
 const int totalHospMan = 1;
 
 //TODO: these can't be static -- all pray the dynamic heap gods!!
+    //<<<<<<< HEAD
 const int numRecs = 3;
 const int numDoctors = 4;
 const int numCashiers = 3;
@@ -256,6 +248,18 @@ DoorBoy doorboys[MAX_DOORB];
 Doctor doctors[MAX_DOCTORS];
 Cashier cashiers[MAX_CASHIER];
 PharmacyClerks clerks[MAX_CLERKS];
+//=======
+//const int numRecs = 5;
+//const int numDoctors = 10;
+//const int numCashiers = 5;
+//const int numClerks = 5;
+////Receptionists receptionists[numRecs];
+//Receptionists* receptionists = new Receptionists[numRecs];
+//DoorBoy doorboys[numDoctors];
+//Doctor doctors[numDoctors];
+//Cashier cashiers[numCashiers];
+//PharmacyClerks clerks[numClerks];
+//>>>>>>> 64ebebe4ae180913275d5b5204571b6ca000c299
 
 int TokenCounter;
 
@@ -265,33 +269,35 @@ Lock *TokenCounterLock = new Lock("TokenCounterLock");
 #include "patient.cc"
 
 void doorboy(int ID){
-    int currentCallingDoctor = -1;
+    int myDoctor = 0;
+
     while (true) {
         printf("DB_%d: Alive\n",ID);
-        doorboys[ID].state = FREE;
-            //Get into the doorboyLine till some doctor asks for me
+
+        //Get into the doorboyLine till some doctor asks for me
         doorboyLineLock->Acquire();
+
         doorboyLineLength++;
         cout << "DB_"<<ID<<": Waiting for some doctor to wake me up.\n" ;
         doorboyLineCV->Wait(doorboyLineLock);
-            //Some doctor woke me up, lets check who
-        currentCallingDoctor =  wakingDoctorID;
         doorboyLineLength--;
+        
+        //Some doctor woke me up, lets check who
+        myDoctor =  wakingDoctorID;
         doorboyLineLock->Release();
-            //Acquire the lock to get the state of the line and take decision
-        doctors[currentCallingDoctor].LineLock->Acquire();
-        printf("DB_%d: Checking for Patients\n",ID);
 
-        if (doctors[currentCallingDoctor].peopleInLine > 0) {
-            doorboys[ID].state = BUSY;
-            cout<<"DB_"<<ID
-                <<": Found "<<doctors[currentCallingDoctor].peopleInLine
-                <<" waiting in line for D_"<<currentCallingDoctor<<endl;
+        // Inform the doctor that I have arrived, and wait for him to take 
+        //  a break, if he so chooses
+        doctors[myDoctor].transLock->Acquire();
+        doctors[myDoctor].transCV->Signal(doctors[myDoctor].transLock);
+        doctors[myDoctor].transCV->Wait(doctors[myDoctor].transLock);
         
-                //doctors[currentCallingDoctor].DoctorStateChangeLock->Acquire();
-                //In case the doctor is sleeping just wait till he is back and
-                //only then proceed.
+        ///// PATIENT LINE /////
+        //Acquire the lock to get the state of the line and take decision
+        doctors[myDoctor].LineLock->Acquire();
+        printf("DB_%d: Checking for Patients\n",ID);
         
+<<<<<<< HEAD
             //if (doctors[ID].state == SLEEPING) {
 //                printf("DB_%d: D_%d is not in...!\n",ID,currentCallingDoctor);
 //                doctors[currentCallingDoctor].DoctorStateChangeLock->Release();
@@ -337,73 +343,107 @@ void doorboy(int ID){
                     //go back to work - by now there are people dying on the floor!
                 doorboys[ID].doorboyBreakLock->Release();
                 continue;
+=======
+        //while there is noone in line
+        while(doctors[myDoctor].peopleInLine <= 0) { 
+            //I will be woken up by the manager only!!
+            printf("DB_%d: Yawn!!...ZZZZzzzzz....\n",ID);
+            doorboys[ID].doorboyBreakCV->Wait(doctors[myDoctor].LineLock);
+            // I got woken up, time to go back to work - by now there are 
+            //  people dying on the floor!
+>>>>>>> 64ebebe4ae180913275d5b5204571b6ca000c299
         }
+        
+        printf("DB_%d: Found %d patients waiting in line for D_%d\n",
+                ID, doctors[myDoctor].peopleInLine, myDoctor);
+    
+        //Now wake the patient up to go to the doctor
+        printf("DB_%d: Tell patient to go to doctor D_%d\n", ID, myDoctor);
+        doctors[myDoctor].LineCV->Signal(doctors[myDoctor].LineLock);
 
+        //My job with the patients and the doctor is done
+        //I can go back on the doorboyLine
+        doctors[myDoctor].LineLock->Release();
         
     }//End of while
+
     printf("DB_%d: Dying...AAAaaaahhhhhhhhh!!\n",ID);
 }
 
 void doctor(int ID){
-    // acquire a doorboy
-    doorboyLineLock->Acquire();
-
-    // assure that there is a doorboy in line
-    while(doorboyLineLength <= 0) {
-            //printf("Doctor could not find a doorboy!\n");
-        doorboyLineLock->Release();
-        currentThread->Yield();
+//<<<<<<< HEAD
+//    // acquire a doorboy
+//    doorboyLineLock->Acquire();
+//
+//    // assure that there is a doorboy in line
+//    while(doorboyLineLength <= 0) {
+//            //printf("Doctor could not find a doorboy!\n");
+//        doorboyLineLock->Release();
+//        currentThread->Yield();
+//=======
+    while(true) {
+        // acquire a doorboy
+        //>>>>>>> 64ebebe4ae180913275d5b5204571b6ca000c299
         doorboyLineLock->Acquire();
-    }
-    
-    // pull the next doorboy off the line
-    wakingDoctorID = ID;
-    doorboyLineCV->Signal(doorboyLineLock);
 
-    // acquire the transaction lock and wait for the doorboy to arrive
-    doctors[ID].transLock->Acquire();
-    doorboyLineLock->Release();
-
-    //////  DOORBOY INTERACTION  //////
-    doctors[ID].transCV->Wait(doctors[ID].transLock);
-
-    // go on break if so inclined
-    if(Random() % 100 > 49) { // go on break
-        // 5-15 yields
-        int numYields = 5 + (Random() % 11);
-        for(int i=0; i < numYields; ++i) {
+        // assure that there is a doorboy in line
+        while(doorboyLineLength <= 0) {
+            printf("Doctor could not find a doorboy!\n");
+            doorboyLineLock->Release();
             currentThread->Yield();
+            doorboyLineLock->Acquire();
         }
-    }
+        
+        // pull the next doorboy off the line
+        wakingDoctorID = ID;
+        doorboyLineCV->Signal(doorboyLineLock);
 
-    // inform the doorboy that I am ready for a patient
-    doctors[ID].transCV->Signal(doctors[ID].transLock);
+        // acquire the transaction lock and wait for the doorboy to arrive
+        doctors[ID].transLock->Acquire();
+        doorboyLineLock->Release();
 
-    //////  PATIENT INTERACTION  //////
-    // and wait for that patient to arrive
-    doctors[ID].transCV->Wait(doctors[ID].transLock);
+        //////  DOORBOY INTERACTION  //////
+        doctors[ID].transCV->Wait(doctors[ID].transLock);
 
-    // consult: 10-20 yields
-    int numYields = 10 + (Random() % 11);
-    for(int i=0; i < numYields; ++i) {
-        currentThread->Yield();  // I see ... mm hmm ... does it hurt here? ...
-    }
+        // go on break if so inclined
+        if(Random() % 100 > 49) { // go on break
+            // 5-15 yields
+            int numYields = 5 + (Random() % 11);
+            for(int i=0; i < numYields; ++i) {
+                currentThread->Yield();
+            }
+        }
 
-    // give prescription to patient
-    doctors[ID].prescription = Random() % 100;
+        // inform the doorboy that I am ready for a patient
+        doctors[ID].transCV->Signal(doctors[ID].transLock);
 
-    // put consultation fees into the data structure for the cashier ($50-$250)
-    int consultFee = 50 + (Random() % 201);
-    feeListLock->Acquire();
-    feeList->append(doctors[ID].patientToken, consultFee);
-    feeListLock->Release();
+        //////  PATIENT INTERACTION  //////
+        // and wait for that patient to arrive
+        doctors[ID].transCV->Wait(doctors[ID].transLock);
 
-    // pass the prescription to the patient and wait for them to leave
-    doctors[ID].transCV->Signal(doctors[ID].transLock);
-    doctors[ID].transCV->Wait(doctors[ID].transLock);
+        // consult: 10-20 yields
+        int numYields = 10 + (Random() % 11);
+        for(int i=0; i < numYields; ++i) {
+            currentThread->Yield();  // I see ... mm hmm ... does it hurt here? ...
+        }
 
-    // done, the patient has left
-    doctors[ID].transLock->Release();
+        // give prescription to patient
+        doctors[ID].prescription = Random() % 100;
+
+        // put consultation fees into the data structure for the cashier ($50-$250)
+        int consultFee = 50 + (Random() % 201);
+        feeListLock->Acquire();
+        feeList->append(doctors[ID].patientToken, consultFee);
+        feeListLock->Release();
+
+        // pass the prescription to the patient and wait for them to leave
+        doctors[ID].transCV->Signal(doctors[ID].transLock);
+        doctors[ID].transCV->Wait(doctors[ID].transLock);
+
+        // done, the patient has left
+        doctors[ID].transLock->Release();
+
+    } //end while
 }
 
 void receptionist(int ID){
@@ -691,68 +731,79 @@ void HospINIT() {
     Thread *t;
     
    //   
-//        //2. Receptionists
-//    RECPMAX= (Random() % (RECP_MAX - RECP_MIN +1) + RECP_MIN) ;
-//    cout << "Creating "<<RECPMAX<<" Receptionists\n";
-//    for(i=0;i<RECPMAX;i++)
-//    {
-//        t = new Thread(temp);
-//        t->Fork((VoidFunctionPtr) receptionist, i);
-//    }
-//    
-//        //3. Cashiers
-//    MAXCASHIER = (Random() % (MAX_CASHIER - MIN_CASHIER +1) + MIN_CASHIER) ;
-//    cout << "Creating "<<MAXCASHIER<<" Cashiers\n";
-//    for(i=0;i<MAXCASHIER;i++)
-//    {
-//     
-//        t=new Thread(temp);
-//        t->Fork((VoidFunctionPtr) cashier, i);
-//    }
-//    
-//        //4. DoorBoys
-//    MAXDOCTORS = (Random() % (MAX_DOCTORS - MIN_DOCTORS + 1) + MIN_DOCTORS);
-//    MAXDOORB = MAXDOCTORS;
-//    cout << "Creating "<<MAXDOORB<<" Doorboys\n";
-//    for(i=0;i<MAXDOORB;i++)
-//    {
-//     
-//        t=new Thread(temp);
-//        t->Fork((VoidFunctionPtr) doorboy, i);
-//    }
-//    
-//        //5. Pharmacys
-//    MAXCLERKS= (Random() % (MAX_CLERKS - MIN_CLERKS +1) + MIN_CLERKS) ;
-//    cout << "Creating "<<MAXCLERKS<<" Clerks\n";
-//    for(i=0;i<MAXCLERKS;i++)
-//    {
-//     
-//        t=new Thread(temp);
-//        t->Fork((VoidFunctionPtr) Clerk, i);
-//    }
-//        //1. Doctors
-//    cout << "Creating "<< MAXDOCTORS<<" Doctors\n";
-//    for(i=0;i<MAX_DOCTORS;i++)
-//    {
-//     
-//        t=new Thread(temp);
-//        t->Fork((VoidFunctionPtr) doctor, i);
-//    }
-//        //7. Patients
-//    MAXPATIENTS = Random() % (MAX_PATIENTS - MIN_PATIENTS +1) + MIN_PATIENTS;
-//    MAXPATIENTS = MAXPATIENTS % MAX_PATIENTS;
-//    cout << "Creating "<<MAXPATIENTS<<" Patients\n";
-//    for(i=0;i<MAXPATIENTS;i++)
-//    {
-//     
-//        t=new Thread(temp);
-//        t->Fork((VoidFunctionPtr) patients, i);
-//    }
-//
-//        //6. HospitalManager
-//    cout << "Creating 1 Hospital Manager\n";
-//        //t = new Thread("HospitalManager_0");
-//        //t->Fork((VoidFunctionPtr) hospitalManager, 0);
+        //2. Receptionists
+    RECPMAX= (Random() % (RECP_MAX - RECP_MIN +1) + RECP_MIN) ;
+    cout << "Creating "<<RECPMAX<<" Receptionists\n";
+    for(i=0;i<RECPMAX;i++)
+    {
+        t = new Thread(temp);
+        t->Fork((VoidFunctionPtr) receptionist, i);
+    }
+    
+        //3. Cashiers
+    MAXCASHIER = (Random() % (MAX_CASHIER - MIN_CASHIER +1) + MIN_CASHIER) ;
+    cout << "Creating "<<MAXCASHIER<<" Cashiers\n";
+    for(i=0;i<MAXCASHIER;i++)
+    {
+     
+        t=new Thread(temp);
+        t->Fork((VoidFunctionPtr) cashier, i);
+    }
+    
+        //4. DoorBoys
+    MAXDOCTORS = (Random() % (MAX_DOCTORS - MIN_DOCTORS + 1) + MIN_DOCTORS);
+    MAXDOORB = MAXDOCTORS;
+    cout << "Creating "<<MAXDOORB<<" Doorboys\n";
+    for(i=0;i<MAXDOORB;i++)
+    {
+     
+        t=new Thread(temp);
+        t->Fork((VoidFunctionPtr) doorboy, i);
+    }
+    
+        //5. Pharmacys
+    MAXCLERKS= (Random() % (MAX_CLERKS - MIN_CLERKS +1) + MIN_CLERKS) ;
+    cout << "Creating "<<MAXCLERKS<<" Clerks\n";
+    for(i=0;i<MAXCLERKS;i++)
+    {
+     
+        t=new Thread(temp);
+        t->Fork((VoidFunctionPtr) Clerk, i);
+    }
+        //1. Doctors
+    cout << "Creating "<< MAXDOCTORS<<" Doctors\n";
+    for(i=0;i<MAX_DOCTORS;i++)
+    {
+     
+        t=new Thread(temp);
+        t->Fork((VoidFunctionPtr) doctor, i);
+    }
+        //7. Patients
+    MAXPATIENTS = Random() % (MAX_PATIENTS - MIN_PATIENTS +1) + MIN_PATIENTS;
+    MAXPATIENTS = MAXPATIENTS % MAX_PATIENTS;
+    cout << "Creating "<<MAXPATIENTS<<" Patients\n";
+    for(i=0;i<MAXPATIENTS;i++)
+    {
+     
+        t=new Thread(temp);
+        t->Fork((VoidFunctionPtr) patients, i);
+    }
+
+        //6. HospitalManager
+    cout << "Creating 1 Hospital Manager\n";
+        //t = new Thread("HospitalManager_0");
+        //t->Fork((VoidFunctionPtr) hospitalManager, 0);
 //    
         INIT();
 }
+=======
+        //7. Patients
+    MAX_PATIENTS = Random() % (MAXPAT - MINPAT +1) + MINPAT ;
+    for(i=0;i<MAX_PATIENTS;i++)
+    {
+        sprintf(temp,"Patients_%d",i);
+        t=new Thread(temp);
+        t->Fork((VoidFunctionPtr) patients, i);
+    }
+}
+>>>>>>> 64ebebe4ae180913275d5b5204571b6ca000c299

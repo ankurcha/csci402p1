@@ -229,6 +229,7 @@ void Condition::Wait(Lock* conditionLock) {
     // check for lock mismatch
     if(conditionLock != CVLock){
         printf("ERROR: Lock Mismatch for Wait on CV %s", name);
+        return;
     }
 
     // let this thread wait
@@ -254,11 +255,12 @@ void Condition::Signal(Lock* conditionLock) {
     // someone is waiting...
     if(CVLock != conditionLock){
         printf("ERROR: Lock Mismatch for condition %s", name);
+        (void) interrupt->SetLevel(oldLevel);
         return;
-    } else {
-        Thread *thread = (Thread *)queue->Remove();
-        scheduler->ReadyToRun(thread);
     }
+
+    Thread *thread = (Thread *)queue->Remove();
+    scheduler->ReadyToRun(thread);
 
     // did that clear the queue?
     if(queue->IsEmpty()){
@@ -268,15 +270,17 @@ void Condition::Signal(Lock* conditionLock) {
     (void) interrupt->SetLevel(oldLevel);
 #endif
 }
+
 void Condition::Broadcast(Lock* conditionLock) {
 #ifdef CHANGED
- IntStatus oldLevel = interrupt->SetLevel(IntOff);
-  if(CVLock == conditionLock){
-    while(!queue->IsEmpty()){
-      this->Signal(conditionLock);
-    };
+    IntStatus oldLevel = interrupt->SetLevel(IntOff);
+    if(CVLock == conditionLock){
+        // while waiters remain, signal the thread on top
+        while(!queue->IsEmpty()){
+            this->Signal(conditionLock);
+        }
+    }
     (void) interrupt->SetLevel(oldLevel);
-  }
 #endif
 }
   
