@@ -236,6 +236,15 @@ const int MIN_CASHIER = 3;
 
 const int totalHospMan = 1;
 
+
+int MAXDOCTORS=10,MAXCASHIER,MAXCLERKS;
+int MINDOCTORS=4;
+int MAXDOORB;
+int RECPMAX=5;
+int RECPMIN=3;
+int MAXPATIENTS=25;
+int MINPATIENTS=20;
+
 //TODO: these can't be static -- all pray the dynamic heap gods!!
 
 Receptionists receptionists[RECP_MAX];
@@ -629,13 +638,7 @@ void INIT(){
 void HospINIT() {
     
         //int totalHospMan = 1;
-     int MAXDOCTORS=10,MAXCASHIER,MAXCLERKS;
-     int MINDOCTORS=4;
-     int MAXDOORB;
-     int RECPMAX=5;
-     int RECPMIN=3;
-     int MAXPATIENTS=25;
-     int MINPATIENTS=20;
+     
     int i = 0;
     char temp[] = "NACHOS_THREAD";
     Thread *t;   
@@ -681,7 +684,6 @@ void HospINIT() {
     }
         //7. Patients
     MAXPATIENTS = Random() % (MAX_PATIENTS - MIN_PATIENTS +1) + MIN_PATIENTS;
-    MAXPATIENTS = MAXPATIENTS % MAX_PATIENTS;
     cout << "Creating "<<MAXPATIENTS<<" Patients\n";
     for(i=0;i<MAXPATIENTS;i++)
     {

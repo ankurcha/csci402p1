@@ -125,7 +125,7 @@ void patients(int ID){
     // find the shortest line
     int myCashier = 0;
     int sLen = cashiers[0].lineLength;
-    for(int i=1; i < numCashiers; ++i) {
+    for(int i=1; i < MAXPATIENTS; ++i) {
         if(cashiers[i].lineLength < sLen) {
             myCashier = i;
             sLen = cashiers[i].lineLength;
