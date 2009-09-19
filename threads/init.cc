@@ -209,18 +209,9 @@ int doorboyLineLength = 0;
 int wakingDoctorID = 0;
 
 struct DoorBoy {
-    int state;
-    Lock *doorboyWaitLock;
-    Condition *doorboyWaitCV;
-    
-    Lock *doorboyBreakLock;
     Condition *doorboyBreakCV;
     
     DoorBoy(){
-        state = FREE;
-        doorboyWaitLock = new Lock("doorboyWaitLock");
-        doorboyWaitCV = new Condition("doorboyWaitCV");
-        doorboyBreakLock = new Lock("doorboyBreakLock");
         doorboyBreakCV = new Condition("doorboyBreakCV");
     }
 };
@@ -251,7 +242,7 @@ Lock *TokenCounterLock = new Lock("TokenCounterLock");
 #include "patient.cc"
 
 void doorboy(int ID){
-    int myDoctor = -1;
+    int myDoctor = 0;
 
     while (true) {
         printf("DB_%d: Alive\n",ID);
@@ -282,7 +273,6 @@ void doorboy(int ID){
         //while there is noone in line
         while(doctors[myDoctor].peopleInLine <= 0) { 
             //I will be woken up by the manager only!!
-            //doorboys[ID].doorboyBreakCV->Wait(doorboys[ID].doorboyBreakLock);
             printf("DB_%d: Yawn!!...ZZZZzzzzz....\n",ID);
             doorboys[ID].doorboyBreakCV->Wait(doctors[myDoctor].LineLock);
             // I got woken up, time to go back to work - by now there are 
