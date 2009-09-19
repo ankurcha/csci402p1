@@ -219,47 +219,30 @@ struct DoorBoy {
 const int MAX_DOCTORS = 20;
 const int MIN_DOCTORS = 5;
 
-const int MAX_DOORB = 20;
-const int MIN_DOORB = 5;
+const int MAX_DOORB = MAX_DOCTORS;
+const int MIN_DOORB = MIN_DOCTORS;
 
-const int MIN_PATIENTS = 100;
-const int MAX_PATIENTS = 20;
+const int MIN_PATIENTS = 20;
+const int MAX_PATIENTS = 100;
 
-const int RECP_MIN = 10;
-const int RECP_MAX = 5;
+const int RECP_MIN = 5;
+const int RECP_MAX = 3;
 
-const int MAX_CLERKS = 10;
-const int MIN_CLERKS = 5;
+const int MAX_CLERKS = 5;
+const int MIN_CLERKS = 3;
 
-const int MAX_CASHIER = 10;
-const int MIN_CASHIER = 5;
+const int MAX_CASHIER = 5;
+const int MIN_CASHIER = 3;
 
 const int totalHospMan = 1;
 
 //TODO: these can't be static -- all pray the dynamic heap gods!!
-    //<<<<<<< HEAD
-const int numRecs = 3;
-const int numDoctors = 4;
-const int numCashiers = 3;
-const int numClerks = 3;
 
 Receptionists receptionists[RECP_MAX];
 DoorBoy doorboys[MAX_DOORB];
 Doctor doctors[MAX_DOCTORS];
 Cashier cashiers[MAX_CASHIER];
 PharmacyClerks clerks[MAX_CLERKS];
-//=======
-//const int numRecs = 5;
-//const int numDoctors = 10;
-//const int numCashiers = 5;
-//const int numClerks = 5;
-////Receptionists receptionists[numRecs];
-//Receptionists* receptionists = new Receptionists[numRecs];
-//DoorBoy doorboys[numDoctors];
-//Doctor doctors[numDoctors];
-//Cashier cashiers[numCashiers];
-//PharmacyClerks clerks[numClerks];
-//>>>>>>> 64ebebe4ae180913275d5b5204571b6ca000c299
 
 int TokenCounter;
 
@@ -297,53 +280,7 @@ void doorboy(int ID){
         doctors[myDoctor].LineLock->Acquire();
         printf("DB_%d: Checking for Patients\n",ID);
         
-//<<<<<<< HEAD
-//            //if (doctors[ID].state == SLEEPING) {
-////                printf("DB_%d: D_%d is not in...!\n",ID,currentCallingDoctor);
-////                doctors[currentCallingDoctor].DoctorStateChangeLock->Release();
-////                doctors[currentCallingDoctor].LineLock->Release();
-////                continue;
-////            }
-//                //The doctor is available to take patients
-//                //doctors[currentCallingDoctor].DoctorStateChangeLock->Release();
-//            
-//                //Now wake the patient up to go to the doctor
-//            cout << "DB_"<<ID<<"Tell patient to go to doctor D_"
-//            <<currentCallingDoctor<<endl;
-//            doctors[currentCallingDoctor].LineCV->Signal(
-//                                    doctors[currentCallingDoctor].LineLock);
-//                //My job with the patients and the doctor is done
-//                //I can go back on the doorboyLine
-//            doctors[currentCallingDoctor].LineLock->Release();
-//                //All my job is done, I'll go after something more meaningful in
-//                //life now!!
-//            continue;
-//            
-//        }else {
-//                //No one to service for my doctor, check the state of the doctor
-//            cout<<"DB_"<<ID<<": Found no one in the line, checking to see if I can"
-//                <<" go sleep\n";
-////            doctors[ID].DoctorStateChangeLock->Acquire();
-////            if (doctors[currentCallingDoctor].state == SLEEPING) {
-////                    //Let others get into the queue
-////                doctors[currentCallingDoctor].LineLock->Release();
-////                    //The doorboy cannot go on a break when the doctor is not in
-////                doctors[ID].DoctorStateChangeLock->Release();
-////                continue;
-////            }else {
-//                    //The doctor is in either in BUSY or FREE, then I can go on a break
-//                doorboys[ID].doorboyBreakLock->Acquire();
-//                doorboys[ID].state = SLEEPING;
-//                doctors[ID].LineLock->Release(); // Let others enter the queue
-//                //doctors[ID].DoctorStateChangeLock->Release();
-//                printf("DB_%d: Yawn!!...ZZZZzzzzz....\n",ID);
-//                doorboys[ID].doorboyBreakCV->Wait(doorboys[ID].doorboyBreakLock);
-//                    //I will be woken up by the manager only!!
-//                    //OK I got woken up, Time to release locks, change state and
-//                    //go back to work - by now there are people dying on the floor!
-//                doorboys[ID].doorboyBreakLock->Release();
-//                continue;
-//=======
+
         //while there is noone in line
         while(doctors[myDoctor].peopleInLine <= 0) { 
             //I will be woken up by the manager only!!
@@ -351,7 +288,6 @@ void doorboy(int ID){
             doorboys[ID].doorboyBreakCV->Wait(doctors[myDoctor].LineLock);
             // I got woken up, time to go back to work - by now there are 
             //  people dying on the floor!
-//>>>>>>> 64ebebe4ae180913275d5b5204571b6ca000c299
         }
         
         printf("DB_%d: Found %d patients waiting in line for D_%d\n",
@@ -371,16 +307,6 @@ void doorboy(int ID){
 }
 
 void doctor(int ID){
-//<<<<<<< HEAD
-//    // acquire a doorboy
-//    doorboyLineLock->Acquire();
-//
-//    // assure that there is a doorboy in line
-//    while(doorboyLineLength <= 0) {
-//            //printf("Doctor could not find a doorboy!\n");
-//        doorboyLineLock->Release();
-//        currentThread->Yield();
-//=======
     while(true) {
         // acquire a doorboy
         //>>>>>>> 64ebebe4ae180913275d5b5204571b6ca000c299
@@ -609,21 +535,7 @@ void hospitalManager(int ID){
                 receptionists[j].LineLock->Release();
             }
         }
-        //for (int i=0; i<RECP_MAX; i++) {//Check for waiting patients
-//            if (receptionists[i].peopleInLine > 0 && 
-//                receptionists[i].state == SLEEPING) {
-//                printf("H_%d : found R_%d sleeping and %d waiting\nKicking Ass\n",
-//                       ID,i,receptionists[i].peopleInLine);
-//                    //Wake up this receptionist up
-//                    //receptionists[ID].ReceptionistBreakLock->Acquire();
-//                receptionists[i].LineLock->Acquire();
-//                receptionists[i].ReceptionistBreakCV->Signal(
-//                                                    receptionists[ID].LineLock);
-//                receptionists[i].LineLock->Release();
-//                
-//            }
-//        }
-            //2. Query Cashiers
+           //2. Query Cashiers
         printf("H_%d : Checking cashiers\n",ID);
         for (int i=0; i<MAX_CASHIER; i++) {//Check for waiting patients
             if (cashiers[i].lineLength > 0 ) {
@@ -780,9 +692,8 @@ void HospINIT() {
 
         //6. HospitalManager
     cout << "Creating 1 Hospital Manager\n";
-        //t = new Thread("HospitalManager_0");
-        //t->Fork((VoidFunctionPtr) hospitalManager, 0);
-//    
+        t = new Thread("HospitalManager_0");
+        t->Fork((VoidFunctionPtr) hospitalManager, 0);   
 //  INIT();
     
         //2. Receptionists
@@ -794,14 +705,3 @@ void HospINIT() {
         t->Fork((VoidFunctionPtr) receptionist, i);
     }
 }
-//=======
-//        //7. Patients
-//    MAX_PATIENTS = Random() % (MAXPAT - MINPAT +1) + MINPAT ;
-//    for(i=0;i<MAX_PATIENTS;i++)
-//    {
-//        sprintf(temp,"Patients_%d",i);
-//        t=new Thread(temp);
-//        t->Fork((VoidFunctionPtr) patients, i);
-//    }
-//}
-//>>>>>>> 64ebebe4ae180913275d5b5204571b6ca000c299
