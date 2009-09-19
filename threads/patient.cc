@@ -85,39 +85,35 @@ void patients(int ID){
     //Calculate which doctor I want to see
     myDoctor = Random() % MAX_DOCTORS;
     printf("P_%d : Going to meet doctor D_%d\n",ID,myDoctor);
-    //1. Acquire doc's line lock
+
+    // Acquire doc's line lock
     doctors[myDoctor].LineLock->Acquire();
-    //2. Wait on the line -- to be woken up by the bell boy
+
+    // Wait on the line -- to be woken up by the doorboy
     printf("P_%d : Join line and Waiting for doorboy to tell me to go\n",ID);
-        //Add to the number of people waiting on the line
     doctors[myDoctor].peopleInLine++;
     doctors[myDoctor].LineCV->Wait(doctors[myDoctor].LineLock);
-    //doctor told the door boy to wake me up for consultation, he is waiting 
-    // for me to respond
-    //Now I have to provide my token numeber to the doctor as he is ready for 
-    // me, I must acquire lock for that and then provide all the information 
-    // befor i proceed
-    doctors[myDoctor].transLock->Acquire();
-    //I can release the line lock so that other people may also join in
-    //Also I should decrement the number of people in the line, as I am 
-    // getting out of the line
     doctors[myDoctor].peopleInLine--;
-        //Now release the lock on the line and enter the consultation room
+
+    // move into the doctor's transaction lock
+    doctors[myDoctor].transLock->Acquire();
     doctors[myDoctor].LineLock->Release();
+
     //The doctor is waiting for me to provide my info, oblige him!!
-    printf("P_%d : Consulting Doctor D_%d now...\n",ID,myDoctor);
     doctors[myDoctor].patientToken = myToken;
+
+    // hand off to the doctor thread for consultation
+    printf("P_%d : Consulting Doctor D_%d now...\n",ID,myDoctor);
+    doctors[myDoctor].transCV->Signal(doctors[myDoctor].transLock);
     doctors[myDoctor].transCV->Wait(doctors[myDoctor].transLock);
-    //Consultation in process....
-    //4. Consultation finished, now I have to get the prescription from the doctor
-    //The doctor would be waiting for me to take this
-        //Take prescription form the doctor
+
+    // Consultation finished, now I have to get the prescription from the doctor
     myPrescription = doctors[myDoctor].prescription;
-    cout<<"P_"<<ID<<" : Consultation finished and  Got prescription# "
-    <<myPrescription<<endl;
-    //Signal the doctor that I have taken the prescription
-    doctors[myDoctor].transCV->
-                Signal(doctors[myDoctor].transLock);
+    printf("P_%d : Consultation finished and  Got prescription %d\n", 
+            ID, myPrescription);
+
+    // Signal the doctor that I have taken the prescription and left
+    doctors[myDoctor].transCV->Signal(doctors[myDoctor].transLock);
     doctors[myDoctor].transLock->Release();
 
     ////////////////////////////////////////////

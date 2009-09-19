@@ -173,14 +173,14 @@ struct PharmacyClerks{
 };
 
 struct Doctor {
+    // line lock and CV and protected variables
+    Lock *LineLock;
+    Condition *LineCV;
+    int peopleInLine;
+    
     //transaction lock and CV and variables protected
     Lock* transLock;
     Condition* transCV;
-    int peopleInLine;
-    
-    Lock *LineLock;
-    Condition *LineCV;
-    
     int prescription;
     int patientToken;
     
@@ -236,7 +236,8 @@ const int numRecs = 3;
 const int numDoctors = 4;
 const int numCashiers = 3;
 const int numClerks = 3;
-Receptionists receptionists[numRecs];
+//Receptionists receptionists[numRecs];
+Receptionists* receptionists = new Receptionists[numRecs];
 DoorBoy doorboys[numDoctors];
 Doctor doctors[numDoctors];
 Cashier cashiers[numCashiers];
