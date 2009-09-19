@@ -590,19 +590,10 @@ void HospINIT() {
     
     
     int i = 0;
-    char *temp;
+    char *temp = new char[100];
     Thread *t;
     
-        //1. Doctors
-    MAX_DOCTORS = Random() % (MAXDOCTORS - MINDOCTORS + 1) + MINDOCTORS;
-    for(i=0;i<MAX_DOCTORS;i++)
-    {
-        sprintf(temp,"Doctor_%d",i);
-        t=new Thread(temp);
-        t->Fork((VoidFunctionPtr) doctor, i);
-    }
-    
-        
+      
         //2. Receptionists
     RECP_MAX= Random() % (MAXRCP - MINRCP +1) + MINRCP ;
     for(i=0;i<RECP_MAX;i++)
@@ -638,6 +629,15 @@ void HospINIT() {
         t=new Thread(temp);
         t->Fork((VoidFunctionPtr) Clerk, i);
     }
+        //1. Doctors
+    MAX_DOCTORS = Random() % (MAXDOCTORS - MINDOCTORS + 1) + MINDOCTORS;
+    for(i=0;i<MAX_DOCTORS;i++)
+    {
+        sprintf(temp,"Doctor_%d",i);
+        t=new Thread(temp);
+        t->Fork((VoidFunctionPtr) doctor, i);
+    }
+    
     
         //6. HospitalManager
     t = new Thread("HospitalManager_0");
