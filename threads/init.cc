@@ -232,10 +232,10 @@ int MAX_CLERKS;
 int MAX_CASHIER;
 
 //TODO: these can't be static -- all pray the dynamic heap gods!!
-const int numRecs = 3;
-const int numDoctors = 4;
-const int numCashiers = 3;
-const int numClerks = 3;
+const int numRecs = 5;
+const int numDoctors = 10;
+const int numCashiers = 5;
+const int numClerks = 5;
 //Receptionists receptionists[numRecs];
 Receptionists* receptionists = new Receptionists[numRecs];
 DoorBoy doorboys[numDoctors];
