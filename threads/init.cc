@@ -251,82 +251,57 @@ Lock *TokenCounterLock = new Lock("TokenCounterLock");
 #include "patient.cc"
 
 void doorboy(int ID){
-    int currentCallingDoctor = -1;
+    int myDoctor = -1;
+
     while (true) {
         printf("DB_%d: Alive\n",ID);
-        doorboys[ID].state = FREE;
-            //Get into the doorboyLine till some doctor asks for me
+
+        //Get into the doorboyLine till some doctor asks for me
         doorboyLineLock->Acquire();
+
         doorboyLineLength++;
         cout << "DB_"<<ID<<": Waiting for some doctor to wake me up.\n" ;
         doorboyLineCV->Wait(doorboyLineLock);
-            //Some doctor woke me up, lets check who
-        currentCallingDoctor =  wakingDoctorID;
         doorboyLineLength--;
+        
+        //Some doctor woke me up, lets check who
+        myDoctor =  wakingDoctorID;
         doorboyLineLock->Release();
-            //Acquire the lock to get the state of the line and take decision
-        doctors[currentCallingDoctor].LineLock->Acquire();
+
+        // Inform the doctor that I have arrived, and wait for him to take 
+        //  a break, if he so chooses
+        doctors[myDoctor].transLock->Acquire();
+        doctors[myDoctor].transCV->Signal();
+        doctors[myDoctor].transCV->Wait();
+        
+        ///// PATIENT LINE /////
+        //Acquire the lock to get the state of the line and take decision
+        doctors[myDoctor].LineLock->Acquire();
         printf("DB_%d: Checking for Patients\n",ID);
-
-        if (doctors[currentCallingDoctor].peopleInLine > 0) {
-            doorboys[ID].state = BUSY;
-            cout<<"DB_"<<ID
-                <<": Found "<<doctors[currentCallingDoctor].peopleInLine
-                <<" waiting in line for D_"<<currentCallingDoctor<<endl;
         
-                //doctors[currentCallingDoctor].DoctorStateChangeLock->Acquire();
-                //In case the doctor is sleeping just wait till he is back and
-                //only then proceed.
-        
-            //if (doctors[ID].state == SLEEPING) {
-//                printf("DB_%d: D_%d is not in...!\n",ID,currentCallingDoctor);
-//                doctors[currentCallingDoctor].DoctorStateChangeLock->Release();
-//                doctors[currentCallingDoctor].LineLock->Release();
-//                continue;
-//            }
-                //The doctor is available to take patients
-                //doctors[currentCallingDoctor].DoctorStateChangeLock->Release();
-            
-                //Now wake the patient up to go to the doctor
-            cout << "DB_"<<ID<<"Tell patient to go to doctor D_"
-            <<currentCallingDoctor<<endl;
-            doctors[currentCallingDoctor].LineCV->Signal(
-                                    doctors[currentCallingDoctor].LineLock);
-                //My job with the patients and the doctor is done
-                //I can go back on the doorboyLine
-            doctors[currentCallingDoctor].LineLock->Release();
-                //All my job is done, I'll go after something more meaningful in
-                //life now!!
-            continue;
-            
-        }else {
-                //No one to service for my doctor, check the state of the doctor
-            cout<<"DB_"<<ID<<"Found no one in the line, checking to see if I can"
-                <<" go sleep\n";
-//            doctors[ID].DoctorStateChangeLock->Acquire();
-//            if (doctors[currentCallingDoctor].state == SLEEPING) {
-//                    //Let others get into the queue
-//                doctors[currentCallingDoctor].LineLock->Release();
-//                    //The doorboy cannot go on a break when the doctor is not in
-//                doctors[ID].DoctorStateChangeLock->Release();
-//                continue;
-//            }else {
-                    //The doctor is in either in BUSY or FREE, then I can go on a break
-                doorboys[ID].doorboyBreakLock->Acquire();
-                doorboys[ID].state = SLEEPING;
-                doctors[ID].LineLock->Release(); // Let others enter the queue
-                //doctors[ID].DoctorStateChangeLock->Release();
-                printf("DB_%d: Yawn!!...ZZZZzzzzz....\n",ID);
-                doorboys[ID].doorboyBreakCV->Wait(doorboys[ID].doorboyBreakLock);
-                    //I will be woken up by the manager only!!
-                    //OK I got woken up, Time to release locks, change state and
-                    //go back to work - by now there are people dying on the floor!
-                doorboys[ID].doorboyBreakLock->Release();
-                continue;
+        //while there is noone in line
+        while(doctors[myDoctor].peopleInLine <= 0) { 
+            //I will be woken up by the manager only!!
+            //doorboys[ID].doorboyBreakCV->Wait(doorboys[ID].doorboyBreakLock);
+            printf("DB_%d: Yawn!!...ZZZZzzzzz....\n",ID);
+            doorboys[ID].doorboyBreakCV->Wait(doctors[myDoctor].LineLock);
+            // I got woken up, time to go back to work - by now there are 
+            //  people dying on the floor!
         }
+        
+        printf("DB_%d: Found %d patients waiting in line for D_%d\n",
+                ID, doctors[myDoctor].peopleInLine, myDoctor);
+    
+        //Now wake the patient up to go to the doctor
+        printf("DB_%d: Tell patient to go to doctor D_%d\n", ID, myDoctor);
+        doctors[myDoctor].LineCV->Signal(doctors[myDoctor].LineLock);
 
+        //My job with the patients and the doctor is done
+        //I can go back on the doorboyLine
+        doctors[myDoctor].LineLock->Release();
         
     }//End of while
+
     printf("DB_%d: Dying...AAAaaaahhhhhhhhh!!\n",ID);
 }
 
