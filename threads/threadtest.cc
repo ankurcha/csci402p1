@@ -63,16 +63,30 @@ void Problem2()
         printf("\nTESTING HOSPITAL SIMULATION\n");
         int choice;
         cout << "\nSelect from the options below"<<endl
-        <<"1. Run simulation normally."<<endl
-        <<"2. Run Test cases\n";
+        <<"    0. Run simulation normally."<<endl
+        <<"    1. Run Test 1 (Patient only gets in when doorboy asks)\n"
+        <<"    2. Run Test 2 (If doorboy is on break, no patient gets in)\n"
+        <<"    3. Run Test 3 (One patient with doctor at a time)\n"
+        <<"    4. Run Test 4 (Patients always choose shortest line)\n"
+        <<"    5. Run Test 5 (If no cashier/clerk/receptionist patient waits)\n"
+        <<"    6. Run Test 6 (doctor goes on break at random intervals)\n"
+        <<"    7. Run Test 7 (when the doctor is on break, no patient gets in)\n"
+        <<"    8. Run Test 8 (doorboy never goes on break when doctor is on break)\n"
+        <<"    9. Run Test 9 (doorboy/cashier/clerk get signaled by manager when patients waiting)\n"
+        <<"    10. Run Test 10 (sales and fees not affected by race conditions)\n"
+        <<"    11. Run Test 11 (doorboy/clerk/receptionist/cashier go on break when line is empty)\n";
         cin>>choice;
         switch ( choice ) {
-            case 1:
+            case 0:
                 HospINIT();
                 return;
                 break;
-            case 2:
+            case 1:
                 test1();
+                return;
+                break;
+            case 3:
+                test3();
                 return;
                 break;
             default:
