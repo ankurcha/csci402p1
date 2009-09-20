@@ -818,3 +818,7 @@ int test1(){
     hospitalLock->Release();
     
 }
+
+int test3() {
+    return 0;
+}
