@@ -172,9 +172,8 @@ void patients(int ID){
         //wait in line for my turn
         clerks[shortestclerkline].patientsInLine++;
         clerks[shortestclerkline].ClerkTransLock->Acquire();
-        ClerkLinesLock->Release();
         clerks[shortestclerkline].ClerkCV->
-                    Wait(clerks[shortestclerkline].ClerkTransLock);
+                    Wait(ClerkLinesLock);
         cout<<"P_"<<ID<<": ClerkLinesLock Released, Now Waiting for signal by "
             <<"PharmacyClerk\n";
     }else { //No one else in line
@@ -184,7 +183,7 @@ void patients(int ID){
             case SLEEPING:
                 //wait in line
                 clerks[shortestclerkline].patientsInLine++;
-                clerks[shortestclerkline].ClerkCV->Wait(clerks[shortestclerkline].ClerkTransLock);
+                clerks[shortestclerkline].ClerkCV->Wait(ClerkLinesLock);
                 cout<<"P_"<<ID<<": ClerkLinesLock Released, Now Waiting for "
                 <<"signal by Clerk\n";
                 break;
@@ -198,11 +197,12 @@ void patients(int ID){
     clerks[shortestclerkline].patientsInLine--;
     //signal ParmacyClerk that i am ready to give Prescription
     clerks[shortestclerkline].ClerkTransLock->Acquire();
+    cout << "P_"<<ID<<": Acquired ClerkTransLock\n";
                 //Entered the line no need to hold all lines others may now continue
      ClerkLinesLock->Release();
     //wait for the PharmacyClerk to Get the prescription from me.. so I wait
      clerks[shortestclerkline].patPrescription = myPrescription;
-
+    cout << "P_"<<ID<<": Gave prescriptiong, waiting for medicines.\n";
     // wait for clerk to give cost
     clerks[shortestclerkline].ClerkTransCV->
                 Signal(clerks[shortestclerkline].ClerkTransLock);
@@ -210,12 +210,13 @@ void patients(int ID){
                 Wait(clerks[shortestclerkline].ClerkTransLock);
 
     // provide the money
-    
+    cout << "P_"<<ID<<": Got Medicines, making payment.\n";
     clerks[shortestclerkline].payment = clerks[shortestclerkline].fee;
 
     // done
     clerks[shortestclerkline].ClerkTransCV->
                 Signal(clerks[shortestclerkline].ClerkTransLock);
+    cout << "P_"<<ID<<": Done with Clerk\n";
     clerks[shortestclerkline].ClerkTransLock->Release();
 
     //7. get out - die die die( ;) )
