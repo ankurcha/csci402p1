@@ -168,38 +168,18 @@ void patients(int ID){
         }
     }
     printf("P_%d: found shortest line C_%d len: %d\n",ID,shortestclerkline,length);
-    if (length >0) {
         //wait in line for my turn
-        clerks[shortestclerkline].patientsInLine++;
-        clerks[shortestclerkline].ClerkTransLock->Acquire();
-        clerks[shortestclerkline].ClerkCV->
-                    Wait(ClerkLinesLock);
-        cout<<"P_"<<ID<<": ClerkLinesLock Released, Now Waiting for signal by "
-            <<"PharmacyClerk\n";
-    }else { //No one else in line
-        switch (clerks[shortestclerkline].state) {
-            case FREE: 
-            case BUSY:
-            case SLEEPING:
-                //wait in line
-                clerks[shortestclerkline].patientsInLine++;
-                clerks[shortestclerkline].ClerkCV->Wait(ClerkLinesLock);
-                cout<<"P_"<<ID<<": ClerkLinesLock Released, Now Waiting for "
-                <<"signal by Clerk\n";
-                break;
-            default:
-                break;
-        } 
-    }
-    
+    clerks[shortestclerkline].patientsInLine++;
+    clerks[shortestclerkline].ClerkCV->Wait(ClerkLinesLock);
     cout<<"P_"<<ID<<" Got woken up, got out of line and going to the PHarmacy "
         <<"CLerk to give prescription.\n";
     clerks[shortestclerkline].patientsInLine--;
-    //signal ParmacyClerk that i am ready to give Prescription
+    
+    ClerkLinesLock->Release();
     clerks[shortestclerkline].ClerkTransLock->Acquire();
+        //signal ParmacyClerk that i am ready to give Prescription
     cout << "P_"<<ID<<": Acquired ClerkTransLock\n";
-                //Entered the line no need to hold all lines others may now continue
-     ClerkLinesLock->Release();
+        //Entered the line no need to hold all lines others may now continue
     //wait for the PharmacyClerk to Get the prescription from me.. so I wait
      clerks[shortestclerkline].patPrescription = myPrescription;
     cout << "P_"<<ID<<": Gave prescriptiong, waiting for medicines.\n";
