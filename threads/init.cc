@@ -419,7 +419,7 @@ void receptionist(int ID){
             //receptionists[ID].state = SLEEPING;
             //receptionists[ID].LineLock->Acquire();
             //receptionists[ID].ReceptionistBreakCV->Wait(receptionists[ID].LineLock);
-            receptionists[ID].ReceptionistBreakCV->Wait(recpLineLock;);
+            receptionists[ID].ReceptionistBreakCV->Wait(recpLineLock);
             //receptionists[ID].LineLock->Release();
             recpLineLock->Release();
             //HospitalManager kicked my ass for sleeping on the job!!
