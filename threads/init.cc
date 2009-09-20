@@ -442,7 +442,7 @@ void receptionist(int ID){
 
         //Patient successfully got the token, go back to work: Loop again
         printf("R_%d: Patient got token, Continue to next Patient\n",ID);
-        receptionists[ID].LineLock->Release();
+        receptionists[ID].transLock->Release();
     }
 }
 
@@ -573,10 +573,11 @@ void hospitalManager(int ID){
         
         if (patientsWaiting > 1) {
             for (int j=0; j<RECP_MAX; j++) {
-                receptionists[j].LineLock->Acquire();
-                receptionists[j].ReceptionistBreakCV->Signal(
-                                                         receptionists[j].LineLock);
-                receptionists[j].LineLock->Release();
+                //receptionists[j].LineLock->Acquire();
+                recpLineLock->Acquire();
+                receptionists[j].ReceptionistBreakCV->Signal(recpLineLock);
+                //receptionists[j].LineLock->Release();
+                recpLineLock->Release();
             }
         }
            //2. Query Cashiers
@@ -620,13 +621,12 @@ void hospitalManager(int ID){
         
             //Check on the doorboys
         printf("H_%d : Checking doorboys\n",ID);
-        for (int i=0; i<MAX_CLERKS; i++) {//Check for waiting patients
+        for (int i=0; i<numDoctors; i++) {//Check for waiting patients
             if (doctors[i].peopleInLine > 0 ) {
-                printf("H_%d : found Doorboy sleeping and %d waiting\nKicking Ass\n",
-                       ID,doctors[i].peopleInLine);
-                    //Wake up this receptionist up
+                printf("H_%d : found %d people in doctor %d's line and \nKicking Ass\n",
+                         ID, doctors[i].peopleInLine, i);
                 doctors[i].LineLock->Acquire();
-                doorboys[i].doorboyBreakCV->Broadcast(doctors[i].LineLock);
+                doctors[i].doorboyBreakCV->Broadcast(doctors[i].LineLock);
                 doctors[i].LineLock->Release();
             }
         }        
