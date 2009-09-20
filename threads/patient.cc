@@ -153,47 +153,26 @@ void patients(int ID){
     
     printf("P_%d:Attempt to acquire ClerkLinesLock...",ID);
     ClerkLinesLock->Acquire();
-    printf("success\n");
     int shortestclerkline = 0;
     int length = 0;
     //Find shortest Line
-    for (int i=0; i<MAX_CLERKS; i++) {
+    for (int i=0; i<numClerks; i++) {
         if(clerks[i].patientsInLine < length){
             length = clerks[i].patientsInLine;
             shortestclerkline = i;
         }
     }
     printf("P_%d: found shortest line PC_%d len: %d\n",ID,shortestclerkline,length);
-    if (length >0) {
-        //wait in line for my turn
-        clerks[shortestclerkline].patientsInLine++;
-        clerks[shortestclerkline].ClerkTransLock->Acquire();
-        ClerkLinesLock->Release();
-        clerks[shortestclerkline].ClerkCV->
+    clerks[shortestclerkline].patientsInLine++;
+    clerks[shortestclerkline].ClerkTransLock->Acquire();
+    clerks[shortestclerkline].ClerkCV->
                     Wait(clerks[shortestclerkline].ClerkTransLock);
-        cout<<"P_"<<ID<<": ClerkLinesLock Released, Now Waiting for signal by "
-            <<"PharmacyClerk\n";
-    }else { //No one else in line
-        switch (clerks[shortestclerkline].state) {
-            case FREE: 
-            case BUSY:
-            case SLEEPING:
-                //wait in line
-                clerks[shortestclerkline].patientsInLine++;
-                clerks[shortestclerkline].ClerkCV->Wait(clerks[shortestclerkline].ClerkTransLock);
-                cout<<"P_"<<ID<<": ClerkLinesLock Released, Now Waiting for "
-                <<"signal by CLerk\n";
-                break;
-            default:
-                break;
-        } 
-    }
-    
+
     cout<<"P_"<<ID<<" Got woken up, got out of line and going to the PHarmacy "
         <<"CLerk to give prescription.\n";
     clerks[shortestclerkline].patientsInLine--;
     //signal ParmacyClerk that i am ready to give Prescription
-    clerks[shortestclerkline].ClerkTransLock->Acquire();
+    //clerks[shortestclerkline].ClerkTransLock->Acquire();
                 //Entered the line no need to hold all lines others may now continue
      ClerkLinesLock->Release();
     //wait for the PharmacyClerk to Get the prescription from me.. so I wait
