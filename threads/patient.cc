@@ -168,44 +168,23 @@ void patients(int ID){
         }
     }
     printf("P_%d: found shortest line C_%d len: %d\n",ID,shortestclerkline,length);
-    
-    
-    
-    if (length >0) {
+
         //wait in line for my turn
-        clerks[shortestclerkline].patientsInLine++;
-        clerks[shortestclerkline].ClerkTransLock->Acquire();
-        ClerkLinesLock->Release();
-        clerks[shortestclerkline].ClerkCV->
-                    Wait(clerks[shortestclerkline].ClerkLinesLock);
-        cout<<"P_"<<ID<<": ClerkLinesLock Released, Now Waiting for signal by "
-            <<"PharmacyClerk\n";
-    }else { //No one else in line
-        switch (clerks[shortestclerkline].state) {
-            case FREE: 
-            case BUSY:
-            case SLEEPING:
-                //wait in line
-                clerks[shortestclerkline].patientsInLine++;
-                clerks[shortestclerkline].ClerkCV->Wait(clerks[shortestclerkline].ClerkTransLock);
-                cout<<"P_"<<ID<<": ClerkLinesLock Released, Now Waiting for "
-                <<"signal by Clerk\n";
-                break;
-            default:
-                break;
-        } 
-    }
-    
-    cout<<"P_"<<ID<<" Got woken up, got out of line and going to the PHarmacy "
+    clerks[shortestclerkline].patientsInLine++;
+    clerks[shortestclerkline].ClerkCV->Wait(ClerkLinesLock);
+    cout<<"P_"<<ID<<" Got woken up, got out of line and going to the Pharmacy "
+
         <<"CLerk to give prescription.\n";
     clerks[shortestclerkline].patientsInLine--;
-    //signal ParmacyClerk that i am ready to give Prescription
+    
+    ClerkLinesLock->Release();
     clerks[shortestclerkline].ClerkTransLock->Acquire();
-                //Entered the line no need to hold all lines others may now continue
-     ClerkLinesLock->Release();
+        //signal ParmacyClerk that i am ready to give Prescription
+    cout << "P_"<<ID<<": Acquired ClerkTransLock\n";
+        //Entered the line no need to hold all lines others may now continue
     //wait for the PharmacyClerk to Get the prescription from me.. so I wait
      clerks[shortestclerkline].patPrescription = myPrescription;
-
+    cout << "P_"<<ID<<": Gave prescriptiong, waiting for medicines.\n";
     // wait for clerk to give cost
     clerks[shortestclerkline].ClerkTransCV->
                 Signal(clerks[shortestclerkline].ClerkTransLock);
@@ -213,12 +192,13 @@ void patients(int ID){
                 Wait(clerks[shortestclerkline].ClerkTransLock);
 
     // provide the money
-    
+    cout << "P_"<<ID<<": Got Medicines, making payment.\n";
     clerks[shortestclerkline].payment = clerks[shortestclerkline].fee;
 
     // done
     clerks[shortestclerkline].ClerkTransCV->
                 Signal(clerks[shortestclerkline].ClerkTransLock);
+    cout << "P_"<<ID<<": Done with Clerk\n";
     clerks[shortestclerkline].ClerkTransLock->Release();
 
     //7. get out - die die die( ;) )

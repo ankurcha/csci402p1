@@ -23,8 +23,7 @@
 //	purposes.
 //----------------------------------------------------------------------
 
-void
-SimpleThread(int which)
+void SimpleThread(int which)
 {
     int num;
     
@@ -40,26 +39,31 @@ SimpleThread(int which)
 //	to call SimpleThread, and then calling SimpleThread ourselves.
 //----------------------------------------------------------------------
 
-void
-ThreadTest()
+void ThreadTest()
 {
-  /*
-     DEBUG('t', "Entering SimpleTest");
+    DEBUG('t', "Entering SimpleTest");
 
     Thread *t = new Thread("forked thread");
 
     t->Fork(SimpleThread, 1);
     SimpleThread(0);
-  */
-        //DEBUG('t', "TestSuite");
-        //TestSuite();
 
-    
+    //startTest();
+    //printf("\nTESTING HOSPITAL APP\n");
+    //
+    //HospINIT();
+}
 
+//----------------------------------------------------------------------
+// Problem2
+//      Test the hospital management simulation
+//----------------------------------------------------------------------
 
-  //startTest();
-    printf("\nTESTING HOSPITAL APP\n");
-    
+void Problem2()
+{
+    printf("\nTESTING HOSPITAL SIMULATION\n");
+
     HospINIT();
 }
+
 

@@ -535,6 +535,7 @@ cout<<"C_"<<ID<<": The cost for the medicines are:"<<clerks[ID].fee<<" dollars"<
     }
 }
 
+
 void hospitalManager(int ID){
     printf("H_%d : Alive\n",ID);
     int sleeptime = Random() % 300000;
@@ -544,8 +545,8 @@ void hospitalManager(int ID){
         
         hospitalLock->Acquire();
         if (peopleInHospital <= 0) {
-            cout << "H_0: No one to service, putting my self to sleep!!!";
-            currentThread->Sleep();
+            cout << "H_0: No one to service, putting my self to sleep!!!\n";
+            return;
         }
         hospitalLock->Release();
         
@@ -606,7 +607,7 @@ void hospitalManager(int ID){
                        ID,i,clerks[i].patientsInLine);
                     //Wake up this receptionist up
                 ClerkLinesLock->Acquire();
-                clerks[i].ClerkBreakCV->Broadcast(ClerkLinesLock);
+                clerks[i].ClerkBreakCV->Signal(ClerkLinesLock);
                 ClerkLinesLock->Release();
             }
         }
