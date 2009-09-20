@@ -699,7 +699,7 @@ void HospINIT() {
     }
         //1. Doctors
     cout << "Creating "<< numDoctors<<" Doctors\n";
-    for(i=0;i<MAX_DOCTORS;i++)
+    for(i=0;i<numDoctors;i++)
     {
      
         t=new Thread(temp);
