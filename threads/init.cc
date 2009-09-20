@@ -237,15 +237,12 @@ const int MIN_CASHIER = 3;
 const int totalHospMan = 1;
 
 
-int MAXDOCTORS=10,MAXCASHIER,MAXCLERKS;
-int MINDOCTORS=4;
-int MAXDOORB;
-int RECPMAX=5;
-int RECPMIN=3;
-int MAXPATIENTS=25;
-int MINPATIENTS=20;
-
-//TODO: these can't be static -- all pray the dynamic heap gods!!
+int numDoctors = 0;
+int numCashiers = 0;
+int numClerks = 0;
+int numDoorboys = 0;
+int numRecp = 5;
+int numPatients = 25;
 
 Receptionists receptionists[RECP_MAX];
 DoorBoy doorboys[MAX_DOORB];
@@ -645,9 +642,9 @@ void HospINIT() {
     
     
         //3. Cashiers
-    MAXCASHIER = (Random() % (MAX_CASHIER - MIN_CASHIER +1) + MIN_CASHIER) ;
-    cout << "Creating "<<MAXCASHIER<<" Cashiers\n";
-    for(i=0;i<MAXCASHIER;i++)
+    numCashiers = (Random() % (MAX_CASHIER - MIN_CASHIER +1) + MIN_CASHIER) ;
+    cout << "Creating "<<numCashiers<<" Cashiers\n";
+    for(i=0;i<numCashiers;i++)
     {
      
         t=new Thread(temp);
@@ -655,10 +652,10 @@ void HospINIT() {
     }
     
         //4. DoorBoys
-    MAXDOCTORS = (Random() % (MAX_DOCTORS - MIN_DOCTORS + 1) + MIN_DOCTORS);
-    MAXDOORB = MAXDOCTORS;
-    cout << "Creating "<<MAXDOORB<<" Doorboys\n";
-    for(i=0;i<MAXDOORB;i++)
+    numDoctors = (Random() % (MAX_DOCTORS - MIN_DOCTORS + 1) + MIN_DOCTORS);
+    numDoorboys = numDoctors;
+    cout << "Creating "<<numDoorboys<<" Doorboys\n";
+    for(i=0;i<numDoorboys;i++)
     {
      
         t=new Thread(temp);
@@ -666,16 +663,16 @@ void HospINIT() {
     }
     
         //5. Pharmacys
-    MAXCLERKS= (Random() % (MAX_CLERKS - MIN_CLERKS +1) + MIN_CLERKS) ;
-    cout << "Creating "<<MAXCLERKS<<" Clerks\n";
-    for(i=0;i<MAXCLERKS;i++)
+    numClerks= (Random() % (MAX_CLERKS - MIN_CLERKS +1) + MIN_CLERKS) ;
+    cout << "Creating "<<numClerks<<" Clerks\n";
+    for(i=0;i<numClerks;i++)
     {
      
         t=new Thread(temp);
         t->Fork((VoidFunctionPtr) Clerk, i);
     }
         //1. Doctors
-    cout << "Creating "<< MAXDOCTORS<<" Doctors\n";
+    cout << "Creating "<< numDoctors<<" Doctors\n";
     for(i=0;i<MAX_DOCTORS;i++)
     {
      
@@ -683,9 +680,9 @@ void HospINIT() {
         t->Fork((VoidFunctionPtr) doctor, i);
     }
         //7. Patients
-    MAXPATIENTS = Random() % (MAX_PATIENTS - MIN_PATIENTS +1) + MIN_PATIENTS;
-    cout << "Creating "<<MAXPATIENTS<<" Patients\n";
-    for(i=0;i<MAXPATIENTS;i++)
+    numPatients = Random() % (MAX_PATIENTS - MIN_PATIENTS +1) + MIN_PATIENTS;
+    cout << "Creating "<<numPatients<<" Patients\n";
+    for(i=0;i<numPatients;i++)
     {
      
         t=new Thread(temp);
@@ -699,9 +696,9 @@ void HospINIT() {
 //  INIT();
     
         //2. Receptionists
-    RECPMAX= (Random() % (RECP_MAX - RECP_MIN +1) + RECP_MIN) ;
-    cout << "Creating "<<RECPMAX<<" Receptionists\n";
-    for(i=0;i<RECPMAX;i++)
+    numRecp= (Random() % (RECP_MAX - RECP_MIN +1) + RECP_MIN) ;
+    cout << "Creating "<<numRecp<<" Receptionists\n";
+    for(i=0; i<numRecp; i++)
     {
         t = new Thread(temp);
         t->Fork((VoidFunctionPtr) receptionist, i);
