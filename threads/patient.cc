@@ -30,7 +30,7 @@ void patients(int ID){
     int shortestline = 0;
     int len = receptionists[0].peopleInLine;
     //Find shortest Line
-    for (int i=0; i<RECP_MAX; i++) {
+    for (int i=0; i<numRecp; i++) {
         if(receptionists[i].peopleInLine < len){
             len = receptionists[i].peopleInLine;
             shortestline = i;
@@ -129,7 +129,7 @@ void patients(int ID){
     // find the shortest line
     int myCashier = 0;
     int sLen = cashiers[0].lineLength;
-    for(int i=1; i < MAXPATIENTS; ++i) {
+    for(int i=1; i < numCashiers; ++i) {
         if(cashiers[i].lineLength < sLen) {
             myCashier = i;
             sLen = cashiers[i].lineLength;
@@ -168,9 +168,9 @@ void patients(int ID){
     ClerkLinesLock->Acquire();
     printf("success\n");
     int shortestclerkline = 0;
-    int length = 0;
+    int length = clerks[0].patientsInLine;
     //Find shortest Line
-    for (int i=0; i<MAX_CLERKS; i++) {
+    for (int i=1; i < numClerks; i++) {
         if(clerks[i].patientsInLine < length){
             length = clerks[i].patientsInLine;
             shortestclerkline = i;
