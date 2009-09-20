@@ -148,8 +148,10 @@ struct Cashier {
 Lock *ClerkLinesLock= new Lock("ClerkLineLock");
 Lock *PaymentLock= new Lock("PaymentLock");
 int totalsales=0;
+
+// hospitalLock protects the count of patients remaining in the hospital
 Lock *hospitalLock = new Lock("HospitalLock");
-int peopleInHospital;
+int peopleInHospital = 1;
 
 
 struct PharmacyClerks{
