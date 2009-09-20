@@ -168,13 +168,16 @@ void patients(int ID){
         }
     }
     printf("P_%d: found shortest line C_%d len: %d\n",ID,shortestclerkline,length);
+    
+    
+    
     if (length >0) {
         //wait in line for my turn
         clerks[shortestclerkline].patientsInLine++;
         clerks[shortestclerkline].ClerkTransLock->Acquire();
         ClerkLinesLock->Release();
         clerks[shortestclerkline].ClerkCV->
-                    Wait(clerks[shortestclerkline].ClerkTransLock);
+                    Wait(clerks[shortestclerkline].ClerkLinesLock);
         cout<<"P_"<<ID<<": ClerkLinesLock Released, Now Waiting for signal by "
             <<"PharmacyClerk\n";
     }else { //No one else in line
