@@ -142,8 +142,16 @@ V. Testing: (For each test case, you must show)
             continue beyond that and perpetually sleep as there is no one to
             wake them up and send them to the doctor.  
 
-        -Test Case 3:
+        -Test Case 3: Only one patient gets to see a given doctor at at
+         instance of time
+
+            To run this test run nachos as follows:
             
+            %threads/nachos -P2 -rs {your seed} 1| grep "Consulting doctor x"
+
+            Where x is the ID of one of the doctors.  Then select item 3 on the
+            menu. 
+
     + Test Output
 
         -Test Case 1:
@@ -164,6 +172,11 @@ V. Testing: (For each test case, you must show)
             proving to us that they cannot continue without a doorboy.
 
         -Test Case 3:
+            
+            The output from the grep command will show all the patients who
+            enter and exit interaction with doctor x.  Verify that no patient
+            enters consultation with a doctor before the previous one has
+            finished.
 
 
 VI. Discussion:
