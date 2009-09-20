@@ -496,21 +496,21 @@ void cashier(int ID) {
 void clerk(int ID){
     while(true){
         ClerkLinesLock->Acquire();
-        
         if(clerks[ID].patientsInLine > 0) { // someone in line
             //signal the first person
-            clerks[ID].ClerkCV->Signal(ClerkLinesLock);
+            cout << "C_"<<ID<<": Wake up 1 patient on my line."<<endl;
+            clerks[ID].ClerkTransLock->Acquire();
+            clerks[ID].ClerkCV->Signal(clerks[ID].ClerkTransLock);
         } else { // noone in line
             // go on break
             clerks[ID].ClerkBreakCV->Wait(ClerkLinesLock);
             ClerkLinesLock->Release();
             continue;
         }
-        
         // I have a patient
         // acquire the transaction Lock for further transactions
-        //  with the patient
-        clerks[ID].ClerkTransLock->Acquire();
+        // with the patient
+        //clerks[ID].ClerkTransLock->Acquire();
         ClerkLinesLock->Release();
 
         // waiting for patient to give prescription
@@ -518,12 +518,11 @@ void clerk(int ID){
 
          // patient gives prescription:
          printf("C_%d: gave Medicines!\n",ID);
-        //TODO: lookup the total cost with priscription
                         
         clerks[ID].ClerkTransCV->Signal(clerks[ID].ClerkTransLock);
         // wait for payment
         clerks[ID].ClerkTransCV->Wait(clerks[ID].ClerkTransLock);
-        //Collect payment
+        // Collect payment
 cout<<"C_"<<ID<<": The cost for the medicines are:"<<clerks[ID].fee<<" dollars"<<endl;
         // add this payment to our total collected
         PaymentLock->Acquire();
@@ -602,17 +601,17 @@ void hospitalManager(int ID){
         printf("H_%d : Checking clerks\n",ID);
         for (int i=0; i<MAX_CLERKS; i++) {//Check for waiting patients
             if (clerks[i].patientsInLine > 0 ) {
-                printf("H_%d : found CL_%d sleeping and %d waiting\nKicking some doorboy Ass\n",
+                printf("H_%d : found C_%d sleeping and %d waiting\nKicking some doorboy Ass\n",
                        ID,i,clerks[i].patientsInLine);
                     //Wake up this receptionist up
                 ClerkLinesLock->Acquire();
-                clerks[i].ClerkBreakCV->Broadcast(ClerkLinesLock);
+                clerks[i].ClerkBreakCV->Signal(ClerkLinesLock);
                 ClerkLinesLock->Release();
             }
         }
             //Query cashiers for total sales
         PaymentLock->Acquire();
-        cout << "Total amount collected by clerks: "<<totalsales<<endl;
+        cout << "H_"<<ID<<": Total amount collected by clerks: "<<totalsales<<endl;
         PaymentLock->Release();
         currentThread->Yield();
         

@@ -112,7 +112,6 @@ void patients(int ID){
     ////////////////////////////////////////////
     
     cashierLineLock->Acquire();
-    
     // find the shortest line
     int myCashier = 0;
     int sLen = cashiers[0].lineLength;
@@ -153,7 +152,7 @@ void patients(int ID){
     
     printf("P_%d:Attempt to acquire ClerkLinesLock...",ID);
     ClerkLinesLock->Acquire();
-    int shortestclerkline = 0;
+    int shortestclerkline = clerks[0].patientsInLine;
     int length = 0;
     //Find shortest Line
     for (int i=0; i<numClerks; i++) {
@@ -162,14 +161,14 @@ void patients(int ID){
             shortestclerkline = i;
         }
     }
-    printf("P_%d: found shortest line PC_%d len: %d\n",ID,shortestclerkline,length);
+    printf("P_%d: found shortest line C_%d len: %d\n",ID,shortestclerkline,length);
     clerks[shortestclerkline].patientsInLine++;
     clerks[shortestclerkline].ClerkTransLock->Acquire();
     clerks[shortestclerkline].ClerkCV->
                     Wait(clerks[shortestclerkline].ClerkTransLock);
 
     cout<<"P_"<<ID<<" Got woken up, got out of line and going to the PHarmacy "
-        <<"CLerk to give prescription.\n";
+        <<"Clerk to give prescription.\n";
     clerks[shortestclerkline].patientsInLine--;
     //signal ParmacyClerk that i am ready to give Prescription
     //clerks[shortestclerkline].ClerkTransLock->Acquire();
