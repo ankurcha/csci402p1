@@ -47,6 +47,7 @@ void patients(int ID){
     receptionists[shortestline].peopleInLine--;
     
     //wait for the receptionist to prepare token for me, till then I wait
+    recpLineLock->Release();
     receptionists[shortestline].transLock->Acquire();
 
     //token is ready just read it -- print it out in our case

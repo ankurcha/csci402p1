@@ -426,6 +426,7 @@ void receptionist(int ID){
         TokenCounterLock->Release();
 
         //Sleep till you get Acknowledgement
+        printf("R_%d: Waiting for Patient to pick up token...\n",ID);
         receptionists[ID].receptionistWaitCV->Wait(receptionists[ID].transLock);
 
         //Patient successfully got the token, go back to work: Loop again
