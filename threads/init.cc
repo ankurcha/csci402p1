@@ -347,7 +347,7 @@ void doorboy(int ID){
 }
 
 void doctor(int ID){
-    int waitingtime = 10000;
+    int waitingtime = 1000;
     while(true) {
         // acquire a doorboy
         cout<<"D_"<<ID<<": Alive!!"<<endl;
