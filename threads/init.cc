@@ -525,7 +525,7 @@ cout<<"C_"<<ID<<": The cost for the medicines are:"<<clerks[ID].fee<<" dollars"<
 
 void hospitalManager(int ID){
     printf("H_%d : Alive\n",ID);
-    int sleeptime = Random() % 3000;
+    int sleeptime = Random() % 30;
     
     while (true) {
         
@@ -537,7 +537,7 @@ void hospitalManager(int ID){
         }
         hospitalLock->Release();
         
-        sleeptime = Random() % 3000;
+        sleeptime = Random() % 30;
             //Sleep for some random amount of time
         printf("H_%d : Sleeping for %d cycles\n",ID,sleeptime);
         do{
