@@ -147,10 +147,9 @@ V. Testing: (For each test case, you must show)
 
             To run this test run nachos as follows:
             
-            %threads/nachos -P2 -rs {your seed} 1| grep "Consulting doctor x"
+            %threads/nachos -P2 3 -rs {your seed} 1| grep "Consulting doctor x"
 
-            Where x is the ID of one of the doctors.  Then select item 3 on the
-            menu. 
+            Where x is the ID of one of the doctors. 
 
     + Test Output
 
