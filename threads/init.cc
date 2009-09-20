@@ -606,7 +606,7 @@ void hospitalManager(int ID){
                        ID,i,clerks[i].patientsInLine);
                     //Wake up this receptionist up
                 ClerkLinesLock->Acquire();
-                clerks[i].ClerkBreakCV->Broadcast(ClerkLinesLock);
+                clerks[i].ClerkBreakCV->Signal(ClerkLinesLock);
                 ClerkLinesLock->Release();
             }
         }
