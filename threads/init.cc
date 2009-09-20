@@ -148,8 +148,10 @@ struct Cashier {
 Lock *ClerkLinesLock= new Lock("ClerkLineLock");
 Lock *PaymentLock= new Lock("PaymentLock");
 int totalsales=0;
+
+// hospitalLock protects the count of patients remaining in the hospital
 Lock *hospitalLock = new Lock("HospitalLock");
-int peopleInHospital;
+int peopleInHospital = 1;
 
 
 struct PharmacyClerks{
@@ -697,7 +699,7 @@ void HospINIT() {
     }
         //1. Doctors
     cout << "Creating "<< numDoctors<<" Doctors\n";
-    for(i=0;i<MAX_DOCTORS;i++)
+    for(i=0;i<numDoctors;i++)
     {
      
         t=new Thread(temp);
