@@ -347,7 +347,7 @@ void doorboy(int ID){
 }
 
 void doctor(int ID){
-    long waitingtime = 100000;
+    int waitingtime = 10000;
     while(true) {
         // acquire a doorboy
         cout<<"D_"<<ID<<": Alive!!"<<endl;
@@ -355,13 +355,16 @@ void doctor(int ID){
 
         // assure that there is a doorboy in line
         while(doorboyLineLength <= 0) {
-            cout<<"D_"<<ID<<": Doctor could not find a doorboy!\n";
+            cout<<"D_"<<ID<<": Doctor could not find a doorboy waittime: "
+            <<waitingtime<<endl;
             doorboyLineLock->Release();
             currentThread->Yield();
             waitingtime--;
             doorboyLineLock->Acquire();
-            if(waitingtime == 0)
+            if(waitingtime <= 0){
+                cout <<"Waited for a long time with no Doorboys, exiting...\n";
                 return;
+            }
         }
         
         // pull the next doorboy off the line
@@ -584,12 +587,12 @@ void hospitalManager(int ID){
             //1. Check on the Receptionists
         printf("H_%d : Checking receptionists\n",ID);
         int patientsWaiting=0;
-        for (int j=0; j<RECP_MAX; j++) {
+        for (int j=0; j<numRecp; j++) {
             patientsWaiting += receptionists[j].peopleInLine;
         }
         
         if (patientsWaiting > 1) {
-            for (int j=0; j<RECP_MAX; j++) {
+            for (int j=0; j<numRecp; j++) {
                 //receptionists[j].LineLock->Acquire();
                 recpLineLock->Acquire();
                 receptionists[j].ReceptionistBreakCV->Signal(recpLineLock);
@@ -599,7 +602,7 @@ void hospitalManager(int ID){
         }
            //2. Query Cashiers
         printf("H_%d : Checking cashiers\n",ID);
-        for (int i=0; i<MAX_CASHIER; i++) {//Check for waiting patients
+        for (int i=0; i<numCashiers; i++) {//Check for waiting patients
             if (cashiers[i].lineLength > 0 ) {
                 printf("H_%d : found C_%d sleeping and %d waiting\nKicking Ass\n",
                        ID,i,cashiers[i].lineLength);
@@ -620,7 +623,7 @@ void hospitalManager(int ID){
             //3. Query pharmacy
         
         printf("H_%d : Checking clerks\n",ID);
-        for (int i=0; i<MAX_CLERKS; i++) {//Check for waiting patients
+        for (int i=0; i<numClerks; i++) {//Check for waiting patients
             if (clerks[i].patientsInLine > 0 ) {
                 printf("H_%d : found CL_%d sleeping and %d waiting\nKicking some doorboy Ass\n",
                        ID,i,clerks[i].patientsInLine);
