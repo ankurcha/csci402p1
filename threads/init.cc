@@ -14,6 +14,7 @@
  */
 
 #include "system.h"
+#include "list.h"
 #include <iostream>
 using namespace std;
 
@@ -222,7 +223,8 @@ struct Doctor {
 Lock* doorboyLineLock = new Lock("doorboyLineLock");
 Condition* doorboyLineCV = new Condition("doorboyLineCV");
 int doorboyLineLength = 0;
-int wakingDoctorID = 0;
+//int wakingDoctorID = 0;
+List* wakingDoctorList = new List();
 
 struct DoorBoy {
     //Condition *doorboyBreakCV;
@@ -283,7 +285,12 @@ void doorboy(int ID){
         doorboyLineLength--;
         
         //Some doctor woke me up, lets check who
-        myDoctor =  wakingDoctorID;
+        //myDoctor =  wakingDoctorID;
+        if(wakingDoctorList->IsEmpty()) {
+            printf("DB_%d: ERROR: Waking doctor list is empty!\n", ID);
+            continue;
+        }
+        myDoctor = (int) wakingDoctorList->Remove();
         cout << "DB_"<<ID<<": Servicing D_"<<myDoctor<<"\n";
         doorboyLineLock->Release();
 
@@ -341,7 +348,8 @@ void doctor(int ID){
         
         // pull the next doorboy off the line
         cout<<"D_"<<ID<<": Signaling doorboy!\n";
-        wakingDoctorID = ID;
+        //wakingDoctorID = ID;
+        wakingDoctorList->Append( (void*) ID);
         doorboyLineCV->Signal(doorboyLineLock);
 
         // acquire the transaction lock and wait for the doorboy to arrive
