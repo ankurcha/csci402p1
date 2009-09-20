@@ -355,14 +355,20 @@ void doctor(int ID){
 
         // assure that there is a doorboy in line
         while(doorboyLineLength <= 0) {
-            cout<<"D_"<<ID<<": Doctor could not find a doorboy waittime: "
+            if(waitingtime % 100 == 0){
+            cout<<"D_"<<ID<<": Doctor could not find a doorboy waittime: "                
             <<waitingtime<<endl;
+            }
+
             doorboyLineLock->Release();
             currentThread->Yield();
             waitingtime--;
             doorboyLineLock->Acquire();
             if(waitingtime <= 0){
                 cout <<"Waited for a long time with no Doorboys, exiting...\n";
+                testlock->Acquire();
+                doctortest++;
+                testlock->Release();
                 return;
             }
         }
@@ -540,7 +546,6 @@ void clerk(int ID){
 
          // patient gives prescription:
          printf("C_%d: gave Medicines!\n",ID);
-        //TODO: lookup the total cost with priscription
                         
         clerks[ID].ClerkTransCV->Signal(clerks[ID].ClerkTransLock);
         // wait for payment
@@ -758,14 +763,8 @@ int test1(){
     numDoctors = (Random() % (MAX_DOCTORS - MIN_DOCTORS + 1) + MIN_DOCTORS);
         //    numDoorboys = numDoctors;
     cout << "Bypass doorboys creation\n";
-        //    for(i=0;i<numDoorboys;i++)
-        //    {
-        //        
-        //        t=new Thread(temp);
-        //        t->Fork((VoidFunctionPtr) doorboy, i);
-        //    }
+        
     
-        //5. Pharmacys
     numClerks= (Random() % (MAX_CLERKS - MIN_CLERKS +1) + MIN_CLERKS) ;
     cout << "Creating "<<numClerks<<" Clerks\n";
     for(i=0;i<numClerks;i++)
