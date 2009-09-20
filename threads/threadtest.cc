@@ -88,6 +88,10 @@ void Problem2()
                 HospINIT();
                 return;
                 break;
+            case 4:
+                test4();
+                return;
+                break;
             default:
                 break;
         }

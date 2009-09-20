@@ -22,6 +22,10 @@ using namespace std;
 #define FREE 1
 #define SLEEPING 2
 
+bool test1active = false;
+bool test4active = false;
+bool test5active = false;
+
 struct node {
     int key, value;
     node* next;
@@ -68,13 +72,6 @@ struct linkedlist {
 
 int test1();
 Lock *testlock = new Lock("TestLock");
-int doorboytest = 0;
-int patienttest = 0;
-int doctortest = 0;
-int clerktest = 0;
-int receptionisttest = 0;
-int cashiertest = 0;
-int hospitalmanagertest = 0;
 
 // tokenCounter for assigning tokens to patients
 Lock *TokenCounterLock = new Lock("TokenCounterLock");
@@ -338,12 +335,7 @@ void doorboy(int ID){
     }//End of while
 
     printf("DB_%d: Dying...AAAaaaahhhhhhhhh!!\n",ID);
-#ifdef _TEST2_CC_
-    testlock->Acquire();
-    cout << "Doorboy exited.\n";
-    doorboytest++;
-    testlock->Release();
-#endif
+
 }
 
 void doctor(int ID){
@@ -366,9 +358,6 @@ void doctor(int ID){
             doorboyLineLock->Acquire();
             if(waitingtime <= 0){
                 cout <<"Waited for a long time with no Doorboys, exiting...\n";
-                testlock->Acquire();
-                doctortest++;
-                testlock->Release();
                 return;
             }
         }
@@ -678,13 +667,18 @@ void HospINIT(int testmode = 0) {
         
             //4. DoorBoys
         numDoctors = (Random() % (MAX_DOCTORS - MIN_DOCTORS + 1) + MIN_DOCTORS);
-        numDoorboys = numDoctors;
-        cout << "Creating "<<numDoorboys<<" Doorboys\n";
-        for(i=0;i<numDoorboys;i++)
-        {
-            
-            t=new Thread(temp);
-            t->Fork((VoidFunctionPtr) doorboy, i);
+        if(test1active == false){
+            numDoorboys = numDoctors;
+            cout << "Creating "<<numDoorboys<<" Doorboys\n";
+            for(i=0;i<numDoorboys;i++)
+            {
+                
+                t=new Thread(temp);
+                t->Fork((VoidFunctionPtr) doorboy, i);
+            }            
+        }else{
+            numDoorboys = 0;
+            cout << "Bypassing Doorboy Creation\n";
         }
         
             //5. Pharmacys
@@ -743,82 +737,18 @@ void HospINIT(int testmode = 0) {
 
 
 int test1(){
-    
-    int i = 0;
-    char temp[] = "NACHOS_THREAD";
-    Thread *t;   
-    
-    
-        //3. Cashiers
-    numCashiers = (Random() % (MAX_CASHIER - MIN_CASHIER +1) + MIN_CASHIER) ;
-    cout << "Creating "<<numCashiers<<" Cashiers\n";
-    for(i=0;i<numCashiers;i++)
-    {
-        
-        t=new Thread(temp);
-        t->Fork((VoidFunctionPtr) cashier, i);
-    }
-    
-        //4. DoorBoys
-    numDoctors = (Random() % (MAX_DOCTORS - MIN_DOCTORS + 1) + MIN_DOCTORS);
-        //    numDoorboys = numDoctors;
-    cout << "Bypass doorboys creation\n";
-        
-    
-    numClerks= (Random() % (MAX_CLERKS - MIN_CLERKS +1) + MIN_CLERKS) ;
-    cout << "Creating "<<numClerks<<" Clerks\n";
-    for(i=0;i<numClerks;i++)
-    {
-        
-        t=new Thread(temp);
-        t->Fork((VoidFunctionPtr) clerk, i);
-    }
-        //1. Doctors
-    cout << "Creating "<< numDoctors<<" Doctors\n";
-    for(i=0;i<numDoctors;i++)
-    {
-        
-        t=new Thread(temp);
-        t->Fork((VoidFunctionPtr) doctor, i);
-    }
-        //7. Patients
-    numPatients = Random() % (MAX_PATIENTS - MIN_PATIENTS +1) + MIN_PATIENTS;
-    
-    hospitalLock->Acquire();
-    peopleInHospital = numPatients;
-    hospitalLock->Release();    
-    
-    cout << "Creating "<<numPatients<<" Patients\n";
-    for(i=0;i<numPatients;i++)
-    {
-        
-        t=new Thread(temp);
-        t->Fork((VoidFunctionPtr) patients, i);
-    }
-    
-        //6. HospitalManager
-    cout << "Creating 1 Hospital Manager\n";
-    t = new Thread("HospitalManager_0");
-    t->Fork((VoidFunctionPtr) hospitalManager, 0);   
-        //  INIT();
-    
-        //2. Receptionists
-    numRecp= (Random() % (RECP_MAX - RECP_MIN +1) + RECP_MIN) ;
-    cout << "Creating "<<numRecp<<" Receptionists\n";
-    for(i=0; i<numRecp; i++)
-    {
-        t = new Thread(temp);
-        t->Fork((VoidFunctionPtr) receptionist, i);
-    }
-    
-    hospitalLock->Acquire();
-    if( peopleInHospital == numPatients){
-        return 1;
-    }
-    hospitalLock->Release();
-    
+    test1active = true;
+    HospINIT();
+    return 0;
 }
 
 int test3() {
+    return 0;
+}
+
+int test4(){
+    test4active = true;
+        //start the process normally
+    HospINIT();
     return 0;
 }

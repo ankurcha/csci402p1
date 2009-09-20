@@ -30,15 +30,23 @@ void patients(int ID){
     int len = receptionists[0].peopleInLine;
 
     //Find shortest Line
- 
+    cout << "P_"<<ID
+         <<": Searching for the receptionist with the shortest line\n";
     for (int i=0; i<numRecp; i++) {
-
+        
+        if (test4active == true) {
+                //Print the length of each line
+            cout <<"P_"<<ID<<": TEST4: Length of line at R_"<<i<<" = "
+            <<receptionists[i].peopleInLine<<endl;
+        }
+        
         if(receptionists[i].peopleInLine < len){
             len = receptionists[i].peopleInLine;
             shortestline = i;
         }
     }
-    printf("P_%d: found shortest line R_%d len: %d\n",ID,shortestline,len);
+    printf("P_%d: Found shortest line with R_%d len: %d\n",
+           ID,shortestline,len);
 
     // Wait in line
     receptionists[shortestline].peopleInLine++;
