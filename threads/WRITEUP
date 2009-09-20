@@ -39,15 +39,96 @@ I. Requirements:
 
 II. Assumptions:
 
+    We assume:
+        -Functions provided by NACHOS are generally bug free and perform as
+        specified.
+
 III. Design:
 
+    TODO
+
 IV. Implementation:
+
     + Files Modified
+
+        threads/Makefile                  
+        threads/main.cc                   
+        threads/synch.cc                  
+        threads/synch.h                   
+        threads/threadtest.cc             
+
     + Files added
+
+        threads/init.cc                   
+        threads/patient.cc                
+        threads/test_code.cc - This file is as provided, so i will not list
+            anything in it as changes below
+
     + Data Structures added, and the file they were added to.
+
+        init.cc:
+            struct node
+            struct linkedlist
+            struct Receptionists
+            struct Cashier
+            struct PharmacyClerks
+            struct Doctor
+            struct DoorBoy
+
     + Data Structures modified, and the file they were added to.
+
+        class Lock     -- in synch.cc/synch.h
+        {
+            Added data:
+            Thread *owner;
+            int numWaiting;
+            List *queue;
+            bool islocked;
+            
+            Modified Methods:
+            Lock()
+            ~Lock()
+            Acquire()
+            Release()
+            isHeldByCurrentThread()
+        }
+
+        class Condition    -- in synch.cc/synch.h
+        {
+            Added data:
+            List* queue;
+            Lock* CVLock;
+
+            Modified Methods:
+            Condition()
+            ~Condition()
+            Wait()
+            Signal()
+            Broadcast()
+        }
+
     + Functions added and in which file.
+
+        threadtest.cc:
+            Problem2()
+
+        init.cc:
+            void doorboy(int)
+            void doctor(int)
+            void receptionist(int)
+            void cashier(int)
+            void clerk(int)
+            void hospitalManager(int)
+            void HospINIT()
+
+        patient.cc:
+            void patients(int)
+
     + Functions modified and in which file.
+        
+        main.cc:
+            Added command line options to run ThreadTest(), TestSuite(), and
+            Problem2().
 
 V. Testing: (For each test case, you must show)
     + How to test

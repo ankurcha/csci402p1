@@ -13,6 +13,8 @@
 #include "system.h"
 #include "test_code.cc"
 #include "init.cc"
+#include "test_code2.cc"
+
 //#include "syncListImplementation.cc"
 //----------------------------------------------------------------------
 // SimpleThread
@@ -28,8 +30,8 @@ void SimpleThread(int which)
     int num;
     
     for (num = 0; num < 5; num++) {
-      //	printf("*** thread %d looped %d times\n", which, num);
-      //   currentThread->Yield();
+      	printf("*** thread %d looped %d times\n", which, num);
+        currentThread->Yield();
     }
 }
 
@@ -48,10 +50,6 @@ void ThreadTest()
     t->Fork(SimpleThread, 1);
     SimpleThread(0);
 
-    //startTest();
-    //printf("\nTESTING HOSPITAL APP\n");
-    //
-    //HospINIT();
 }
 
 //----------------------------------------------------------------------
@@ -61,9 +59,26 @@ void ThreadTest()
 
 void Problem2()
 {
-    printf("\nTESTING HOSPITAL SIMULATION\n");
-
-    HospINIT();
+    while (true) {
+        printf("\nTESTING HOSPITAL SIMULATION\n");
+        int choice;
+        cout << "\nSelect from the options below"<<endl
+        <<"1. Run simulation normally."<<endl
+        <<"2. Run Test cases\n";
+        cin>>choice;
+        switch ( choice ) {
+            case 1:
+                HospINIT();
+                return;
+                break;
+            case 2:
+                test1();
+                return;
+                break;
+            default:
+                break;
+        }
+    }
 }
 
 
