@@ -469,7 +469,7 @@ void cashier(int ID) {
 }
 
 
-void Clerk(int ID){
+void clerk(int ID){
     while(true){
         ClerkLinesLock->Acquire();
         
@@ -625,7 +625,7 @@ void INIT(){
     t->Fork((VoidFunctionPtr) cashier, 0);
     
     t = new Thread("clerk_0");
-    t->Fork((VoidFunctionPtr) Clerk, 0);
+    t->Fork((VoidFunctionPtr) clerk, 0);
     
     t = new Thread("doctor_0");
     t->Fork((VoidFunctionPtr) doctor, 0);
