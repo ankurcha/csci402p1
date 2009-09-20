@@ -66,44 +66,53 @@ struct linkedlist {
     }
 };
 
+// tokenCounter for assigning tokens to patients
+Lock *TokenCounterLock = new Lock("TokenCounterLock");
+int TokenCounter;
+
+// global for all receptionists
+//Lock *AllLinesLock = new Lock("AllLineLock");
+Lock* recpLineLock = new Lock("recpLineLock");
 
 //shared data struct related to a Receptionist
-
 struct Receptionists{
-    int state;
+    //int state;
 
-    int peopleInLine;
-    
-    Lock *LineLock;
+    //Lock *LineLock;
+    // receptionist line CV
     Condition *receptionCV;
-    Condition *receptionistWaitCV; //Wait using LineLock
-    Condition *ReceptionistBreakCV; //Break using LineLock
+    int peopleInLine;
 
+    // receptionist transactional lock and CV and protected variables
+    Lock* transLock;
+    Condition *receptionistWaitCV; //Wait using LineLock
     int currentToken;
-    
-    
+
+    // receptionist break CV
+    Condition *ReceptionistBreakCV; //Break using LineLock
     
     Receptionists(){
         peopleInLine = 0;
-        state = FREE;
+        //state = FREE;
 
-        LineLock = new Lock("LineLock");
+        //LineLock = new Lock("LineLock");
         receptionCV = new Condition("receptionCV");
+
+        transLock = new Lock("Receptionists.transLock");
         receptionistWaitCV = new Condition("receptionistWaitCV");
         ReceptionistBreakCV = new Condition("ReceptionistBreakCV");
-            //        ReceptionistBreakLock = new Lock("ReceptionistBreakLock");
         currentToken = 0;
     }
 };
+
+// list mapping patient tokens to consultFees
+Lock* feeListLock = new Lock("feeListLock");
+linkedlist* feeList = new linkedlist();
 
 // global for all cashiers
 Lock* cashierLineLock = new Lock("cashierLineLock");
 Lock* feesPaidLock = new Lock("feesPaidLock");
 int feesPaid = 0;
-
-// list mapping patient tokens to consultFees
-Lock* feeListLock = new Lock("feeListLock");
-linkedlist *feeList = new linkedlist();
 
 // shared data struct related to a Cashier
 struct Cashier {
@@ -180,13 +189,16 @@ struct Doctor {
     Lock *LineLock;
     Condition *LineCV;
     int peopleInLine;
+    //CV for doorboys to sleep on
+    Condition* doorboyBreakCV;
+    
     
     //transaction lock and CV and variables protected
     Lock* transLock;
     Condition* transCV;
     int prescription;
     int patientToken;
-    
+
     Doctor() {
         prescription = -1;
         patientToken = -1;
@@ -194,12 +206,16 @@ struct Doctor {
         peopleInLine = 0;
         LineLock = new Lock("LineLock");
         LineCV = new Condition("LineCV");
+        doorboyBreakCV = new Condition("Doctor.doorboyBreakCV");
         
         transLock = new Lock("Doctor.transLock");
         transCV = new Condition("Doctor.transCV");
     }
 
     ~Doctor() {
+        delete LineLock;
+        delete LineCV;
+        delete doorboyBreakCV;
         delete transLock;
         delete transCV;
     }
@@ -212,10 +228,10 @@ int doorboyLineLength = 0;
 int wakingDoctorID = 0;
 
 struct DoorBoy {
-    Condition *doorboyBreakCV;
+    //Condition *doorboyBreakCV;
     
     DoorBoy(){
-        doorboyBreakCV = new Condition("doorboyBreakCV");
+        //doorboyBreakCV = new Condition("doorboyBreakCV");
     }
 };
 
@@ -244,19 +260,14 @@ int numDoctors = 0;
 int numCashiers = 0;
 int numClerks = 0;
 int numDoorboys = 0;
-int numRecp = 5;
-int numPatients = 25;
+int numRecp = 0;
+int numPatients = 0;
 
 Receptionists receptionists[RECP_MAX];
-DoorBoy doorboys[MAX_DOORB];
+DoorBoy doorboys[MAX_DOCTORS];
 Doctor doctors[MAX_DOCTORS];
 Cashier cashiers[MAX_CASHIER];
 PharmacyClerks clerks[MAX_CLERKS];
-
-int TokenCounter;
-
-Lock *AllLinesLock = new Lock("AllLineLock");
-Lock *TokenCounterLock = new Lock("TokenCounterLock");
 
 #include "patient.cc"
 
@@ -295,7 +306,7 @@ void doorboy(int ID){
         while(doctors[myDoctor].peopleInLine <= 0) { 
             //I will be woken up by the manager only!!
             printf("DB_%d: Yawn!!...ZZZZzzzzz....\n",ID);
-            doorboys[ID].doorboyBreakCV->Wait(doctors[myDoctor].LineLock);
+            doctors[myDoctor].doorboyBreakCV->Wait(doctors[myDoctor].LineLock);
             // I got woken up, time to go back to work - by now there are 
             //  people dying on the floor!
         }
@@ -393,42 +404,45 @@ void doctor(int ID){
 void receptionist(int ID){
     while (true) {
         cout << "R_"<<ID<<": Alive!\n";
-        AllLinesLock->Acquire();
-        receptionists[ID].state = FREE;
+        recpLineLock->Acquire();
         if (receptionists[ID].peopleInLine > 0) {
             //Some one in my line - service them, first generate new token
-            receptionists[ID].LineLock->Acquire();
-            receptionists[ID].state = BUSY;
-            //Genetate token for the patient
-            //Acquire token lock
-            TokenCounterLock->Acquire();
-            //Increment token Counter
-                //Take token for patient
-            printf("R_%d: Generating Token...\n",ID);
-            receptionists[ID].currentToken = ++TokenCounter;
-                //New Token Available with the receptionist
-            TokenCounterLock->Release();
+            //receptionists[ID].LineLock->Acquire();
+            //receptionists[ID].state = BUSY;
                 //Wake one waiting patient up
-            receptionists[ID].receptionCV->Signal(receptionists[ID].LineLock);            
-            //Sleep till you get Acknowledgement
-            receptionists[ID].receptionistWaitCV->Wait(receptionists[ID].LineLock);
-            AllLinesLock->Release();
-            //Patient successfully got the token, go back to work: Loop again
-            printf("R_%d: Continue to next Patient\n",ID);
-            receptionists[ID].LineLock->Release();
-        }else {
+            //receptionists[ID].receptionCV->Signal(receptionists[ID].LineLock);
+            receptionists[ID].receptionCV->Signal(recpLineLock);
+        } else {
             //My Line is empty
             DEBUG('t',"No Patients, going on break...");
             printf("R_%d Going to sleep\n",ID);
-            receptionists[ID].state = SLEEPING;
-            receptionists[ID].LineLock->Acquire();
-            receptionists[ID].ReceptionistBreakCV->Wait(receptionists[ID].LineLock);
-            receptionists[ID].LineLock->Release();
-            AllLinesLock->Release();
+            //receptionists[ID].state = SLEEPING;
+            //receptionists[ID].LineLock->Acquire();
+            //receptionists[ID].ReceptionistBreakCV->Wait(receptionists[ID].LineLock);
+            receptionists[ID].ReceptionistBreakCV->Wait(recpLineLock;);
+            //receptionists[ID].LineLock->Release();
+            recpLineLock->Release();
             //HospitalManager kicked my ass for sleeping on the job!!
             //Loop back!!
             continue;
         }
+
+        receptionists[ID].transLock->Acquire();
+        recpLineLock->Release();
+
+        //Genetate token for the patient
+        TokenCounterLock->Acquire();
+        printf("R_%d: Generating Token...\n",ID);
+        receptionists[ID].currentToken = ++TokenCounter;
+        TokenCounterLock->Release();
+
+        //Sleep till you get Acknowledgement
+        //receptionists[ID].receptionistWaitCV->Wait(receptionists[ID].LineLock);
+        receptionists[ID].receptionistWaitCV->Wait(receptionists[ID].transLock);
+
+        //Patient successfully got the token, go back to work: Loop again
+        printf("R_%d: Patient got token, Continue to next Patient\n",ID);
+        receptionists[ID].LineLock->Release();
     }
 }
 
@@ -458,8 +472,10 @@ void cashier(int ID) {
         // waiting for patient to deposit its token in patToken
         cashiers[ID].transCV->Wait(cashiers[ID].transLock);
 
-        //TODO lookup value for cashiers[ID].patToken in the token table
-        cashiers[ID].fee = 42;
+        // lookup value for cashiers[ID].patToken in the token table
+        feeListLock->Acquire();
+        cashiers[ID].fee = feeList->getValue(cashiers[ID].patToken);
+        feeListLock->Release();
         // tell patient the fee
         
         cashiers[ID].transCV->Signal(cashiers[ID].transLock);
