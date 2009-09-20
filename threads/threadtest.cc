@@ -13,6 +13,8 @@
 #include "system.h"
 #include "test_code.cc"
 #include "init.cc"
+#include "test_code2.cc"
+
 //#include "syncListImplementation.cc"
 //----------------------------------------------------------------------
 // SimpleThread
@@ -61,9 +63,26 @@ void ThreadTest()
 
 void Problem2()
 {
-    printf("\nTESTING HOSPITAL SIMULATION\n");
-
-    HospINIT();
+    while (true) {
+        printf("\nTESTING HOSPITAL SIMULATION\n");
+        int choice;
+        cout << "\nSelect from the options below"<<endl
+        <<"1. Run simulation normally."<<endl
+        <<"2. Run Test cases\n";
+        cin>>choice;
+        switch ( choice ) {
+            case 1:
+                HospINIT();
+                return;
+                break;
+            case 2:
+                test1();
+                return;
+                break;
+            default:
+                break;
+        }
+    }
 }
 
 
