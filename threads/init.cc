@@ -707,6 +707,11 @@ void HospINIT() {
     }
         //7. Patients
     numPatients = Random() % (MAX_PATIENTS - MIN_PATIENTS +1) + MIN_PATIENTS;
+    
+    hospitalLock->Acquire();
+    peopleInHospital = numPatients;
+    hospitalLock->Release();    
+    
     cout << "Creating "<<numPatients<<" Patients\n";
     for(i=0;i<numPatients;i++)
     {

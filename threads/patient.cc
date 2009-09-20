@@ -12,6 +12,7 @@
 using namespace std;
 
 void patients(int ID){
+    
     int myToken;
     int myDoctor;
     int myPrescription;
