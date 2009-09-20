@@ -689,7 +689,7 @@ void HospINIT() {
     {
      
         t=new Thread(temp);
-        t->Fork((VoidFunctionPtr) Clerk, i);
+        t->Fork((VoidFunctionPtr) clerk, i);
     }
         //1. Doctors
     cout << "Creating "<< numDoctors<<" Doctors\n";
