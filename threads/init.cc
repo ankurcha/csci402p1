@@ -144,6 +144,9 @@ struct Cashier {
 Lock *ClerkLinesLock= new Lock("ClerkLineLock");
 Lock *PaymentLock= new Lock("PaymentLock");
 int totalsales=0;
+Lock *hospitalLock = new Lock("HospitalLock");
+int peopleInHospital;
+
 
 struct PharmacyClerks{
     int patientsInLine;
@@ -318,18 +321,19 @@ void doorboy(int ID){
 void doctor(int ID){
     while(true) {
         // acquire a doorboy
-        //>>>>>>> 64ebebe4ae180913275d5b5204571b6ca000c299
+        cout<<"D_"<<ID<<": Alive!!"<<endl;
         doorboyLineLock->Acquire();
 
         // assure that there is a doorboy in line
         while(doorboyLineLength <= 0) {
-            printf("Doctor could not find a doorboy!\n");
+            cout<<"D_"<<ID<<": Doctor could not find a doorboy!\n";
             doorboyLineLock->Release();
             currentThread->Yield();
             doorboyLineLock->Acquire();
         }
         
         // pull the next doorboy off the line
+        cout<<"D_"<<ID<<": Signaling doorboy!\n";
         wakingDoctorID = ID;
         doorboyLineCV->Signal(doorboyLineLock);
 
@@ -338,11 +342,13 @@ void doctor(int ID){
         doorboyLineLock->Release();
 
         //////  DOORBOY INTERACTION  //////
+        cout<<"D_"<<ID<<": Waiting for a doorboy to send in the patient!\n";
         doctors[ID].transCV->Wait(doctors[ID].transLock);
 
         // go on break if so inclined
         if(Random() % 100 > 49) { // go on break
             // 5-15 yields
+            cout<<"D_"<<ID<<": Going on break!\n";
             int numYields = 5 + (Random() % 11);
             for(int i=0; i < numYields; ++i) {
                 currentThread->Yield();
@@ -350,6 +356,7 @@ void doctor(int ID){
         }
 
         // inform the doorboy that I am ready for a patient
+        cout<<"D_"<<ID<<": Signalling - Ready for patient\n";
         doctors[ID].transCV->Signal(doctors[ID].transLock);
 
         //////  PATIENT INTERACTION  //////
@@ -357,6 +364,7 @@ void doctor(int ID){
         doctors[ID].transCV->Wait(doctors[ID].transLock);
 
         // consult: 10-20 yields
+        cout<<"D_"<<ID<<": Now Consulting patient\n";
         int numYields = 10 + (Random() % 11);
         for(int i=0; i < numYields; ++i) {
             currentThread->Yield();  // I see ... mm hmm ... does it hurt here? ...
@@ -366,17 +374,20 @@ void doctor(int ID){
         doctors[ID].prescription = Random() % 100;
 
         // put consultation fees into the data structure for the cashier ($50-$250)
+        cout<<"D_"<<ID<<": Telling fee to cashiers\n";
         int consultFee = 50 + (Random() % 201);
         feeListLock->Acquire();
         feeList->append(doctors[ID].patientToken, consultFee);
         feeListLock->Release();
 
         // pass the prescription to the patient and wait for them to leave
+        cout<<"D_"<<ID<<": Waiting for the patient to leave\n";
         doctors[ID].transCV->Signal(doctors[ID].transLock);
         doctors[ID].transCV->Wait(doctors[ID].transLock);
 
         // done, the patient has left
         doctors[ID].transLock->Release();
+        cout<<"D_"<<ID<<": I'm ready for another one\n";
 
     } //end while
 }
@@ -513,10 +524,19 @@ void Clerk(int ID){
 
 void hospitalManager(int ID){
     printf("H_%d : Alive\n",ID);
-    int sleeptime = Random() % 300;
+    int sleeptime = Random() % 3000;
     
     while (true) {
-        sleeptime = Random() % 300;
+        
+        
+        hospitalLock->Acquire();
+        if (peopleInHospital <= 0) {
+            cout << "H_0: No one to service, putting my self to sleep!!!";
+            currentThread->Sleep();
+        }
+        hospitalLock->Release();
+        
+        sleeptime = Random() % 3000;
             //Sleep for some random amount of time
         printf("H_%d : Sleeping for %d cycles\n",ID,sleeptime);
         do{
@@ -694,8 +714,8 @@ void HospINIT() {
 
         //6. HospitalManager
     cout << "Creating 1 Hospital Manager\n";
-        t = new Thread("HospitalManager_0");
-        t->Fork((VoidFunctionPtr) hospitalManager, 0);   
+        //t = new Thread("HospitalManager_0");
+        //t->Fork((VoidFunctionPtr) hospitalManager, 0);   
 //  INIT();
     
         //2. Receptionists
