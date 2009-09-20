@@ -62,7 +62,7 @@ void Problem2()
     while (true) {
         printf("\nTESTING HOSPITAL SIMULATION\n");
         int choice;
-        cout << "\nSelect from the options below"<<endl
+        cerr << "\nSelect from the options below"<<endl
         <<"    0. Run simulation normally."<<endl
         <<"    1. Run Test 1 (Patient only gets in when doorboy asks)\n"
         <<"    2. Run Test 2 (If doorboy is on break, no patient gets in)\n"
@@ -86,7 +86,7 @@ void Problem2()
                 return;
                 break;
             case 3:
-                test3();
+                HospINIT();
                 return;
                 break;
             default:
