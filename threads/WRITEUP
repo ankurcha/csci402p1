@@ -39,11 +39,30 @@ I. Requirements:
 
 II. Assumptions:
 
+    We assume:
+        -Functions provided by NACHOS are generally bug free and perform as
+        specified.
+
 III. Design:
 
+    TODO
+
 IV. Implementation:
+
     + Files Modified
+
+        threads/Makefile                  
+        threads/main.cc                   
+        threads/synch.cc                  
+        threads/synch.h                   
+        threads/threadtest.cc             
+
     + Files added
+
+        threads/init.cc                   
+        threads/patient.cc                
+        threads/test_code.cc              
+
     + Data Structures added, and the file they were added to.
     + Data Structures modified, and the file they were added to.
     + Functions added and in which file.
