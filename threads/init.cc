@@ -272,7 +272,7 @@ void doorboy(int ID){
     int myDoctor = 0;
 
     while (true) {
-        printf("DB_%d: Alive\n",ID);
+        printf("DB_%d: Alive Thread ID: %x\n", ID, currentThread);
 
         //Get into the doorboyLine till some doctor asks for me
         doorboyLineLock->Acquire();
