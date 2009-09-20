@@ -171,7 +171,7 @@ void patients(int ID){
         //wait in line for my turn
     clerks[shortestclerkline].patientsInLine++;
     clerks[shortestclerkline].ClerkCV->Wait(ClerkLinesLock);
-    cout<<"P_"<<ID<<" Got woken up, got out of line and going to the PHarmacy "
+    cout<<"P_"<<ID<<" Got woken up, got out of line and going to the Pharmacy "
         <<"CLerk to give prescription.\n";
     clerks[shortestclerkline].patientsInLine--;
     
