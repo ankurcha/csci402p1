@@ -131,28 +131,39 @@ IV. Implementation:
             Problem2().
 
 V. Testing: (For each test case, you must show)
-    + Test Case 1: Patients only get in when the doorboy asks them to.
-        In this test, we initialize all the threads in the hospital 
-        simulation except the doorboy threads hence all the patients would 
-        get till the point that they have the token as given by the 
-        receptionist and select the doctor they want to see but do not 
-        continue beyond that and perpetually sleep as there is no one to 
-        wake them up and send them to the doctor.  
+    + How to test
+
+        -Test Case 1: Patients only get in when the doorboy asks them to.
+
+            In this test, we initialize all the threads in the hospital
+            simulation except the doorboy threads hence all the patients would
+            get till the point that they have the token as given by the
+            receptionist and select the doctor they want to see but do not
+            continue beyond that and perpetually sleep as there is no one to
+            wake them up and send them to the doctor.  
+
+        -Test Case 3:
+            
     + Test Output
-        We would see the following messages from any of the patients:
-        
-        P_0:Attempt to acquire recpLineLock...
-        P_0:success
-        P_0: found shortest line R_0 len: 0
-        P_0 Got woken up, get out of line and going to counter for token    
-        P_0: Reading Token..
-        P_0: My token is 1..yeah!!
-        P_0: Signal receptionist R_0 to continue, I am done
-        P_0 : Going to meet doctor D_1
-        P_0 : Join line and Waiting for doorboy to tell me to go
-        
-        As we can see that all the patients would halt at this point. Hence
-        proving to us that they cannot continue without a doorboy.
+
+        -Test Case 1:
+
+            We would see the following messages from any of the patients:
+            
+            P_0:Attempt to acquire recpLineLock...
+            P_0:success
+            P_0: found shortest line R_0 len: 0
+            P_0 Got woken up, get out of line and going to counter for token    
+            P_0: Reading Token..
+            P_0: My token is 1..yeah!!
+            P_0: Signal receptionist R_0 to continue, I am done
+            P_0 : Going to meet doctor D_1
+            P_0 : Join line and Waiting for doorboy to tell me to go
+            
+            As we can see that all the patients would halt at this point. Hence
+            proving to us that they cannot continue without a doorboy.
+
+        -Test Case 3:
 
 
 VI. Discussion:
