@@ -165,7 +165,7 @@ struct PharmacyClerks{
         patientsInLine= 0;
         state=FREE;
         payment=0;
-        fee=20;
+        fee=Random()%100;
         patPrescription=0;
 
         ClerkCV= new Condition("ClerkCV");
@@ -508,7 +508,7 @@ void clerk(int ID){
         // wait for payment
         clerks[ID].ClerkTransCV->Wait(clerks[ID].ClerkTransLock);
         //Collect payment
-
+cout<<"C_"<<ID<<": The cost for the medicines are:"<<clerks[ID].fee<<" dollars"<<endl;
         // add this payment to our total collected
         PaymentLock->Acquire();
         totalsales += clerks[ID].payment;
@@ -689,7 +689,7 @@ void HospINIT() {
     {
      
         t=new Thread(temp);
-        t->Fork((VoidFunctionPtr) Clerk, i);
+        t->Fork((VoidFunctionPtr) clerk, i);
     }
         //1. Doctors
     cout << "Creating "<< numDoctors<<" Doctors\n";
