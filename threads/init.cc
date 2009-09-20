@@ -317,6 +317,7 @@ void doorboy(int ID){
 
         //My job with the patients and the doctor is done
         //I can go back on the doorboyLine
+        doctors[myDoctor].transLock->Release();
         doctors[myDoctor].LineLock->Release();
         
     }//End of while
