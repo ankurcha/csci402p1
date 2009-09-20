@@ -40,35 +40,8 @@ void patients(int ID){
     printf("P_%d: found shortest line R_%d len: %d\n",ID,shortestline,len);
 
     // Wait in line
-    //if (len >0) {
-        //wait in line for my turn
-        receptionists[shortestline].peopleInLine++;
-        //recpLineLock->Release();
-        //receptionists[shortestline].LineLock->Acquire();
-        //cout<<"P_"<<ID<<": recpLineLock Released,"
-        //    <<"Now Waiting for signal by Receptionist\n";
-        //receptionists[shortestline].receptionCV->
-        //            Wait(receptionists[shortestline].LineLock);
-        receptionists[shortestline].receptionCV->Wait(recpLineLock);
-    //}else { //No one else in line
-    //    switch (receptionists[shortestline].state) {
-    //        case FREE:
-    //        case BUSY:
-    //        case SLEEPING:
-    //            //wait in line
-    //            receptionists[shortestline].peopleInLine++;
-    //            //Entered the line no need to hold all lines others may now continue
-    //            recpLineLock->Release();
-    //            receptionists[shortestline].LineLock->Acquire();
-    //            receptionists[shortestline].receptionCV->Wait(
-    //                                    receptionists[shortestline].LineLock);
-    //            printf("P_%d: recpLineLock Released, Now Waiting for signal\n",ID);
-    //            break;
-    //        default:
-    //            break;
-    //    }
-    //}
-    
+    receptionists[shortestline].peopleInLine++;
+    receptionists[shortestline].receptionCV->Wait(recpLineLock);
     printf("P_%d Got woken up, get out of line and going to counter for token\n",ID);
     receptionists[shortestline].peopleInLine--;
     
@@ -79,13 +52,14 @@ void patients(int ID){
     printf("P_%d: Reading Token..\n",ID);
     myToken = receptionists[shortestline].currentToken;
     printf("P_%d: My token is %d..yeah!!\n",ID,myToken);
+
     //Done, signal receptionist that he can proceed 
     receptionists[shortestline].receptionistWaitCV->
                 Signal(receptionists[shortestline].transLock);
     printf("P_%d: Signal receptionist R_%d to continue, I am done\n",
             ID,shortestline);
-    //Release Line Lock
-    //receptionists[shortestline].LineLock->Release();
+
+    //Release transaction lock
     receptionists[shortestline].transLock->Release();
     
     ///////////////////////////////////////////////////
