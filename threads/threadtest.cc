@@ -13,7 +13,6 @@
 #include "system.h"
 #include "test_code.cc"
 #include "init.cc"
-#include "test_code2.cc"
 
 //#include "syncListImplementation.cc"
 //----------------------------------------------------------------------
