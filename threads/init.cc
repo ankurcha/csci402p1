@@ -219,14 +219,14 @@ struct DoorBoy {
     }
 };
 
-const int MAX_DOCTORS = 20;
-const int MIN_DOCTORS = 5;
+const int MAX_DOCTORS = 5;
+const int MIN_DOCTORS = 2;
 
 const int MAX_DOORB = MAX_DOCTORS;
 const int MIN_DOORB = MIN_DOCTORS;
 
-const int MAX_PATIENTS = 100;
-const int MIN_PATIENTS = 20;
+const int MAX_PATIENTS = 10;
+const int MIN_PATIENTS = 2;
 
 const int RECP_MAX = 5;
 const int RECP_MIN = 3;
@@ -276,6 +276,7 @@ void doorboy(int ID){
         
         //Some doctor woke me up, lets check who
         myDoctor =  wakingDoctorID;
+        cout << "DB_"<<ID<<": Servicing D_"<<myDoctor<<"\n";
         doorboyLineLock->Release();
 
         // Inform the doctor that I have arrived, and wait for him to take 
@@ -391,6 +392,7 @@ void doctor(int ID){
 
 void receptionist(int ID){
     while (true) {
+        cout << "R_"<<ID<<": Alive!\n";
         AllLinesLock->Acquire();
         receptionists[ID].state = FREE;
         if (receptionists[ID].peopleInLine > 0) {
@@ -521,7 +523,7 @@ void clerk(int ID){
 
 void hospitalManager(int ID){
     printf("H_%d : Alive\n",ID);
-    int sleeptime = Random() % 3000;
+    int sleeptime = Random() % 30000;
     
     while (true) {
         
@@ -533,7 +535,7 @@ void hospitalManager(int ID){
         }
         hospitalLock->Release();
         
-        sleeptime = Random() % 3000;
+        sleeptime = Random() % 30000;
             //Sleep for some random amount of time
         printf("H_%d : Sleeping for %d cycles\n",ID,sleeptime);
         do{
@@ -586,7 +588,7 @@ void hospitalManager(int ID){
         printf("H_%d : Checking clerks\n",ID);
         for (int i=0; i<MAX_CLERKS; i++) {//Check for waiting patients
             if (clerks[i].patientsInLine > 0 ) {
-                printf("H_%d : found CL_%d sleeping and %d waiting\nKicking Ass\n",
+                printf("H_%d : found CL_%d sleeping and %d waiting\nKicking some doorboy Ass\n",
                        ID,i,clerks[i].patientsInLine);
                     //Wake up this receptionist up
                 ClerkLinesLock->Acquire();
@@ -608,7 +610,7 @@ void hospitalManager(int ID){
                        ID,doctors[i].peopleInLine);
                     //Wake up this receptionist up
                 doctors[i].LineLock->Acquire();
-                doorboys[ID].doorboyBreakCV->Broadcast(doctors[i].LineLock);
+                doorboys[i].doorboyBreakCV->Broadcast(doctors[i].LineLock);
                 doctors[i].LineLock->Release();
             }
         }        
@@ -711,8 +713,8 @@ void HospINIT() {
 
         //6. HospitalManager
     cout << "Creating 1 Hospital Manager\n";
-        //t = new Thread("HospitalManager_0");
-        //t->Fork((VoidFunctionPtr) hospitalManager, 0);   
+        t = new Thread("HospitalManager_0");
+        t->Fork((VoidFunctionPtr) hospitalManager, 0);   
 //  INIT();
     
         //2. Receptionists
