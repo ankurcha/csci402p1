@@ -83,7 +83,8 @@ void patients(int ID){
     ///////////////////////////////////////////////////
 
     //Calculate which doctor I want to see
-    myDoctor = (int)(Random()*100) % MAX_DOCTORS;
+
+    myDoctor = (int)(Random()) % numDoctors;
     printf("P_%d : Going to meet doctor D_%d\n",ID,myDoctor);
 
     // Acquire doc's line lock

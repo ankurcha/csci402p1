@@ -165,7 +165,7 @@ struct PharmacyClerks{
         patientsInLine= 0;
         state=FREE;
         payment=0;
-        fee=Random()%100;
+        fee=(int)(Random())%100;
         patPrescription=0;
 
         ClerkCV= new Condition("ClerkCV");
