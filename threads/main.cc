@@ -61,7 +61,7 @@ extern void Print(char *file), PerformanceTest(void);
 extern void StartProcess(char *file), ConsoleTest(char *in, char *out);
 extern void MailTest(int networkID);
 #ifdef THREADS
-extern void Problem2(void), TestSuite(void);
+extern void Problem2(int), TestSuite(void);
 #endif
 
 //----------------------------------------------------------------------
@@ -105,7 +105,7 @@ main(int argc, char **argv)
                 Problem2(atoi(*(argv+1)));
                 argCount = 2;
             } else {
-                Problem2();
+                Problem2(-1);
             }
         }
 #endif
