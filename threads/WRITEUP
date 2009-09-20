@@ -7,7 +7,35 @@ Group Num 11: Name              Email               Student ID
               Max Pflueger      pflueger@usc.edu    5888-2249-87
               Aneesha Mathew    aneesham@usc.edu    
 
+ vim:textwidth=75
+
 I. Requirements:
+    + Part 1:
+
+        We are expected to implement all methods for the Lock and Condition
+        classes.  Our code should not assume that threads will always follow
+        the rules, and should check for and report illegal operations, like
+        releasing a lock the thread does not own.  If a thread performs an
+        illegal operation, an error will be printed, but the error will be
+        ignored and the thread will continue to function.  For the condition
+        class our code will follow Mesa semantics, meaning that when a thread
+        wakes up on a condition variable, it will go to the back of the run
+        queue, not the front.
+
+    + Part 2:
+
+        We are expected to build a hospital simulation that conforms to the
+        interaction rules specified in the problem statement.  The simulation
+        has to be multi-threaded and should use only the Lock and Condition
+        classes from part 1 for synchronization.  The simulation should be
+        robust to context switches and should not contain any race conditions.
+        Each type of person in the hospital should be represented by a type of
+        thread and all their interactions should be simulated by thread
+        interactions.
+
+        Additionally we are expected to implement tests to verify each of the
+        conditions specified under testing.  These tests shoud be easy to run
+        with nachos on the command line.
 
 II. Assumptions:
 
