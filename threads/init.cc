@@ -272,7 +272,7 @@ void doorboy(int ID){
     int myDoctor = 0;
 
     while (true) {
-        printf("DB_%d: Alive Thread ID: %x\n", ID, currentThread);
+        printf("DB_%d: Alive Thread ID: 0x%x\n", ID, currentThread);
 
         //Get into the doorboyLine till some doctor asks for me
         doorboyLineLock->Acquire();
@@ -528,7 +528,7 @@ cout<<"C_"<<ID<<": The cost for the medicines are:"<<clerks[ID].fee<<" dollars"<
 
 void hospitalManager(int ID){
     printf("H_%d : Alive\n",ID);
-    int sleeptime = Random() % 30;
+    int sleeptime = Random() % 300000;
     
     while (true) {
         
@@ -540,11 +540,10 @@ void hospitalManager(int ID){
         }
         hospitalLock->Release();
         
-        sleeptime = Random() % 30;
+        sleeptime = Random() % 300000;
             //Sleep for some random amount of time
         printf("H_%d : Sleeping for %d cycles\n",ID,sleeptime);
         do{
-                //printf("H_0: Yield()");
             currentThread->Yield();
             sleeptime--;
         }while (sleeptime > 0);
@@ -620,43 +619,6 @@ void hospitalManager(int ID){
             }
         }        
     }
-}
-
-
-
-void INIT(){
-    
-    int i = 0;
-    char *temp;
-    Thread *t;
-    
-    t = new Thread("patient_0");
-    t->Fork((VoidFunctionPtr) patients, 0);
-    
-    t = new Thread("patient_1");
-    t->Fork((VoidFunctionPtr) patients, 1);
-    
-    t = new Thread("patient_2");
-    t->Fork((VoidFunctionPtr) patients, 2);
-    
-    t = new Thread("receptionist_0");
-    t->Fork((VoidFunctionPtr) receptionist, 0);
-    
-    t = new Thread("doorboy_0");
-    t->Fork((VoidFunctionPtr) doorboy, 0);
-    
-    t = new Thread("cashier_0");
-    t->Fork((VoidFunctionPtr) cashier, 0);
-    
-    t = new Thread("clerk_0");
-    t->Fork((VoidFunctionPtr) clerk, 0);
-    
-    t = new Thread("doctor_0");
-    t->Fork((VoidFunctionPtr) doctor, 0);
-    
-    t = new Thread("hospitalManager_0");
-    t->Fork((VoidFunctionPtr) hospitalManager, 0);
-    
 }
 
 void HospINIT() {
