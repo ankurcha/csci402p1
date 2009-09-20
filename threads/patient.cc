@@ -26,7 +26,7 @@ void patients(int ID){
 
     printf("P_%d:Attempt to acquire recpLineLock...\n",ID);
     recpLineLock->Acquire();
-    printf("success\n");
+    printf("P_%d:success\n",ID);
 
     // Find the shortest line
     int shortestline = 0;
@@ -103,12 +103,16 @@ void patients(int ID){
     printf("P_%d : Join line and Waiting for doorboy to tell me to go\n",ID);
     doctors[myDoctor].peopleInLine++;
     doctors[myDoctor].LineCV->Wait(doctors[myDoctor].LineLock);
+    printf("P_%d : Doorboy told me to go to doctor, proceeding....\n",ID);
     doctors[myDoctor].peopleInLine--;
 
     // move into the doctor's transaction lock
-    doctors[myDoctor].transLock->Acquire();
     doctors[myDoctor].LineLock->Release();
+    printf("P_%d : Trying to acquire doctor's translock\n",ID);
+    doctors[myDoctor].transLock->Acquire();
+    printf("P_%d : Success\n",ID);
 
+    printf("P_%d : Giving doctor the token...\n",ID);
     //The doctor is waiting for me to provide my info, oblige him!!
     doctors[myDoctor].patientToken = myToken;
 
@@ -236,6 +240,7 @@ void patients(int ID){
     //7. get out - die die die( ;) )
     
     hospitalLock->Acquire();
+    cout<<"P_"<<ID<<" Getting out of the hospital\n";
     peopleInHospital--;
     hospitalLock->Release();
     

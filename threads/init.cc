@@ -63,6 +63,7 @@ struct linkedlist {
                 //empty list
             return -1;
         }
+        return -1;
     }
 };
 
@@ -357,17 +358,17 @@ void doctor(int ID){
         // go on break if so inclined
         if(Random() % 100 > 49) { // go on break
             // 5-15 yields
-            cout<<"D_"<<ID<<": Going on break!\n";
             int numYields = 5 + (Random() % 11);
+            cout<<"D_"<<ID<<": Going on break for "<<numYields<<" cycles!\n";
             for(int i=0; i < numYields; ++i) {
                 currentThread->Yield();
             }
         }
 
         // inform the doorboy that I am ready for a patient
-        cout<<"D_"<<ID<<": Signalling - Ready for patient\n";
+        cout<<"D_"<<ID<<": Back from Break,Signalling patient to come in.\n";
         doctors[ID].transCV->Signal(doctors[ID].transLock);
-
+        cout<<"D_"<<ID<<": Waiting for patient....\n";
         //////  PATIENT INTERACTION  //////
         // and wait for that patient to arrive
         doctors[ID].transCV->Wait(doctors[ID].transLock);
@@ -539,7 +540,7 @@ void clerk(int ID){
 
 void hospitalManager(int ID){
     printf("H_%d : Alive\n",ID);
-    int sleeptime = Random() % 30000;
+    int sleeptime = Random() % 3000;
     
     while (true) {
         
@@ -551,7 +552,7 @@ void hospitalManager(int ID){
         }
         hospitalLock->Release();
         
-        sleeptime = Random() % 30000;
+        sleeptime = Random() % 3000;
             //Sleep for some random amount of time
         printf("H_%d : Sleeping for %d cycles\n",ID,sleeptime);
         do{
