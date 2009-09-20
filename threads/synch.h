@@ -138,8 +138,9 @@ public:
   
 private:
   char* name;
+#ifdef CHANGED
   List* queue;
-  //List* waiters;
   Lock* CVLock;
+#endif
 };
 #endif // SYNCH_H
