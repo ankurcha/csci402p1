@@ -28,8 +28,8 @@ void SimpleThread(int which)
     int num;
     
     for (num = 0; num < 5; num++) {
-      //	printf("*** thread %d looped %d times\n", which, num);
-      //   currentThread->Yield();
+      	printf("*** thread %d looped %d times\n", which, num);
+        currentThread->Yield();
     }
 }
 
@@ -48,10 +48,6 @@ void ThreadTest()
     t->Fork(SimpleThread, 1);
     SimpleThread(0);
 
-    //startTest();
-    //printf("\nTESTING HOSPITAL APP\n");
-    //
-    //HospINIT();
 }
 
 //----------------------------------------------------------------------
