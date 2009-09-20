@@ -16,10 +16,6 @@ void patients(int ID){
     int myDoctor;
     int myPrescription;
 
-    hospitalLock->Acquire();
-    peopleInHospital++;
-    hospitalLock->Release();
-    
     //////////////////////////////////////////////////
     ////// Begin interaction with Receptionist ///////
     //////////////////////////////////////////////////
@@ -31,7 +27,11 @@ void patients(int ID){
     // Find the shortest line
     int shortestline = 0;
     int len = receptionists[0].peopleInLine;
+
+    //Find shortest Line
+ 
     for (int i=0; i<numRecp; i++) {
+
         if(receptionists[i].peopleInLine < len){
             len = receptionists[i].peopleInLine;
             shortestline = i;
@@ -40,35 +40,8 @@ void patients(int ID){
     printf("P_%d: found shortest line R_%d len: %d\n",ID,shortestline,len);
 
     // Wait in line
-    //if (len >0) {
-        //wait in line for my turn
-        receptionists[shortestline].peopleInLine++;
-        //recpLineLock->Release();
-        //receptionists[shortestline].LineLock->Acquire();
-        //cout<<"P_"<<ID<<": recpLineLock Released,"
-        //    <<"Now Waiting for signal by Receptionist\n";
-        //receptionists[shortestline].receptionCV->
-        //            Wait(receptionists[shortestline].LineLock);
-        receptionists[shortestline].receptionCV->Wait(recpLineLock);
-    //}else { //No one else in line
-    //    switch (receptionists[shortestline].state) {
-    //        case FREE:
-    //        case BUSY:
-    //        case SLEEPING:
-    //            //wait in line
-    //            receptionists[shortestline].peopleInLine++;
-    //            //Entered the line no need to hold all lines others may now continue
-    //            recpLineLock->Release();
-    //            receptionists[shortestline].LineLock->Acquire();
-    //            receptionists[shortestline].receptionCV->Wait(
-    //                                    receptionists[shortestline].LineLock);
-    //            printf("P_%d: recpLineLock Released, Now Waiting for signal\n",ID);
-    //            break;
-    //        default:
-    //            break;
-    //    }
-    //}
-    
+    receptionists[shortestline].peopleInLine++;
+    receptionists[shortestline].receptionCV->Wait(recpLineLock);
     printf("P_%d Got woken up, get out of line and going to counter for token\n",ID);
     receptionists[shortestline].peopleInLine--;
     
@@ -79,13 +52,14 @@ void patients(int ID){
     printf("P_%d: Reading Token..\n",ID);
     myToken = receptionists[shortestline].currentToken;
     printf("P_%d: My token is %d..yeah!!\n",ID,myToken);
+
     //Done, signal receptionist that he can proceed 
     receptionists[shortestline].receptionistWaitCV->
                 Signal(receptionists[shortestline].transLock);
     printf("P_%d: Signal receptionist R_%d to continue, I am done\n",
             ID,shortestline);
-    //Release Line Lock
-    //receptionists[shortestline].LineLock->Release();
+
+    //Release transaction lock
     receptionists[shortestline].transLock->Release();
     
     ///////////////////////////////////////////////////
@@ -93,6 +67,7 @@ void patients(int ID){
     ///////////////////////////////////////////////////
 
     //Calculate which doctor I want to see
+
     myDoctor = (int)(Random()) % numDoctors;
     printf("P_%d : Going to meet doctor D_%d\n",ID,myDoctor);
 
@@ -139,7 +114,7 @@ void patients(int ID){
     // find the shortest line
     int myCashier = 0;
     int sLen = cashiers[0].lineLength;
-    for(int i=1; i < numCashiers; ++i) {
+    for(int i=1; i < numPatients; ++i) {
         if(cashiers[i].lineLength < sLen) {
             myCashier = i;
             sLen = cashiers[i].lineLength;
@@ -178,9 +153,9 @@ void patients(int ID){
     ClerkLinesLock->Acquire();
     printf("success\n");
     int shortestclerkline = 0;
-    int length = clerks[0].patientsInLine;
+    int length = 0;
     //Find shortest Line
-    for (int i=1; i < numClerks; i++) {
+    for (int i=0; i<MAX_CLERKS; i++) {
         if(clerks[i].patientsInLine < length){
             length = clerks[i].patientsInLine;
             shortestclerkline = i;
@@ -213,7 +188,7 @@ void patients(int ID){
     }
     
     cout<<"P_"<<ID<<" Got woken up, got out of line and going to the PHarmacy "
-        <<"CLerk to give prescription\n";
+        <<"CLerk to give prescription.\n";
     clerks[shortestclerkline].patientsInLine--;
     //signal ParmacyClerk that i am ready to give Prescription
     clerks[shortestclerkline].ClerkTransLock->Acquire();
@@ -238,12 +213,10 @@ void patients(int ID){
     clerks[shortestclerkline].ClerkTransLock->Release();
 
     //7. get out - die die die( ;) )
-    
     hospitalLock->Acquire();
     cout<<"P_"<<ID<<" Getting out of the hospital\n";
     peopleInHospital--;
     hospitalLock->Release();
-    
 }
 
 

@@ -72,31 +72,25 @@ Lock *TokenCounterLock = new Lock("TokenCounterLock");
 int TokenCounter;
 
 // global for all receptionists
-//Lock *AllLinesLock = new Lock("AllLineLock");
 Lock* recpLineLock = new Lock("recpLineLock");
 
 //shared data struct related to a Receptionist
 struct Receptionists{
-    //int state;
-
-    //Lock *LineLock;
     // receptionist line CV
     Condition *receptionCV;
     int peopleInLine;
 
     // receptionist transactional lock and CV and protected variables
     Lock* transLock;
-    Condition *receptionistWaitCV; //Wait using LineLock
+    Condition *receptionistWaitCV;
     int currentToken;
 
     // receptionist break CV
-    Condition *ReceptionistBreakCV; //Break using LineLock
+    Condition *ReceptionistBreakCV;
     
     Receptionists(){
         peopleInLine = 0;
-        //state = FREE;
 
-        //LineLock = new Lock("LineLock");
         receptionCV = new Condition("receptionCV");
 
         transLock = new Lock("Receptionists.transLock");
@@ -175,7 +169,7 @@ struct PharmacyClerks{
         patientsInLine= 0;
         state=FREE;
         payment=0;
-        fee=20;
+        fee=(int)(Random())%100;
         patPrescription=0;
 
         ClerkCV= new Condition("ClerkCV");
@@ -407,21 +401,13 @@ void receptionist(int ID){
         cout << "R_"<<ID<<": Alive!\n";
         recpLineLock->Acquire();
         if (receptionists[ID].peopleInLine > 0) {
-            //Some one in my line - service them, first generate new token
-            //receptionists[ID].LineLock->Acquire();
-            //receptionists[ID].state = BUSY;
-                //Wake one waiting patient up
-            //receptionists[ID].receptionCV->Signal(receptionists[ID].LineLock);
+            //Wake one waiting patient up
             receptionists[ID].receptionCV->Signal(recpLineLock);
         } else {
             //My Line is empty
             DEBUG('t',"No Patients, going on break...");
             printf("R_%d Going to sleep\n",ID);
-            //receptionists[ID].state = SLEEPING;
-            //receptionists[ID].LineLock->Acquire();
-            //receptionists[ID].ReceptionistBreakCV->Wait(receptionists[ID].LineLock);
             receptionists[ID].ReceptionistBreakCV->Wait(recpLineLock);
-            //receptionists[ID].LineLock->Release();
             recpLineLock->Release();
             //HospitalManager kicked my ass for sleeping on the job!!
             //Loop back!!
@@ -438,7 +424,6 @@ void receptionist(int ID){
         TokenCounterLock->Release();
 
         //Sleep till you get Acknowledgement
-        //receptionists[ID].receptionistWaitCV->Wait(receptionists[ID].LineLock);
         receptionists[ID].receptionistWaitCV->Wait(receptionists[ID].transLock);
 
         //Patient successfully got the token, go back to work: Loop again
@@ -527,7 +512,7 @@ void clerk(int ID){
         // wait for payment
         clerks[ID].ClerkTransCV->Wait(clerks[ID].ClerkTransLock);
         //Collect payment
-
+cout<<"C_"<<ID<<": The cost for the medicines are:"<<clerks[ID].fee<<" dollars"<<endl;
         // add this payment to our total collected
         PaymentLock->Acquire();
         totalsales += clerks[ID].payment;
