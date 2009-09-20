@@ -106,16 +106,17 @@ void patients(int ID){
     // Signal the doctor that I have taken the prescription and left
     doctors[myDoctor].transCV->Signal(doctors[myDoctor].transLock);
     doctors[myDoctor].transLock->Release();
-
+    cout << "P_"<<ID<<": Done with Doctor, going to cashier.\n";
     ////////////////////////////////////////////
     /////////  Interaction with Cashier ////////
     ////////////////////////////////////////////
     
     cashierLineLock->Acquire();
+    cout << "P_"<<ID<<": Acquiring cashierLineLock\n";
     // find the shortest line
     int myCashier = 0;
     int sLen = cashiers[0].lineLength;
-    for(int i=1; i < numPatients; ++i) {
+    for(int i=1; i < numCashiers; ++i) {
         if(cashiers[i].lineLength < sLen) {
             myCashier = i;
             sLen = cashiers[i].lineLength;
@@ -125,7 +126,10 @@ void patients(int ID){
     //if(sLen > 0) {get in line} else {get in line}
     // there are a lot of cases here, but they all result in us getting in line
     cashiers[myCashier].lineLength ++;
+    cout << "P_"<<ID<<": Waiting in line for cashier C_"<<myCashier
+    <<" to attend to me, Line length\n";
     cashiers[myCashier].lineCV->Wait(cashierLineLock);
+    cout << "P_"<<ID<<": Going to meet cashier\n";
     cashiers[myCashier].lineLength --;
 
     //// APPROACH THE DESK ////
@@ -141,10 +145,11 @@ void patients(int ID){
 
     // provide the money
     cashiers[myCashier].payment = cashiers[myCashier].fee;
-
+    cout << "P_"<<ID<<": Paying money.\n";
     // done
     cashiers[myCashier].transCV->Signal(cashiers[myCashier].transLock);
     cashiers[myCashier].transLock->Release();
+    cout << "P_"<<ID<<": Done with cashier\n";
 
     //////////////////////////////////////////////////
     ////////  Interaction with Pharmacy Clerk ////////
@@ -152,8 +157,9 @@ void patients(int ID){
     
     printf("P_%d:Attempt to acquire ClerkLinesLock...",ID);
     ClerkLinesLock->Acquire();
-    int shortestclerkline = clerks[0].patientsInLine;
-    int length = 0;
+    printf("success\n");
+    int shortestclerkline = 0;
+    int length = clerks[0].patientsInLine;
     //Find shortest Line
     for (int i=0; i<numClerks; i++) {
         if(clerks[i].patientsInLine < length){
@@ -162,16 +168,36 @@ void patients(int ID){
         }
     }
     printf("P_%d: found shortest line C_%d len: %d\n",ID,shortestclerkline,length);
-    clerks[shortestclerkline].patientsInLine++;
-    clerks[shortestclerkline].ClerkTransLock->Acquire();
-    clerks[shortestclerkline].ClerkCV->
+    if (length >0) {
+        //wait in line for my turn
+        clerks[shortestclerkline].patientsInLine++;
+        clerks[shortestclerkline].ClerkTransLock->Acquire();
+        ClerkLinesLock->Release();
+        clerks[shortestclerkline].ClerkCV->
                     Wait(clerks[shortestclerkline].ClerkTransLock);
-
+        cout<<"P_"<<ID<<": ClerkLinesLock Released, Now Waiting for signal by "
+            <<"PharmacyClerk\n";
+    }else { //No one else in line
+        switch (clerks[shortestclerkline].state) {
+            case FREE: 
+            case BUSY:
+            case SLEEPING:
+                //wait in line
+                clerks[shortestclerkline].patientsInLine++;
+                clerks[shortestclerkline].ClerkCV->Wait(clerks[shortestclerkline].ClerkTransLock);
+                cout<<"P_"<<ID<<": ClerkLinesLock Released, Now Waiting for "
+                <<"signal by Clerk\n";
+                break;
+            default:
+                break;
+        } 
+    }
+    
     cout<<"P_"<<ID<<" Got woken up, got out of line and going to the PHarmacy "
-        <<"Clerk to give prescription.\n";
+        <<"CLerk to give prescription.\n";
     clerks[shortestclerkline].patientsInLine--;
     //signal ParmacyClerk that i am ready to give Prescription
-    //clerks[shortestclerkline].ClerkTransLock->Acquire();
+    clerks[shortestclerkline].ClerkTransLock->Acquire();
                 //Entered the line no need to hold all lines others may now continue
      ClerkLinesLock->Release();
     //wait for the PharmacyClerk to Get the prescription from me.. so I wait
