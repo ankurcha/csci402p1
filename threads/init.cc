@@ -131,6 +131,9 @@ struct Cashier {
     int fee;
     int payment;
 
+    //protected by feesPaidLock, but only modified by one thread
+    int sales;
+
     // cashier's CV for going on break
     Condition* breakCV;
 
@@ -275,6 +278,8 @@ DoorBoy doorboys[MAX_DOCTORS];
 Doctor doctors[MAX_DOCTORS];
 Cashier cashiers[MAX_CASHIER];
 PharmacyClerks clerks[MAX_CLERKS];
+
+int test_state = 0;
 
 #include "patient.cc"
 
@@ -511,6 +516,7 @@ void cashier(int ID) {
         // add this payment to our total collected
         feesPaidLock->Acquire();
         feesPaid += cashiers[ID].payment;
+        cashiers[ID].sales += cashiers[ID].payment;
         feesPaidLock->Release();
         if(cashiers[ID].payment < cashiers[ID].fee) {
             printf("ERROR: call security, that patient didin't pay!");
@@ -598,10 +604,8 @@ void hospitalManager(int ID){
         
         if (patientsWaiting > 1) {
             for (int j=0; j<numRecp; j++) {
-                //receptionists[j].LineLock->Acquire();
                 recpLineLock->Acquire();
                 receptionists[j].ReceptionistBreakCV->Signal(recpLineLock);
-                //receptionists[j].LineLock->Release();
                 recpLineLock->Release();
             }
         }
@@ -609,19 +613,31 @@ void hospitalManager(int ID){
         printf("H_%d : Checking cashiers\n",ID);
         for (int i=0; i<numCashiers; i++) {//Check for waiting patients
             if (cashiers[i].lineLength > 0 ) {
-                printf("H_%d : found C_%d sleeping and %d waiting\nKicking Ass\n",
-                       ID,i,cashiers[i].lineLength);
-                    //Wake up this receptionist up
-                    //receptionists[ID].ReceptionistBreakLock->Acquire();
+                printf("H_%d : found %d people waiting for C_%d -> Kicking Ass\n",
+                       ID, cashiers[i].lineLength, i);
+                //Wake up this receptionist up
                 cashierLineLock->Acquire();
                 cashiers[i].breakCV->Broadcast(cashierLineLock);
                 cashierLineLock->Release();
                 
             }
         }
-            //Query cashiers for total sales
+        
+        //Query cashiers for total sales
         feesPaidLock->Acquire();
-        cout << "Total fees collected by cashiers: "<<feesPaid<<endl;
+        cout << "T10: Total fees collected by cashiers: "<<feesPaid<<endl;
+        if( test_state == 10 ) {
+            // this is a test for race conditions, so we can't have any:
+            IntStatus oldLevel = interrupt->SetLevel(IntOff);
+            int sum = 0;
+            for (int i=0; i<numCashiers; i++) {
+                printf("  T10: cashier %d:   %d\n", i, cashiers[i].sales);
+                sum += cashiers[i].sales;
+            }
+            printf("  T10: TOTAL: %d\n", sum);
+            // sum just printed should match feesPaid, printed earlier
+            (void) interrupt->SetLevel(oldLevel);
+        }
         feesPaidLock->Release();
         
         
@@ -660,6 +676,9 @@ void hospitalManager(int ID){
 
 void HospINIT(int testmode = 0) {
     
+    // set a global so everyone will know the test mode
+    test_state = testmode;
+
     if(testmode == 0){
         int i = 0;
         char temp[] = "NACHOS_THREAD";
@@ -819,6 +838,3 @@ int test1(){
     
 }
 
-int test3() {
-    return 0;
-}
