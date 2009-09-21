@@ -201,7 +201,7 @@ V. Testing: (For each test case, you must show)
 
             To run this test run nachos as follows:
 
-            %threads/nachos -P2 6 -rs {your seed} 1| grep '^D_.*break'
+            %threads/nachos -P2 6 -rs {your seed} 1| grep 'D_.*break'
 
         -Test Case 7:
 
@@ -209,7 +209,7 @@ V. Testing: (For each test case, you must show)
 
         -Test Case 8: Doorboy never goes on break when doctor is on break.
 
-            %threads/nachos -P2 8 -rs {your seed} 1| grep '^T8'
+            %threads/nachos -P2 8 -rs {your seed} 1| grep 'T8'
 
         -Test Case 9:
 
