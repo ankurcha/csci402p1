@@ -222,7 +222,7 @@ void patients(int ID){
     ////////  Interaction with Pharmacy Clerk ////////
     //////////////////////////////////////////////////
     
-    printf("P_%d:Attempt to acquire ClerkLinesLock...",ID);
+    printf("P_%d:Attempt to acquire ClerkLinesLock...\n",ID);
     ClerkLinesLock->Acquire();
     printf("success\n");
     int shortestclerkline = 0;
