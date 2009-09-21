@@ -10,7 +10,7 @@
 //  Aneesha Mathew, aneesham
 
 using namespace std;
-
+bool test_code2=true;
 void patients(int ID){
     
     int myToken;
@@ -85,10 +85,14 @@ void patients(int ID){
 
     // move into the doctor's transaction lock
     doctors[myDoctor].LineLock->Release();
+    if(test_code2==true)
+    printf("P_%d :TEST7: Trying to acquire doctor's translock\n",ID);
+    
+    else
     printf("P_%d : Trying to acquire doctor's translock\n",ID);
+   
     doctors[myDoctor].transLock->Acquire();
     printf("P_%d : Success\n",ID);
-    printf("P_%d: Consulting doctor %d\n", ID, myDoctor);
 
     printf("P_%d : Giving doctor the token...\n",ID);
     //The doctor is waiting for me to provide my info, oblige him!!
@@ -106,7 +110,6 @@ void patients(int ID){
 
     // Signal the doctor that I have taken the prescription and left
     doctors[myDoctor].transCV->Signal(doctors[myDoctor].transLock);
-    printf("P_%d: Finished Consulting doctor %d\n", ID, myDoctor);
     doctors[myDoctor].transLock->Release();
     cout << "P_"<<ID<<": Done with Doctor, going to cashier.\n";
     ////////////////////////////////////////////

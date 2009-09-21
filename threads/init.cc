@@ -68,6 +68,7 @@ struct linkedlist {
 
 int test1();
 int test2();
+int p=1;
 Lock *testlock = new Lock("TestLock");
 int doorboytest = 0;
 int patienttest = 0;
@@ -314,14 +315,16 @@ void doorboy(int ID){
         doctors[myDoctor].LineLock->Acquire();
         printf("DB_%d: Checking for Patients\n",ID);
         
-if(p==true)
+/*if(p==1)
 	{
 		printf("DB_%d: Yawn!!...ZZZZzzzzz....\n",ID);
             doctors[myDoctor].doorboyBreakCV->Wait(doctors[myDoctor].LineLock);
 		
 	}
-	
-        //while there is noone in line
+	*/
+     //else
+    
+     		   //while there is noone in line
         while(doctors[myDoctor].peopleInLine <= 0) { 
             //I will be woken up by the manager only!!
             printf("DB_%d: Yawn!!...ZZZZzzzzz....\n",ID);
@@ -354,7 +357,7 @@ if(p==true)
 }
 
 void doctor(int ID){
-    int waitingtime = 1000;
+    int waitingtime = 10000;
     while(true) {
         // acquire a doorboy
         cout<<"D_"<<ID<<": Alive!!"<<endl;
@@ -395,6 +398,17 @@ void doctor(int ID){
         doctors[ID].transCV->Wait(doctors[ID].transLock);
 
         // go on break if so inclined
+       
+       if(p==1)
+       	{
+       		int numYields = 35;
+            cout<<"D_"<<ID<<":TEST7: Going on break for "<<numYields<<" cycles!\n";
+            for(int i=0; i < numYields; ++i) {
+                currentThread->Yield();
+            }
+       		
+       	}
+       else
         if(Random() % 100 > 49) { // go on break
             // 5-15 yields
             int numYields = 5 + (Random() % 11);
@@ -403,6 +417,8 @@ void doctor(int ID){
                 currentThread->Yield();
             }
         }
+       
+        	
 
         // inform the doorboy that I am ready for a patient
         cout<<"D_"<<ID<<": Back from Break,Signalling patient to come in.\n";
@@ -744,7 +760,7 @@ void HospINIT(int testmode = 0) {
             //first testcase
        // if(test1() == 1){
           //  cout << "Test1....Passed";
-        }
+       // }
     }
 }
 
@@ -846,13 +862,13 @@ int test2(){
     }
     
         //4. DoorBoys
-        boolean p=false;
+        
     numDoctors = (Random() % (MAX_DOCTORS - MIN_DOCTORS + 1) + MIN_DOCTORS);
             numDoorboys = numDoctors;
     //cout << "Bypass doorboys creation\n";
            for(i=0;i<numDoorboys;i++)
             {
-                p=true;
+                p=1;
                 t=new Thread(temp);
                 t->Fork((VoidFunctionPtr) doorboy, i);
            }
