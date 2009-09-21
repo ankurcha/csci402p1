@@ -218,7 +218,8 @@ V. Testing: (For each test case, you must show)
             
             As we see here P_3 searches through all the lines and find the
             shortest one. Then it chooses the corresponding receptionist
-            as marked. Similarly, with the P_4 patient thread.
+            as marked. Similarly, when the line selection happens with the
+            pharmacy clerk or the chashier.
             
 VI. Discussion:
     + Experiment expectation.  (What you hope will happen.)
