@@ -61,7 +61,7 @@ extern void Print(char *file), PerformanceTest(void);
 extern void StartProcess(char *file), ConsoleTest(char *in, char *out);
 extern void MailTest(int networkID);
 #ifdef THREADS
-extern void Problem2(void), TestSuite(void);
+extern void Problem2(int), TestSuite(void);
 #endif
 
 //----------------------------------------------------------------------
@@ -100,8 +100,14 @@ main(int argc, char **argv)
             ThreadTest();
         if (!strcmp(*argv, "-T"))               // Test Suite: link for this code is at the bottom of part 1 description
             TestSuite();
-        if (!strcmp(*argv, "-P2"))               // Problem 2: for part 2
-            Problem2();
+        if (!strcmp(*argv, "-P2")) {              // Problem 2: for part 2
+            if(argc > 1 && **(argv+1) != '-') {
+                Problem2(atoi(*(argv+1)));
+                argCount = 2;
+            } else {
+                Problem2(-1);
+            }
+        }
 #endif
 #ifdef USER_PROGRAM
         if (!strcmp(*argv, "-x")) {        	// run a user program
