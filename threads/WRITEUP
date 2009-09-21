@@ -143,17 +143,13 @@ V. Testing: (For each test case, you must show)
             wake them up and send them to the doctor.  
          
          -Test Case 2: If the door boy in on a break no patient gets in. 
-           
+
             In this test, We put all the Doorboy's to sleep. Thus interfering
             with the doorboy and patient communication, Not letting the
             patient enter the doctors office and be serviced.
-            
+
             To run this test code:
             %threads/nachos -P2 -rs {your seed} 1| grep "TEST2"
-
-        -Test Case 2:
-
-            TODO
 
         -Test Case 3: Only one patient gets to see a given doctor at at
          instance of time
@@ -246,11 +242,6 @@ V. Testing: (For each test case, you must show)
  
             Patient waits infinitely to consult the doctor, but will
             not succeed as the Doorboy's are asleep.
-            
-
-        -Test Case 2:
-
-            TODO
 
         -Test Case 3:
 
