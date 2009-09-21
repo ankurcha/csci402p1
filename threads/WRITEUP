@@ -195,16 +195,17 @@ III. Design:
         
         cashier(int ID)
         
-        The cashier first acquires a lock on all the cashier queues and signals 
-        the patient on the top of his queue using his condition Variable
-        (lineCV).For other transaction it uses its Transaction Lock(transLock).
-        It looks up a linkedlist structure, uses the patient token number
-         and gets the cost using the getValue() function.This has its own
-         feeListLock. It waits for payment on its trasaction Condition Variable
-         (TransCV).It calculates the total sales and after all these transactions
-         releases the Transaction Lock(transLock). It goes to sleep if there are no 
-         patients in the Line and is woken up by a signal by the Hospital manager
-         on its Line Condition Variable(LineCV).
+            The cashier first acquires a lock on all the cashier queues and 
+            signals the patient on the top of his queue using his condition 
+            Variable(lineCV).For other transaction it uses its Transaction
+            Lock(transLock).It looks up a linkedlist structure, uses the 
+            patient token number and gets the cost using the getValue()
+            function.This has its own feeListLock. It waits for payment on its 
+            trasaction Condition Variable(TransCV).It calculates the total sales 
+            and after all these transactions releases the Transaction
+            Lock(transLock). It goes to sleep if there are no patients in the Line
+            and is woken up by a signal by the Hospital manager on its Line 
+            Condition Variable(LineCV).
 
         doorboy(int ID)
             To organize the doorboy threads such that all of the doorboys
