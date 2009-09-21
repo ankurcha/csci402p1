@@ -30,15 +30,35 @@ void patients(int ID){
     int len = receptionists[0].peopleInLine;
 
     //Find shortest Line
- 
+    if (test4active == true) {
+        cout << "P_"<<ID
+        <<":TEST4: Searching for the receptionist with the shortest line\n";
+    }else {
+        cout << "P_"<<ID
+        <<": Searching for the receptionist with the shortest line\n";
+        
+    }
     for (int i=0; i<numRecp; i++) {
-
+        
+        if (test4active == true) {
+                //Print the length of each line
+            cout <<"P_"<<ID<<":TEST4: Length of line at R_"<<i<<" = "
+            <<receptionists[i].peopleInLine<<endl;
+        }
+        
         if(receptionists[i].peopleInLine < len){
             len = receptionists[i].peopleInLine;
             shortestline = i;
         }
     }
-    printf("P_%d: found shortest line R_%d len: %d\n",ID,shortestline,len);
+    
+    if (test4active == true) {
+        printf("P_%d:TEST4: Found shortest line with R_%d len: %d\n",
+               ID,shortestline,len);
+    }else{
+        printf("P_%d: Found shortest line with R_%d len: %d\n",
+               ID,shortestline,len);
+    }
 
     // Wait in line
     receptionists[shortestline].peopleInLine++;
@@ -118,11 +138,31 @@ void patients(int ID){
     // find the shortest line
     int myCashier = 0;
     int sLen = cashiers[0].lineLength;
+    if (test4active == true) {
+        cout <<"P_"<<ID<<":TEST4: Finding shortest Line of cashiers\n";
+    }else {
+        cout <<"P_"<<ID<<": Finding shortest Line of cashiers\n";
+    }
+
     for(int i=1; i < numCashiers; ++i) {
+        if (test4active == true) {
+                //Print the length of each line
+            cout <<"P_"<<ID<<":TEST4: Length of line at R_"<<i<<" = "
+            <<cashiers[i].lineLength<<endl;
+        }
+        
         if(cashiers[i].lineLength < sLen) {
             myCashier = i;
             sLen = cashiers[i].lineLength;
         }
+    }
+    
+    if (test4active == true) {
+        printf("P_%d:TEST4: Found shortest cashier line C_%d len: %d\n",
+               ID,myCashier,sLen);
+    }else {
+        printf("P_%d: Found shortest cashier line C_%d len: %d\n",
+               ID,myCashier,sLen);
     }
 
     //if(sLen > 0) {get in line} else {get in line}
@@ -131,7 +171,7 @@ void patients(int ID){
     cout << "P_"<<ID<<": Waiting in line for cashier C_"<<myCashier
     <<" to attend to me, Line length\n";
     cashiers[myCashier].lineCV->Wait(cashierLineLock);
-    cout << "P_"<<ID<<": Going to meet cashier\n";
+    cout << "P_"<<ID<<": Going to meet cashier C_"<<myCashier<<"\n";
     cashiers[myCashier].lineLength --;
 
     //// APPROACH THE DESK ////
@@ -162,14 +202,32 @@ void patients(int ID){
     printf("success\n");
     int shortestclerkline = 0;
     int length = clerks[0].patientsInLine;
+    if (test4active == true) {
+        cout <<"P_"<<ID<<":TEST4: Finding shortest Line of clerks\n";
+    }else {
+        cout <<"P_"<<ID<<": Finding shortest Line of clerks\n";
+    }
+    
     //Find shortest Line
     for (int i=0; i<numClerks; i++) {
+        if (test4active == true) {
+                //Print the length of each line
+            cout <<"P_"<<ID<<": TEST4: Length of line at CL_"<<i<<" = "
+            <<clerks[i].patientsInLine<<endl;
+        }
         if(clerks[i].patientsInLine < length){
             length = clerks[i].patientsInLine;
             shortestclerkline = i;
         }
     }
-    printf("P_%d: found shortest line C_%d len: %d\n",ID,shortestclerkline,length);
+    
+    if (test4active == false) {
+        printf("P_%d: Found shortest pharmacy clerk line CL_%d len: %d\n",
+               ID,shortestclerkline,length);
+    }else {
+        printf("P_%d:TEST4: Found shortest pharmacy clerk line CL_%d len: %d\n",
+               ID,shortestclerkline,length);
+    }
         //wait in line for my turn
     clerks[shortestclerkline].patientsInLine++;
     clerks[shortestclerkline].ClerkCV->Wait(ClerkLinesLock);

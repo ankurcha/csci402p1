@@ -93,6 +93,10 @@ void Problem2(int choice = -1)
                 HospINIT(10);
                 return;
                 break;
+            case 4:
+                test4();
+                return;
+                break;
             default:
                 choice = -1;
                 break;
