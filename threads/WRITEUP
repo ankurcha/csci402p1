@@ -147,13 +147,14 @@ III. Design:
                 that doctors waiting queue till it gets a signal to proceed
                 form the doorboy that is helping that doctor.
             4 Waits for the door boy to call them when their turn comes.
-                During this time, the doctor may go on break and only when
-                the doctor returns he can start consulting the patient therefore
+                During this time, the doctor may go on break and only when the
+                doctor returns he can start consulting the patient therefore
                 the patient must wait for the doctor to call him.
             5. Consults the doctor.
-                During this time the patient and doctore interact, the consultation
-                involves the doctor to yield for a random number of cycles.
-                During this, the patient passes its token number to the doctor.
+                During this time the patient and doctore interact, the
+                consultation involves the doctor to yield for a random number
+                of cycles.  During this, the patient passes its token number to
+                the doctor.
             6. Gets the prescription
                 The patient is assigned a number(randomly generated) which is 
                 taken as the prescription and would be later used to obtain 
@@ -170,10 +171,10 @@ III. Design:
                 in a linked list which has the key value pairings of the token
                 to the fee to be collected.
             10. Pays the consultancy fees
-                Once the cashier signals the patient to pay the fees, a handshake
-                of wait and signal calls takes place between them which denotes
-                the payment of the fees by the patient to the cashier.
-                Once this is done, the patient thread continues.
+                Once the cashier signals the patient to pay the fees, a
+                handshake of wait and signal calls takes place between them
+                which denotes the payment of the fees by the patient to the
+                cashier.  Once this is done, the patient thread continues.
             11. Meets the pharmacy clerk to buy medicines.
                 The patient thread, again uses the process as desctibes in 
                 step 2 to calculate which clerk line it should get in to.
@@ -184,15 +185,15 @@ III. Design:
                 thread replies by setting the prescription number given by
                 the doctor. This is then used to get the medicines.
             13. Gets the medicine
-                The pharmacy clerk will reply with a number denoting the medicines
-                that the patient is supposed to get. This whole process is done
-                in a similar handshake manner involving signals from the clerk
-                thread to the waiting patient thread.
+                The pharmacy clerk will reply with a number denoting the
+                medicines that the patient is supposed to get. This whole
+                process is done in a similar handshake manner involving signals
+                from the clerk thread to the waiting patient thread.
             14. Pays the bill amount
                 As a final step, the patient does another signal on the waiting
                 clerk thread to denote the payment for he medicines that it
-                received in the previous step. After this the work of the patient
-                thread is over and it continues to terminate.
+                received in the previous step. After this the work of the
+                patient thread is over and it continues to terminate.
             15. Leaves the hospital
                 The patient thread terminates and ceases to exit.
  
@@ -222,59 +223,59 @@ III. Design:
             doctor repeats his loop.
 
         receptionist(int ID)
-            The receptionist first acquires a lock to check all its lines called
-            recpLineLock.The receptionist wakes a patient up by using his condition 
-            variable(receptionCV)to signal the patient.It checks the people in line 
-            and now uses a lock with the first patient in line to acquire
-            mutual exclusion for further transactions. It first gives the patient a
-            token and this transaction is carried on using the token Lock.
-            After all transactions are over, it releases the transaction Lock.
-            It checks for more patients if there are none it goes to sleep.It
-            waits gor the hopsital Manager to signal it on its Break condition
-            Variable(ReceptionistBreakCV).
+            The receptionist first acquires a lock to check all its lines
+            called recpLineLock.The receptionist wakes a patient up by using
+            his condition variable(receptionCV)to signal the patient.It checks
+            the people in line and now uses a lock with the first patient in
+            line to acquire mutual exclusion for further transactions. It first
+            gives the patient a token and this transaction is carried on using
+            the token Lock.  After all transactions are over, it releases the
+            transaction Lock.  It checks for more patients if there are none it
+            goes to sleep.It waits gor the hopsital Manager to signal it on its
+            Break condition Variable(ReceptionistBreakCV).
         
         cashier(int ID)
-        
-            The cashier first acquires a lock on all the cashier queues and signals 
-            the patient on the top of his queue using his condition Variable
-            (lineCV).For other transaction it uses its Transaction Lock(transLock).
-            It looks up a linkedlist structure, uses the patient token number
-             and gets the cost using the getValue() function.This has its own
-             feeListLock. It waits for payment on its trasaction Condition Variable
-             (TransCV).It calculates the total sales and after all these transactions
-             releases the Transaction Lock(transLock). It goes to sleep if there are no 
-             patients in the Line and is woken up by a signal by the Hospital manager
-             on its Line Condition Variable(LineCV).
+            The cashier first acquires a lock on all the cashier queues and
+            signals the patient on the top of his queue using his condition
+            Variable (lineCV).For other transaction it uses its Transaction
+            Lock(transLock).  It looks up a linkedlist structure, uses the
+            patient token number and gets the cost using the getValue()
+            function.This has its own feeListLock. It waits for payment on its
+            trasaction Condition Variable (TransCV).It calculates the total
+            sales and after all these transactions releases the Transaction
+            Lock(transLock). It goes to sleep if there are no patients in the
+            Line and is woken up by a signal by the Hospital manager on its
+            Line Condition Variable(LineCV).
 
         doorboy(int ID)
-            To organize the doorboy threads such that all of the doorboys
-            are available to which ever doctor wants them and that there is
-            no binding of a doorboy to a particular doctor, they are put in
-            a queue, made using a condition variable called doorboyLineCV.
-            The doctors signal for a doorboy whenever they are ready to accept
-            more patients. The requests for doorboys are also queued onto a
-            list wakingDoctorList and as each of the doorboys come alive they
-            pick up each of these requests and service the corresponding doctor.
-            At this time, the doorboys check the queue of patients of that 
-            doctor and and tells the signals the patients, if any, to 
-            continue to meet the doctor.
-            In case there are no patients that are waiting for the doctor,
-            the doorboy goes to sleep and would only wake up by getting
-            signalled by the Hospital Manager.
-            This process keeps repeating till all the patients are done.
+            To organize the doorboy threads such that all of the doorboys are
+            available to which ever doctor wants them and that there is no
+            binding of a doorboy to a particular doctor, they are put in a
+            queue, made using a condition variable called doorboyLineCV.  The
+            doctors signal for a doorboy whenever they are ready to accept more
+            patients. The requests for doorboys are also queued onto a list
+            wakingDoctorList and as each of the doorboys come alive they pick
+            up each of these requests and service the corresponding doctor.  At
+            this time, the doorboys check the queue of patients of that doctor
+            and and tells the signals the patients, if any, to continue to meet
+            the doctor.  In case there are no patients that are waiting for the
+            doctor, the doorboy goes to sleep and would only wake up by getting
+            signalled by the Hospital Manager.  This process keeps repeating
+            till all the patients are done.
             
 
         clerk(int ID)
-            The Pharmacy clerk first tries to acquire the lock to all the Clerk lines 
-            called ClerkLinesLock to find out how many patients are in his line. 
-            Once there is a patient in his queue, the patient is serviced using a lock
-            called a transaction lock(ClerkTransLock), to achieve mutual exclusion.
-            During the trasaction, The patient gives the clerk his prescription
-            and waits for the cost of his medication. The clerk then signals with
-            the amount, after which the patient pays the clerk and signals him once he 
-            finished. When all the transactions have finished the lock is released.
-            It calculates the Totalsales using a lock to protect its data called
-            the PaymentLock. when there are no patients in line, it ges to sleep
+            The Pharmacy clerk first tries to acquire the lock to all the Clerk
+            lines called ClerkLinesLock to find out how many patients are in
+            his line.  Once there is a patient in his queue, the patient is
+            serviced using a lock called a transaction lock(ClerkTransLock), to
+            achieve mutual exclusion.  During the trasaction, The patient gives
+            the clerk his prescription and waits for the cost of his
+            medication. The clerk then signals with the amount, after which the
+            patient pays the clerk and signals him once he finished. When all
+            the transactions have finished the lock is released.  It calculates
+            the Totalsales using a lock to protect its data called the
+            PaymentLock. when there are no patients in line, it ges to sleep
             and waits for the Hospital Manager to wake him up by signaling him.
             
 
@@ -478,7 +479,7 @@ V. Testing: (For each test case, you must show)
             %threads/nachos -P2 8 -rs {your seed} 1| grep 'T8'
 
         -Test Case 9:Door boy/Cashier/Pharmacy clerk getting signaled by 
-        hospital manager when patients are waiting
+         hospital manager when patients are waiting
 
             %threads/nachos -P2 9 -rs {your seed} 1| grep 'H_'
 
@@ -489,7 +490,8 @@ V. Testing: (For each test case, you must show)
 
             %threads/nachos -P2 10 -rs {your seed} 1| grep T10
 
-        -Test Case 11: Doorboy/Clerk/Receptionist/Cashier go on break if the line is empty.
+        -Test Case 11: Doorboy/Clerk/Receptionist/Cashier go on break if the
+         line is empty.
 
             %threads/nachos -P2 11 -rs {your seed} 1| grep 'T11'
 
@@ -648,8 +650,8 @@ VI. Discussion:
         -Part 1: Locks and Condition Variables
             The Lock and Condition classes have been appropriately implemented.
             All test cases should pass and for the negative test cases error
-            messages should be printed and the should not crash or fault in
-            any case.
+            messages should be printed and the should not crash or fault in any
+            case.
         -Part 2: Hospital Management Simulation.
             Each of the agents(Patient, Doctor, Receptionist, Cashier, Clerk
             and Hospital Manager) have been implemented properly. Their
@@ -663,11 +665,11 @@ VI. Discussion:
             cases (test_code.cc) for multiple values of -rs. Appropriate error
             messages were also displayed in case of the negative test cases.
         -Part 2: Hospital Management Simulation.
-            All the test cases were appropriately implemented and the simulation
-            performed as expected for any given value of -rs. In addition, 
-            in order to enable easy tracability of the interactions the verbosity
-            of the threads has been kept high, with almost all interactions
-            being logged to standard output.
+            All the test cases were appropriately implemented and the
+            simulation performed as expected for any given value of -rs. In
+            addition, in order to enable easy tracability of the interactions
+            the verbosity of the threads has been kept high, with almost all
+            interactions being logged to standard output.
         
     + Explanation
         As the the expectation and the results match, we conclude that both 
