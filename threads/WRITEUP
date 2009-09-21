@@ -151,10 +151,6 @@ V. Testing: (For each test case, you must show)
             To run this test code:
             %threads/nachos -P2 -rs {your seed} 1| grep "TEST2"
 
-        -Test Case 2:
-
-            TODO
-
         -Test Case 3: Only one patient gets to see a given doctor at at
          instance of time
 
@@ -165,7 +161,7 @@ V. Testing: (For each test case, you must show)
             Where x is the ID of one of the doctors. 
             
         -Test Case 4: Patient always choose the shortest line with the cashier,
-         pharmacy clerk and the receptionist.
+            pharmacy clerk and the receptionist.
             
             To run this test run nachos as follows:
             
@@ -179,39 +175,13 @@ V. Testing: (For each test case, you must show)
             the verbosity of the program is increase and this search process
             is made visible. Hence, the user can see the individual lengths
             of each of the lines and also the final line chosen by the patient.
-
-        -Test Case 5:
-
-            TODO
-
-        -Test Case 6:
-
-            To run this test run nachos as follows:
-
-            %threads/nachos -P2 6 -rs {your seed} 1| grep '^D_.*break'
-
-        -Test Case 7:
-
-            TODO
-
-        -Test Case 8:
-
-            TODO
-
-        -Test Case 9:
-
-            TODO
-
-        -Test Case 10: The total sales of medicines and the total consultation
-         fees never get affected by race conditions.
             
+        -Test Case 7:When the doctor is at break no patient gets in. 
+        
             To run this test run nachos as follows:
+            
+           %threads/nachos -P2 -rs {your seed} | grep TEST7
 
-            %threads/nachos -P2 10 -rs {your seed} 1| grep T10
-
-        -Test Case 11:
-
-            TODO
 
     + Test Output
 
@@ -248,10 +218,6 @@ V. Testing: (For each test case, you must show)
             not succeed as the Doorboy's are asleep.
             
 
-        -Test Case 2:
-
-            TODO
-
         -Test Case 3:
 
             The output from the grep command will show all the patients who
@@ -283,43 +249,26 @@ V. Testing: (For each test case, you must show)
             As we see here P_3 searches through all the lines and find the
             shortest one. Then it chooses the corresponding receptionist
             as marked. Similarly, with the P_4 patient thread.
-
-        -Test Case 5:
-
-            TODO
-
-        -Test Case 6:
-
-            The output from this test will show a line every time a doctor
-            sleeps and for how long.  Verify that these statements show doctors
-            sleeping for randomized times for different seed values.  Also look
-            for variation in the number of times each doctor sleeps,
-            demonstrating that they don't always sleep.
-
+       
         -Test Case 7:
-
-            TODO
-
-        -Test Case 8:
-
-            TODO
-
-        -Test Case 9:
-
-            TODO
-
-        -Test Case 10:
-
-            The output will show the value of our total sales variable as
-            compared to the individual sums of each cashier/clerk, and the
-            total of those sums.  If the two totals match, then the
-            cashiers/clerks did not encounter race conditions modifying the
-            total sales variable.
-
-        -Test Case 11:
-            
-            TODO
-
+                  
+           P_0 :TEST7: Waiting in doctor D_0 Queue
+           P_1 :TEST7: Waiting in doctor D_1 Queue
+           P_2 :TEST7: Waiting in doctor D_0 Queue
+         	 P_3 :TEST7: Waiting in doctor D_1 Queue
+           D_0 :TEST7: Going on break for 35 cycles!
+           D_1 :TEST7: Going on break for 35 cycles!
+           P_4 :TEST7: Waiting in doctor D_0 Queue
+           P_5 :TEST7: Waiting in doctor D_1 Queue
+           D_0 :TEST7: Back from Break,Signalling patient to come in.
+           D_1 :TEST7: Back from Break,Signalling patient to come in.
+           P_0 :TEST7: Consulting Doctor D_0 now...
+           P_1 :TEST7: Consulting Doctor D_1 now...
+        
+          Thus we see that the patients P_0 and P_1 can only consult the 
+          doctor once the doctors are back from break.When the doctor 
+          on break no patient can get in.
+   
 VI. Discussion:
     + Experiment expectation.  (What you hope will happen.)
     + Experiment result.  (What actually happens.)
