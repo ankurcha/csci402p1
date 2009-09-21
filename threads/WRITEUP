@@ -42,6 +42,10 @@ II. Assumptions:
     We assume:
         -Functions provided by NACHOS are generally bug free and perform as
         specified.
+        -As specified in the problem documentations, we have implemented MESA
+        style Condition variables.
+        -We would use primitive thread routines for our implementation instead
+        of semaphores.
 
 III. Design:
 
@@ -275,7 +279,9 @@ III. Design:
             
 
         hospitalManager(int ID)
-        
+            The hospital manager is a thread which has only one instance per
+            simulation. Its job is to go on rounds at random intervals ( done
+            by 
 
         HospINIT(int testmode = 0)
 
@@ -352,6 +358,10 @@ IV. Implementation:
             void clerk(int)
             void hospitalManager(int)
             void HospINIT()
+            int test1()
+            int test2()
+            int test4()
+            int test7()
 
         patient.cc:
             void patients(int)
@@ -372,7 +382,10 @@ V. Testing: (For each test case, you must show)
             get till the point that they have the token as given by the
             receptionist and select the doctor they want to see but do not
             continue beyond that and perpetually sleep as there is no one to
-            wake them up and send them to the doctor.  
+            wake them up and send them to the doctor.
+            
+            To run this test code:
+             %threads/nachos -P2 1 -rs {your seed} 1| grep 'P_'  
          
          -Test Case 2: If the door boy in on a break no patient gets in. 
 
