@@ -142,6 +142,10 @@ V. Testing: (For each test case, you must show)
             continue beyond that and perpetually sleep as there is no one to
             wake them up and send them to the doctor.  
 
+        -Test Case 2:
+
+            TODO
+
         -Test Case 3: Only one patient gets to see a given doctor at at
          instance of time
 
@@ -152,7 +156,7 @@ V. Testing: (For each test case, you must show)
             Where x is the ID of one of the doctors. 
             
         -Test Case 4: Patient always choose the shortest line with the cashier,
-            pharmacy clerk and the receptionist.
+         pharmacy clerk and the receptionist.
             
             To run this test run nachos as follows:
             
@@ -166,6 +170,37 @@ V. Testing: (For each test case, you must show)
             the verbosity of the program is increase and this search process
             is made visible. Hence, the user can see the individual lengths
             of each of the lines and also the final line chosen by the patient.
+
+        -Test Case 5:
+
+            TODO
+
+        -Test Case 6:
+
+            TODO
+
+        -Test Case 7:
+
+            TODO
+
+        -Test Case 8:
+
+            TODO
+
+        -Test Case 9:
+
+            TODO
+
+        -Test Case 10: The total sales of medicines and the total consultation
+         fees never get affected by race conditions.
+            
+            To run this test run nachos as follows:
+
+            %threads/nachos -P2 10 -rs 12 1| grep T10
+
+        -Test Case 11:
+
+            TODO
 
     + Test Output
 
@@ -185,6 +220,10 @@ V. Testing: (For each test case, you must show)
             
             As we can see that all the patients would halt at this point. Hence
             proving to us that they cannot continue without a doorboy.
+
+        -Test Case 2:
+
+            TODO
 
         -Test Case 3:
 
@@ -217,7 +256,39 @@ V. Testing: (For each test case, you must show)
             As we see here P_3 searches through all the lines and find the
             shortest one. Then it chooses the corresponding receptionist
             as marked. Similarly, with the P_4 patient thread.
+
+        -Test Case 5:
+
+            TODO
+
+        -Test Case 6:
+
+            TODO
+
+        -Test Case 7:
+
+            TODO
+
+        -Test Case 8:
+
+            TODO
+
+        -Test Case 9:
+
+            TODO
+
+        -Test Case 10:
+
+            The output will show the value of our total sales variable as
+            compared to the individual sums of each cashier/clerk, and the
+            total of those sums.  If the two totals match, then the
+            cashiers/clerks did not encounter race conditions modifying the
+            total sales variable.
+
+        -Test Case 11:
             
+            TODO
+
 VI. Discussion:
     + Experiment expectation.  (What you hope will happen.)
     + Experiment result.  (What actually happens.)
