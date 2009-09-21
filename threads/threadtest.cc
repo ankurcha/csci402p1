@@ -111,8 +111,13 @@ void Problem2(int choice = -1)
                 HospINIT(53);
                 return;
                 break;
+
             case 6:
                 HospINIT(6);
+                return;
+                break;
+            case 8:
+                HospINIT(8);
                 return;
                 break;
             case 10:
