@@ -548,7 +548,7 @@ void cashier(int ID) {
             // prefix for test condition
             if(test_state == 11)
                 cout << "T11: ";
-            cout<<"Cash_"<<ID<<": No one in line..."<<endl;
+            cout<<"Cash_"<<ID<<": No one in line... going on break"<<endl;
             cashiers[ID].breakCV->Wait(cashierLineLock);
             cashierLineLock->Release();
             continue;
