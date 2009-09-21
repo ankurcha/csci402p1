@@ -180,7 +180,7 @@ V. Testing: (For each test case, you must show)
 
             TODO
 
-        -Test Case 6:
+        -Test Case 6: The doctor is going on break at random intervals.
 
             To run this test run nachos as follows:
 
@@ -190,9 +190,9 @@ V. Testing: (For each test case, you must show)
 
             TODO
 
-        -Test Case 8:
+        -Test Case 8: Doorboy never goes on break when doctor is on break.
 
-            TODO
+            %threads/nachos -P2 8 -rs {your seed} 1| grep '^T8'
 
         -Test Case 9:
 
@@ -293,7 +293,10 @@ V. Testing: (For each test case, you must show)
 
         -Test Case 8:
 
-            TODO
+            The output from this test will show every time doctor 0 goes on
+            break and comes back and every time the doorboy servicing doctor 0
+            goes on break and comes back.  Verify for multiple seed values that
+            they are never on break at the same time.
 
         -Test Case 9:
 
