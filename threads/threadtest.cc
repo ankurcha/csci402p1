@@ -97,13 +97,19 @@ void Problem2(int choice = -1)
                 test4();
                 return;
                 break;
-
             case 6:
                 HospINIT(6);
                 return;
                 break;
+
             case 7:
                 test7();
+                return;
+                break;
+
+
+            case 8:
+                HospINIT(8);
                 return;
                 break;
 

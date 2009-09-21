@@ -324,22 +324,32 @@ void doorboy(int ID){
         doctors[myDoctor].LineLock->Acquire();
         printf("DB_%d: Checking for Patients\n",ID);
         
-if(test2active==true)
-	{
-		printf("DB_%d:TEST2: Yawn!!...ZZZZzzzzz....\n",ID);
-            doctors[myDoctor].doorboyBreakCV->Wait(doctors[myDoctor].LineLock);
-		
-	}
-	
-     else
-    
-     		   //while there is noone in line
+        //while there is noone in line
+        bool doorboyBreak = false;
         while(doctors[myDoctor].peopleInLine <= 0) { 
+            doorboyBreak = true;
             //I will be woken up by the manager only!!
-            printf("DB_%d: Yawn!!...ZZZZzzzzz....\n",ID);
+
+            // prefix for test 8 condition
+            if(myDoctor == 0 && test_state == 8) {
+                cout << "T8: ";
+            }
+            // midfix for test 2
+            if(test2active==true) {
+		printf("DB_%d:TEST2: Yawn!!...ZZZZzzzzz....\n",ID);
+            } else {
+                printf("DB_%d: Sleeping ... Yawn!!...ZZZZzzzzz....\n",ID);
+            }
             doctors[myDoctor].doorboyBreakCV->Wait(doctors[myDoctor].LineLock);
             // I got woken up, time to go back to work - by now there are 
             //  people dying on the floor!
+        }
+        if(doorboyBreak) {
+            // prefix for test 8 condition
+            if(myDoctor == 0 && test_state == 8) {
+                cout << "T8: ";
+            }
+            printf("DB_%d: Woken up!\n", ID);
         }
         
         printf("DB_%d: Found %d patients waiting in line for D_%d\n",
@@ -398,6 +408,7 @@ void doctor(int ID){
         cout<<"D_"<<ID<<": Waiting for a doorboy to send in the patient!\n";
         doctors[ID].transCV->Wait(doctors[ID].transLock);
 
+        bool doctorBreak = false;
         // go on break if so inclined
        
        if(test7active==true)
@@ -411,8 +422,15 @@ void doctor(int ID){
        	}
        else
         if(Random() % 100 > 49) { // go on break
+            doctorBreak = true;
             // 5-15 yields
             int numYields = 5 + (Random() % 11);
+
+            // provide a handle for test 8, only uses doctor 0
+            if(ID == 0 && test_state == 8 ) { 
+                cout << "T8: ";
+            }
+
             cout<<"D_"<<ID<<": Going on break for "<<numYields<<" cycles!\n";
             for(int i=0; i < numYields; ++i) {
                 currentThread->Yield();
@@ -421,13 +439,22 @@ void doctor(int ID){
        
         	
 
+        // provide a handle for test 8, only uses doctor 0
+        if(ID == 0 && test_state == 8 && doctorBreak) { 
+            cout << "T8: ";
+        }
+        if(doctorBreak) 
+            printf("D_%d: Back from Break\n", ID);
+
         // inform the doorboy that I am ready for a patient
+
         if(test7active==true)
        	{
        		cout<<"D_"<<ID<<" :TEST7: Back from Break,Signalling patient to come in.\n";
        	}
        	else
         cout<<"D_"<<ID<<": Back from Break,Signalling patient to come in.\n";
+
         doctors[ID].transCV->Signal(doctors[ID].transLock);
         cout<<"D_"<<ID<<": Waiting for patient....\n";
         //////  PATIENT INTERACTION  //////
