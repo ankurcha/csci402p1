@@ -379,17 +379,33 @@ V. Testing: (For each test case, you must show)
 
 VI. Discussion:
     + Experiment expectation.  
-        The Lock and Condition classes have been appropriately implemented.
-        All test cases should pass and for the negative test cases error
-        messages should be printed and the should not crash or fault in any
-        case.
-    + Experiment result.  
-        All the test cases passed as expected. We ran the provided test
-        cases (test_code.cc) for multiple values of -rs. Appropriate error
-        messages were also displayed in case of the negative test cases.
+        -Part 1: Locks and Condition Variables
+            The Lock and Condition classes have been appropriately implemented.
+            All test cases should pass and for the negative test cases error
+            messages should be printed and the should not crash or fault in
+            any case.
+        -Part 2: Hospital Management Simulation.
+            Each of the agents(Patient, Doctor, Receptionist, Cashier, Clerk
+            and Hospital Manager) have been implemented properly. Their
+            interactions have been appropriately synchronized and there are
+            no race conditions. Additionally, all prescribed test cases must
+            pass.
+            
+    + Experiment result.
+        -Part 1: Locks and Condition Variables
+            All the test cases passed as expected. We ran the provided test
+            cases (test_code.cc) for multiple values of -rs. Appropriate error
+            messages were also displayed in case of the negative test cases.
+        -Part 2: Hospital Management Simulation.
+            All the test cases were appropriately implemented and the simulation
+            performed as expected for any given value of -rs. In addition, 
+            in order to enable easy tracability of the interactions the verbosity
+            of the threads has been kept high, with almost all interactions
+            being logged to standard output.
+        
     + Explanation
-        As the the expectation and the results match, we conclude that the 
-        locks and the condition variables have been properly implemented.
+        As the the expectation and the results match, we conclude that both 
+        the parts have been properly implemented.
 
 VII. Miscellaneous:
 
