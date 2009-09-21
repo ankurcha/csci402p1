@@ -38,6 +38,7 @@ void patients(int ID){
         <<": Searching for the receptionist with the shortest line\n";
         
     }
+    
     for (int i=0; i<numRecp; i++) {
         
         if (test4active == true) {
@@ -185,7 +186,7 @@ void patients(int ID){
     // there are a lot of cases here, but they all result in us getting in line
     cashiers[myCashier].lineLength ++;
     cout << "P_"<<ID<<": Waiting in line for cashier C_"<<myCashier
-    <<" to attend to me, Line length\n";
+    <<" to attend to me, Line length: "<<cashiers[myCashier].lineLength<<"\n";
     cashiers[myCashier].lineCV->Wait(cashierLineLock);
     cout << "P_"<<ID<<": Going to meet cashier C_"<<myCashier<<"\n";
     cashiers[myCashier].lineLength --;
@@ -248,7 +249,11 @@ void patients(int ID){
 
         //wait in line for my turn
     clerks[shortestclerkline].patientsInLine++;
+    cout << "P_"<<ID<<": Waiting in line for clerk CL_"<<shortestclerkline
+    <<" to attend to me, Line length: "<<clerks[shortestclerkline].patientsInLine<<"\n";
+    
     clerks[shortestclerkline].ClerkCV->Wait(ClerkLinesLock);
+    
     cout<<"P_"<<ID<<" Got woken up, got out of line and going to the Pharmacy "
 
         <<"CLerk to give prescription.\n";
