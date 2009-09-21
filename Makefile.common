@@ -59,6 +59,9 @@ THREAD_C =../threads/main.cc\
 	../threads/thread.cc\
 	../threads/utility.cc\
 	../threads/threadtest.cc\
+	../threads/init.cc\
+	../threads/patient.cc\
+	../threads/test_code.cc\
 	../machine/interrupt.cc\
 	../machine/sysdep.cc\
 	../machine/stats.cc\
