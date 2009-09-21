@@ -56,6 +56,28 @@ III. Design:
             thread
 
             Acquire()
+                The acquire function is designed to guarantee that when it
+                exits the lock will be locked and the current thread will be
+                the owner of that lock.  If that is already the state the
+                function exits immediately.  If the function need to acquire
+                the lock and it is already locked, is puts itself in a queue of
+                threads waiting for ownership, and sleeps until woken by a call
+                to release elsewhere.  My Release implementation guarantees
+                that the woken thread owns the lock, but Acquire does not make
+                that assumption, and verifies that it owns the lock upon waking
+                before continuing.
+
+            Release()
+                The release function is designed to release the ownership of a
+                lock when a thread is done with it.  In addition to simply
+                releasing the lock, it is the responsibility of Release to wake
+                up the next thread waiting for a lock, if any threads are
+                waiting.  Release first ensures that it is releasing a lock
+                that it owns, otherwise it throws out an error message and
+                returns.  If noone is waiting in the queue Release simply
+                clears the lock and returns.  If someone is waiting, Release
+                puts the lock in that thread's name and puts that thread on the
+                run queue before returning.
 
         Condition class:
 
