@@ -45,7 +45,43 @@ II. Assumptions:
 
 III. Design:
 
-    TODO
+    Part 1:
+
+        Lock class:
+            The primary functionality of the Lock class is the Acquire and
+            Release functions.  Both of these function need to be guaranteed to
+            be atomic and to ensure this we disabled interrupts during their
+            operation.  We also implemented the isHeldByCurrentThread function
+            which simply returns true if the lock is owned by the current
+            thread
+
+            Acquire()
+
+        Condition class:
+
+    Part 2:
+        
+        The hospital simulation is implemented in init.cc and patient.cc, with
+        the bulk of the code in init.cc.  The important parts of the simulation
+        consist of the 7 functions that define the threads corresponding to the
+        actors present in the hospital, as well as the HospINIT function which
+        brings all the threads to life.
+
+        patients(int ID)
+
+        doctor(int ID)
+
+        receptionist(int ID)
+
+        cashier(int ID)
+
+        doorboy(int ID)
+
+        clerk(int ID)
+
+        hospitalManager(int ID)
+
+        HospINIT(int testmode = 0)
 
 IV. Implementation:
 
