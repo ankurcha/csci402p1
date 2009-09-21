@@ -405,7 +405,6 @@ void doctor(int ID){
         doorboyLineLock->Release();
 
         //////  DOORBOY INTERACTION  //////
-        cout<<"D_"<<ID<<": Waiting for a doorboy to send in the patient!\n";
         doctors[ID].transCV->Wait(doctors[ID].transLock);
 
         bool doctorBreak = false;
