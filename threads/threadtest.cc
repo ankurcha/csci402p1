@@ -59,7 +59,7 @@ void ThreadTest()
 void Problem2(int choice = -1)
 {
     while (true) {
-        if(choice = -1) {
+        if(choice == -1) {
             printf("\nTESTING HOSPITAL SIMULATION\n");
             cerr << "\nSelect from the options below"<<endl
             <<"    0. Run simulation normally."<<endl
