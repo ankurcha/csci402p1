@@ -22,6 +22,10 @@ using namespace std;
 #define FREE 1
 #define SLEEPING 2
 
+bool test1active = false;
+bool test4active = false;
+bool test5active = false;
+
 struct node {
     int key, value;
     node* next;
@@ -70,13 +74,6 @@ int test1();
 int test2();
 int p=1;
 Lock *testlock = new Lock("TestLock");
-int doorboytest = 0;
-int patienttest = 0;
-int doctortest = 0;
-int clerktest = 0;
-int receptionisttest = 0;
-int cashiertest = 0;
-int hospitalmanagertest = 0;
 
 // tokenCounter for assigning tokens to patients
 Lock *TokenCounterLock = new Lock("TokenCounterLock");
@@ -132,6 +129,9 @@ struct Cashier {
     int patToken;
     int fee;
     int payment;
+
+    //protected by feesPaidLock, but only modified by one thread
+    int sales;
 
     // cashier's CV for going on break
     Condition* breakCV;
@@ -278,6 +278,8 @@ Doctor doctors[MAX_DOCTORS];
 Cashier cashiers[MAX_CASHIER];
 PharmacyClerks clerks[MAX_CLERKS];
 
+int test_state = 0;
+
 #include "patient.cc"
 
 void doorboy(int ID){
@@ -348,12 +350,7 @@ void doorboy(int ID){
     }//End of while
 
     printf("DB_%d: Dying...AAAaaaahhhhhhhhh!!\n",ID);
-#ifdef _TEST2_CC_
-    testlock->Acquire();
-    cout << "Doorboy exited.\n";
-    doorboytest++;
-    testlock->Release();
-#endif
+
 }
 
 void doctor(int ID){
@@ -376,9 +373,6 @@ void doctor(int ID){
             doorboyLineLock->Acquire();
             if(waitingtime <= 0){
                 cout <<"Waited for a long time with no Doorboys, exiting...\n";
-                testlock->Acquire();
-                doctortest++;
-                testlock->Release();
                 return;
             }
         }
@@ -534,6 +528,7 @@ void cashier(int ID) {
         // add this payment to our total collected
         feesPaidLock->Acquire();
         feesPaid += cashiers[ID].payment;
+        cashiers[ID].sales += cashiers[ID].payment;
         feesPaidLock->Release();
         if(cashiers[ID].payment < cashiers[ID].fee) {
             printf("ERROR: call security, that patient didin't pay!");
@@ -621,10 +616,8 @@ void hospitalManager(int ID){
         
         if (patientsWaiting > 1) {
             for (int j=0; j<numRecp; j++) {
-                //receptionists[j].LineLock->Acquire();
                 recpLineLock->Acquire();
                 receptionists[j].ReceptionistBreakCV->Signal(recpLineLock);
-                //receptionists[j].LineLock->Release();
                 recpLineLock->Release();
             }
         }
@@ -632,19 +625,31 @@ void hospitalManager(int ID){
         printf("H_%d : Checking cashiers\n",ID);
         for (int i=0; i<numCashiers; i++) {//Check for waiting patients
             if (cashiers[i].lineLength > 0 ) {
-                printf("H_%d : found C_%d sleeping and %d waiting\nKicking Ass\n",
-                       ID,i,cashiers[i].lineLength);
-                    //Wake up this receptionist up
-                    //receptionists[ID].ReceptionistBreakLock->Acquire();
+                printf("H_%d : found %d people waiting for C_%d -> Kicking Ass\n",
+                       ID, cashiers[i].lineLength, i);
+                //Wake up this receptionist up
                 cashierLineLock->Acquire();
                 cashiers[i].breakCV->Broadcast(cashierLineLock);
                 cashierLineLock->Release();
                 
             }
         }
-            //Query cashiers for total sales
+        
+        //Query cashiers for total sales
         feesPaidLock->Acquire();
-        cout << "Total fees collected by cashiers: "<<feesPaid<<endl;
+        cout << "T10: Total fees collected by cashiers: "<<feesPaid<<endl;
+        if( test_state == 10 ) {
+            // this is a test for race conditions, so we can't have any:
+            IntStatus oldLevel = interrupt->SetLevel(IntOff);
+            int sum = 0;
+            for (int i=0; i<numCashiers; i++) {
+                printf("  T10: cashier %d:   %d\n", i, cashiers[i].sales);
+                sum += cashiers[i].sales;
+            }
+            printf("  T10: TOTAL: %d\n", sum);
+            // sum just printed should match feesPaid, printed earlier
+            (void) interrupt->SetLevel(oldLevel);
+        }
         feesPaidLock->Release();
         
         
@@ -683,6 +688,9 @@ void hospitalManager(int ID){
 
 void HospINIT(int testmode = 0) {
     
+    // set a global so everyone will know the test mode
+    test_state = testmode;
+
     if(testmode == 0){
         int i = 0;
         char temp[] = "NACHOS_THREAD";
@@ -701,13 +709,18 @@ void HospINIT(int testmode = 0) {
         
             //4. DoorBoys
         numDoctors = (Random() % (MAX_DOCTORS - MIN_DOCTORS + 1) + MIN_DOCTORS);
-        numDoorboys = numDoctors;
-        cout << "Creating "<<numDoorboys<<" Doorboys\n";
-        for(i=0;i<numDoorboys;i++)
-        {
-            
-            t=new Thread(temp);
-            t->Fork((VoidFunctionPtr) doorboy, i);
+        if(test1active == false){
+            numDoorboys = numDoctors;
+            cout << "Creating "<<numDoorboys<<" Doorboys\n";
+            for(i=0;i<numDoorboys;i++)
+            {
+                
+                t=new Thread(temp);
+                t->Fork((VoidFunctionPtr) doorboy, i);
+            }            
+        }else{
+            numDoorboys = 0;
+            cout << "Bypassing Doorboy Creation\n";
         }
         
             //5. Pharmacys
@@ -766,164 +779,17 @@ void HospINIT(int testmode = 0) {
 
 
 int test1(){
-    
-    int i = 0;
-    char temp[] = "NACHOS_THREAD";
-    Thread *t;   
-    
-    
-        //3. Cashiers
-    numCashiers = (Random() % (MAX_CASHIER - MIN_CASHIER +1) + MIN_CASHIER) ;
-    cout << "Creating "<<numCashiers<<" Cashiers\n";
-    for(i=0;i<numCashiers;i++)
-    {
-        
-        t=new Thread(temp);
-        t->Fork((VoidFunctionPtr) cashier, i);
-    }
-    
-        //4. DoorBoys
-    numDoctors = (Random() % (MAX_DOCTORS - MIN_DOCTORS + 1) + MIN_DOCTORS);
-        //    numDoorboys = numDoctors;
-    cout << "Bypass doorboys creation\n";
-        
-    
-    numClerks= (Random() % (MAX_CLERKS - MIN_CLERKS +1) + MIN_CLERKS) ;
-    cout << "Creating "<<numClerks<<" Clerks\n";
-    for(i=0;i<numClerks;i++)
-    {
-        
-        t=new Thread(temp);
-        t->Fork((VoidFunctionPtr) clerk, i);
-    }
-        //1. Doctors
-    cout << "Creating "<< numDoctors<<" Doctors\n";
-    for(i=0;i<numDoctors;i++)
-    {
-        
-        t=new Thread(temp);
-        t->Fork((VoidFunctionPtr) doctor, i);
-    }
-        //7. Patients
-    numPatients = Random() % (MAX_PATIENTS - MIN_PATIENTS +1) + MIN_PATIENTS;
-    
-    hospitalLock->Acquire();
-    peopleInHospital = numPatients;
-    hospitalLock->Release();    
-    
-    cout << "Creating "<<numPatients<<" Patients\n";
-    for(i=0;i<numPatients;i++)
-    {
-        
-        t=new Thread(temp);
-        t->Fork((VoidFunctionPtr) patients, i);
-    }
-    
-        //6. HospitalManager
-    cout << "Creating 1 Hospital Manager\n";
-    t = new Thread("HospitalManager_0");
-    t->Fork((VoidFunctionPtr) hospitalManager, 0);   
-        //  INIT();
-    
-        //2. Receptionists
-    numRecp= (Random() % (RECP_MAX - RECP_MIN +1) + RECP_MIN) ;
-    cout << "Creating "<<numRecp<<" Receptionists\n";
-    for(i=0; i<numRecp; i++)
-    {
-        t = new Thread(temp);
-        t->Fork((VoidFunctionPtr) receptionist, i);
-    }
-    
-    hospitalLock->Acquire();
-    if( peopleInHospital == numPatients){
-        return 1;
-    }
-    hospitalLock->Release();
-    
+    test1active = true;
+    HospINIT();
+    return 0;
 }
 
 
+int test4(){
+    test4active = true;
+        //start the process normally
+    HospINIT();
+    return 0;
 
-int test2(){
-    
-    int i = 0;
-    char temp[] = "NACHOS_THREAD";
-    Thread *t;   
-    
-    
-        //3. Cashiers
-    numCashiers = (Random() % (MAX_CASHIER - MIN_CASHIER +1) + MIN_CASHIER) ;
-    cout << "Creating "<<numCashiers<<" Cashiers\n";
-    for(i=0;i<numCashiers;i++)
-    {
-        
-        t=new Thread(temp);
-        t->Fork((VoidFunctionPtr) cashier, i);
-    }
-    
-        //4. DoorBoys
-        
-    numDoctors = (Random() % (MAX_DOCTORS - MIN_DOCTORS + 1) + MIN_DOCTORS);
-            numDoorboys = numDoctors;
-    //cout << "Bypass doorboys creation\n";
-           for(i=0;i<numDoorboys;i++)
-            {
-                p=1;
-                t=new Thread(temp);
-                t->Fork((VoidFunctionPtr) doorboy, i);
-           }
-    
-        //5. Pharmacys
-    numClerks= (Random() % (MAX_CLERKS - MIN_CLERKS +1) + MIN_CLERKS) ;
-    cout << "Creating "<<numClerks<<" Clerks\n";
-    for(i=0;i<numClerks;i++)
-    {
-        
-        t=new Thread(temp);
-        t->Fork((VoidFunctionPtr) clerk, i);
-    }
-        //1. Doctors
-    cout << "Creating "<< numDoctors<<" Doctors\n";
-    for(i=0;i<numDoctors;i++)
-    {
-        
-        t=new Thread(temp);
-        t->Fork((VoidFunctionPtr) doctor, i);
-    }
-        //7. Patients
-    numPatients = Random() % (MAX_PATIENTS - MIN_PATIENTS +1) + MIN_PATIENTS;
-    
-    hospitalLock->Acquire();
-    peopleInHospital = numPatients;
-    hospitalLock->Release();    
-    
-    cout << "Creating "<<numPatients<<" Patients\n";
-    for(i=0;i<numPatients;i++)
-    {
-        
-        t=new Thread(temp);
-        t->Fork((VoidFunctionPtr) patients, i);
-    }
-    
-        //6. HospitalManager
-    cout << "Creating 1 Hospital Manager\n";
-    t = new Thread("HospitalManager_0");
-    t->Fork((VoidFunctionPtr) hospitalManager, 0);   
-        //  INIT();
-    
-        //2. Receptionists
-    numRecp= (Random() % (RECP_MAX - RECP_MIN +1) + RECP_MIN) ;
-    cout << "Creating "<<numRecp<<" Receptionists\n";
-    for(i=0; i<numRecp; i++)
-    {
-        t = new Thread(temp);
-        t->Fork((VoidFunctionPtr) receptionist, i);
-    }
-    
-    hospitalLock->Acquire();
-    if( peopleInHospital == numPatients){
-        return 1;
-    }
-    hospitalLock->Release();
-    
 }
+
