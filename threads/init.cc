@@ -23,7 +23,9 @@ using namespace std;
 #define SLEEPING 2
 
 bool test1active = false;
+bool test2active = false;
 bool test4active = false;
+bool test7active = false;
 bool test5active = false;
 
 struct node {
@@ -72,7 +74,7 @@ struct linkedlist {
 
 int test1();
 int test2();
-int p=1;
+
 Lock *testlock = new Lock("TestLock");
 
 // tokenCounter for assigning tokens to patients
@@ -303,6 +305,9 @@ void doorboy(int ID){
             continue;
         }
         myDoctor = (int) wakingDoctorList->Remove();
+    if(test2active==true)
+        cout << "DB_"<<ID<<":TEST2: Servicing D_"<<myDoctor<<"\n";
+        else
         cout << "DB_"<<ID<<": Servicing D_"<<myDoctor<<"\n";
         doorboyLineLock->Release();
 
@@ -317,14 +322,14 @@ void doorboy(int ID){
         doctors[myDoctor].LineLock->Acquire();
         printf("DB_%d: Checking for Patients\n",ID);
         
-/*if(p==1)
+if(test2active==true)
 	{
-		printf("DB_%d: Yawn!!...ZZZZzzzzz....\n",ID);
+		printf("DB_%d:TEST2: Yawn!!...ZZZZzzzzz....\n",ID);
             doctors[myDoctor].doorboyBreakCV->Wait(doctors[myDoctor].LineLock);
 		
 	}
-	*/
-     //else
+	
+     else
     
      		   //while there is noone in line
         while(doctors[myDoctor].peopleInLine <= 0) { 
@@ -393,7 +398,7 @@ void doctor(int ID){
 
         // go on break if so inclined
        
-       if(p==1)
+       /*if(p==1)
        	{
        		int numYields = 35;
             cout<<"D_"<<ID<<":TEST7: Going on break for "<<numYields<<" cycles!\n";
@@ -401,8 +406,8 @@ void doctor(int ID){
                 currentThread->Yield();
             }
        		
-       	}
-       else
+       	}*/
+      // else
         if(Random() % 100 > 49) { // go on break
             // 5-15 yields
             int numYields = 5 + (Random() % 11);
@@ -784,6 +789,11 @@ int test1(){
     return 0;
 }
 
+int test2(){
+	test2active=true;
+	HospINIT();
+	return 0;
+}
 
 int test4(){
     test4active = true;

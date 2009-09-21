@@ -91,13 +91,26 @@ void patients(int ID){
     //Calculate which doctor I want to see
 
     myDoctor = (int)(Random()) % numDoctors;
+    if(test2active==true)
+	{
+				printf("P_%d :TEST2: Going to meet doctor D_%d\n",ID,myDoctor);
+	}
+	
+	else
     printf("P_%d : Going to meet doctor D_%d\n",ID,myDoctor);
+    
 
     // Acquire doc's line lock
     doctors[myDoctor].LineLock->Acquire();
 
     // Wait on the line -- to be woken up by the doorboy
+    if(test2active==true)
+	{
+				printf("P_%d :TEST2: Join line and Waiting for doorboy to tell me to go\n",ID);
+	}
+	else
     printf("P_%d : Join line and Waiting for doorboy to tell me to go\n",ID);
+    
     doctors[myDoctor].peopleInLine++;
     doctors[myDoctor].LineCV->Wait(doctors[myDoctor].LineLock);
     printf("P_%d : Doorboy told me to go to doctor, proceeding....\n",ID);
@@ -105,7 +118,7 @@ void patients(int ID){
 
     // move into the doctor's transaction lock
     doctors[myDoctor].LineLock->Release();
-    if(test_code2==true)
+    if(test7active==true)
     printf("P_%d :TEST7: Trying to acquire doctor's translock\n",ID);
     
     else
