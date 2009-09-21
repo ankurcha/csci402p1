@@ -653,7 +653,7 @@ void hospitalManager(int ID){
         }
         hospitalLock->Acquire();
         if (peopleInHospital <= 0) {
-            cout << "H_0: No one to service, putting my self to sleep!!!\n";
+            cout << "H_0: No one to service, Killing myself!!!\n";
             return;
         }
         hospitalLock->Release();
@@ -688,8 +688,8 @@ void hospitalManager(int ID){
         printf("H_%d : Checking cashiers\n",ID);
         for (int i=0; i<numCashiers; i++) {//Check for waiting patients
             if (cashiers[i].lineLength > 0 ) {
-                printf("H_%d : found %d people waiting for C_%d -> Kicking Ass\n",
-                       ID, cashiers[i].lineLength, i);
+                cout << "H_"<<ID<<": Found "<<cashiers[i].lineLength
+                <<" patients waiting for C_"<<i<<" -> Signal Cashier\n";
                 //Wake up this receptionist up
                 cashierLineLock->Acquire();
                 cashiers[i].breakCV->Broadcast(cashierLineLock);
@@ -721,9 +721,9 @@ void hospitalManager(int ID){
         printf("H_%d : Checking clerks\n",ID);
         for (int i=0; i<numClerks; i++) {//Check for waiting patients
             if (clerks[i].patientsInLine > 0 ) {
-                printf("H_%d : found CL_%d sleeping and %d waiting\nKicking some doorboy Ass\n",
-                       ID,i,clerks[i].patientsInLine);
-                    //Wake up this receptionist up
+                cout << "H_"<<ID<<": found CL_"<<i<<" sleeping and "
+                <<clerks[i].patientsInLine<<" waiting -> Signaling Clerk\n";
+                    //Wake up this clerk up
                 ClerkLinesLock->Acquire();
                 clerks[i].ClerkBreakCV->Signal(ClerkLinesLock);
                 ClerkLinesLock->Release();
@@ -732,7 +732,8 @@ void hospitalManager(int ID){
 
         //Query clerks for total sales
         PaymentLock->Acquire();
-        cout << "T10: Total amount collected by clerks: "<<totalsales<<endl;
+        cout <<"H_"<<ID<<"T10: Total amount collected by clerks: "
+        <<totalsales<<endl;
 
         if( test_state == 10 ) {
             // this is a test for race conditions, so we can't have any:
@@ -754,8 +755,8 @@ void hospitalManager(int ID){
         printf("H_%d : Checking doorboys\n",ID);
         for (int i=0; i<numDoctors; i++) {//Check for waiting patients
             if (doctors[i].peopleInLine > 0 ) {
-                printf("H_%d : found %d people in doctor %d's line and \nKicking Ass\n",
-                         ID, doctors[i].peopleInLine, i);
+                cout<<"H_"<<ID<<": found "<<doctors[i].peopleInLine
+                <<" people in doctor "<<i<<"'s line -> Signal Doorboy\n";
                 doctors[i].LineLock->Acquire();
                 doctors[i].doorboyBreakCV->Broadcast(doctors[i].LineLock);
                 doctors[i].LineLock->Release();
