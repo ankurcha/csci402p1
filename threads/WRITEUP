@@ -237,11 +237,11 @@ III. Design:
         cashier(int ID)
             The cashier first acquires a lock on all the cashier queues and
             signals the patient on the top of his queue using his condition
-            Variable (lineCV).For other transaction it uses its Transaction
-            Lock(transLock).  It looks up a linkedlist structure, uses the
+            Variable(lineCV).For other transaction it uses its Transaction
+            Lock(transLock).It looks up a linkedlist structure, uses the
             patient token number and gets the cost using the getValue()
             function.This has its own feeListLock. It waits for payment on its
-            trasaction Condition Variable (TransCV).It calculates the total
+            trasaction Condition Variable(TransCV).It calculates the total
             sales and after all these transactions releases the Transaction
             Lock(transLock). It goes to sleep if there are no patients in the
             Line and is woken up by a signal by the Hospital manager on its
@@ -676,6 +676,9 @@ VI. Discussion:
         the parts have been properly implemented.
 
 VII. Miscellaneous:
+    + Inorder to map the Token values with a cost, We use a Linked list
+      structure.Where we can map a key to a value using the getValue()
+      function and can append values using the append() function.
     + We have set the upper limit for the maximum number of patients as 
       100. It can be modified for other integer values by changing the
       value of MAX_PATIENTS in the init.cc file.
