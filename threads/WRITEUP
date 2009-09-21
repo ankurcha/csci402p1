@@ -199,16 +199,16 @@ III. Design:
         
         cashier(int ID)
         
-        The cashier first acquires a lock on all the cashier queues and signals 
-        the patient on the top of his queue using his condition Variable
-        (lineCV).For other transaction it uses its Transaction Lock(transLock).
-        It looks up a linkedlist structure, uses the patient token number
-         and gets the cost using the getValue() function.This has its own
-         feeListLock. It waits for payment on its trasaction Condition Variable
-         (TransCV).It calculates the total sales and after all these transactions
-         releases the Transaction Lock(transLock). It goes to sleep if there are no 
-         patients in the Line and is woken up by a signal by the Hospital manager
-         on its Line Condition Variable(LineCV).
+            The cashier first acquires a lock on all the cashier queues and signals 
+            the patient on the top of his queue using his condition Variable
+            (lineCV).For other transaction it uses its Transaction Lock(transLock).
+            It looks up a linkedlist structure, uses the patient token number
+             and gets the cost using the getValue() function.This has its own
+             feeListLock. It waits for payment on its trasaction Condition Variable
+             (TransCV).It calculates the total sales and after all these transactions
+             releases the Transaction Lock(transLock). It goes to sleep if there are no 
+             patients in the Line and is woken up by a signal by the Hospital manager
+             on its Line Condition Variable(LineCV).
 
         doorboy(int ID)
             To organize the doorboy threads such that all of the doorboys
@@ -244,8 +244,19 @@ III. Design:
 
         hospitalManager(int ID)
             The hospital manager is a thread which has only one instance per
-            simulation. Its job is to go on rounds at random intervals ( done
-            by 
+            simulation. Its job is to go on rounds at random intervals (done
+            by yielding to other threads for some randomly selected times).
+            The hospital manager keeps a track of the patients that are waiting
+            in the simulation and exits only when this number reaches zero.
+            The hospital manager thread keeps checking the receptionists',
+            cashier, doorboy and pharmacy clerks' line of patients and signals
+            them to wake up in case there are any.
+            Also, in case of Cashier and Pharmacy clerk, the hospital manager
+            also queries them for the total sales that for the simulation.
+            We can see this number grow from 0 as the simulation progresses.
+            Once the all the patients have been terminated, the hospital manager
+            also kills itself and other threads will all go to sleep and thereby
+            ending the simulation.
 
         HospINIT(int testmode = 0)
 
