@@ -177,7 +177,9 @@ V. Testing: (For each test case, you must show)
 
         -Test Case 6:
 
-            TODO
+            To run this test run nachos as follows:
+
+            %threads/nachos -P2 6 -rs {your seed} 1| grep '^D_.*break'
 
         -Test Case 7:
 
@@ -196,7 +198,7 @@ V. Testing: (For each test case, you must show)
             
             To run this test run nachos as follows:
 
-            %threads/nachos -P2 10 -rs 12 1| grep T10
+            %threads/nachos -P2 10 -rs {your seed} 1| grep T10
 
         -Test Case 11:
 
@@ -263,7 +265,11 @@ V. Testing: (For each test case, you must show)
 
         -Test Case 6:
 
-            TODO
+            The output from this test will show a line every time a doctor
+            sleeps and for how long.  Verify that these statements show doctors
+            sleeping for randomized times for different seed values.  Also look
+            for variation in the number of times each doctor sleeps,
+            demonstrating that they don't always sleep.
 
         -Test Case 7:
 
