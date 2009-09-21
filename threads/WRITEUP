@@ -204,9 +204,11 @@ V. Testing: (For each test case, you must show)
 
             %threads/nachos -P2 6 -rs {your seed} 1| grep 'D_.*break'
 
-        -Test Case 7:
+        -Test Case 7:When the doctor is at break no patient gets in. 
 
-            TODO
+            To run this test run nachos as follows:
+
+           %threads/nachos -P2 -rs {your seed} | grep TEST7
 
         -Test Case 8: Doorboy never goes on break when doctor is on break.
 
@@ -219,13 +221,13 @@ V. Testing: (For each test case, you must show)
         -Test Case 10: The total sales of medicines and the total consultation
          fees never get affected by race conditions.
 
-            
-        -Test Case 7:When the doctor is at break no patient gets in. 
-        
             To run this test run nachos as follows:
-            
-           %threads/nachos -P2 -rs {your seed} | grep TEST7
 
+            %threads/nachos -P2 10 -rs {your seed} 1| grep T10
+
+        -Test Case 11: Doorboy/Clerk/Receptionist/Cashier go on break if the line is empty.
+
+            %threads/nachos -P2 11 -rs {your seed} 1| grep 'T11'
 
     + Test Output
 
@@ -365,7 +367,9 @@ V. Testing: (For each test case, you must show)
 
         -Test Case 11:
             
-            TODO
+            The output will show everytime a Cashier, Pharmacy Clerk,
+            Receptionist or Doorboy goes on break because the line is empty.
+            Verify that they all go on break.
 
 
 VI. Discussion:
