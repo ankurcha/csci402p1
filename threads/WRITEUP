@@ -128,6 +128,28 @@ III. Design:
         patients(int ID)
 
         doctor(int ID)
+            The doctor function represents a given doctor in our hospital,
+            identified by the ID value.  The doctor runs in a loop, conducting
+            the following tasks (in order): pull a doorboy off the doorboy
+            queue, optionally take a break, tell the doorboy to send in a
+            patient, consult with the patient, give the patient a prescription,
+            and wait for the patient to leave.  Along the way the doctor also
+            has to save his consulting fees where the cashier can find them, we
+            use a list that links patient tokens to fees.  
+
+            Our doorboys wait in line for a doctor to ask for their assistance.
+            When a doctor starts he pulls a doorboy off that queue and waits
+            for the doorboy to signal that they have arrived.  Once the doorboy
+            arrives the doctor decides whether or not to take a break, and
+            takes his break while the doorboy waits.  When he comes back he
+            signals the doorboy that he is ready for a patient and waits for
+            the patient to arrive.  The patient arrives on the same lock and CV
+            that the doorboy was using.  After a consulting delay the doctor
+            sets a prescription value for the patient to pick up and records a
+            fee for the patient associated with the patient's token.  Then the
+            doctor signals the patient indicating the values are prepared and
+            waits for the patient to leave.  Once the patient has left the
+            doctor repeats his loop.
 
         receptionist(int ID)
 
