@@ -374,9 +374,18 @@ V. Testing: (For each test case, you must show)
 
 
 VI. Discussion:
-    + Experiment expectation.  (What you hope will happen.)
-    + Experiment result.  (What actually happens.)
+    + Experiment expectation.  
+        The Lock and Condition classes have been appropriately implemented.
+        All test cases should pass and for the negative test cases error
+        messages should be printed and the should not crash or fault in any
+        case.
+    + Experiment result.  
+        All the test cases passed as expected. We ran the provided test
+        cases (test_code.cc) for multiple values of -rs. Appropriate error
+        messages were also displayed in case of the negative test cases.
     + Explanation
+        As the the expectation and the results match, we conclude that the 
+        locks and the condition variables have been properly implemented.
 
 VII. Miscellaneous:
 
