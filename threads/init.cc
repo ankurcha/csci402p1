@@ -307,10 +307,10 @@ void doorboy(int ID){
             continue;
         }
         myDoctor = (int) wakingDoctorList->Remove();
-    if(test2active==true)
-        cout << "DB_"<<ID<<":TEST2: Servicing D_"<<myDoctor<<"\n";
+        if(test2active==true)
+            cout << "DB_"<<ID<<":TEST2: Servicing D_"<<myDoctor<<"\n";
         else
-        cout << "DB_"<<ID<<": Servicing D_"<<myDoctor<<"\n";
+            cout << "DB_"<<ID<<": Servicing D_"<<myDoctor<<"\n";
         doorboyLineLock->Release();
 
         // Inform the doctor that I have arrived, and wait for him to take 
@@ -330,10 +330,11 @@ void doorboy(int ID){
             doorboyBreak = true;
             //I will be woken up by the manager only!!
 
-            // prefix for test 8 condition
-            if(myDoctor == 0 && test_state == 8) {
+            // prefix for test conditions
+            if(myDoctor == 0 && test_state == 8)
                 cout << "T8: ";
-            }
+            if(test_state == 11)
+                cout << "T11: ";
             // midfix for test 2
             if(test2active==true) {
 		printf("DB_%d:TEST2: Yawn!!...ZZZZzzzzz....\n",ID);
@@ -500,6 +501,10 @@ void receptionist(int ID){
         } else {
             //My Line is empty
             DEBUG('t',"No Patients, going on break...");
+
+            // prefix for test condition
+            if(test_state == 11)
+                cout << "T11: ";
             printf("R_%d Going to sleep\n",ID);
             receptionists[ID].ReceptionistBreakCV->Wait(recpLineLock);
             recpLineLock->Release();
@@ -539,7 +544,11 @@ void cashier(int ID) {
             cashiers[ID].lineCV->Signal(cashierLineLock);
         } else { // noone in line
             // go on break
-            cout<<"Cash_"<<ID<<": No one in line..."<<endl;
+
+            // prefix for test condition
+            if(test_state == 11)
+                cout << "T11: ";
+            cout<<"Cash_"<<ID<<": No one in line... going on break"<<endl;
             cashiers[ID].breakCV->Wait(cashierLineLock);
             cashierLineLock->Release();
             continue;
@@ -587,6 +596,12 @@ void clerk(int ID){
             clerks[ID].ClerkCV->Signal(ClerkLinesLock);
         } else { // noone in line
             // go on break
+
+            // prefix for test condition
+            if(test_state == 11)
+                cout << "T11: ";
+            printf("CL_%d: Going on break\n", ID);
+
             clerks[ID].ClerkBreakCV->Wait(ClerkLinesLock);
             ClerkLinesLock->Release();
             continue;

@@ -202,7 +202,7 @@ V. Testing: (For each test case, you must show)
 
             To run this test run nachos as follows:
 
-            %threads/nachos -P2 6 -rs {your seed} 1| grep '^D_.*break'
+            %threads/nachos -P2 6 -rs {your seed} 1| grep 'D_.*break'
 
         -Test Case 7:
 
@@ -210,7 +210,7 @@ V. Testing: (For each test case, you must show)
 
         -Test Case 8: Doorboy never goes on break when doctor is on break.
 
-            %threads/nachos -P2 8 -rs {your seed} 1| grep '^T8'
+            %threads/nachos -P2 8 -rs {your seed} 1| grep 'T8'
 
         -Test Case 9:Door boy/Cashier/Pharmacy clerk getting signaled by 
         hospital manager when patients are waiting
@@ -293,29 +293,6 @@ V. Testing: (For each test case, you must show)
             
             As we see here P_3 searches through all the lines and find the
             shortest one. Then it chooses the corresponding receptionist
-
-            as marked. Similarly, with the P_4 patient thread.
-       
-        -Test Case 7:
-                  
-           P_0 :TEST7: Waiting in doctor D_0 Queue
-           P_1 :TEST7: Waiting in doctor D_1 Queue
-           P_2 :TEST7: Waiting in doctor D_0 Queue
-         	 P_3 :TEST7: Waiting in doctor D_1 Queue
-           D_0 :TEST7: Going on break for 35 cycles!
-           D_1 :TEST7: Going on break for 35 cycles!
-           P_4 :TEST7: Waiting in doctor D_0 Queue
-           P_5 :TEST7: Waiting in doctor D_1 Queue
-           D_0 :TEST7: Back from Break,Signalling patient to come in.
-           D_1 :TEST7: Back from Break,Signalling patient to come in.
-           P_0 :TEST7: Consulting Doctor D_0 now...
-           P_1 :TEST7: Consulting Doctor D_1 now...
-        
-          Thus we see that the patients P_0 and P_1 can only consult the 
-          doctor once the doctors are back from break.When the doctor 
-          on break no patient can get in.
-   
-
             as marked. Similarly, when the line selection happens with the
             pharmacy clerk or the chashier.
 
@@ -349,8 +326,24 @@ V. Testing: (For each test case, you must show)
             demonstrating that they don't always sleep.
 
         -Test Case 7:
-
-            TODO
+                  
+           P_0 :TEST7: Waiting in doctor D_0 Queue
+           P_1 :TEST7: Waiting in doctor D_1 Queue
+           P_2 :TEST7: Waiting in doctor D_0 Queue
+         	 P_3 :TEST7: Waiting in doctor D_1 Queue
+           D_0 :TEST7: Going on break for 35 cycles!
+           D_1 :TEST7: Going on break for 35 cycles!
+           P_4 :TEST7: Waiting in doctor D_0 Queue
+           P_5 :TEST7: Waiting in doctor D_1 Queue
+           D_0 :TEST7: Back from Break,Signalling patient to come in.
+           D_1 :TEST7: Back from Break,Signalling patient to come in.
+           P_0 :TEST7: Consulting Doctor D_0 now...
+           P_1 :TEST7: Consulting Doctor D_1 now...
+        
+          Thus we see that the patients P_0 and P_1 can only consult the 
+          doctor once the doctors are back from break.When the doctor 
+          on break no patient can get in.
+   
 
         -Test Case 8:
 

@@ -126,6 +126,10 @@ void Problem2(int choice = -1)
             HospINIT(10);
             return;
             break;
+        case 11:
+            HospINIT(11);
+            return;
+            break;
         default:
             choice = -1;
             break;
