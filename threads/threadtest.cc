@@ -85,6 +85,10 @@ void Problem2(int choice = -1)
                 test1();
                 return;
                 break;
+            case 2:
+            	test2();
+            	return;
+            	break;    
             case 3:
                 HospINIT(3);
                 return;

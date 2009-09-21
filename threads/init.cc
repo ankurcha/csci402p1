@@ -23,7 +23,9 @@ using namespace std;
 #define SLEEPING 2
 
 bool test1active = false;
+bool test2active = false;
 bool test4active = false;
+bool test7active = false;
 bool test5active = false;
 
 struct node {
@@ -71,6 +73,8 @@ struct linkedlist {
 };
 
 int test1();
+int test2();
+
 Lock *testlock = new Lock("TestLock");
 
 // tokenCounter for assigning tokens to patients
@@ -303,6 +307,9 @@ void doorboy(int ID){
             continue;
         }
         myDoctor = (int) wakingDoctorList->Remove();
+    if(test2active==true)
+        cout << "DB_"<<ID<<":TEST2: Servicing D_"<<myDoctor<<"\n";
+        else
         cout << "DB_"<<ID<<": Servicing D_"<<myDoctor<<"\n";
         doorboyLineLock->Release();
 
@@ -317,7 +324,6 @@ void doorboy(int ID){
         doctors[myDoctor].LineLock->Acquire();
         printf("DB_%d: Checking for Patients\n",ID);
         
-
         //while there is noone in line
         bool doorboyBreak = false;
         while(doctors[myDoctor].peopleInLine <= 0) { 
@@ -328,7 +334,12 @@ void doorboy(int ID){
             if(myDoctor == 0 && test_state == 8) {
                 cout << "T8: ";
             }
-            printf("DB_%d: Sleeping ... Yawn!!...ZZZZzzzzz....\n",ID);
+            // midfix for test 2
+            if(test2active==true) {
+		printf("DB_%d:TEST2: Yawn!!...ZZZZzzzzz....\n",ID);
+            } else {
+                printf("DB_%d: Sleeping ... Yawn!!...ZZZZzzzzz....\n",ID);
+            }
             doctors[myDoctor].doorboyBreakCV->Wait(doctors[myDoctor].LineLock);
             // I got woken up, time to go back to work - by now there are 
             //  people dying on the floor!
@@ -360,7 +371,7 @@ void doorboy(int ID){
 }
 
 void doctor(int ID){
-    int waitingtime = 1000;
+    int waitingtime = 10000;
     while(true) {
         // acquire a doorboy
         cout<<"D_"<<ID<<": Alive!!"<<endl;
@@ -399,6 +410,17 @@ void doctor(int ID){
 
         bool doctorBreak = false;
         // go on break if so inclined
+       
+       /*if(p==1)
+       	{
+       		int numYields = 35;
+            cout<<"D_"<<ID<<":TEST7: Going on break for "<<numYields<<" cycles!\n";
+            for(int i=0; i < numYields; ++i) {
+                currentThread->Yield();
+            }
+       		
+       	}*/
+      // else
         if(Random() % 100 > 49) { // go on break
             doctorBreak = true;
             // 5-15 yields
@@ -414,6 +436,8 @@ void doctor(int ID){
                 currentThread->Yield();
             }
         }
+       
+        	
 
         // provide a handle for test 8, only uses doctor 0
         if(ID == 0 && test_state == 8 && doctorBreak) { 
@@ -793,11 +817,11 @@ void HospINIT(int testmode = 0) {
             t = new Thread(temp);
             t->Fork((VoidFunctionPtr) receptionist, i);
         }
-    }else if (testmode == 1) {
+    }else if (testmode == 2) {
             //first testcase
-        if(test1() == 1){
-            cout << "Test1....Passed";
-        }
+       // if(test1() == 1){
+          //  cout << "Test1....Passed";
+       // }
     }
 }
 
@@ -808,10 +832,17 @@ int test1(){
     return 0;
 }
 
+int test2(){
+	test2active=true;
+	HospINIT();
+	return 0;
+}
+
 int test4(){
     test4active = true;
         //start the process normally
     HospINIT();
     return 0;
+
 }
 
