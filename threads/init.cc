@@ -248,14 +248,14 @@ struct DoorBoy {
     }
 };
 
-const int MAX_DOCTORS = 5;
-const int MIN_DOCTORS = 2;
+const int MAX_DOCTORS = 10;
+const int MIN_DOCTORS = 4;
 
 const int MAX_DOORB = MAX_DOCTORS;
 const int MIN_DOORB = MIN_DOCTORS;
 
-const int MAX_PATIENTS = 10;
-const int MIN_PATIENTS = 2;
+const int MAX_PATIENTS = 100;
+const int MIN_PATIENTS = 20;
 
 const int RECP_MAX = 5;
 const int RECP_MIN = 3;
