@@ -96,6 +96,10 @@ void patients(int ID){
 	{
 				printf("P_%d :TEST2: Going to meet doctor D_%d\n",ID,myDoctor);
 	}
+	 if(test7active==true)
+	{
+				printf("P_%d :TEST7: Waiting in doctor D_%d Queue\n",ID,myDoctor);
+	}
 	
 	else
     printf("P_%d : Going to meet doctor D_%d\n",ID,myDoctor);
@@ -119,10 +123,8 @@ void patients(int ID){
 
     // move into the doctor's transaction lock
     doctors[myDoctor].LineLock->Release();
-    if(test7active==true)
-    printf("P_%d :TEST7: Trying to acquire doctor's translock\n",ID);
+      
     
-    else
     printf("P_%d : Trying to acquire doctor's translock\n",ID);
    
     doctors[myDoctor].transLock->Acquire();
@@ -133,6 +135,12 @@ void patients(int ID){
     doctors[myDoctor].patientToken = myToken;
 
     // hand off to the doctor thread for consultation
+     if(test7active==true)
+	{
+				printf("P_%d :TEST7: Consulting Doctor D_%d now...\n",ID,myDoctor);
+				
+	}
+	else
     printf("P_%d : Consulting Doctor D_%d now...\n",ID,myDoctor);
     doctors[myDoctor].transCV->Signal(doctors[myDoctor].transLock);
     doctors[myDoctor].transCV->Wait(doctors[myDoctor].transLock);

@@ -411,6 +411,17 @@ void doctor(int ID){
 
         bool doctorBreak = false;
         // go on break if so inclined
+       
+       if(test7active==true)
+       	{
+       		int numYields = 35;
+            cout<<"D_"<<ID<<" :TEST7: Going on break for "<<numYields<<" cycles!\n";
+            for(int i=0; i < numYields; ++i) {
+                currentThread->Yield();
+            }
+       		
+       	}
+       else
         if(Random() % 100 > 49) { // go on break
             doctorBreak = true;
             // 5-15 yields
@@ -437,7 +448,14 @@ void doctor(int ID){
             printf("D_%d: Back from Break\n", ID);
 
         // inform the doorboy that I am ready for a patient
-        cout<<"D_"<<ID<<": Signalling patient to come in.\n";
+
+        if(test7active==true)
+       	{
+       		cout<<"D_"<<ID<<" :TEST7: Back from Break,Signalling patient to come in.\n";
+       	}
+       	else
+        cout<<"D_"<<ID<<": Back from Break,Signalling patient to come in.\n";
+
         doctors[ID].transCV->Signal(doctors[ID].transLock);
         cout<<"D_"<<ID<<": Waiting for patient....\n";
         //////  PATIENT INTERACTION  //////
@@ -1108,4 +1126,11 @@ int test4(){
     HospINIT();
     return 0;
 
+}
+
+
+int test7(){
+    test7active = true;
+    HospINIT();
+    return 0;
 }
