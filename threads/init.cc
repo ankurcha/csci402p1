@@ -668,7 +668,7 @@ void HospINIT(int testmode = 0) {
     // set a global so everyone will know the test mode
     test_state = testmode;
 
-    if(testmode == 0){
+    if(testmode != 1){
         int i = 0;
         char temp[] = "NACHOS_THREAD";
         Thread *t;   
