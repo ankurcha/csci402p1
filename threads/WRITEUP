@@ -161,6 +161,7 @@ V. Testing: (For each test case, you must show)
 
             Where x is the ID of one of the doctors. 
             
+            
         -Test Case 4: Patient always choose the shortest line with the cashier,
             pharmacy clerk and the receptionist.
             
@@ -257,10 +258,13 @@ V. Testing: (For each test case, you must show)
             DB_0:TEST2: Yawn!!...ZZZZzzzzz....
             DB_1:TEST2: Yawn!!...ZZZZzzzzz....
             P_0 :TEST2: Going to meet doctor D_0
-            P_0 :TEST2: Join line and Waiting for doorboy to tell me to go
+            P_0 :TEST2: Join line and Waiting for doorboy to tell me to go <---
             P_1 :TEST2: Going to meet doctor D_1
-            P_1 :TEST2: Join line and Waiting for doorboy to tell me to go
+            P_1 :TEST2: Join line and Waiting for doorboy to tell me to go <---
  
+            Both patients P_0 and P_1 keep waiting for the signal from 
+            the doorboy.
+            
             Patient waits infinitely to consult the doctor, but will
             not succeed as the Doorboy's are asleep.
 
