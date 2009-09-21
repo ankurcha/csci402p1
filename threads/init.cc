@@ -327,7 +327,7 @@ void doorboy(int ID){
         //while there is noone in line
         bool doorboyBreak = false;
         while(doctors[myDoctor].peopleInLine <= 0) { 
-            bool doorboyBreak = true;
+            doorboyBreak = true;
             //I will be woken up by the manager only!!
 
             // prefix for test 8 condition
@@ -410,17 +410,6 @@ void doctor(int ID){
 
         bool doctorBreak = false;
         // go on break if so inclined
-       
-       /*if(p==1)
-       	{
-       		int numYields = 35;
-            cout<<"D_"<<ID<<":TEST7: Going on break for "<<numYields<<" cycles!\n";
-            for(int i=0; i < numYields; ++i) {
-                currentThread->Yield();
-            }
-       		
-       	}*/
-      // else
         if(Random() % 100 > 49) { // go on break
             doctorBreak = true;
             // 5-15 yields
