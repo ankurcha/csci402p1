@@ -284,6 +284,12 @@ III. Design:
             by 
 
         HospINIT(int testmode = 0)
+            HospINIT is a relatively simple function that starts up threads for
+            the requisite number of each hosptial actor.  It has additional
+            code that starts up special numbers of threads in test cases.  For
+            each thread type, HospINIT randomly generates the number of that
+            type of thread to start based on the max and min for that thread
+            type, and starts that many threads.
 
 IV. Implementation:
 
