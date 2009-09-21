@@ -3,7 +3,7 @@ Title: Writeup for Project 1, Fall 2009
 Date: 09/19/09
 
 Group Num 11: Name              Email               Student ID
-              Ankur Chauhan     ankurcha@usc.edu    
+              Ankur Chauhan     ankurcha@usc.edu    8478-1604-85
               Max Pflueger      pflueger@usc.edu    5888-2249-87
               Aneesha Mathew    aneesham@usc.edu    3976-3694-15
 
@@ -202,7 +202,7 @@ V. Testing: (For each test case, you must show)
 
             To run this test run nachos as follows:
 
-            %threads/nachos -P2 6 -rs {your seed} 1| grep '^D_.*break'
+            %threads/nachos -P2 6 -rs {your seed} 1| grep 'D_.*break'
 
         -Test Case 7:
 
@@ -210,7 +210,7 @@ V. Testing: (For each test case, you must show)
 
         -Test Case 8: Doorboy never goes on break when doctor is on break.
 
-            %threads/nachos -P2 8 -rs {your seed} 1| grep '^T8'
+            %threads/nachos -P2 8 -rs {your seed} 1| grep 'T8'
 
         -Test Case 9:
 
