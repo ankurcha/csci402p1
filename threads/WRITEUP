@@ -80,6 +80,42 @@ III. Design:
                 run queue before returning.
 
         Condition class:
+            The Condition class is designed to allow threads to queue up behind
+            a perticular event or series of events initiated but a different
+            thread.  In particular it uses a lock to ensure that the thread
+            being woken does not become active until the waking thread has
+            released the lock, thus allowing threads to sequence events with
+            each other.  The main methods are Wait(), Signal(), and
+            Broadcast(), and all three of them take a Lock* as an argument.
+            All three need to be ensured atomic and this is guaranteed in our
+            implementation by disabling interrupts during their operation.
+
+            Wait()
+                Wait first ensures that the calling thread owns the lock it
+                passed as an argument, and that that lock is the same one being
+                used by this CV, of course, if no one is waiting on this CV,
+                then there is no lock associated with it, and the new lock is
+                used.  With lock ownership and validity established, Wait puts
+                itself on the queue for this CV, releases the lock, and sleeps.
+                It will be woken in turn by a Signal from another thread that
+                owns the lock.  As soon as it wakes it reacquires the lock and
+                exits.  The reacquiring the lock is key since it won't exit
+                until the signalling thread has released the lock, thus
+                ensuring synchronous behavior.
+
+            Signal()
+                Signal wakes up a thread to conitnue running as soon as the
+                lock is released.  If no threads are waiting it does nothing.
+                Similar to Wait, it throws an error message if the calling lock
+                does not match the lock associated with this CV.  With those
+                checks passed, Signal wakes up the top thread on the queue.
+                Signal also clears the lock if noone is left waiting.
+
+            Broadcast()
+                Broadcast is (as is implemented as) as special case of Signal
+                that simply calls Signal once for every thread remaining in the
+                Queue.  This is useful if you wish to wake all the threads
+                waiting on a condition variable at once.
 
     Part 2:
         
