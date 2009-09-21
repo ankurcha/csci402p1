@@ -722,12 +722,12 @@ void HospINIT(int testmode = 0) {
     // set a global so everyone will know the test mode
     test_state = testmode;
 
-    if(testmode != 1){
+    if(testmode != 1 && testmode != 51 && testmode != 52 && testmode != 53 ){
         int i = 0;
         char temp[] = "NACHOS_THREAD";
         Thread *t;   
         
-        
+            //cout << "Simulation startup\n\n";
         
                 //3. Cashiers
             numCashiers = (Random() % (MAX_CASHIER - MIN_CASHIER +1) + MIN_CASHIER) ;
@@ -811,12 +811,8 @@ void HospINIT(int testmode = 0) {
             }
 
 
-    }else if (testmode == 1) {
-            //first testcase
-        if(test1() == 1){
-            cout << "Test1....Passed";
-        }
     }else if (testmode == 51) {
+        
         int i = 0;
         char temp[] = "NACHOS_THREAD";
         Thread *t;   
@@ -897,6 +893,7 @@ void HospINIT(int testmode = 0) {
         
             //2. No Receptionists
         numRecp = (Random() % (RECP_MAX - RECP_MIN +1) + RECP_MIN) ;
+        
     }else if (testmode == 52) {
         int i = 0;
         char temp[] = "NACHOS_THREAD";
@@ -1060,10 +1057,6 @@ void HospINIT(int testmode = 0) {
             t->Fork((VoidFunctionPtr) receptionist, i);
         }
     }else if (testmode == 2) {
-            //first testcase
-       // if(test1() == 1){
-          //  cout << "Test1....Passed";
-       // }
     }
 }
 
