@@ -349,7 +349,7 @@ void doorboy(int ID){
             if(myDoctor == 0 && test_state == 8) {
                 cout << "T8: ";
             }
-            printf("DB_%d: Woken up!\n");
+            printf("DB_%d: Woken up!\n", ID);
         }
         
         printf("DB_%d: Found %d patients waiting in line for D_%d\n",
