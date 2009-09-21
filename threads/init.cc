@@ -72,8 +72,7 @@ struct linkedlist {
     }
 };
 
-int test1();
-int test2();
+
 
 Lock *testlock = new Lock("TestLock");
 
