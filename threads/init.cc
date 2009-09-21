@@ -175,6 +175,8 @@ struct PharmacyClerks{
     Lock* ClerkTransLock;
     Condition* ClerkTransCV;
   
+    //protected by PaymentLock
+    int sales;
   
     PharmacyClerks(){
         patientsInLine= 0;
@@ -550,6 +552,7 @@ cout<<"C_"<<ID<<": The cost for the medicines are:"<<clerks[ID].fee<<" dollars"<
         // add this payment to our total collected
         PaymentLock->Acquire();
         totalsales += clerks[ID].payment;
+        clerks[ID].sales += clerks[ID].payment;
         PaymentLock->Release();
              
 
@@ -643,10 +646,25 @@ void hospitalManager(int ID){
                 ClerkLinesLock->Release();
             }
         }
-            //Query cashiers for total sales
+
+        //Query clerks for total sales
         PaymentLock->Acquire();
-        cout << "Total amount collected by clerks: "<<totalsales<<endl;
+        cout << "T10: Total amount collected by clerks: "<<totalsales<<endl;
+
+        if( test_state == 10 ) {
+            // this is a test for race conditions, so we can't have any:
+            IntStatus oldLevel = interrupt->SetLevel(IntOff);
+            int sum = 0;
+            for (int i=0; i<numClerks; i++) {
+                printf("  T10: clerk %d:   %d\n", i, clerks[i].sales);
+                sum += clerks[i].sales;
+            }
+            printf("  T10: TOTAL: %d\n", sum);
+            // sum just printed should match feesPaid, printed earlier
+            (void) interrupt->SetLevel(oldLevel);
+        }
         PaymentLock->Release();
+
         currentThread->Yield();
         
             //Check on the doorboys
