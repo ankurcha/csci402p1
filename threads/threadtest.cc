@@ -86,11 +86,15 @@ void Problem2(int choice = -1)
                 return;
                 break;
             case 3:
-                HospINIT();
+                HospINIT(3);
                 return;
                 break;
             case 4:
                 test4();
+                return;
+                break;
+            case 10:
+                HospINIT(10);
                 return;
                 break;
             default:

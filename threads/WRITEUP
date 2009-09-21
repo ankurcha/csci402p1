@@ -147,15 +147,9 @@ V. Testing: (For each test case, you must show)
 
             To run this test run nachos as follows:
             
-            %threads/nachos -P2 -rs {your seed} 1| grep "Consulting doctor x"
+            %threads/nachos -P2 3 -rs {your seed} 1| grep "Consulting doctor x"
 
-            Where x is the ID of one of the doctors.  Then select item 3 on the
-            menu.
-            
-            The output from the grep command will show all the patients who
-            enter and exit interaction with doctor x.  Verify that no patient
-            enters consultation with a doctor before the previous one has
-            finished.
+            Where x is the ID of one of the doctors. 
             
         -Test Case 4: Patient always choose the shortest line with the cashier,
             pharmacy clerk and the receptionist.
@@ -172,7 +166,6 @@ V. Testing: (For each test case, you must show)
             the verbosity of the program is increase and this search process
             is made visible. Hence, the user can see the individual lengths
             of each of the lines and also the final line chosen by the patient.
-
 
     + Test Output
 
@@ -195,8 +188,13 @@ V. Testing: (For each test case, you must show)
 
         -Test Case 3:
 
-        
+            The output from the grep command will show all the patients who
+            enter and exit interaction with doctor x.  Verify that no patient
+            enters consultation with a doctor before the previous one has
+            finished.
+
         -Test Case 4:
+
             The user would see the normal output as given during a regular 
             run, additionally the user will see the following for each patients
             thread:
