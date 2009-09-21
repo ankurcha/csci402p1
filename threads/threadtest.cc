@@ -67,7 +67,9 @@ void Problem2(int choice = -1)
             <<"    2. Run Test 2 (If doorboy is on break, no patient gets in)\n"
             <<"    3. Run Test 3 (One patient with doctor at a time)\n"
             <<"    4. Run Test 4 (Patients always choose shortest line)\n"
-            <<"    5. Run Test 5 (If no cashier/clerk/receptionist patient waits)\n"
+            <<"    51.Run Test 5.1 (If no receptionist patient waits)\n"
+            <<"    52.Run Test 5.2 (If no cashier patient waits)\n"
+            <<"    51.Run Test 5.3 (If no clerk patient waits)\n"
             <<"    6. Run Test 6 (doctor goes on break at random intervals)\n"
             <<"    7. Run Test 7 (when the doctor is on break, no patient gets in)\n"
             <<"    8. Run Test 8 (doorboy never goes on break when doctor is on break)\n"
@@ -91,6 +93,18 @@ void Problem2(int choice = -1)
                 break;
             case 4:
                 test4();
+                return;
+                break;
+            case 51:
+                HospINIT(51);
+                return;
+                break;
+            case 52:
+                HospINIT(52);
+                return;
+                break;
+            case 53:
+                HospINIT(53);
                 return;
                 break;
             case 10:
