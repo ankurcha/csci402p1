@@ -151,6 +151,7 @@ V. Testing: (For each test case, you must show)
             To run this test code:
             %threads/nachos -P2 -rs {your seed} 1| grep "TEST2"
 
+
         -Test Case 3: Only one patient gets to see a given doctor at at
          instance of time
 
@@ -165,16 +166,59 @@ V. Testing: (For each test case, you must show)
             
             To run this test run nachos as follows:
             
-            %threads/nachos -P2 -rs {your seed} 1| grep "TEST4:"
-
-            Where x is the ID of one of the doctors.  Then select item 3 on the
-            menu.
+            %threads/nachos -P2 4 -rs {your seed} 1| grep "TEST4:"
 
             In this test, all the threads are initialized as normal but when
             the patient is trying to search through the receptionists' lines
             the verbosity of the program is increase and this search process
             is made visible. Hence, the user can see the individual lengths
             of each of the lines and also the final line chosen by the patient.
+
+
+        -Test Case 5: If there is no cashier/pharmacy clerk/receptionist the
+         patient get to wait.
+
+            Part 1: If there are no receptionists.
+            
+            %threads/nachos -P2 51 -rs {your seed}
+            
+            The patients would now arrive and would just start waiting for
+            the receptionists to give them tokens. But as these threads are
+            never initialized they would be in that state for ever. Just to
+            make sure that the Hospital manager doesn't go into a never ending
+            loop we stop its execution after 10 rounds.
+            
+            Similarly,
+            
+            Part 2: If there are no cashiers
+            
+            %threads/nachos -P2 52 -rs {your seed}
+            
+            Part 3: If there are no clerks
+            
+            %threads/nachos -P2 53 -rs {your seed}
+
+        -Test Case 6: The doctor is going on break at random intervals.
+
+            To run this test run nachos as follows:
+
+            %threads/nachos -P2 6 -rs {your seed} 1| grep '^D_.*break'
+
+        -Test Case 7:
+
+            TODO
+
+        -Test Case 8: Doorboy never goes on break when doctor is on break.
+
+            %threads/nachos -P2 8 -rs {your seed} 1| grep '^T8'
+
+        -Test Case 9:
+
+            TODO
+
+        -Test Case 10: The total sales of medicines and the total consultation
+         fees never get affected by race conditions.
+
             
         -Test Case 7:When the doctor is at break no patient gets in. 
         
@@ -248,6 +292,7 @@ V. Testing: (For each test case, you must show)
             
             As we see here P_3 searches through all the lines and find the
             shortest one. Then it chooses the corresponding receptionist
+
             as marked. Similarly, with the P_4 patient thread.
        
         -Test Case 7:
@@ -269,6 +314,67 @@ V. Testing: (For each test case, you must show)
           doctor once the doctors are back from break.When the doctor 
           on break no patient can get in.
    
+
+            as marked. Similarly, when the line selection happens with the
+            pharmacy clerk or the chashier.
+
+        -Test Case 5:
+
+            Part 1:
+                The user would see that the patient threads will get into
+                the lines for the receptionists but would keep waiting there
+                to be serviced. This will never happen and eventually the
+                simulation comes to an end.
+                
+            Part 2:
+                The user would see that the patient thread gets treated by 
+                the doctor but would be always waiting for the cashier to
+                call him and hence would sit at that position. The simulation
+                would then come to an end.
+            
+            Part 3:
+                The user would see that the patient thread gets treated by 
+                the doctor, pays up to the cashier but would be always 
+                waiting for the pharmacy clerk to call him and hence would 
+                sit at that position. The simulation would then come to an 
+                end.
+            
+        -Test Case 6:
+
+            The output from this test will show a line every time a doctor
+            sleeps and for how long.  Verify that these statements show doctors
+            sleeping for randomized times for different seed values.  Also look
+            for variation in the number of times each doctor sleeps,
+            demonstrating that they don't always sleep.
+
+        -Test Case 7:
+
+            TODO
+
+        -Test Case 8:
+
+            The output from this test will show every time doctor 0 goes on
+            break and comes back and every time the doorboy servicing doctor 0
+            goes on break and comes back.  Verify for multiple seed values that
+            they are never on break at the same time.
+
+        -Test Case 9:
+
+            TODO
+
+        -Test Case 10:
+
+            The output will show the value of our total sales variable as
+            compared to the individual sums of each cashier/clerk, and the
+            total of those sums.  If the two totals match, then the
+            cashiers/clerks did not encounter race conditions modifying the
+            total sales variable.
+
+        -Test Case 11:
+            
+            TODO
+
+
 VI. Discussion:
     + Experiment expectation.  (What you hope will happen.)
     + Experiment result.  (What actually happens.)
