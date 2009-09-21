@@ -212,9 +212,10 @@ V. Testing: (For each test case, you must show)
 
             %threads/nachos -P2 8 -rs {your seed} 1| grep '^T8'
 
-        -Test Case 9:
+        -Test Case 9:Door boy/Cashier/Pharmacy clerk getting signaled by 
+        hospital manager when patients are waiting
 
-            TODO
+            %threads/nachos -P2 9 -rs {your seed} 1| grep 'H_'
 
         -Test Case 10: The total sales of medicines and the total consultation
          fees never get affected by race conditions.
@@ -360,7 +361,11 @@ V. Testing: (For each test case, you must show)
 
         -Test Case 9:
 
-            TODO
+            The user is able to see the transactions involving the hospital
+            manager. In this we would be able to see that the hospital manager
+            gets up at random intervals and does rounds, this involves waking
+            up clerks, cashiers, receptionists and doorboys in case there
+            are patients that need to be serviced and are waiting.
 
         -Test Case 10:
 
