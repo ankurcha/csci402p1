@@ -94,12 +94,39 @@ III. Design:
         doctor(int ID)
 
         receptionist(int ID)
-
+        
+        The receptionist first acquires a lock to check all its lines called
+        recpLineLock.The receptionist wakes a patient up by using his condition 
+        variable(receptionCV)to signal the patient.It checks the people in line 
+        and now uses a lock with the first patient in line to acquire
+        mutual exclusion for further transactions. It first gives the patient a
+        token and this transaction is carried on using the token Lock.
+        After all transactions are over, it releases the transaction Lock.
+        It checks for more patients if there are none it goes to sleep.It
+        waits gor the hopsital Manager to signal it on its Break condition
+        Variable(ReceptionistBreakCV).
+        
         cashier(int ID)
+        
+        
 
         doorboy(int ID)
+        
 
         clerk(int ID)
+        
+        The Pharmacy clerk first tries to acquire the lock to all the Clerk lines 
+        called ClerkLinesLock to find out how many patients are in his line. 
+        Once there is a patient in his queue, the patient is serviced using a lock
+        called a transaction lock(ClerkTransLock), to achieve mutual exclusion.
+        During the trasaction, The patient gives the clerk his prescription
+        and waits for the cost of his medication. The clerk then signals with
+        the amount, after which the patient pays the clerk and signals him once he 
+        finished. When all the transactions have finished the lock is released.
+        It calculates the Totalsales using a lock to protect its data called
+        the PaymentLock. when there are no patients in line, it ges to sleep
+        and waits for the Hospital Manager to wake him up by signaling him.
+        
 
         hospitalManager(int ID)
 
@@ -470,4 +497,6 @@ VI. Discussion:
         the parts have been properly implemented.
 
 VII. Miscellaneous:
-
+    + We have set the upper limit for the maximum number of patients as 
+      100. It can be modified for other integer values by changing the
+      value of MAX_PATIENTS in the init.cc file.
