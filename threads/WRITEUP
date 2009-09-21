@@ -141,6 +141,19 @@ V. Testing: (For each test case, you must show)
             receptionist and select the doctor they want to see but do not
             continue beyond that and perpetually sleep as there is no one to
             wake them up and send them to the doctor.  
+         
+         -Test Case 2: If the door boy in on a break no patient gets in. 
+           
+            In this test, We put all the Doorboy's to sleep. Thus interfering
+            with the doorboy and patient communication, Not letting the
+            patient enter the doctors office and be serviced.
+            
+            To run this test code:
+            %threads/nachos -P2 -rs {your seed} 1| grep "TEST2"
+
+        -Test Case 2:
+
+            TODO
 
         -Test Case 3: Only one patient gets to see a given doctor at at
          instance of time
@@ -152,7 +165,7 @@ V. Testing: (For each test case, you must show)
             Where x is the ID of one of the doctors. 
             
         -Test Case 4: Patient always choose the shortest line with the cashier,
-            pharmacy clerk and the receptionist.
+         pharmacy clerk and the receptionist.
             
             To run this test run nachos as follows:
             
@@ -166,6 +179,39 @@ V. Testing: (For each test case, you must show)
             the verbosity of the program is increase and this search process
             is made visible. Hence, the user can see the individual lengths
             of each of the lines and also the final line chosen by the patient.
+
+        -Test Case 5:
+
+            TODO
+
+        -Test Case 6:
+
+            To run this test run nachos as follows:
+
+            %threads/nachos -P2 6 -rs {your seed} 1| grep '^D_.*break'
+
+        -Test Case 7:
+
+            TODO
+
+        -Test Case 8:
+
+            TODO
+
+        -Test Case 9:
+
+            TODO
+
+        -Test Case 10: The total sales of medicines and the total consultation
+         fees never get affected by race conditions.
+            
+            To run this test run nachos as follows:
+
+            %threads/nachos -P2 10 -rs {your seed} 1| grep T10
+
+        -Test Case 11:
+
+            TODO
 
     + Test Output
 
@@ -185,6 +231,26 @@ V. Testing: (For each test case, you must show)
             
             As we can see that all the patients would halt at this point. Hence
             proving to us that they cannot continue without a doorboy.
+            
+        -Test Case 2:
+ 
+            The output:
+            DB_0:TEST2: Servicing D_0
+            DB_1:TEST2: Servicing D_1
+            DB_0:TEST2: Yawn!!...ZZZZzzzzz....
+            DB_1:TEST2: Yawn!!...ZZZZzzzzz....
+            P_0 :TEST2: Going to meet doctor D_0
+            P_0 :TEST2: Join line and Waiting for doorboy to tell me to go
+            P_1 :TEST2: Going to meet doctor D_1
+            P_1 :TEST2: Join line and Waiting for doorboy to tell me to go
+ 
+            Patient waits infinitely to consult the doctor, but will
+            not succeed as the Doorboy's are asleep.
+            
+
+        -Test Case 2:
+
+            TODO
 
         -Test Case 3:
 
@@ -216,9 +282,49 @@ V. Testing: (For each test case, you must show)
             
             As we see here P_3 searches through all the lines and find the
             shortest one. Then it chooses the corresponding receptionist
+<<<<<<< HEAD
             as marked. Similarly, when the line selection happens with the
             pharmacy clerk or the chashier.
+=======
+            as marked. Similarly, with the P_4 patient thread.
+
+        -Test Case 5:
+
+            TODO
+
+        -Test Case 6:
+
+            The output from this test will show a line every time a doctor
+            sleeps and for how long.  Verify that these statements show doctors
+            sleeping for randomized times for different seed values.  Also look
+            for variation in the number of times each doctor sleeps,
+            demonstrating that they don't always sleep.
+
+        -Test Case 7:
+
+            TODO
+
+        -Test Case 8:
+
+            TODO
+
+        -Test Case 9:
+
+            TODO
+
+        -Test Case 10:
+
+            The output will show the value of our total sales variable as
+            compared to the individual sums of each cashier/clerk, and the
+            total of those sums.  If the two totals match, then the
+            cashiers/clerks did not encounter race conditions modifying the
+            total sales variable.
+
+        -Test Case 11:
+>>>>>>> aa4773401c638c6f273f47ae8a58ba049eaae537
             
+            TODO
+
 VI. Discussion:
     + Experiment expectation.  (What you hope will happen.)
     + Experiment result.  (What actually happens.)

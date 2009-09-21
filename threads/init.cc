@@ -23,7 +23,9 @@ using namespace std;
 #define SLEEPING 2
 
 bool test1active = false;
+bool test2active = false;
 bool test4active = false;
+bool test7active = false;
 bool test5active = false;
 
 struct node {
@@ -71,6 +73,8 @@ struct linkedlist {
 };
 
 int test1();
+int test2();
+
 Lock *testlock = new Lock("TestLock");
 
 // tokenCounter for assigning tokens to patients
@@ -175,6 +179,8 @@ struct PharmacyClerks{
     Lock* ClerkTransLock;
     Condition* ClerkTransCV;
   
+    //protected by PaymentLock
+    int sales;
   
     PharmacyClerks(){
         patientsInLine= 0;
@@ -301,6 +307,9 @@ void doorboy(int ID){
             continue;
         }
         myDoctor = (int) wakingDoctorList->Remove();
+    if(test2active==true)
+        cout << "DB_"<<ID<<":TEST2: Servicing D_"<<myDoctor<<"\n";
+        else
         cout << "DB_"<<ID<<": Servicing D_"<<myDoctor<<"\n";
         doorboyLineLock->Release();
 
@@ -315,8 +324,16 @@ void doorboy(int ID){
         doctors[myDoctor].LineLock->Acquire();
         printf("DB_%d: Checking for Patients\n",ID);
         
-
-        //while there is noone in line
+if(test2active==true)
+	{
+		printf("DB_%d:TEST2: Yawn!!...ZZZZzzzzz....\n",ID);
+            doctors[myDoctor].doorboyBreakCV->Wait(doctors[myDoctor].LineLock);
+		
+	}
+	
+     else
+    
+     		   //while there is noone in line
         while(doctors[myDoctor].peopleInLine <= 0) { 
             //I will be woken up by the manager only!!
             printf("DB_%d: Yawn!!...ZZZZzzzzz....\n",ID);
@@ -344,7 +361,7 @@ void doorboy(int ID){
 }
 
 void doctor(int ID){
-    int waitingtime = 1000;
+    int waitingtime = 10000;
     while(true) {
         // acquire a doorboy
         cout<<"D_"<<ID<<": Alive!!"<<endl;
@@ -382,6 +399,17 @@ void doctor(int ID){
         doctors[ID].transCV->Wait(doctors[ID].transLock);
 
         // go on break if so inclined
+       
+       /*if(p==1)
+       	{
+       		int numYields = 35;
+            cout<<"D_"<<ID<<":TEST7: Going on break for "<<numYields<<" cycles!\n";
+            for(int i=0; i < numYields; ++i) {
+                currentThread->Yield();
+            }
+       		
+       	}*/
+      // else
         if(Random() % 100 > 49) { // go on break
             // 5-15 yields
             int numYields = 5 + (Random() % 11);
@@ -390,6 +418,8 @@ void doctor(int ID){
                 currentThread->Yield();
             }
         }
+       
+        	
 
         // inform the doorboy that I am ready for a patient
         cout<<"D_"<<ID<<": Back from Break,Signalling patient to come in.\n";
@@ -550,6 +580,7 @@ cout<<"C_"<<ID<<": The cost for the medicines are:"<<clerks[ID].fee<<" dollars"<
         // add this payment to our total collected
         PaymentLock->Acquire();
         totalsales += clerks[ID].payment;
+        clerks[ID].sales += clerks[ID].payment;
         PaymentLock->Release();
              
 
@@ -651,10 +682,25 @@ void hospitalManager(int ID){
                 ClerkLinesLock->Release();
             }
         }
-            //Query cashiers for total sales
+
+        //Query clerks for total sales
         PaymentLock->Acquire();
-        cout << "Total amount collected by clerks: "<<totalsales<<endl;
+        cout << "T10: Total amount collected by clerks: "<<totalsales<<endl;
+
+        if( test_state == 10 ) {
+            // this is a test for race conditions, so we can't have any:
+            IntStatus oldLevel = interrupt->SetLevel(IntOff);
+            int sum = 0;
+            for (int i=0; i<numClerks; i++) {
+                printf("  T10: clerk %d:   %d\n", i, clerks[i].sales);
+                sum += clerks[i].sales;
+            }
+            printf("  T10: TOTAL: %d\n", sum);
+            // sum just printed should match feesPaid, printed earlier
+            (void) interrupt->SetLevel(oldLevel);
+        }
         PaymentLock->Release();
+
         currentThread->Yield();
         
             //Check on the doorboys
@@ -676,7 +722,7 @@ void HospINIT(int testmode = 0) {
     // set a global so everyone will know the test mode
     test_state = testmode;
 
-    if(testmode == 0){
+    if(testmode != 1){
         int i = 0;
         char temp[] = "NACHOS_THREAD";
         Thread *t;   
@@ -934,7 +980,6 @@ void HospINIT(int testmode = 0) {
         }
         
         
-        
     }else if (testmode == 53) {
         int i = 0;
         char temp[] = "NACHOS_THREAD";
@@ -1014,6 +1059,11 @@ void HospINIT(int testmode = 0) {
             t = new Thread(temp);
             t->Fork((VoidFunctionPtr) receptionist, i);
         }
+    }else if (testmode == 2) {
+            //first testcase
+       // if(test1() == 1){
+          //  cout << "Test1....Passed";
+       // }
     }
 }
 
@@ -1024,9 +1074,16 @@ int test1(){
     return 0;
 }
 
+int test2(){
+	test2active=true;
+	HospINIT();
+	return 0;
+}
+
 int test4(){
     test4active = true;
         //start the process normally
     HospINIT();
     return 0;
+
 }

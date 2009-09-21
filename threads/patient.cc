@@ -10,7 +10,7 @@
 //  Aneesha Mathew, aneesham
 
 using namespace std;
-
+bool test_code2=true;
 void patients(int ID){
     
     int myToken;
@@ -92,13 +92,26 @@ void patients(int ID){
     //Calculate which doctor I want to see
 
     myDoctor = (int)(Random()) % numDoctors;
+    if(test2active==true)
+	{
+				printf("P_%d :TEST2: Going to meet doctor D_%d\n",ID,myDoctor);
+	}
+	
+	else
     printf("P_%d : Going to meet doctor D_%d\n",ID,myDoctor);
+    
 
     // Acquire doc's line lock
     doctors[myDoctor].LineLock->Acquire();
 
     // Wait on the line -- to be woken up by the doorboy
+    if(test2active==true)
+	{
+				printf("P_%d :TEST2: Join line and Waiting for doorboy to tell me to go\n",ID);
+	}
+	else
     printf("P_%d : Join line and Waiting for doorboy to tell me to go\n",ID);
+    
     doctors[myDoctor].peopleInLine++;
     doctors[myDoctor].LineCV->Wait(doctors[myDoctor].LineLock);
     printf("P_%d : Doorboy told me to go to doctor, proceeding....\n",ID);
@@ -106,10 +119,14 @@ void patients(int ID){
 
     // move into the doctor's transaction lock
     doctors[myDoctor].LineLock->Release();
+    if(test7active==true)
+    printf("P_%d :TEST7: Trying to acquire doctor's translock\n",ID);
+    
+    else
     printf("P_%d : Trying to acquire doctor's translock\n",ID);
+   
     doctors[myDoctor].transLock->Acquire();
     printf("P_%d : Success\n",ID);
-    printf("P_%d: Consulting doctor %d\n", ID, myDoctor);
 
     printf("P_%d : Giving doctor the token...\n",ID);
     //The doctor is waiting for me to provide my info, oblige him!!
@@ -127,7 +144,6 @@ void patients(int ID){
 
     // Signal the doctor that I have taken the prescription and left
     doctors[myDoctor].transCV->Signal(doctors[myDoctor].transLock);
-    printf("P_%d: Finished Consulting doctor %d\n", ID, myDoctor);
     doctors[myDoctor].transLock->Release();
     cout << "P_"<<ID<<": Done with Doctor, going to cashier.\n";
     ////////////////////////////////////////////
@@ -221,6 +237,7 @@ void patients(int ID){
             shortestclerkline = i;
         }
     }
+
     
     if (test4active == false) {
         printf("P_%d: Found shortest pharmacy clerk line CL_%d len: %d\n",
@@ -229,6 +246,7 @@ void patients(int ID){
         printf("P_%d:TEST4: Found shortest pharmacy clerk line CL_%d len: %d\n",
                ID,shortestclerkline,length);
     }
+
         //wait in line for my turn
     clerks[shortestclerkline].patientsInLine++;
     cout << "P_"<<ID<<": Waiting in line for clerk CL_"<<shortestclerkline
@@ -237,6 +255,7 @@ void patients(int ID){
     clerks[shortestclerkline].ClerkCV->Wait(ClerkLinesLock);
     
     cout<<"P_"<<ID<<" Got woken up, got out of line and going to the Pharmacy "
+
         <<"CLerk to give prescription.\n";
     clerks[shortestclerkline].patientsInLine--;
     
