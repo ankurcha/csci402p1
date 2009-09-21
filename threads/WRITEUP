@@ -120,7 +120,23 @@ III. Design:
          on its Line Condition Variable(LineCV).
 
         doorboy(int ID)
-        
+
+            To organize the doorboy threads such that all of the doorboys
+            are available to which ever doctor wants them and that there is
+            no binding of a doorboy to a particular doctor, they are put in
+            a queue, made using a condition variable called doorboyLineCV.
+            The doctors signal for a doorboy whenever they are ready to accept
+            more patients. The requests for doorboys are also queued onto a
+            list wakingDoctorList and as each of the doorboys come alive they
+            pick up each of these requests and service the corresponding doctor.
+            At this time, the doorboys check the queue of patients of that 
+            doctor and and tells the signals the patients, if any, to 
+            continue to meet the doctor.
+            In case there are no patients that are waiting for the doctor,
+            the doorboy goes to sleep and would only wake up by getting
+            signalled by the Hospital Manager.
+            This process keeps repeating till all the patients are done.
+            
 
         clerk(int ID)
         
