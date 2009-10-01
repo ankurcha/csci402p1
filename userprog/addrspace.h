@@ -22,6 +22,9 @@
 #define MaxOpenFiles 256
 #define MaxChildSpaces 256
 
+#define MaxCV 1024
+#define MaxLock 1024
+
 class AddrSpace {
   public:
     AddrSpace(OpenFile *executable);	// Create an address space,
@@ -35,6 +38,9 @@ class AddrSpace {
     void SaveState();			// Save/restore address space-specific
     void RestoreState();		// info on a context switch
     Table fileTable;			// Table of openfiles
+    
+    Table locksTable;           //Table of Locks
+    Table CVTable;              //Table of CVs
 
  private:
     TranslationEntry *pageTable;	// Assume linear page table translation

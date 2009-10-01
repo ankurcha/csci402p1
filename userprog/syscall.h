@@ -29,11 +29,16 @@
 #define SC_Close	8
 #define SC_Fork		9
 #define SC_Yield	10
-#define SC_Acquire	11
-#define SC_Release	12
-#define SC_Wait     13
-#define SC_Signal	14
-#define SC_Broadcast 15
+
+#define SC_CreateLock 11
+#define SC_DestroyLock 12
+#define SC_CreateCondition 13
+#define SC_DestroyCondition 14
+#define SC_Acquire	15
+#define SC_Release	16
+#define SC_Wait     17
+#define SC_Signal	18
+#define SC_Broadcast 19
 
 #define MAXFILENAME 256
 
@@ -131,17 +136,27 @@ void Fork(void (*func)());
  */
 void Yield();
 
-//Acquire a Lock for the thread
+/* Create a Lock with the argument as the name, returns index into the
+ * kernel structure array of Locks
+ */
+int CreateLock(char* name);
 
-void Acquire();
 
-void Release();
+/* Destroys a lock already created in the kernel structure, returns 0 for
+ * success -1 for failure.
+ */
+int DestroyLock(int id);
 
-void Wait(Lock* conditionLock);
+/* Create a Condition Variable with the argument as the name, returns index into the
+ * kernel structure array of Locks
+ */
+int CreateCondition(char* name);
 
-void Signal(Lock* conditionLock);
 
-void Broadcast(Lock* conditionLock);
+/* Destroys a Condition Variable already created in the kernel structure, returns 0 for
+ * success -1 for failure.
+ */
+int DestroyCondition(int id);
 
 #endif /* IN_ASM */
 

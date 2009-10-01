@@ -17,6 +17,9 @@ int b, c;
 int
 main()
 {
+    int i = CreateLock("Hello");
+    Fork(0);
+    DestroyLock(i);
     Halt();
     /* not reached */
 }

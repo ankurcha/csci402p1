@@ -129,6 +129,38 @@ Yield:
 	syscall
 	j	$31
 	.end Yield
+
+    .globl CreateLock
+	.ent	CreateLock
+CreateLock:
+    addiu $2,$0,SC_CreateLock
+    syscall
+    j   $31
+    .end CreateLock
+
+    .globl CreateCondition
+	.ent	CreateCondition
+CreateCondition:
+    addiu $2,$0,SC_CreateCondition
+    syscall
+    j   $31
+    .end CreateCondition
+
+    .globl DestroyLock
+	.ent	DestroyLock
+DestroyLock:
+    addiu $2,$0,SC_DestroyLock
+    syscall
+    j   $31
+    .end DestroyLock
+
+    .globl DestroyCondition
+	.ent	DestroyCondition
+DestroyCondition:
+    addiu $2,$0,SC_DestroyCondition
+    syscall
+    j   $31
+    .end DestroyCondition
     
     .globl Acquire
 	.ent	Acquire
