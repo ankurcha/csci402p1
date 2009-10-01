@@ -29,6 +29,11 @@
 #define SC_Close	8
 #define SC_Fork		9
 #define SC_Yield	10
+#define SC_Acquire	11
+#define SC_Release	12
+#define SC_Wait     13
+#define SC_Signal	14
+#define SC_Broadcast 15
 
 #define MAXFILENAME 256
 
@@ -124,7 +129,19 @@ void Fork(void (*func)());
 /* Yield the CPU to another runnable thread, whether in this address space 
  * or not. 
  */
-void Yield();		
+void Yield();
+
+//Acquire a Lock for the thread
+
+void Acquire();
+
+void Release();
+
+void Wait(Lock* conditionLock);
+
+void Signal(Lock* conditionLock);
+
+void Broadcast(Lock* conditionLock);
 
 #endif /* IN_ASM */
 
