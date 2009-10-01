@@ -231,6 +231,11 @@ void Close_Syscall(int fd) {
     }
 }
 
+void Fork_Syscall( void (*func)()){
+    DEBUG('a', "Called Fork_Syscall");
+    return;
+}
+
 void ExceptionHandler(ExceptionType which) {
     int type = machine->ReadRegister(2); // Which syscall?
     int rv=0; 	// the return value from a syscall
@@ -267,6 +272,12 @@ void ExceptionHandler(ExceptionType which) {
 		DEBUG('a', "Close syscall.\n");
 		Close_Syscall(machine->ReadRegister(4));
 		break;
+#ifdef CHANGED
+        case SC_Fork:
+        DEBUG('a', "Fork syscall.\n");
+        Fork_Syscall(machine->ReadRegister(4));
+        break;
+#endif
 	}
 
 	// Put in the return value and increment the PC
