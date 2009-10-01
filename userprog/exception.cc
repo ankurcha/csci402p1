@@ -237,6 +237,33 @@ void Fork_Syscall( void (*func)()){
     return;
 }
 
+int CreateCondition_Syscall(char* name){
+	DEBUG('a',"%s : CreateCondition_Syscall initialized.\n");
+	Condition *newCV = new Condition(name);
+	int retval;
+	if(newCV){
+		if((retval = currentThread->space->CVTable.Put(newCV)) == -1){
+			delete newCV;
+		}else{
+			return retval;
+		}
+	}
+
+	return -1;
+}
+
+void DestroyCondition_Syscall(int id){
+	Condition *target = (Condition*) currentThread->space->CVTable.Get(id);
+	if(target){
+		delete target;
+		DEBUG('a',"%s : DestroyCondition_Syscall: Successfully deleted CV %d .\n",
+				currentThread->getName(), id);
+	}else{
+		DEBUG('a',"%s: DestroyCondition_Syscall: Unable to find CV %d for deletion.\n",
+		              currentThread->getName(), id);
+	}
+	currentThread->space->CVTable.Remove(id);
+}
 
 int CreateLock_Syscall(char* name){
     DEBUG('a',"%s: CreateLock_Syscall initiated.\n", currentThread->getName());
@@ -317,7 +344,12 @@ void ExceptionHandler(ExceptionType which) {
             case SC_DestroyLock:
                 DestroyLock_Syscall((int) machine->ReadRegister(4));
                 break;
-                
+	    case SC_CreateCondition:
+		rv = CreateCondition_Syscall((char*) machine->ReadRegister(4));
+		break;
+	    case SC_DestroyCondition:
+            	DestroyCondition_Syscall(maching->ReadRegister(4));
+	    	break;	
 #endif
         }
         
