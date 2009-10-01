@@ -232,37 +232,83 @@ void Close_Syscall(int fd) {
     }
 }
 
-void Fork_Syscall( void (*func)()){
-    DEBUG('a', "Called Fork_Syscall");
+    //-------------PENDING SYSCALLS-------------//
+void kernel_thread(int virtAddr){
+        //Setup new Thread
+    machine->WriteRegister(PCReg, virtAddr);
+    machine->WriteRegister(NextPCReg, virtAddr+4);
+    currentThread->space->RestoreState();
+        //TODO: Create a new Stack for this thread and write virtAddr to
+        // StackRegister - MAX's Voodoo
+        machine->WriteRegister(StackReg, virtAddr);
+    machine->Run();
+}
+
+void Fork_Syscall(int funcAddr){
+    DEBUG('a', "%s: Called Fork_Syscall.\n",currentThread->getName());
+        // TODO: Waiting for Max to give insight into the organizaton of the
+        // code in the address space
+    Thread *t = new Thread(currentThread->getName());
+    //TODO: Update process Table and related Data structures - Max's Voodoo :)
+    t->space = currentThread->space;
+    t->Fork((VoidFunctionPtr) kernel_thread, funcAddr);
+    currentThread->space->RestoreState();
     return;
 }
 
-CVId CreateCondition_Syscall(char* name){
-	DEBUG('a',"%s : CreateCondition_Syscall initialized.\n");
-	Condition *newCV = new Condition(name);
-	int retval;
-	if(newCV){
-		if((retval = currentThread->space->CVTable.Put(newCV)) == -1){
-			delete newCV;
-		}else{
-			return retval;
-		}
-	}
-
-	return -1;
+void exec_thread(int arg){
+    currentThread->space->InitRegisters();
+    currentThread->space->RestoreState();
+    machine->Run();
+    
+    ASSERT(FALSE);
 }
 
-void DestroyCondition_Syscall(CVId id){
-	Condition *target = (Condition*) currentThread->space->CVTable.Get(id);
-	if(target){
-		delete target;
-		DEBUG('a',"%s : DestroyCondition_Syscall: Successfully deleted CV %d .\n",
-				currentThread->getName(), id);
-	}else{
-		DEBUG('a',"%s: DestroyCondition_Syscall: Unable to find CV %d for deletion.\n",
-		              currentThread->getName(), id);
-	}
-	currentThread->space->CVTable.Remove(id);
+spaceId Exec_Syscall(char *filename){
+    DEBUG('a', "%s: Called Exec_Syscall\n",currentThread->getName());
+        // TODO: Waiting for Max to give insight into the organizaton of the
+        // code in the address space
+    OpenFile *executable = fileSystem->Open(filename);
+    AddrSpace *space;
+    
+    if(!executable){
+        DEBUG('a',"%s: Unable to open file %s .\n", currentThread->getName(),
+              filename);
+        return -1;
+    }
+    Thread *t = new Thread(filename);
+    t->space = new AddrSpace(executable);
+        //TODO: Update process Table and related Data structures - Max's Voodoo :)
+    DEBUG('a', "%s: New thread created.\n",currentThread->getName());
+    t->Fork((VoidFunctionPtr) exec_thread, 0);
+    return (spaceId) t->space;
+}
+
+void Exit_Syscall(int status){
+    cout <<currentThread->getName()<<": Exit status: "<<status<<endl;
+        // TODO: Waiting for Max to give insight into the organizaton of the
+        // code in the address space
+    
+//        if last thread in nachos{
+//            destroy stack
+//            interrupt->Halt();
+//        }else if last thread in process{
+//            kill process
+//            destroy stack
+//            currentThread->Finish();
+//        }else if just another thread in the process{
+//            End the thread only
+//            destroy stack
+//            currentThread->Finish();
+//        }
+
+    return;
+}
+
+    //----------------------------------------//
+
+void Yield_Syscall(){
+    (void) currentThread->Yield();
 }
 
 LockId CreateLock_Syscall(char* name){
@@ -296,7 +342,6 @@ void DestroyLock_Syscall(LockId id){
     currentThread->space->locksTable.Remove(id);
 }
 
-
 void AcquireLock_Syscall(LockId lockId){
     Lock *targetLock = (Lock*) currentThread->space->locksTable.Get(lockId);
     ASSERT((targetLock != NULL));
@@ -311,6 +356,35 @@ void ReleaseLock_Syscall(LockId lockId){
     
     DEBUG('a',"%s: Lock %d: ReleaseLock_Syscall.\n",currentThread->getName(),lockId);
     targetLock->Release();
+}
+
+
+CVId CreateCondition_Syscall(char* name){
+	DEBUG('a',"%s : CreateCondition_Syscall initialized.\n");
+	Condition *newCV = new Condition(name);
+	int retval;
+	if(newCV){
+		if((retval = currentThread->space->CVTable.Put(newCV)) == -1){
+			delete newCV;
+		}else{
+			return retval;
+		}
+	}
+    
+	return -1;
+}
+
+void DestroyCondition_Syscall(CVId id){
+	Condition *target = (Condition*) currentThread->space->CVTable.Get(id);
+	if(target){
+		delete target;
+		DEBUG('a',"%s : DestroyCondition_Syscall: Successfully deleted CV %d .\n",
+              currentThread->getName(), id);
+	}else{
+		DEBUG('a',"%s: DestroyCondition_Syscall: Unable to find CV %d for deletion.\n",
+              currentThread->getName(), id);
+	}
+	currentThread->space->CVTable.Remove(id);
 }
 
 void WaitCV_Syscall(CVId cvId, LockId lockId){
@@ -386,10 +460,23 @@ void ExceptionHandler(ExceptionType which) {
                 Close_Syscall(machine->ReadRegister(4));
                 break;
 #ifdef CHANGED
+                    //Incomplete------------
             case SC_Fork:
                 DEBUG('a', "Fork syscall.\n");
-                Fork_Syscall((void (*)()) machine->ReadRegister(4));
+                Fork_Syscall(machine->ReadRegister(4));
                 break;
+            case SC_Exec:
+                DEBUG('a', "Exec syscall.\n");
+                rv = Exec_Syscall((char*) machine->ReadRegister(4));
+                break;
+            case SC_Exit:
+                DEBUG('a', "Exit syscall.\n");
+                Exit_Syscall((int) machine->ReadRegister(4));
+                break;
+                    //----------------------
+            case SC_Yield:
+                (void) Yield_Syscall();
+                break;                
             case SC_CreateLock:
                 DEBUG('a', "CreateLock syscall.\n");
                 rv = CreateLock_Syscall((char*) machine->ReadRegister(4));
@@ -421,7 +508,6 @@ void ExceptionHandler(ExceptionType which) {
                 BroadcastCV_Syscall((CVId) machine->ReadRegister(4),
                                  (LockId) machine->ReadRegister(5));
                 break;
-                
 #endif
         }
         

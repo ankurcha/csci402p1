@@ -136,6 +136,15 @@ void Fork(void (*func)());
  */
 void Yield();
 
+/* A unique identifier for an executing user program's address space */
+typedef int spaceId;	
+
+/* Exec a thread to run a file given as an argument, return the spaceId of
+ * address space of the thread thus produced
+ */
+
+spaceId Exec(char* filename);
+
 /* Create a Lock with the argument as the name, returns index into the
  * kernel structure array of Locks
  */
