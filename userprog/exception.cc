@@ -238,7 +238,7 @@ void Fork_Syscall( void (*func)()){
 }
 
 
-int CreateLock_Syscall(char* name){
+LockId CreateLock_Syscall(char* name){
     DEBUG('a',"%s: CreateLock_Syscall initiated.\n", currentThread->getName());
     Lock *newLock = new Lock(name);
     int retval;
@@ -254,7 +254,7 @@ int CreateLock_Syscall(char* name){
     return -1;
 }
 
-void DestroyLock_Syscall(int id){
+void DestroyLock_Syscall(LockId id){
     Lock *targetLock = (Lock*) currentThread->space->locksTable.Get(id);
     if (targetLock) {
             //Found the lock, Now delete it
@@ -267,6 +267,10 @@ void DestroyLock_Syscall(int id){
               currentThread->getName(), id);
     }
     currentThread->space->locksTable.Remove(id);
+}
+
+void WaitCV_Syscall(CVId, LockId){
+    
 }
 
 void ExceptionHandler(ExceptionType which) {

@@ -139,24 +139,31 @@ void Yield();
 /* Create a Lock with the argument as the name, returns index into the
  * kernel structure array of Locks
  */
-int CreateLock(char* name);
+
+/* A unique identifier for an open Nachos Locks. */
+typedef int LockId;	
 
 
-/* Destroys a lock already created in the kernel structure, returns 0 for
- * success -1 for failure.
+LockId CreateLock(char* name);
+
+
+/* Destroys a lock already created in the kernel structure
  */
-int DestroyLock(int id);
+void DestroyLock(LockId id);
+
+/* A unique identifier for an open Nachos Condition Variables. */
+typedef int CVId;	
+
 
 /* Create a Condition Variable with the argument as the name, returns index into the
  * kernel structure array of Locks
  */
-int CreateCondition(char* name);
+CVId CreateCondition(char* name);
 
 
-/* Destroys a Condition Variable already created in the kernel structure, returns 0 for
- * success -1 for failure.
+/* Destroys a Condition Variable already created in the kernel structure.
  */
-int DestroyCondition(int id);
+void DestroyCondition(CVId id);
 
 #endif /* IN_ASM */
 
