@@ -237,7 +237,7 @@ void Fork_Syscall( void (*func)()){
     return;
 }
 
-int CreateCondition_Syscall(char* name){
+CVId CreateCondition_Syscall(char* name){
 	DEBUG('a',"%s : CreateCondition_Syscall initialized.\n");
 	Condition *newCV = new Condition(name);
 	int retval;
@@ -252,7 +252,7 @@ int CreateCondition_Syscall(char* name){
 	return -1;
 }
 
-void DestroyCondition_Syscall(int id){
+void DestroyCondition_Syscall(CVId id){
 	Condition *target = (Condition*) currentThread->space->CVTable.Get(id);
 	if(target){
 		delete target;
@@ -296,8 +296,57 @@ void DestroyLock_Syscall(LockId id){
     currentThread->space->locksTable.Remove(id);
 }
 
-void WaitCV_Syscall(CVId, LockId){
+
+void AcquireLock_Syscall(LockId lockId){
+    Lock *targetLock = (Lock*) currentThread->space->locksTable.Get(lockId);
+    ASSERT((targetLock != NULL));
     
+    DEBUG('a',"%s: Lock %d: AcquireLock_Syscall.\n",currentThread->getName(),lockId);
+    targetLock->Acquire();
+}
+
+void ReleaseLock_Syscall(LockId lockId){
+    Lock *targetLock = (Lock*) currentThread->space->locksTable.Get(lockId);
+    ASSERT((targetLock != NULL));
+    
+    DEBUG('a',"%s: Lock %d: ReleaseLock_Syscall.\n",currentThread->getName(),lockId);
+    targetLock->Release();
+}
+
+void WaitCV_Syscall(CVId cvId, LockId lockId){
+    Lock *ConditionLock = (Lock*) currentThread->space->locksTable.Get(lockId);
+    Condition *CV = (Condition*) currentThread->space->CVTable.Get(cvId);
+    
+    ASSERT((ConditionLock != NULL && CV!= NULL));
+    
+        //Set wait on this condition variable
+    DEBUG('a',"%s: WaitCV_Syscall: Called for CVId: %d lockId %d .\n", 
+          currentThread->getName(), cvId, lockId);
+    (void) CV->Wait(ConditionLock);
+}
+
+void SignalCV_Syscall(CVId cvId, LockId lockId){
+    Lock *ConditionLock = (Lock*) currentThread->space->locksTable.Get(lockId);
+    Condition *CV = (Condition*) currentThread->space->CVTable.Get(cvId);
+    
+    ASSERT((ConditionLock != NULL && CV!= NULL));
+    
+        //Set wait on this condition variable
+    DEBUG('a',"%s: SignalCV_Syscall: Called for CVId: %d lockId %d .\n", 
+          currentThread->getName(), cvId, lockId);
+    (void) CV->Signal(ConditionLock);
+}
+
+void BroadcastCV_Syscall(CVId cvId, LockId lockId){
+    Lock *ConditionLock = (Lock*) currentThread->space->locksTable.Get(lockId);
+    Condition *CV = (Condition*) currentThread->space->CVTable.Get(cvId);
+    
+    ASSERT((ConditionLock != NULL && CV!= NULL));
+    
+        //Set wait on this condition variable
+    DEBUG('a',"%s: WaitCV_Syscall: Called for CVId: %d lockId %d .\n",
+          currentThread->getName(), cvId, lockId);
+    (void) CV->Broadcast(ConditionLock);
 }
 
 void ExceptionHandler(ExceptionType which) {
@@ -346,14 +395,33 @@ void ExceptionHandler(ExceptionType which) {
                 rv = CreateLock_Syscall((char*) machine->ReadRegister(4));
                 break;
             case SC_DestroyLock:
-                DestroyLock_Syscall((int) machine->ReadRegister(4));
+                DestroyLock_Syscall((LockId) machine->ReadRegister(4));
                 break;
-	    case SC_CreateCondition:
-		rv = CreateCondition_Syscall((char*) machine->ReadRegister(4));
-		break;
-	    case SC_DestroyCondition:
-            	DestroyCondition_Syscall(maching->ReadRegister(4));
-	    	break;	
+            case SC_Acquire:
+                AcquireLock_Syscall((LockId) machine->ReadRegister(4));
+                break;
+            case SC_Release:
+                ReleaseLock_Syscall((LockId) machine->ReadRegister(4));
+                break;
+            case SC_CreateCondition:
+                rv = CreateCondition_Syscall((char*) machine->ReadRegister(4));
+                break;
+            case SC_DestroyCondition:
+            	DestroyCondition_Syscall((CVId) machine->ReadRegister(4));
+	    	break;
+            case SC_Wait:
+                WaitCV_Syscall((CVId) machine->ReadRegister(4),
+                               (LockId) machine->ReadRegister(5));
+                break;
+            case SC_Signal:
+                SignalCV_Syscall((CVId) machine->ReadRegister(4),
+                               (LockId) machine->ReadRegister(5));
+                break;
+            case SC_Broadcast:
+                BroadcastCV_Syscall((CVId) machine->ReadRegister(4),
+                                 (LockId) machine->ReadRegister(5));
+                break;
+                
 #endif
         }
         

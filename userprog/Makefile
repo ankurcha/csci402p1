@@ -1923,7 +1923,7 @@ exception.o: ../userprog/exception.cc ../threads/copyright.h \
   ../userprog/bitmap.h ../threads/utility.h ../filesys/openfile.h \
   ../threads/scheduler.h ../threads/list.h ../machine/interrupt.h \
   ../threads/list.h ../machine/stats.h ../machine/timer.h \
-  ../filesys/filesys.h ../userprog/syscall.h
+  ../filesys/filesys.h ../userprog/syscall.h ../threads/synch.h
 progtest.o: ../userprog/progtest.cc ../threads/copyright.h \
   ../threads/system.h ../threads/copyright.h ../threads/utility.h \
   ../threads/bool.h ../machine/sysdep.h ../threads/copyright.h \
