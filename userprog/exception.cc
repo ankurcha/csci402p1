@@ -360,7 +360,7 @@ void ReleaseLock_Syscall(LockId lockId){
 
 
 CVId CreateCondition_Syscall(char* name){
-	DEBUG('a',"%s : CreateCondition_Syscall initialized.\n");
+	DEBUG('a',"%s : CreateCondition_Syscall initialized.\n",currentThread->getName());
 	Condition *newCV = new Condition(name);
 	int retval;
 	if(newCV){
