@@ -175,8 +175,13 @@ typedef int CVId;
  */
 CVId CreateCondition(char* name);
 
+/* Wait on a Condition Variable*/
 void Wait(CVId,LockId);
+
+/*Signal on a Condition Variable */
 void Signal(CVId,LockId);
+
+/*Broadcast on a Condition Variable */
 void Broadcast(CVId,LockId);
 
 /* Destroys a Condition Variable already created in the kernel structure.
