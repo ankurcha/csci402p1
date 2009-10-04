@@ -44,7 +44,101 @@ IV. Implementation:
 V. Testing: (For each test case, you must show)
     + How to test
 
+     -Test Case 1: Testing Creation of a Lock
+      In this case a lock is created and assigned to a variable.
+      The value of the variable is checked to be either valid
+      or invalid.
+    
+      How to run in nachos:
+      %userprog/nachos -x ../test/lockcreate
+      
+      
+     -Test Case 2: Testing Destroy of a Lock
+      In this case a lock is created and Destroyed If the lock
+      is valid we again call a destroy.
+    
+      How to run in nachos:
+      %userprog/nachos -d + -x ../test/destroylock | grep lock
+
+      
+     -Test Case 3: Testing Acquire of a Lock
+      In this case a lock is created and Acquired.The debug
+      version enables us to observe the System Call Acquire.
+    
+      How to run in nachos:
+      %userprog/nachos -d + -x ../test/acquire | grep Acquire 
+      
+      
+     -Test Case 4: Testing Create of a Condition Variable
+      In this case a CV is created and assigned to a variable.
+      The value of the variable is checked to be either valid
+      or invalid.
+    
+      How to run in nachos:
+      %userprog/nachos -x ../test/createcv  
+
+  
+     -Test Case 5: Testing Destroy of a CV
+      In this case a CV is created and Destroyed If the CV
+      is valid we again call a destroy.
+    
+      How to run in nachos:
+      %userprog/nachos -d + -x ../test/destroycv | grep CV
+
+
+
+
+
+
+
+
+
     + Test Output
+      
+      -Test Case 1: Testing Creation of a Lock
+       OUTPUT:
+       Testing lock creation...Pass
+       Testing lock creamain: Exit status: 0
+       
+       Here we see that lock created is valid.
+       Thus the Lock Creation was Successful.
+       
+       
+      -Test Case 2: Testing Destroy of a Lock
+       OUTPUT:
+       main: DestroyLock_Syscall: Successfully deleted lock 0 .
+       main: DestroyLock_Syscall: Unable to find lock 0 for deletion.
+       
+       Here we observe that after the deletion of the Lock when
+       another Destroy is called it states it is unable to
+       find the lock.
+
+       
+      -Test Case 3: Testing Acquire of a Lock
+       OUTPUT:
+       main: Lock 0: AcquireLock_Syscall.
+
+       The System Call Acquire is being Called.
+
+
+      -Test Case 4: Testing Create of a Condition Variable
+       OUTPUT:
+       Testing CV creation...Pass
+       Testing CV creatimain: Exit status: 0
+
+       Here we see that CV created is valid.
+       Thus the CV Creation was Successful.
+
+
+      -Test Case 5: Testing Destroy of a Condition Variable
+       OUTPUT:     
+       main : DestroyCondition_Syscall: Successfully deleted CV 0 .
+       main: DestroyCondition_Syscall: Unable to find CV 0 for deletion.
+      
+       Here we observe that after the deletion of the CV when
+       another Destroy is called it states it is unable to
+       find the CV.
+
 
 VI. Discussion:
     + Experiment expectation.  
