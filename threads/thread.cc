@@ -34,6 +34,7 @@
 
 Thread::Thread(char* threadName)
 {
+    PID = -1;
     name = threadName;
     stackTop = NULL;
     stack = NULL;

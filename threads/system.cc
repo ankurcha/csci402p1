@@ -17,7 +17,48 @@ Scheduler *scheduler;			// the ready list
 Interrupt *interrupt;			// interrupt status
 Statistics *stats;			// performance metrics
 Timer *timer;				// the hardware timer device,
-					// for invoking context switches
+                            // for invoking context switches
+ProcessTable *processTable; // Process Table
+
+ProcessTable::ProcessTable(){
+    table = new Table();
+    processTableLock = new Lock("ProcessTableLock");
+    processCount = 0;
+}
+
+ProcessTable::~ProcessTable(){
+    delete processTableLock;
+    delete table;
+}
+
+PID ProcessTable::addProcess(Thread *newthread){
+    
+    if(this->table){
+        if (newthread) {
+            this->processTableLock->Acquire();
+            this->processCount++;
+            int PID =  this->table.Put(newthread);
+            this->processTableLock->Release();
+        }
+    }
+    return -1;
+}
+
+int ProcessTable::killProcess(PID pid){
+    if (this->table) {
+        this->processTableLock->Acquire();
+        Thread *t = (Thread*) this->table.Get(pid);
+        if (t) {
+            this->processCount--;   //Decrement the processcount
+            this->table.Remove(pid); //Remove entry form the processtable
+            this->processTableLock->Release();
+            return 0;
+        }
+        this->table.Remove(pid); //remove this entry from the table
+        this->processTableLock->Release();
+    }
+    return -1; //return error condition
+}
 
 #ifdef FILESYS_NEEDED
 FileSystem  *fileSystem;
@@ -83,6 +124,7 @@ Initialize(int argc, char **argv)
 
 #ifdef USER_PROGRAM
     bool debugUserProg = FALSE;	// single step user program
+    processTable = new ProcessTable();
 #endif
 #ifdef FILESYS_NEEDED
     bool format = FALSE;	// format disk
@@ -177,6 +219,7 @@ Cleanup()
 #endif
     
 #ifdef USER_PROGRAM
+    delete processTable;
     delete machine;
 #endif
 

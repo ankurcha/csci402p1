@@ -101,7 +101,13 @@ class Thread {
     void setStatus(ThreadStatus st) { status = st; }
     char* getName() { return (name); }
     void Print() { printf("%s, ", name); }
-
+    int getPID(){
+        return PID;
+    }
+    
+    void setPID(int PID){
+        this->PID = PID;
+    }
   private:
     // some of the private data for this class is listed above
     
@@ -110,7 +116,7 @@ class Thread {
 					// (If NULL, don't deallocate stack)
     ThreadStatus status;		// ready, running or blocked
     char* name;
-
+    int PID;
     void StackAllocate(VoidFunctionPtr func, int arg);
     					// Allocate a stack for thread.
 					// Used internally by Fork()

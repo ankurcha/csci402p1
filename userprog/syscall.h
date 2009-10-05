@@ -9,7 +9,7 @@
  * All rights reserved.  See copyright.h for copyright notice and limitation 
  * of liability and disclaimer of warranty provisions.
  */
-
+ 
 #ifndef SYSCALLS_H
 #define SYSCALLS_H
 
@@ -155,9 +155,15 @@ typedef int LockId;
 
 LockId CreateLock(char* name);
 
+ void Acquire(LockId );
 
+ void Release(LockId );
+ 
 /* Destroys a lock already created in the kernel structure
  */
+ 
+
+ 
 void DestroyLock(LockId id);
 
 /* A unique identifier for an open Nachos Condition Variables. */
@@ -169,6 +175,14 @@ typedef int CVId;
  */
 CVId CreateCondition(char* name);
 
+/* Wait on a Condition Variable*/
+void Wait(CVId,LockId);
+
+/*Signal on a Condition Variable */
+void Signal(CVId,LockId);
+
+/*Broadcast on a Condition Variable */
+void Broadcast(CVId,LockId);
 
 /* Destroys a Condition Variable already created in the kernel structure.
  */

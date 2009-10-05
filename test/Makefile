@@ -31,7 +31,7 @@ CPP = $(GCCDIR)cpp
 INCDIR =-I../userprog -I../threads
 CFLAGS = -G 0 -c $(INCDIR)
 
-all: halt matmult sort testfiles
+all: halt matmult sort testfiles lockcreate destroylock createcv destroycv acquire
 
 start.o: start.s ../userprog/syscall.h
 	$(CPP) $(CPPFLAGS) start.s > strt.s
@@ -62,5 +62,34 @@ testfiles: testfiles.o start.o
 	$(LD) $(LDFLAGS) start.o testfiles.o -o testfiles.coff
 	../bin/coff2noff testfiles.coff testfiles
 
+lockcreate.o: lockcreate.c
+	$(CC) $(CFLAGS) -c lockcreate.c
+lockcreate: lockcreate.o start.o
+	$(LD) $(LDFLAGS) start.o lockcreate.o -o lockcreate.coff
+	../bin/coff2noff lockcreate.coff lockcreate
+
+destroylock.o: destroylock.c
+	$(CC) $(CFLAGS) -c destroylock.c
+destroylock: destroylock.o start.o
+	$(LD) $(LDFLAGS) start.o destroylock.o -o destroylock.coff
+	../bin/coff2noff destroylock.coff destroylock
+
+createcv.o: createcv.c
+	$(CC) $(CFLAGS) -c createcv.c
+createcv: createcv.o start.o
+	$(LD) $(LDFLAGS) start.o createcv.o -o createcv.coff
+	../bin/coff2noff createcv.coff createcv
+	
+	destroycv.o: destroycv.c
+	$(CC) $(CFLAGS) -c destroycv.c
+destroycv: destroycv.o start.o
+	$(LD) $(LDFLAGS) start.o destroycv.o -o destroycv.coff
+	../bin/coff2noff destroycv.coff destroycv
+
+acquire.o: acquire.c
+	$(CC) $(CFLAGS) -c acquire.c
+acquire: acquire.o start.o
+	$(LD) $(LDFLAGS) start.o acquire.o -o acquire.coff
+	../bin/coff2noff acquire.coff acquire
 clean:
 	rm -f *.o *.coff

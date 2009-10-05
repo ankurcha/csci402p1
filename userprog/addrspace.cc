@@ -152,6 +152,12 @@ AddrSpace::AddrSpace(OpenFile *executable) : fileTable(MaxOpenFiles),
 
     DEBUG('a', "Initializing address space, num pages %d, size %d\n", 
 					numPages, size);
+    
+    //TODO: this code was merged, i don't know about it -max
+        //Take care of the number of child processes
+    childLock = new Lock("childLock");
+    this->numChildThreads = 0;
+    
     // first, set up the translation 
     pageTable = new TranslationEntry[numPages];
     for (i = 0; i < numPages; i++) {
@@ -356,6 +362,18 @@ std::string AddrSpace::readCString(char* s) {
     }
 
     return ret;
+}
+
+void AddrSpace::addChildThread(){
+    this->childLock->Acquire();
+    this->numChildThreads++;
+    this->childLock->Release();
+}
+
+void AddrSpace::removeChildThread(){
+    this->childLock->Acquire();
+    this->numChildThreads--;
+    this->childLock->Release();
 }
 
 

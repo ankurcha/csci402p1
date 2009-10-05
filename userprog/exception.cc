@@ -250,6 +250,7 @@ void Fork_Syscall(int funcAddr){
         // code in the address space
     Thread *t = new Thread(currentThread->getName());
     //TODO: Update process Table and related Data structures - Max's Voodoo :)
+    currentThread->space->addChildThread();
     t->space = currentThread->space;
     t->Fork((VoidFunctionPtr) kernel_thread, funcAddr);
     currentThread->space->RestoreState();
@@ -278,31 +279,31 @@ spaceId Exec_Syscall(char *filename){
     }
     Thread *t = new Thread(filename);
     t->space = new AddrSpace(executable);
-        //TODO: Update process Table and related Data structures - Max's Voodoo :)
-    DEBUG('a', "%s: New thread created.\n",currentThread->getName());
+        //Add Thread to processTable and get the PID
+    t->setPID(processTable->addProcess(t));
+    DEBUG('a', "%s: New thread created with PID: %d.\n",currentThread->getName(),
+          t->getPID());
     t->Fork((VoidFunctionPtr) exec_thread, 0);
     return (spaceId) t->space;
 }
 
 void Exit_Syscall(int status){
     cout <<currentThread->getName()<<": Exit status: "<<status<<endl;
-        // TODO: Waiting for Max to give insight into the organizaton of the
-        // code in the address space
-    
-//        if last thread in nachos{
-//            destroy stack
-//            interrupt->Halt();
-//        }else if last thread in process{
-//            kill process
-//            destroy stack
-//            currentThread->Finish();
-//        }else if just another thread in the process{
-//            End the thread only
-//            destroy stack
-//            currentThread->Finish();
-//        }
-
-    return;
+    if (processTable->getProcessCount() == 1 && currentThread->space->numChildThreads == 0) {
+        DEBUG('a', "End of all processes across NACHOS\n");
+        interrupt->Halt();
+    }else if (currentThread->space->numChildThreads == 0 && processTable->getProcessCount()>1) {
+        DEBUG('a', "End of Process PID: %d\n", currentThread->getPID());
+        currentThread->space->removeChildThread();
+        processTable->killProcess(currentThread->getPID());
+        currentThread->Finish();
+    }else {
+            //Neither the end of process nor the end of Nachos
+        DEBUG('a',"End of Thread PID: %d\n", currentThread->getPID());
+        currentThread->space->removeChildThread();
+        processTable->killProcess(currentThread->getPID());
+        currentThread->Finish();
+    }
 }
 
     //----------------------------------------//
@@ -360,7 +361,7 @@ void ReleaseLock_Syscall(LockId lockId){
 
 
 CVId CreateCondition_Syscall(char* name){
-	DEBUG('a',"%s : CreateCondition_Syscall initialized.\n");
+	DEBUG('a',"%s : CreateCondition_Syscall initialized.\n",currentThread->getName());
 	Condition *newCV = new Condition(name);
 	int retval;
 	if(newCV){
