@@ -144,6 +144,11 @@ AddrSpace::AddrSpace(OpenFile *executable) : fileTable(MaxOpenFiles), locksTable
 
     DEBUG('a', "Initializing address space, num pages %d, size %d\n", 
 					numPages, size);
+    
+        //Take care of the number of child processes
+    childLock = new Lock("childLock");
+    this->numChildThreads = 0;
+    
 // first, set up the translation 
     pageTable = new TranslationEntry[numPages];
     for (i = 0; i < numPages; i++) {
@@ -246,4 +251,16 @@ void AddrSpace::RestoreState()
 {
     machine->pageTable = pageTable;
     machine->pageTableSize = numPages;
+}
+
+void AddrSpace::addChildThread(){
+    this->childLock->Acquire();
+    this->numChildThreads++;
+    this->childLock->Release();
+}
+
+void AddrSpace::removeChildThread(){
+    this->childLock->Acquire();
+    this->numChildThreads--;
+    this->childLock->Release();
 }

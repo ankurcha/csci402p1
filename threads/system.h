@@ -16,6 +16,22 @@
 #include "stats.h"
 #include "timer.h"
 
+typedef PID int;
+struct processTable {
+private:
+    Lock *processTableLock;
+    Table *table;
+    int processCount;
+public:
+    ProcessTable();
+    ~ProcessTable();
+    PID addProcess(Thread*);
+    int killProcess(Thread*);
+    int getProcessCount(){
+        return this->processCount;
+    }
+};
+
 // Initialization and cleanup routines
 extern void Initialize(int argc, char **argv); 	// Initialization,
 						// called before anything else
@@ -28,7 +44,7 @@ extern Scheduler *scheduler;			// the ready list
 extern Interrupt *interrupt;			// interrupt status
 extern Statistics *stats;			// performance metrics
 extern Timer *timer;				// the hardware alarm clock
-
+extern ProcessTable *processTable;  // Process Table for Nachos
 #ifdef USER_PROGRAM
 #include "machine.h"
 extern Machine* machine;	// user program memory and registers

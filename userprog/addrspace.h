@@ -41,7 +41,12 @@ class AddrSpace {
     
     Table locksTable;           //Table of Locks
     Table CVTable;              //Table of CVs
-
+    Lock *childLock;
+    int numChildThreads;        // Number of Children Threads running
+    
+    void addChildThread();
+    void removeChildThread();
+    
  private:
     TranslationEntry *pageTable;	// Assume linear page table translation
 					// for now!
