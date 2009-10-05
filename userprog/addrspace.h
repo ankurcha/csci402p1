@@ -13,9 +13,12 @@
 #ifndef ADDRSPACE_H
 #define ADDRSPACE_H
 
+#include <string>
+
 #include "copyright.h"
 #include "filesys.h"
 #include "table.h"
+#include "synch.h"
 
 #define UserStackSize		1024 	// increase this as necessary!
 
@@ -24,6 +27,10 @@
 
 #define MaxCV 1024
 #define MaxLock 1024
+
+// global map of available physical memory
+Lock* physMemMapLock = new Lock("physMemMapLock");
+BitMap physMemMap(NumPhysPages);
 
 class AddrSpace {
   public:
@@ -37,6 +44,12 @@ class AddrSpace {
 
     void SaveState();			// Save/restore address space-specific
     void RestoreState();		// info on a context switch
+
+    // read a string at the virtual address s
+    std::string readCString(char* s);
+    
+    //TODO: need to support new stacks for multiple threads
+
     Table fileTable;			// Table of openfiles
     
     Table locksTable;           //Table of Locks
