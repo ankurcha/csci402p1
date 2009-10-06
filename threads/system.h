@@ -17,7 +17,7 @@
 #include "timer.h"
 
 typedef PID int;
-struct processTable {
+struct ProcessTable {
 private:
     Lock *processTableLock;
     Table *table;
