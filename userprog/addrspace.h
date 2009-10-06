@@ -18,7 +18,6 @@
 #include "copyright.h"
 #include "filesys.h"
 #include "table.h"
-#include "synch.h"
 #include <set>
 
 using namespace std;
@@ -32,9 +31,7 @@ typedef int PID;
 #define MaxLock 1024
 
 // global map of available physical memory
-Lock* physMemMapLock = new Lock("physMemMapLock");
-BitMap physMemMap(NumPhysPages);
-Lock* childLock;
+
 
 class AddrSpace {
   public:

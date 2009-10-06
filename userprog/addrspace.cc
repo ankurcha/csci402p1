@@ -27,6 +27,10 @@
 
 extern "C" { int bzero(char *, int); };
 
+Lock* physMemMapLock = new Lock("physMemMapLock");
+BitMap physMemMap(NumPhysPages);
+Lock* childLock;
+
 Table::Table(int s) : map(s), table(0), lock(0), size(s) {
     table = new void *[size];
     lock = new Lock("TableLock");
