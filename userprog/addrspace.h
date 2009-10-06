@@ -19,7 +19,10 @@
 #include "filesys.h"
 #include "table.h"
 #include "synch.h"
+#include <set>
 
+using namespace std;
+typedef int PID;
 #define UserStackSize		1024 	// increase this as necessary!
 
 #define MaxOpenFiles 256
@@ -31,6 +34,7 @@
 // global map of available physical memory
 Lock* physMemMapLock = new Lock("physMemMapLock");
 BitMap physMemMap(NumPhysPages);
+Lock* childLock;
 
 class AddrSpace {
   public:
@@ -54,9 +58,6 @@ class AddrSpace {
     
     Table locksTable;           //Table of Locks
     Table CVTable;              //Table of CVs
-    Lock *childLock;
-    int numChildThreads;        // Number of Children Threads running
-    
     void addChildThread();
     void removeChildThread();
     
@@ -65,6 +66,8 @@ class AddrSpace {
 					// for now!
     unsigned int numPages;		// Number of pages in the virtual 
 					// address space
+    set<PID> childThreads;        // PID of Children Threads
+    Lock *childLock;
 };
 
 #endif // ADDRSPACE_H

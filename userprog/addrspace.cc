@@ -258,7 +258,8 @@ AddrSpace::~AddrSpace()
     }
 
     delete pageTable;
-
+    delete childLock;
+    delete childThreads;
     //TODO
     // close any remaining files
     // deallocate the file table
@@ -364,16 +365,14 @@ std::string AddrSpace::readCString(char* s) {
     return ret;
 }
 
-void AddrSpace::addChildThread(){
+void AddrSpace::addChildThread(PID pid){
     this->childLock->Acquire();
-    this->numChildThreads++;
+    this->childThreads.insert(pid);
     this->childLock->Release();
 }
 
-void AddrSpace::removeChildThread(){
+void AddrSpace::removeChildThread(PID pid){
     this->childLock->Acquire();
-    this->numChildThreads--;
+    this->childThreads.erase(pid);
     this->childLock->Release();
 }
-
-
