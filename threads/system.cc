@@ -44,7 +44,6 @@ int ProcessTable::killProcess(PID pid){
     if (t) {
             //Some thread being pointed to by the pid
         this->table.erase(this->table.find(pid)); //Delete entry form table
-        t->Finish(); //Finish() the process
         (void) interrupt->SetLevel(oldLevel);
         return 0;
     }else {

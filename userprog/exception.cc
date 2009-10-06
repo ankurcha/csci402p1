@@ -250,8 +250,8 @@ void Fork_Syscall(int funcAddr){
         // TODO: Waiting for Max to give insight into the organizaton of the
         // code in the address space
     Thread *t = new Thread(currentThread->getName());
-    //TODO: Update process Table and related Data structures - Max's Voodoo :)
-    currentThread->space->addChildThread();
+    t->setPID(processTable->addProcess(t)); //Add Process to the system's process table
+    currentThread->space->addChildThread(t->getPID());
     t->space = currentThread->space;
     t->Fork((VoidFunctionPtr) kernel_thread, funcAddr);
     currentThread->space->RestoreState();
@@ -281,7 +281,6 @@ spaceId Exec_Syscall(char *filename){
     Thread *t = new Thread(filename);
     t->space = new AddrSpace(executable);
         //Add Thread to processTable and get the PID
-    t->setPID(processTable->addProcess(t));
     DEBUG('a', "%s: New thread created with PID: %d.\n",currentThread->getName(),
           t->getPID());
     t->Fork((VoidFunctionPtr) exec_thread, 0);
@@ -290,18 +289,20 @@ spaceId Exec_Syscall(char *filename){
 
 void Exit_Syscall(int status){
     cout <<currentThread->getName()<<": Exit status: "<<status<<endl;
-    if (processTable->getProcessCount() == 1 && currentThread->childThreads.size() == 0) {
+    if (processTable->getProcessCount() == 1 && currentThread->space->childThreads.size() == 0) {
         DEBUG('a', "End of all processes across NACHOS\n");
         interrupt->Halt();
-    }else if (currentThread->childThreads.size() == 0 && processTable->getProcessCount()>1) {
+    }else if (currentThread->space->childThreads.size() == 0 && processTable->getProcessCount()>1) {
         DEBUG('a', "End of Process PID: %d\n", currentThread->getPID());
-        currentThread->removeChildThread();
+        currentThread->space->removeChildThread(currentThread->getPID());
         processTable->killProcess(currentThread->getPID());
+        currentThread->Finish();
     }else {
             //Neither the end of process nor the end of Nachos
         DEBUG('a',"End of Thread PID: %d\n", currentThread->getPID());
-        currentThread->removeChildThread();
+        currentThread->space->removeChildThread(currentThread->getPID());
         processTable->killProcess(currentThread->getPID());
+        currentThread->Finish();
     }
 }
 

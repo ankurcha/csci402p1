@@ -55,16 +55,16 @@ class AddrSpace {
     
     Table locksTable;           //Table of Locks
     Table CVTable;              //Table of CVs
-    void addChildThread();
-    void removeChildThread();
+    set<PID> childThreads;        // PID of Children Threads
+    Lock *childLock;
+    void addChildThread(PID);
+    void removeChildThread(PID);
     
  private:
     TranslationEntry *pageTable;	// Assume linear page table translation
 					// for now!
     unsigned int numPages;		// Number of pages in the virtual 
 					// address space
-    set<PID> childThreads;        // PID of Children Threads
-    Lock *childLock;
-};
+    };
 
 #endif // ADDRSPACE_H

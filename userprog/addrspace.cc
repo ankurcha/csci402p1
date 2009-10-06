@@ -160,14 +160,14 @@ AddrSpace::AddrSpace(OpenFile *executable) : fileTable(MaxOpenFiles),
     //TODO: this code was merged, i don't know about it -max
         //Take care of the number of child processes
     childLock = new Lock("childLock");
-    this->numChildThreads = 0;
+    this->childThreads.clear();
     
     // first, set up the translation 
     pageTable = new TranslationEntry[numPages];
     for (i = 0; i < numPages; i++) {
         // find a free page in physical memory
         physMemMapLock->Acquire();
-        int physPage = physMemMap.find();
+        int physPage = physMemMap.Find();
         ASSERT(physPage != -1); // make sure a page was found
         physMemMapLock->Release();
 
@@ -200,13 +200,13 @@ AddrSpace::AddrSpace(OpenFile *executable) : fileTable(MaxOpenFiles),
         int fileAddr = noffH.code.inFileAddr;
         for( int code = noffH.code.size; code > 0; code -= PageSize) {
             int paddr = (pageTable[page].physicalPage * PageSize) + offset;
-            int size = min(code, PageSize) - offset;
+            int _size = min(code, PageSize) - offset;
             DEBUG('a', "Initializing code segment, at paddr 0x%x, size %d\n", 
-                            paddr, size);
+                            paddr, _size);
 
-            executable->ReadAt(&(machine->mainMemory[paddr]), size, fileAddr);
+            executable->ReadAt(&(machine->mainMemory[paddr]), _size, fileAddr);
 
-            fileAddr += size;
+            fileAddr += _size;
             offset = 0;
             page++;
         }
@@ -226,13 +226,13 @@ AddrSpace::AddrSpace(OpenFile *executable) : fileTable(MaxOpenFiles),
         int fileAddr = noffH.initData.inFileAddr;
         for( int data = noffH.initData.size; data > 0; data -= PageSize) {
             int paddr = (pageTable[page].physicalPage * PageSize) + offset;
-            int size = min(data, PageSize) - offset;
+            int _size = min(data, PageSize) - offset;
             DEBUG('a', "Initializing initData segment, at paddr 0x%x, size %d\n", 
-                            paddr, size);
+                            paddr, _size);
 
-            executable->ReadAt(&(machine->mainMemory[paddr]), size, fileAddr);
+            executable->ReadAt(&(machine->mainMemory[paddr]), _size, fileAddr);
 
-            fileAddr += size;
+            fileAddr += _size;
             offset = 0;
             page++;
         }
@@ -257,13 +257,12 @@ AddrSpace::~AddrSpace()
     // free the physical memory being used by this page table
     for(int i=0; i < numPages; i++) {
         physMemMapLock->Acquire();
-        physMemMap.clear(pageTable[i].physicalPage);
+        physMemMap.Clear(pageTable[i].physicalPage);
         physMemMapLock->Release();
     }
 
     delete pageTable;
     delete childLock;
-    delete childThreads;
     //TODO
     // close any remaining files
     // deallocate the file table
@@ -335,14 +334,14 @@ void AddrSpace::RestoreState()
 std::string AddrSpace::readCString(char* s) {
     std::string ret = "";
 
-    int page = s / PageSize;
+    int page = (unsigned int) s / PageSize;
     if(page >= numPages || !pageTable[page].valid) {
         cerr << "ERROR: virtual address [" << (unsigned int) s 
              << "] passed to readCString is invalid\n"
              << " segmentation fault?\n";
         return ret;
     }
-    int offset = s % PageSize;
+    int offset = (unsigned int) s % PageSize;
     unsigned int paddr = (pageTable[page].physicalPage * PageSize) + offset;
 
     // read the string till we hit null
