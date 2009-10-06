@@ -25,7 +25,8 @@
 #include "system.h"
 #include "syscall.h"
 #include "synch.h"
-#include <stdio.h>
+#include <cstdio>
+#include <cstring>
 #include <iostream>
 
 using namespace std;
@@ -289,20 +290,18 @@ spaceId Exec_Syscall(char *filename){
 
 void Exit_Syscall(int status){
     cout <<currentThread->getName()<<": Exit status: "<<status<<endl;
-    if (processTable->getProcessCount() == 1 && currentThread->space->numChildThreads == 0) {
+    if (processTable->getProcessCount() == 1 && currentThread->childThreads.size() == 0) {
         DEBUG('a', "End of all processes across NACHOS\n");
         interrupt->Halt();
-    }else if (currentThread->space->numChildThreads == 0 && processTable->getProcessCount()>1) {
+    }else if (currentThread->childThreads.size() == 0 && processTable->getProcessCount()>1) {
         DEBUG('a', "End of Process PID: %d\n", currentThread->getPID());
-        currentThread->space->removeChildThread();
+        currentThread->removeChildThread();
         processTable->killProcess(currentThread->getPID());
-        currentThread->Finish();
     }else {
             //Neither the end of process nor the end of Nachos
         DEBUG('a',"End of Thread PID: %d\n", currentThread->getPID());
-        currentThread->space->removeChildThread();
+        currentThread->removeChildThread();
         processTable->killProcess(currentThread->getPID());
-        currentThread->Finish();
     }
 }
 
@@ -314,7 +313,10 @@ void Yield_Syscall(){
 
 LockId CreateLock_Syscall(char* name){
     DEBUG('a',"%s: CreateLock_Syscall initiated.\n", currentThread->getName());
-    Lock *newLock = new Lock(name);
+    std::string cname = currentThread->space->readCString(name);
+    char *c_name = new char[cname.size()+1];
+    strcpy(c_name, cname.c_str());
+    Lock *newLock = new Lock(c_name);
     int retval;
     if (newLock) {
         if ((retval = currentThread->space->locksTable.Put(newLock)) == -1) {
@@ -362,7 +364,10 @@ void ReleaseLock_Syscall(LockId lockId){
 
 CVId CreateCondition_Syscall(char* name){
 	DEBUG('a',"%s : CreateCondition_Syscall initialized.\n",currentThread->getName());
-	Condition *newCV = new Condition(name);
+    std::string cname = currentThread->space->readCString(name);
+    char *c_name = new char[cname.size()+1];
+    strcpy(c_name, cname.c_str());    
+	Condition *newCV = new Condition(c_name);
 	int retval;
 	if(newCV){
 		if((retval = currentThread->space->CVTable.Put(newCV)) == -1){

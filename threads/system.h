@@ -15,20 +15,20 @@
 #include "interrupt.h"
 #include "stats.h"
 #include "timer.h"
+#include <map>
 
-typedef PID int;
+using namespace std;
+typedef int PID;
 struct ProcessTable {
 private:
-    Lock *processTableLock;
-    Table *table;
-    int processCount;
+    map<PID, Thread*> table;
 public:
     ProcessTable();
     ~ProcessTable();
     PID addProcess(Thread*);
-    int killProcess(Thread*);
+    int killProcess(PID);
     int getProcessCount(){
-        return this->processCount;
+        return this->table.size();
     }
 };
 
@@ -45,6 +45,7 @@ extern Interrupt *interrupt;			// interrupt status
 extern Statistics *stats;			// performance metrics
 extern Timer *timer;				// the hardware alarm clock
 extern ProcessTable *processTable;  // Process Table for Nachos
+
 #ifdef USER_PROGRAM
 #include "machine.h"
 extern Machine* machine;	// user program memory and registers

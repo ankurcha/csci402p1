@@ -39,7 +39,6 @@
 
 #include "copyright.h"
 #include "utility.h"
-
 #ifdef USER_PROGRAM
 #include "machine.h"
 #include "addrspace.h"
@@ -101,14 +100,16 @@ class Thread {
     void setStatus(ThreadStatus st) { status = st; }
     char* getName() { return (name); }
     void Print() { printf("%s, ", name); }
+    
     int getPID(){
         return PID;
     }
     
-    void setPID(int PID){
-        this->PID = PID;
+    void setPID(int pid){
+        this->PID = pid;
     }
-  private:
+
+private:
     // some of the private data for this class is listed above
     
     int* stack; 	 		// Bottom of the stack 
