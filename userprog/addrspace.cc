@@ -153,6 +153,9 @@ AddrSpace::AddrSpace(OpenFile *executable) : fileTable(MaxOpenFiles),
 						// to run anything too big --
 						// at least until we have
 						// virtual memory
+    
+    // the first stack is in position 0
+    stackTable.push_back(true);
 
     DEBUG('a', "Initializing address space, num pages %d, size %d\n", 
 					numPages, size);
@@ -297,6 +300,26 @@ void AddrSpace::InitRegisters()
    // accidentally reference off the end!
     machine->WriteRegister(StackReg, numPages * PageSize - 16);
     DEBUG('a', "Initializing stack register to %x\n", numPages * PageSize - 16);
+}
+
+//----------------------------------------------------------------------
+// AddrSpace::InitStack
+//      Create a new stack in the Addrspace and return it's stack id
+//      Note that stack ids are local to this process
+//----------------------------------------------------------------------
+
+int AddrSpace::InitStack() {
+    //TODO
+    return 0;
+}
+
+//----------------------------------------------------------------------
+// AddrSpace::ClearStack
+//      Remove the stack identified by the passed id
+//----------------------------------------------------------------------
+
+void AddrSpace::ClearStack(int id) {
+    return;
 }
 
 //----------------------------------------------------------------------

@@ -20,7 +20,7 @@
 #include "table.h"
 #include <set>
 
-using namespace std;
+using namespace std; // this is bad practice in .h files -max
 typedef int PID;
 #define UserStackSize		1024 	// increase this as necessary!
 
@@ -42,6 +42,12 @@ class AddrSpace {
 
     void InitRegisters();		// Initialize user-level CPU registers,
 					// before jumping to user code
+
+    // create a new stack for a thread and set StackReg there
+    int InitStack();
+
+    // clear the stack of an exiting thread
+    void ClearStack(int id);
 
     void SaveState();			// Save/restore address space-specific
     void RestoreState();		// info on a context switch
@@ -65,6 +71,8 @@ class AddrSpace {
 					// for now!
     unsigned int numPages;		// Number of pages in the virtual 
 					// address space
+    // keep track of the stacks in this process
+    vector<bool> stackTable;
     };
 
 #endif // ADDRSPACE_H
