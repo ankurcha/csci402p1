@@ -143,8 +143,9 @@ AddrSpace::AddrSpace(OpenFile *executable) : fileTable(MaxOpenFiles),
     	SwapHeader(&noffH);
     ASSERT(noffH.noffMagic == NOFFMAGIC);
 
-    size = noffH.code.size + noffH.initData.size + noffH.uninitData.size ;
-    numPages = divRoundUp(size, PageSize) + divRoundUp(UserStackSize,PageSize);
+    dataSize = noffH.code.size + noffH.initData.size + noffH.uninitData.size ;
+    dataPages = divRoundUp(dataSize, PageSize);
+    numPages = dataPages + divRoundUp(UserStackSize,PageSize);
                                                 // we need to increase the size
 						// to leave room for the stack
     size = numPages * PageSize;
@@ -167,6 +168,7 @@ AddrSpace::AddrSpace(OpenFile *executable) : fileTable(MaxOpenFiles),
     
     // first, set up the translation 
     pageTable = new TranslationEntry[numPages];
+    //TODO: resize this every time we add a stack?
     for (i = 0; i < numPages; i++) {
         // find a free page in physical memory
         physMemMapLock->Acquire();
@@ -310,6 +312,31 @@ void AddrSpace::InitRegisters()
 
 int AddrSpace::InitStack() {
     //TODO
+    // find the first open stack in this process
+    int stack = -1;
+    for(unsigned int i=0; i < stackTable.size(); i++) {
+        if(stackTable[i] == false) {
+            stack = i;
+            stackTable[i] = true;
+            break;
+        }
+    }
+
+    // if no stacks were open, create one
+    if(stack < 0) {
+        stack = stackTable.size();
+        stackTable.push_back(true);
+    }
+
+    // allocate the memory for this stack
+    int stackPages = divRoundUp(UserStackSize,PageSize);
+    for(int i=0; i < stackPages; i++) {
+        // find a free page in physical memory
+        physMemMapLock->Acquire();
+        int physPage = physMemMap.Find();
+        ASSERT(physPage != -1); // make sure a page was found
+        physMemMapLock->Release();
+    }
     return 0;
 }
 
