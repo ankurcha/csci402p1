@@ -55,8 +55,6 @@ class AddrSpace {
     // read a string at the virtual address s
     std::string readCString(char* s);
     
-    //TODO: need to support new stacks for multiple threads
-
     Table fileTable;            // Table of openfiles
     
     Table locksTable;           //Table of Locks
