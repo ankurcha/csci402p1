@@ -79,6 +79,6 @@ class AddrSpace {
 
     // keep track of the stacks in this process
     std::vector<bool> stackTable;
-    };
+};
 
 #endif // ADDRSPACE_H
