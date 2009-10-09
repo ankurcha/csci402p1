@@ -32,6 +32,16 @@ bool test4active = false;
 bool test7active = false;
 bool test5active = false;
 
+char* itoa(int a){
+    static char str[50];
+    int i = 49;
+    do{
+        str[] = '0'+ a%10;
+    }while((a=a/10) && i>=0);
+
+    return str;
+}
+
 struct node {
     int key, value;
     node* next;
