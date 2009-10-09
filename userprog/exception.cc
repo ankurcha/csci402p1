@@ -31,6 +31,31 @@
 
 using namespace std;
 
+struct ConditionWrapper {
+    Condition* cv;
+    int counter;
+    bool mark;
+    
+    ConditionWrapper(Condition *c, int count, bool m){
+        cv = c;
+        counter = count;
+        mark = m;
+    }
+};
+
+struct LockWrapper {
+    Lock* lock;
+    int counter;
+    bool mark;
+    
+    LockWrapper(Lock* l, int count, bool m){
+        lock = l;
+        counter = count;
+        mark = m;
+    }
+};
+
+
 int copyin(unsigned int vaddr, int len, char *buf) {
         // Copy len bytes from the current thread's virtual address vaddr.
         // Return the number of bytes so read, or -1 if an error occors.
@@ -241,7 +266,6 @@ void kernel_thread(int virtAddr){
     currentThread->space->RestoreState();
         //TODO: Create a new Stack for this thread and write virtAddr to
         // StackRegister - MAX's Voodoo
-        machine->WriteRegister(StackReg, virtAddr);
     machine->Run();
 }
 
@@ -317,7 +341,8 @@ LockId CreateLock_Syscall(char* name){
     std::string cname = currentThread->space->readCString(name);
     char *c_name = new char[cname.size()+1];
     strcpy(c_name, cname.c_str());
-    Lock *newLock = new Lock(c_name);
+    LockWrapper *newLock = new LockWrapper(new Lock(c_name), 0, false);
+        //    Lock *newLock = new Lock(c_name);    
     int retval;
     if (newLock) {
         if ((retval = currentThread->space->locksTable.Put(newLock)) == -1) {
@@ -332,12 +357,21 @@ LockId CreateLock_Syscall(char* name){
 }
 
 void DestroyLock_Syscall(LockId id){
-    Lock *targetLock = (Lock*) currentThread->space->locksTable.Get(id);
+    LockWrapper *targetLock = (LockWrapper*) currentThread->space->locksTable.Get(id);
     if (targetLock) {
-            //Found the lock, Now delete it
-        delete targetLock;
-        DEBUG('a',"%s: DestroyLock_Syscall: Successfully deleted lock %d .\n",
-              currentThread->getName(), id);
+        if (targetLock->mark && targetLock->counter == 0) {
+                //We can delete
+            delete targetLock->lock;
+            delete targetLock;
+            DEBUG('a',"%s: DestroyLock_Syscall: Successfully deleted lock %d .\n",
+                  currentThread->getName(), id);
+        }else {
+                //Cannot delete need to persist just mark for deletion
+            targetLock->mark = true;
+            DEBUG('a',"%s: DestroyLock_Syscall: marked lock %d for deletion.\n",
+                  currentThread->getName(), id);
+        }
+        
     }else {
             //Unable to find targetLock
         DEBUG('a',"%s: DestroyLock_Syscall: Unable to find lock %d for deletion.\n",
@@ -347,19 +381,38 @@ void DestroyLock_Syscall(LockId id){
 }
 
 void AcquireLock_Syscall(LockId lockId){
-    Lock *targetLock = (Lock*) currentThread->space->locksTable.Get(lockId);
-    ASSERT((targetLock != NULL));
-    
-    DEBUG('a',"%s: Lock %d: AcquireLock_Syscall.\n",currentThread->getName(),lockId);
-    targetLock->Acquire();
+    LockWrapper *targetLock = (LockWrapper*) currentThread->space->locksTable.Get(lockId);
+    if(targetLock == NULL){
+        DEBUG('a',"%s: AcquireLock_Syscall: Unable to find lock %d for acquire.\n",
+              currentThread->getName(), lockId);
+        return;
+    }else{
+        DEBUG('a',"%s: Lock %d: AcquireLock_Syscall.\n",currentThread->getName(),lockId);
+        targetLock->lock->Acquire();
+        targetLock->counter++;
+        return;
+    }
 }
 
 void ReleaseLock_Syscall(LockId lockId){
-    Lock *targetLock = (Lock*) currentThread->space->locksTable.Get(lockId);
-    ASSERT((targetLock != NULL));
-    
-    DEBUG('a',"%s: Lock %d: ReleaseLock_Syscall.\n",currentThread->getName(),lockId);
-    targetLock->Release();
+    LockWrapper *targetLock = (LockWrapper*) currentThread->space->locksTable.Get(lockId);
+    if(targetLock == NULL){
+        DEBUG('a',"%s: AcquireLock_Syscall: Unable to find lock %d for acquire.\n",
+              currentThread->getName(), lockId);
+        return;
+    }else{
+        DEBUG('a',"%s: Lock %d: ReleaseLock_Syscall.\n",currentThread->getName(),lockId);
+        targetLock->lock->Release();
+        targetLock->counter--;
+        
+        if(targetLock->mark && targetLock->counter == 0){
+                //Check for deletion
+            delete targetLock->lock;
+            delete targetLock;
+            DEBUG('a',"%s: ReleaseLock_Syscall: Successfully deleted lock %d .\n",
+                  currentThread->getName(), lockId);
+        } 
+    }
 }
 
 
@@ -368,8 +421,10 @@ CVId CreateCondition_Syscall(char* name){
     std::string cname = currentThread->space->readCString(name);
     char *c_name = new char[cname.size()+1];
     strcpy(c_name, cname.c_str());    
-	Condition *newCV = new Condition(c_name);
-	int retval;
+    
+	ConditionWrapper *newCV = new ConditionWrapper(new Condition(c_name), 0, false);
+	
+    int retval;
 	if(newCV){
 		if((retval = currentThread->space->CVTable.Put(newCV)) == -1){
 			delete newCV;
@@ -382,12 +437,21 @@ CVId CreateCondition_Syscall(char* name){
 }
 
 void DestroyCondition_Syscall(CVId id){
-	Condition *target = (Condition*) currentThread->space->CVTable.Get(id);
-	if(target){
-		delete target;
-		DEBUG('a',"%s : DestroyCondition_Syscall: Successfully deleted CV %d .\n",
-              currentThread->getName(), id);
-	}else{
+	ConditionWrapper *target = (ConditionWrapper*) currentThread->space->CVTable.Get(id);
+    if(target){
+        if (target->mark && target->counter == 0) {
+                //We can delete
+            delete target->cv;
+            delete target;
+            DEBUG('a',"%s : DestroyCondition_Syscall: Successfully deleted CV %d .\n",
+                  currentThread->getName(), id);
+        }else {
+                //Cannot delete need to persist just mark for deletion
+            target->mark = true;
+            DEBUG('a',"%s: DestroyCondition_Syscall: marked CV %d for deletion.\n",
+                  currentThread->getName(), id);
+        }        
+    }else{
 		DEBUG('a',"%s: DestroyCondition_Syscall: Unable to find CV %d for deletion.\n",
               currentThread->getName(), id);
 	}
@@ -395,39 +459,58 @@ void DestroyCondition_Syscall(CVId id){
 }
 
 void WaitCV_Syscall(CVId cvId, LockId lockId){
-    Lock *ConditionLock = (Lock*) currentThread->space->locksTable.Get(lockId);
-    Condition *CV = (Condition*) currentThread->space->CVTable.Get(cvId);
+    LockWrapper *ConditionLockWrapper = (LockWrapper*) currentThread->space->locksTable.Get(lockId);
+    ConditionWrapper *CV = (ConditionWrapper*) currentThread->space->CVTable.Get(cvId);
     
-    ASSERT((ConditionLock != NULL && CV!= NULL));
-    
+    if (ConditionLockWrapper == NULL || CV == NULL) {
+        return;
+    }
         //Set wait on this condition variable
     DEBUG('a',"%s: WaitCV_Syscall: Called for CVId: %d lockId %d .\n", 
           currentThread->getName(), cvId, lockId);
-    (void) CV->Wait(ConditionLock);
+    CV->counter++;
+    (void) CV->cv->Wait(ConditionLockWrapper->lock);
 }
 
 void SignalCV_Syscall(CVId cvId, LockId lockId){
-    Lock *ConditionLock = (Lock*) currentThread->space->locksTable.Get(lockId);
-    Condition *CV = (Condition*) currentThread->space->CVTable.Get(cvId);
+    LockWrapper *ConditionLockWrapper = (LockWrapper*) currentThread->space->locksTable.Get(lockId);
+    ConditionWrapper *CV = (ConditionWrapper*) currentThread->space->CVTable.Get(cvId);
     
-    ASSERT((ConditionLock != NULL && CV!= NULL));
+    if (ConditionLockWrapper == NULL || CV == NULL) {
+        return;
+    }
     
         //Set wait on this condition variable
     DEBUG('a',"%s: SignalCV_Syscall: Called for CVId: %d lockId %d .\n", 
           currentThread->getName(), cvId, lockId);
-    (void) CV->Signal(ConditionLock);
+    (void) CV->cv->Signal(ConditionLockWrapper->lock);
+    CV->counter--;
+    if (CV->mark && CV->counter == 0) {
+            //We can delete
+        delete CV->cv;
+        delete CV;
+        DEBUG('a',"%s : DestroyCondition_Syscall: Successfully deleted CV %d .\n",
+              currentThread->getName(), cvId);
+    }else {
+            //Cannot delete need to persist just mark for deletion
+        CV->mark = true;
+        DEBUG('a',"%s: DestroyCondition_Syscall: marked CV %d for deletion.\n",
+              currentThread->getName(), cvId);
+    }
 }
 
 void BroadcastCV_Syscall(CVId cvId, LockId lockId){
-    Lock *ConditionLock = (Lock*) currentThread->space->locksTable.Get(lockId);
-    Condition *CV = (Condition*) currentThread->space->CVTable.Get(cvId);
+    LockWrapper *ConditionLockWrapper = (LockWrapper*) currentThread->space->locksTable.Get(lockId);
+    ConditionWrapper *CV = (ConditionWrapper*) currentThread->space->CVTable.Get(cvId);
     
-    ASSERT((ConditionLock != NULL && CV!= NULL));
+    if (ConditionLockWrapper == NULL || CV == NULL) {
+        return;
+    }
     
         //Set wait on this condition variable
     DEBUG('a',"%s: WaitCV_Syscall: Called for CVId: %d lockId %d .\n",
           currentThread->getName(), cvId, lockId);
-    (void) CV->Broadcast(ConditionLock);
+    (void) CV->cv->Broadcast(ConditionLockWrapper->lock);
 }
 
 void ExceptionHandler(ExceptionType which) {
@@ -502,18 +585,18 @@ void ExceptionHandler(ExceptionType which) {
                 break;
             case SC_DestroyCondition:
             	DestroyCondition_Syscall((CVId) machine->ReadRegister(4));
-	    	break;
+                break;
             case SC_Wait:
                 WaitCV_Syscall((CVId) machine->ReadRegister(4),
                                (LockId) machine->ReadRegister(5));
                 break;
             case SC_Signal:
                 SignalCV_Syscall((CVId) machine->ReadRegister(4),
-                               (LockId) machine->ReadRegister(5));
+                                 (LockId) machine->ReadRegister(5));
                 break;
             case SC_Broadcast:
                 BroadcastCV_Syscall((CVId) machine->ReadRegister(4),
-                                 (LockId) machine->ReadRegister(5));
+                                    (LockId) machine->ReadRegister(5));
                 break;
 #endif
         }
