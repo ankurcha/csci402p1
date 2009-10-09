@@ -5,6 +5,5 @@ main(){
 	DestroyLock(lId);
 	if(lId >= 0){
 		DestroyLock(lId);
-}
-	
+        }
 }

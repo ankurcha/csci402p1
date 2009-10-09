@@ -19,6 +19,7 @@
 
 using namespace std;
 typedef int PID;
+
 struct ProcessTable {
 private:
     map<PID, Thread*> table;
