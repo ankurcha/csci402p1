@@ -157,6 +157,9 @@ AddrSpace::AddrSpace(OpenFile *executable) : fileTable(MaxOpenFiles),
     
     // the first stack is in position 0
     stackTable.push_back(true);
+    // and its stack sits in the last pages of the address space
+    unsigned int stackStart = 
+            NumPhysPages - divRoundUp(UserStackSize, PageSize);
 
     DEBUG('a', "Initializing address space, num pages %d, size %d\n", 
                                         numPages, size);
@@ -171,7 +174,7 @@ AddrSpace::AddrSpace(OpenFile *executable) : fileTable(MaxOpenFiles),
 
     // allocate physical memory for the pages we are using,
     //  mark the others invalid
-    for (i = 0; i < numPages; i++) {
+    for (i = 0; i < dataPages; i++) {
         // find a free page in physical memory
         physMemMapLock->Acquire();
         int physPage = physMemMap.Find();
@@ -191,13 +194,33 @@ AddrSpace::AddrSpace(OpenFile *executable) : fileTable(MaxOpenFiles),
         bzero(&(machine->mainMemory[PageSize * physPage]), PageSize);
     }
     // set all the unused pages to invalid
-    for(;i < NumPhysPages; i++) {
+    for(;i < stackStart; i++) {
         pageTable[i].virtualPage = i;
         pageTable[i].physicalPage = 0;
         pageTable[i].valid = FALSE;  // no physical memory for this page
         pageTable[i].use = FALSE;
         pageTable[i].dirty = FALSE;
         pageTable[i].readOnly = FALSE;
+    }
+    // allocate pages for the stack
+    for (; i < NumPhysPages; i++) {
+        // find a free page in physical memory
+        physMemMapLock->Acquire();
+        int physPage = physMemMap.Find();
+        ASSERT(physPage != -1); // make sure a page was found
+        physMemMapLock->Release();
+
+        pageTable[i].virtualPage = i;
+        pageTable[i].physicalPage = physPage;
+        pageTable[i].valid = TRUE;
+        pageTable[i].use = FALSE;
+        pageTable[i].dirty = FALSE;
+        pageTable[i].readOnly = FALSE;  // if the code segment was entirely on 
+                                        // a separate page, we could set its 
+                                        // pages to be read-only
+
+        // zero out the physical memory associated with this page
+        bzero(&(machine->mainMemory[PageSize * physPage]), PageSize);
     }
     
     // OLD 
@@ -316,8 +339,12 @@ void AddrSpace::InitRegisters()
     // Set the stack register to the end of the address space, where we
     // allocated the stack; but subtract off a bit, to make sure we don't
     // accidentally reference off the end!
-    machine->WriteRegister(StackReg, numPages * PageSize - 16);
-    DEBUG('a', "Initializing stack register to %x\n", numPages * PageSize - 16);
+    unsigned int stackRegister = NumPhysPages * PageSize - 16;
+    machine->WriteRegister(StackReg, stackRegister);
+    DEBUG('a', "Initializing stack register to %x for stack 0\n", 
+          stackRegister);
+    //machine->WriteRegister(StackReg, numPages * PageSize - 16);
+    //DEBUG('a', "Initializing stack register to %x\n", numPages * PageSize - 16);
 }
 
 //----------------------------------------------------------------------
