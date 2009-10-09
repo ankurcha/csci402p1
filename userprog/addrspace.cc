@@ -414,7 +414,7 @@ int AddrSpace::InitStack() {
     DEBUG('a', "Initializing stack register to %x for stack %d\n", 
           stackRegister, stack);
 
-    return 0;
+    return stack;
 }
 
 //----------------------------------------------------------------------
@@ -423,6 +423,21 @@ int AddrSpace::InitStack() {
 //----------------------------------------------------------------------
 
 void AddrSpace::ClearStack(int id) {
+    int stackPages = divRoundUp(UserStackSize,PageSize); //pages per stack
+
+    // lowest index page of this stack
+    int start = numPages - (stackPages * (stack + 1));
+
+    // free the physical memory associated with this stack
+    for(int i = start; i < start + stackPages; i++) {
+        physMemMapLock->Acquire();
+        physMemMap.Clear(pageTable[i].physicalPage);
+        physMemMapLock->Release();
+
+        pageTable[i].physicalPage = 0;
+        pageTable[i].valid = FALSE;
+    }
+
     return;
 }
 
