@@ -12,6 +12,10 @@
  *    Aneesha Mathew, aneesham
  *
  */
+ 
+ #include <stdlib.h>	// for itoa() call
+#include <stdio.h>	// for printf() call
+
 
 #include "system.h"
 #include "list.h"
@@ -71,10 +75,18 @@ struct linkedlist {
         return -1;
     }
 };
+char inttochar(int num){
+	
+	char buf[5];
 
+	
+	itoa(num, buf, 10);
+	
+	return buf;
+}
 
-
-Lock *testlock = new Lock("TestLock");
+Lockid *testlock = CreateLock("lock_test");
+//Lock *testlock = new Lock("TestLock");
 
     // tokenCounter for assigning tokens to patients
 Lock *TokenCounterLock = new Lock("TokenCounterLock");
@@ -289,7 +301,7 @@ void doorboy(int ID){
     int myDoctor = 0;
     
     while (true) {
-        printf("DB_%d: Alive Thread ID: 0x%x\n", ID, currentThread);
+        printf("DB_%d: Alive Thread ID: 0x%x\n",ID, currentThread);
         
             //Get into the doorboyLine till some doctor asks for me
         doorboyLineLock->Acquire();
