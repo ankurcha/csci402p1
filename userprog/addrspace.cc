@@ -156,7 +156,7 @@ AddrSpace::AddrSpace(OpenFile *executable) : fileTable(MaxOpenFiles),
                                                 // virtual memory
     
     // the first stack is in position 0
-    stackTable.push_back(true);
+    stackTable.push_back((char) true);
     // and its stack sits in the last pages of the address space
     unsigned int stackStart = 
             NumPhysPages - divRoundUp(UserStackSize, PageSize);
@@ -367,7 +367,7 @@ int AddrSpace::InitStack() {
     // if no stacks were open, create one
     if(stack < 0) {
         stack = stackTable.size();
-        stackTable.push_back(true);
+        stackTable.push_back((char) true);
         
         //if(numPages < dataPages + stack * stackPages) {
         //    // double size of pageTable
