@@ -78,7 +78,7 @@ class AddrSpace {
     unsigned int dataPages;
 
     // keep track of the stacks in this process
-    std::vector<bool> stackTable;
+    std::vector<char> stackTable;
 };
 
 #endif // ADDRSPACE_H
