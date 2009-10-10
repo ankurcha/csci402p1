@@ -128,7 +128,7 @@ AddrSpace::AddrSpace(OpenFile *executable) : fileTable(MaxOpenFiles),
                                              locksTable(MaxLock), 
                                              CVTable(MaxCV) {
     NoffHeader noffH;
-    unsigned int i, size;
+    unsigned int i, size, neededPages;
 
     // Don't allocate the input or output to disk files
     fileTable.Put(0);
@@ -145,15 +145,16 @@ AddrSpace::AddrSpace(OpenFile *executable) : fileTable(MaxOpenFiles),
 
     dataSize = noffH.code.size + noffH.initData.size + noffH.uninitData.size ;
     dataPages = divRoundUp(dataSize, PageSize);
-    numPages = dataPages + divRoundUp(UserStackSize,PageSize);
+    neededPages = dataPages + divRoundUp(UserStackSize,PageSize);
                                                 // we need to increase the size
                                                 // to leave room for the stack
-    size = numPages * PageSize;
 
-    ASSERT(numPages <= NumPhysPages);           // check we're not trying
+    ASSERT(neededPages <= NumPhysPages);           // check we're not trying
                                                 // to run anything too big --
                                                 // at least until we have
                                                 // virtual memory
+    DEBUG('a', "Initializing address space with %d valid pages, size %d\n",
+          neededPages, neededPages*PageSize);
     
     // set the stackTable to hold the number of stacks that may exist
     stackTableLock = new Lock("StackTableLock");
@@ -167,9 +168,6 @@ AddrSpace::AddrSpace(OpenFile *executable) : fileTable(MaxOpenFiles),
     // and its stack sits in the last pages of the address space
     unsigned int stackStart = 
             NumPhysPages - divRoundUp(UserStackSize, PageSize);
-
-    DEBUG('a', "Initializing address space, num pages %d, size %d\n", 
-                                        numPages, size);
     
     //TODO: this code was merged, i don't know about it -max
         //Take care of the number of child processes
@@ -177,7 +175,11 @@ AddrSpace::AddrSpace(OpenFile *executable) : fileTable(MaxOpenFiles),
     this->childThreads.clear();
     
     // first, set up the translation
-    pageTable = new TranslationEntry[NumPhysPages];
+    numPages = NumPhysPages;
+    size = numPages * PageSize;
+    DEBUG('a', "Initializing page table, num pages %d, size %d\n", 
+                                        numPages, size);
+    pageTable = new TranslationEntry[numPages];
 
     // allocate physical memory for the pages we are using,
     //  mark the others invalid
