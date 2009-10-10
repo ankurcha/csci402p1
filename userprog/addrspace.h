@@ -78,6 +78,7 @@ class AddrSpace {
 
     // keep track of the stacks in this process
     //std::vector<char> stackTable;
+    Lock* stackTableLock;
     BitMap* stackTable;
 };
 
