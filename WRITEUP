@@ -31,7 +31,43 @@ III. Design:
         pages of memory and associate them with virtual pages as they are
         needed.  To create multiple threads the AddrSpace must allocate stack
         space for each thread.  We do this through the InitStack and ClearStack
-        methods.
+        methods. AddrSpace doles out stack space starting at the largest
+        address, so the virtual address space will look like this:
+
+          Virtual Address Space
+                  +-------------------+ 0
+                  | code              |
+                  +-------------------+
+                  | init data         |
+                  +-------------------+
+                  | uninit data       |
+                  +-------------------+
+                  |                   |
+                  | ... unused ...    |
+                  |                   |
+                  +-------------------+
+                  | stack 2           |
+                  +-------------------+
+                  | stack 1           |
+                  +-------------------+
+                  | stack 0           |
+                  +-------------------+ 0xffff...
+
+        AddrSpace {
+            int InitStack()
+
+                Allocates memory for a new stack in this address space, sets
+                the stack register to the bottom of the stack, and returns the
+                id of the stack.  The id is necessary later to be able to clear
+                the stack.
+
+            void ClearStack(int id)
+
+                Deallocates the memory associated with the passed stack id.
+                The stack is marked as cleared so the virtual address can be
+                reused for a new stack of a new thread.
+
+        }
 
     Part 3:
         
