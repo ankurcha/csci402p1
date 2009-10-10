@@ -37,7 +37,7 @@ Thread::Thread(char* threadName)
     name = threadName;
     stackTop = NULL;
     stack = NULL;
-    status = JUST_CREATED;
+}status = JUST_CREATED;
 #ifdef USER_PROGRAM
     space = NULL;
 #endif

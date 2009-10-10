@@ -109,6 +109,8 @@ class Thread {
         this->PID = pid;
     }
 
+    int getStackID(){return stackID;}
+    void setStackID(int sid){ stackID = sid}
 private:
     // some of the private data for this class is listed above
     
@@ -116,8 +118,9 @@ private:
 					// NULL if this is the main thread
 					// (If NULL, don't deallocate stack)
     ThreadStatus status;		// ready, running or blocked
-    char* name;
-    int PID;
+    char* name;                         // debug name of the thread
+    int PID;                            // PID of the thread
+    int stackID;                        // Stack ID of the thread
     void StackAllocate(VoidFunctionPtr func, int arg);
     					// Allocate a stack for thread.
 					// Used internally by Fork()

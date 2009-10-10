@@ -273,6 +273,10 @@ void Fork_Syscall(int funcAddr){
     DEBUG('a', "%s: Called Fork_Syscall.\n",currentThread->getName());
         // TODO: Waiting for Max to give insight into the organizaton of the
         // code in the address space
+    int stackId = InitStack();
+    if(stackId < 0){
+        DEBUG('a', "%s: Unable to allocate stack for the new process\n",currentThread->getName());
+    }
     Thread *t = new Thread(currentThread->getName());
     t->setPID(processTable->addProcess(t)); //Add Process to the system's process table
     currentThread->space->addChildThread(t->getPID());
