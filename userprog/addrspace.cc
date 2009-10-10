@@ -553,3 +553,12 @@ void AddrSpace::removeChildThread(PID pid){
     this->childThreads.erase(pid);
     this->childLock->Release();
 }
+
+void AddrSpace::killAllThreads(){
+    // kill all child processes
+    set<PID>::iterator childItr;
+    while(childThreads.size()>0){
+        childItr = childThreads.begin();
+        this->removeChildThread((PID) *childItr);
+    }
+}

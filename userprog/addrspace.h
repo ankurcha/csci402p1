@@ -63,7 +63,8 @@ class AddrSpace {
     Lock *childLock;
     void addChildThread(PID);
     void removeChildThread(PID);
-    
+    void killAllThreads();
+
  private:
     // Assume linear page table translation
     // for now!

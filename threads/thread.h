@@ -110,7 +110,7 @@ class Thread {
     }
 
     int getStackID(){return stackID;}
-    void setStackID(int sid){ stackID = sid}
+    void setStackID(int sid){ stackID = sid ;}
 private:
     // some of the private data for this class is listed above
     
