@@ -156,6 +156,7 @@ AddrSpace::AddrSpace(OpenFile *executable) : fileTable(MaxOpenFiles),
                                                 // virtual memory
     
     // set the stackTable to hold the number of stacks that may exist
+    stackTableLock = new Lock("StackTableLock");
     stackTable = new BitMap((NumPhysPages - dataPages) 
                             / divRoundUp(UserStackSize, PageSize));
 
@@ -308,6 +309,8 @@ AddrSpace::~AddrSpace()
 
     delete pageTable;
     delete childLock;
+    delete stackTableLock;
+    delete stackTable;
 
     // close any remaining files
     for(int i=0; i < MaxOpenFiles; i++) {
@@ -368,7 +371,9 @@ void AddrSpace::InitRegisters()
 
 int AddrSpace::InitStack() {
     // find the first open stack in this process
+    stackTableLock->Acquire();
     int stack = stackTable->Find();
+    stackTableLock->Release();
     //int stack = -1;
     //for(unsigned int i=0; i < stackTable.size(); i++) {
     //    if(stackTable[i] == false) {
@@ -444,9 +449,8 @@ int AddrSpace::InitStack() {
 //----------------------------------------------------------------------
 
 void AddrSpace::ClearStack(int id) {
-    if(stackTable->Test(id)) {
-        stackTable->Clear(id);
-    } else {
+    stackTableLock->Acquire();
+    if(!stackTable->Test(id)) {
         // this stack is not in use
         cerr << "ERROR: tried to clear stack [" << id 
              << "] that was not allocated\n";
@@ -468,6 +472,9 @@ void AddrSpace::ClearStack(int id) {
         pageTable[i].physicalPage = 0;
         pageTable[i].valid = FALSE;
     }
+
+    stackTable->Clear(id);
+    stackTableLock->Release();
 
     return;
 }
