@@ -300,7 +300,7 @@ AddrSpace::AddrSpace(OpenFile *executable) : fileTable(MaxOpenFiles),
 AddrSpace::~AddrSpace()
 {
     // free the physical memory being used by this page table
-    for(int i=0; i < numPages; i++) {
+    for(unsigned int i=0; i < numPages; i++) {
         physMemMapLock->Acquire();
         physMemMap.Clear(pageTable[i].physicalPage);
         physMemMapLock->Release();
@@ -450,7 +450,7 @@ void AddrSpace::ClearStack(int id) {
     int stackPages = divRoundUp(UserStackSize,PageSize);
 
     // lowest index page of this stack
-    int start = numPages - (stackPages * (stack + 1));
+    int start = numPages - (stackPages * (id + 1));
 
     // free the physical memory associated with this stack
     for(int i = start; i < start + stackPages; i++) {
@@ -500,7 +500,7 @@ void AddrSpace::RestoreState()
 std::string AddrSpace::readCString(char* s) {
     std::string ret = "";
 
-    int page = (unsigned int) s / PageSize;
+    unsigned int page = (unsigned int) s / PageSize;
     if(page >= numPages || !pageTable[page].valid) {
         cerr << "ERROR: virtual address [" << (unsigned int) s 
              << "] passed to readCString is invalid\n"
