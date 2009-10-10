@@ -24,6 +24,17 @@ III. Design:
 
     Part 2:
         
+        The AddrSpace class has been redesigned to accomidate multiple
+        processes and multiple threads within a process.  We allow for multiple
+        processes by decoupling a page's virtual address from its physical
+        address.  We maintain a global BitMap corresponding to all physical
+        pages of memory and associate them with virtual pages as they are
+        needed.  To create multiple threads the AddrSpace must allocate stack
+        space for each thread.  We do this through the InitStack and ClearStack
+        methods.
+
+    Part 3:
+        
 
 IV. Implementation:
 
