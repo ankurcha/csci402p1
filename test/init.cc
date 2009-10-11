@@ -17,12 +17,10 @@
 
 
 
-#include "system.h"
+#include "syscall.h"
 #include "list.h"
-#include <stdlib.h>	// for itoa() call
-#include <iostream>
 #include "itoa.cc"
-
+#include "print.cc"
 using namespace std;
 
 #define BUSY 0
