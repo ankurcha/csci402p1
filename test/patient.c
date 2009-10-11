@@ -69,7 +69,7 @@ void patients(int ID){
 
     /* Wait in line */
     receptionists[shortestline].peopleInLine++;
-    receptionists[shortestline].receptionCV->Wait(recpLineLock);
+   Wait(receptionists[shortestline].receptionCV,(recpLineLock));
     print("P_");
     print(itoa(ID));
     print(" Got woken up, get out of line and going to counter for token");
