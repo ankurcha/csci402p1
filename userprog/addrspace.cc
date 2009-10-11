@@ -555,7 +555,7 @@ std::string AddrSpace::readCString(char* s) {
 
     return ret;
 }
-
+#ifdef CHANGED
 void AddrSpace::addChildThread(PID pid){
     this->childLock->Acquire();
     this->childThreads.insert(pid);
@@ -577,3 +577,4 @@ void AddrSpace::killAllThreads(){
         this->removeChildThread((PID) *childItr);
     }
 }
+#endif

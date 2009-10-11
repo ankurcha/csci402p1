@@ -21,7 +21,7 @@
 #include "list.h"
 #include "itoa.cc"
 #include "print.cc"
-using namespace std;
+#include "patient.cc"
 
 #define BUSY 0
 #define FREE 1
@@ -38,7 +38,7 @@ struct node {
     node* next;
 };
 struct linkedlist { 
-        //Used for storing the <token,fees> pairs
+        /*Used for storing the <token,fees> pairs */
     node* head;
     int length;
     
@@ -68,9 +68,9 @@ struct linkedlist {
                 }else {
                     p = p->next;
                 }
-            }//End of While
+            }/*End of While */
         }else{
-                //empty list
+                /*empty list */
             return -1;
         }
         return -1;
@@ -90,25 +90,25 @@ char inttochar(int num){
 
 LockId testlock = CreateLock("TestLock");
 
-    // tokenCounter for assigning tokens to patients
+    /* tokenCounter for assigning tokens to patients */
 LockId TokenCounterLock = CreateLock("TokenCounterLock");
 int TokenCounter;
 
-    // global for all receptionists
+    /* global for all receptionists */
 LockId recpLineLock = CreateLock("recpLineLock");
 
-    //shared data struct related to a Receptionist
+    /*shared data struct related to a Receptionist */
 struct Receptionists{
-        // receptionist line CV
+        /* receptionist line CV */
     CVId receptionCV;
     int peopleInLine;
     
-        // receptionist transactional lock and CV and protected variables
+        /* receptionist transactional lock and CV and protected variables */
     LockId transLock;
     CVId receptionistWaitCV;
     int currentToken;
     
-        // receptionist break CV
+        /* receptionist break CV */
     CVId ReceptionistBreakCV;
     
     Receptionists(){
@@ -123,32 +123,32 @@ struct Receptionists{
     }
 };
 
-    // list mapping patient tokens to consultFees
+    /* list mapping patient tokens to consultFees */
 LockId feeListLock = CreateLock("feeListLock");
 linkedlist* feeList = new linkedlist();
 
-    // global for all cashiers
+    /* global for all cashiers */
 LockId cashierLineLock = CreateLock("cashierLineLock");
 LockId feesPaidLock = CreateLock("feesPaidLock");
 int feesPaid = 0;
 
-    // shared data struct related to a Cashier
+    /* shared data struct related to a Cashier */
 struct Cashier {
-        // line CV and length
+        /* line CV and length */
     int lineLength;
     CVId lineCV;
     
-        // transaction lock, CV, and variables protected by the former
+        /* transaction lock, CV, and variables protected by the former */
     LockId transLock;
     CVId transCV;
     int patToken;
     int fee;
     int payment;
     
-        //protected by feesPaidLock, but only modified by one thread
+        /*protected by feesPaidLock, but only modified by one thread */
     int sales;
     
-        // cashier's CV for going on break
+        /* cashier's CV for going on break */
     CVId breakCV;
     
     Cashier() {
@@ -175,7 +175,7 @@ LockId ClerkLinesLock= CreateLock("ClerkLineLock");
 LockId PaymentLock= CreateLock("PaymentLock");
 int totalsales=0;
 
-    // hospitalLock protects the count of patients remaining in the hospital
+    /* hospitalLock protects the count of patients remaining in the hospital */
 LockId hospitalLock = CreateLock("HospitalLock");
 int peopleInHospital = 1;
 
@@ -192,7 +192,7 @@ struct PharmacyClerks{
     LockId ClerkTransLock;
     CVId ClerkTransCV;
     
-        //protected by PaymentLock
+        /*protected by PaymentLock */
     int sales;
     
     PharmacyClerks(){
@@ -210,15 +210,15 @@ struct PharmacyClerks{
 };
 
 struct Doctor {
-        // line lock and CV and protected variables
+        /* line lock and CV and protected variables */
     LockId LineLock;
     CVId LineCV;
     int peopleInLine;
-        //CV for doorboys to sleep on
+        /*CV for doorboys to sleep on */
     CVId doorboyBreakCV;
     
     
-        //transaction lock and CV and variables protected
+        /*transaction lock and CV and variables protected */
     LockId transLock;
     CVId transCV;
     int prescription;
@@ -246,11 +246,11 @@ struct Doctor {
     }
 };
 
-    // globals to track the queue of doorboys waiting to service doctors
+    /* globals to track the queue of doorboys waiting to service doctors */
 LockId doorboyLineLock = CreateLock("doorboyLineLock");
 CVId doorboyLineCV = CreateCondition("doorboyLineCV");
 int doorboyLineLength = 0;
-    //int wakingDoctorID = 0;
+    /*int wakingDoctorID = 0; */
 List* wakingDoctorList = new List();
 
 struct DoorBoy {
@@ -304,7 +304,7 @@ void doorboy(int ID){
         print(itoa(ID));
         print(": Alive ");
         
-            //Get into the doorboyLine till some doctor asks for me
+            /*Get into the doorboyLine till some doctor asks for me */
         Acquire(doorboyLineLock)
         
         doorboyLineLength++;
@@ -317,8 +317,8 @@ void doorboy(int ID){
 
         doorboyLineLength--;
         
-            //Some doctor woke me up, lets check who
-            //myDoctor =  wakingDoctorID;
+            /*Some doctor woke me up, lets check who */
+            /*myDoctor =  wakingDoctorID; */
         if(wakingDoctorList->IsEmpty()) {
         print("DB_");
         print(itoa(ID));
@@ -344,14 +344,14 @@ void doorboy(int ID){
         doorboyLineLock->Release();
 
         
-            // Inform the doctor that I have arrived, and wait for him to take 
-            //  a break, if he so chooses
+            /* Inform the doctor that I have arrived, and wait for him to take  */
+            /*  a break, if he so chooses */
         Acquire(doctors[myDoctor].transLock);
         Signal(doctors[myDoctor].transCV,doctors[myDoctor].transLock);
         Wait(doctors[myDoctor].transCV, doctors[myDoctor].transLock);
         
-            ///// PATIENT LINE /////
-            //Acquire the lock to get the state of the line and take decision
+            /*/// PATIENT LINE ///// */
+            /*Acquire the lock to get the state of the line and take decision */
 
         doctors[myDoctor].LineLock->Acquire();
         print("DB_");
@@ -359,13 +359,13 @@ void doorboy(int ID){
         print(": Checking for Patients");
         Write("\n");
         
-            //while there is noone in line
+            /*while there is noone in line */
         bool doorboyBreak = false;
         while(doctors[myDoctor].peopleInLine <= 0) { 
             doorboyBreak = true;
-                //I will be woken up by the manager only!!
+                /*I will be woken up by the manager only!! */
             
-                // prefix for test conditions
+                /* prefix for test conditions */
             if(myDoctor == 0 && test_state == 8)
             	print("T8: ");
                 
@@ -384,11 +384,11 @@ void doorboy(int ID){
                 
             }
             Wait(doctors[myDoctor].doorboyBreakCV, doctors[myDoctor].LineLock);
-                // I got woken up, time to go back to work - by now there are 
-                //  people dying on the floor!
+                /* I got woken up, time to go back to work - by now there are  */
+                /*  people dying on the floor! */
         }
         if(doorboyBreak) {
-                // prefix for test 8 condition
+                /* prefix for test 8 condition */
             if(myDoctor == 0 && test_state == 8) {
             	print("T8: ");
             	Write("\n");
@@ -410,7 +410,7 @@ void doorboy(int ID){
         Write("\n");
              
         
-            //Now wake the patient up to go to the doctor
+            /*Now wake the patient up to go to the doctor */
 
         print("DB_");
         print(itoa(ID));
@@ -421,12 +421,12 @@ void doorboy(int ID){
         doctors[myDoctor].LineCV->Signal(doctors[myDoctor].LineLock);
 
         
-            //My job with the patients and the doctor is done
-            //I can go back on the doorboyLine
+            /*My job with the patients and the doctor is done */
+            /*I can go back on the doorboyLine */
         Release(doctors[myDoctor].transLock);
         Release(doctors[myDoctor].LineLock);
         
-    }//End of while
+    }/*End of while */
     print("DB_");
     print(itoa(ID));
     print(":Dying...AAAaaaahhhhhhhhh!!");
@@ -438,7 +438,7 @@ void doorboy(int ID){
 void doctor(int ID){
     int waitingtime = 10000;
     while(true) {
-            // acquire a doorboy
+            /* acquire a doorboy */
 
         print("D_");
         print(itoa(ID));
@@ -447,7 +447,7 @@ void doctor(int ID){
         doorboyLineLock->Acquire();
 
         
-            // assure that there is a doorboy in line
+            /* assure that there is a doorboy in line */
         while(doorboyLineLength <= 0) {
             if(waitingtime % 100 == 0){
             	print("D_");
@@ -469,26 +469,26 @@ void doctor(int ID){
             }
         }
         
-            // pull the next doorboy off the line
+            /* pull the next doorboy off the line */
             print("D_");
             print(itoa(ID));
             print(":Signaling doorboy!");
             Write("\n");
             
         
-            //wakingDoctorID = ID;
+            /*wakingDoctorID = ID; */
         wakingDoctorList->Append( (void*) ID);
         Signal(doorboyLineCV,doorboyLineLock);
         
-            // acquire the transaction lock and wait for the doorboy to arrive
+            /* acquire the transaction lock and wait for the doorboy to arrive */
         Acquire(doctors[ID].transLock);
         Release(doorboyLineLock);
         
-            //////  DOORBOY INTERACTION  //////
+            /*////  DOORBOY INTERACTION  ////// */
         Wait(doctors[ID].transCV, doctors[ID].transLock);
         
         bool doctorBreak = false;
-            // go on break if so inclined
+            /* go on break if so inclined */
         
         if(test7active==true)
        	{
@@ -505,12 +505,12 @@ void doctor(int ID){
        		
        	}
         else
-            if(Random() % 100 > 49) { // go on break
+            if(Random() % 100 > 49) { /* go on break */
                 doctorBreak = true;
-                    // 5-15 yields
+                    /* 5-15 yields */
                 int numYields = 5 + (Random() % 11);
                 
-                    // provide a handle for test 8, only uses doctor 0
+                    /* provide a handle for test 8, only uses doctor 0 */
                 if(ID == 0 && test_state == 8 ) { 
                 	print("T8: ");
                     
@@ -530,7 +530,7 @@ void doctor(int ID){
         
         
         
-            // provide a handle for test 8, only uses doctor 0
+            /* provide a handle for test 8, only uses doctor 0 */
         if(ID == 0 && test_state == 8 && doctorBreak) { 
         	print("T8: ");
             
@@ -542,7 +542,7 @@ void doctor(int ID){
            print(": Back from Break");
            Write("\n");
         
-            // inform the doorboy that I am ready for a patient
+            /* inform the doorboy that I am ready for a patient */
         
         if(test7active==true)
        	{
@@ -568,24 +568,24 @@ void doctor(int ID){
         Write("\n");
         
 
-            //////  PATIENT INTERACTION  //////
-            // and wait for that patient to arrive
+            /*////  PATIENT INTERACTION  ////// */
+            /* and wait for that patient to arrive */
         Wait(doctors[ID].transCV, doctors[ID].transLock);
         
-            // consult: 10-20 yields
+            /* consult: 10-20 yields */
         print("D_");
         print(itoa(ID));
         print(": Now Consulting patient");
         Write("\n");
         int numYields = 10 + (Random() % 11);
         for(int i=0; i < numYields; ++i) {
-            currentThread->Yield();  // I see ... mm hmm ... does it hurt here? ...
+            currentThread->Yield();  /* I see ... mm hmm ... does it hurt here? ... */
         }
         
-            // give prescription to patient
+            /* give prescription to patient */
         doctors[ID].prescription = Random() % 100;
         
-            // put consultation fees into the data structure for the cashier ($50-$250)
+            /* put consultation fees into the data structure for the cashier ($50-$250) */
         print("D_");
         print(itoa(ID));
         print(": Telling fee to cashiers");
@@ -596,7 +596,7 @@ void doctor(int ID){
         feeList->append(doctors[ID].patientToken, consultFee);
         Release(feeListLock);
         
-            // pass the prescription to the patient and wait for them to leave
+            /* pass the prescription to the patient and wait for them to leave */
 
         print("D_");
         print(itoa(ID));
@@ -606,7 +606,7 @@ void doctor(int ID){
         doctors[ID].transCV->Signal(doctors[ID].transLock);
         doctors[ID].transCV->Wait(doctors[ID].transLock);
         
-            // done, the patient has left
+            /* done, the patient has left */
         doctors[ID].transLock->Release();
         print("D_");
         print(itoa(ID));
@@ -614,7 +614,7 @@ void doctor(int ID){
         Write("\n");
 
         
-    } //end while
+    } /*end while */
 }
 
 void receptionist(int ID){
@@ -627,13 +627,13 @@ void receptionist(int ID){
         recpLineLock->Acquire();
 
         if (receptionists[ID].peopleInLine > 0) {
-                //Wake one waiting patient up
+                /*Wake one waiting patient up */
             Signal(receptionists[ID].receptionCV, recpLineLock);
         } else {
-                //My Line is empty
+                /*My Line is empty */
             DEBUG('t',"No Patients, going on break...");
             
-                // prefix for test condition
+                /* prefix for test condition */
             if(test_state == 11)
 
             print( "T11: ");
@@ -644,15 +644,15 @@ void receptionist(int ID){
             receptionists[ID].ReceptionistBreakCV->Wait(recpLineLock);
             recpLineLock->Release();
 
-                //HospitalManager kicked my ass for sleeping on the job!!
-                //Loop back!!
+                /*HospitalManager kicked my ass for sleeping on the job!! */
+                /*Loop back!! */
             continue;
         }
         
         Acquire(receptionists[ID].transLock);
         Release(recpLineLock);
         
-            //Genetate token for the patient
+            /*Genetate token for the patient */
 
         TokenCounterLock->Acquire();
         print("R_");
@@ -665,7 +665,7 @@ void receptionist(int ID){
         receptionists[ID].currentToken = ++TokenCounter;
         Release(TokenCounterLock);
         
-            //Sleep till you get Acknowledgement
+            /*Sleep till you get Acknowledgement */
 
         print("R_");
         print(itoa(ID));
@@ -673,7 +673,7 @@ void receptionist(int ID){
         Write("\n");
         receptionists[ID].receptionistWaitCV->Wait(receptionists[ID].transLock);
         
-            //Patient successfully got the token, go back to work: Loop again
+            /*Patient successfully got the token, go back to work: Loop again */
         print("R_");
         print(itoa(ID));
         print(": Patient got token, Continue to next Patient");
@@ -694,8 +694,8 @@ void cashier(int ID) {
         while(true) {
         cashierLineLock->Acquire();
         
-        if(cashiers[ID].lineLength > 0) { // someone in line
-                                          //signal person on top
+        if(cashiers[ID].lineLength > 0) { /* someone in line */
+                                          /*signal person on top */
         print("Cash_");
         print(itoa(ID));
         print(":  someone in my line...");
@@ -703,10 +703,10 @@ void cashier(int ID) {
             
             cashiers[ID].lineCV->Signal(cashierLineLock);
 
-        } else { // noone in line
-                 // go on break
+        } else { /* noone in line */
+                 /* go on break */
             
-                // prefix for test condition
+                /* prefix for test condition */
             if(test_state == 11)
 
         print("T11: ");
@@ -721,26 +721,26 @@ void cashier(int ID) {
             continue;
         }
         
-            // I have a patient
-            // acquire transLock and use it to govern transactions
-            //  with the patient
+            /* I have a patient */
+            /* acquire transLock and use it to govern transactions */
+            /*  with the patient */
         Acquire(cashiers[ID].transLock);
         Release(cashierLineLock);
         
-            // waiting for patient to deposit its token in patToken
+            /* waiting for patient to deposit its token in patToken */
         Wait(cashiers[ID].transCV, cashiers[ID].transLock);
         
-            // lookup value for cashiers[ID].patToken in the token table
+            /* lookup value for cashiers[ID].patToken in the token table */
         Acquire(feeListLock);
         cashiers[ID].fee = feeList->getValue(cashiers[ID].patToken);
         Release(feeListLock);
-            // tell patient the fee
+            /* tell patient the fee */
         
         Signal(cashiers[ID].transCV, cashiers[ID].transLock);
-            // wait for payment
+            /* wait for payment */
         Signal(cashiers[ID].transCV,cashiers[ID].transLock);
         
-            // add this payment to our total collected
+            /* add this payment to our total collected */
         Acquire(feesPaidLock);
         feesPaid += cashiers[ID].payment;
         cashiers[ID].sales += cashiers[ID].payment;
@@ -759,13 +759,13 @@ void clerk(int ID){
     while(true){
         Acquire(ClerkLinesLock);
         
-        if(clerks[ID].patientsInLine > 0) { // someone in line
-                                            //signal the first person
+        if(clerks[ID].patientsInLine > 0) { /* someone in line */
+                                            /*signal the first person */
             Signal(clerks[ID].ClerkCV, ClerkLinesLock);
-        } else { // noone in line
-                 // go on break
+        } else { /* noone in line */
+                 /* go on break */
             
-                // prefix for test condition
+                /* prefix for test condition */
             if(test_state == 11)
             	print("T11: ");
                 
@@ -780,16 +780,16 @@ void clerk(int ID){
             continue;
         }
         
-            // I have a patient
-            // acquire the transaction Lock for further transactions
-            //  with the patient
+            /* I have a patient */
+            /* acquire the transaction Lock for further transactions */
+            /*  with the patient */
         Acquire(clerks[ID].ClerkTransLock);
         Release(ClerkLinesLock);
         
-            // waiting for patient to give prescription
+            /* waiting for patient to give prescription */
         Wait(clerks[ID].ClerkTransCV, clerks[ID].ClerkTransLock);
         
-            // patient gives prescription:
+            /* patient gives prescription: */
         
             print("CL_");
             print(itoa(ID));
@@ -798,9 +798,9 @@ void clerk(int ID){
         
         
         Signal(clerks[ID].ClerkTransCV, clerks[ID].ClerkTransLock);
-            // wait for payment
+            /* wait for payment */
         Wait(clerks[ID].ClerkTransCV, clerks[ID].ClerkTransLock);
-            //Collect payment
+            /*Collect payment */
             
             print("CL_");
             print(itoa(ID));
@@ -810,7 +810,7 @@ void clerk(int ID){
             Write("\n");
         
         
-            // add this payment to our total collected
+            /* add this payment to our total collected */
         Acquire(PaymentLock);
         totalsales += clerks[ID].payment;
         clerks[ID].sales += clerks[ID].payment;
@@ -832,9 +832,9 @@ void hospitalManager(int ID){
     int test5cycles = 1;
     while (true) {
         if (test_state == 51 || test_state == 52 || test_state == 53) {
-                //The patients will always be there in the system.
-                //For test purposes, lets assume the simulation to be
-                //complete after 100 cycles.
+                /*The patients will always be there in the system. */
+                /*For test purposes, lets assume the simulation to be */
+                /*complete after 100 cycles. */
             if (test5cycles > 0) {
                 test5cycles--;
             }else {
@@ -853,7 +853,7 @@ void hospitalManager(int ID){
         Release(hospitalLock);
         
         sleeptime = Random() % 30000;
-            //Sleep for some random amount of time
+            /*Sleep for some random amount of time */
        print("H_");
 	  print(itoa(ID));
 	  print(":  Sleeping for");
@@ -866,7 +866,7 @@ void hospitalManager(int ID){
             Yield();
             sleeptime--;
         }while (sleeptime > 0);
-            //I am on rounds now, Time to kick some ass
+            /*I am on rounds now, Time to kick some ass */
         print("H_");
 	      print(itoa(ID));
 	      print(": Going on rounds");
@@ -874,7 +874,7 @@ void hospitalManager(int ID){
         
         
         
-            //1. Check on the Receptionists
+            /*1. Check on the Receptionists */
         print("H_");
 	      print(itoa(ID));
 	      print(": Checking receptionists");
@@ -892,13 +892,13 @@ void hospitalManager(int ID){
                 Release(recpLineLock);
             }
         }
-            //2. Query Cashiers
+            /*2. Query Cashiers */
             
         print("H_");
 	      print(itoa(ID));
 	      print(": Checking cashiers");
         Write("\n");
-        for (int i=0; i<numCashiers; i++) {//Check for waiting patients
+        for (int i=0; i<numCashiers; i++) {/*Check for waiting patients */
             if (cashiers[i].lineLength > 0 ) {
         
         print("H_");
@@ -909,7 +909,7 @@ void hospitalManager(int ID){
         print(itoa(i));
         print("  -> Signal Cashier");	      
         Write("\n");
-                    //Wake up this receptionist up
+                    /*Wake up this receptionist up */
                 Acquire(cashierLineLock);
                 Broadcast(cashiers[i].breakCV, cashierLineLock);
                 Release(cashierLineLock);
@@ -917,7 +917,7 @@ void hospitalManager(int ID){
             }
         }
         
-            //Query cashiers for total sales
+            /*Query cashiers for total sales */
 
         feesPaidLock->Acquire();
         print(" T10: Total fees collected by cashiers:");
@@ -925,7 +925,7 @@ void hospitalManager(int ID){
         
 
         if( test_state == 10 ) {
-                // this is a test for race conditions, so we can't have any:
+                /* this is a test for race conditions, so we can't have any: */
             IntStatus oldLevel = interrupt->SetLevel(IntOff);
             int sum = 0;
             for (int i=0; i<numCashiers; i++) {
@@ -942,20 +942,20 @@ void hospitalManager(int ID){
             
             
             
-                // sum just printed should match feesPaid, printed earlier
+                /* sum just printed should match feesPaid, printed earlier */
             (void) interrupt->SetLevel(oldLevel);
         }
         Release(feesPaidLock);
         
         
-            //3. Query pharmacy
+            /*3. Query pharmacy */
         print("H_");
         print(itoa(ID));
         print(":Checking clerks");
         Write("\n");
         
         
-        for (int i=0; i<numClerks; i++) {//Check for waiting patients
+        for (int i=0; i<numClerks; i++) {/*Check for waiting patients */
             if (clerks[i].patientsInLine > 0 ) {
 
             	 print("H_");
@@ -966,7 +966,7 @@ void hospitalManager(int ID){
                print(itoa(clerks[i].patientsInLine));
                print("waiting -> Signaling Clerk");
                Write("\n");
-                //Wake up this clerk up
+                /*Wake up this clerk up */
                 ClerkLinesLock->Acquire();
                 clerks[i].ClerkBreakCV->Signal(ClerkLinesLock);
                 ClerkLinesLock->Release();
@@ -974,7 +974,7 @@ void hospitalManager(int ID){
             }
         }
         
-            //Query clerks for total sales
+            /*Query clerks for total sales */
 
         PaymentLock->Acquire();
                print("H_");
@@ -986,7 +986,7 @@ void hospitalManager(int ID){
 
         
         if( test_state == 10 ) {
-                // this is a test for race conditions, so we can't have any:
+                /* this is a test for race conditions, so we can't have any: */
             IntStatus oldLevel = interrupt->SetLevel(IntOff);
             int sum = 0;
             for (int i=0; i<numClerks; i++) {
@@ -1002,20 +1002,20 @@ void hospitalManager(int ID){
             print("T10: TOTAL: ");
             print(itoa(sum));
             
-                // sum just printed should match feesPaid, printed earlier
+                /* sum just printed should match feesPaid, printed earlier */
             (void) interrupt->SetLevel(oldLevel);
         }
         Release(PaymentLock);
         
         Yield();
         
-            //Check on the doorboys
+            /*Check on the doorboys */
                print("H_");
             	 print(itoa(ID));
             	 print(": Checking doorboys");
             	 Write("\n");
         
-        for (int i=0; i<numDoctors; i++) {//Check for waiting patients
+        for (int i=0; i<numDoctors; i++) {/*Check for waiting patients */
             if (doctors[i].peopleInLine > 0 ) {
 
             	  
@@ -1039,16 +1039,16 @@ void hospitalManager(int ID){
 
 void HospINIT(int testmode = 0) {
     
-        // set a global so everyone will know the test mode
+        /* set a global so everyone will know the test mode */
     test_state = testmode;
     
     if(testmode != 1 && testmode != 51 && testmode != 52 && testmode != 53 ){
         int i = 0;
         char temp[] = "NACHOS_THREAD";
         
-            //cout << "Simulation startup\n\n";
+            /*cout << "Simulation startup\n\n"; */
         
-            //3. Cashiers
+            /*3. Cashiers */
         numCashiers = (Random() % (MAX_CASHIER - MIN_CASHIER +1) + MIN_CASHIER) ;
                print("Creating ");
             	 print(itoa(numCashiers));
@@ -1062,7 +1062,7 @@ void HospINIT(int testmode = 0) {
             Fork((VoidFunctionPtr) cashier, i);
         }
         
-            //4. DoorBoys
+            /*4. DoorBoys */
         numDoctors = (Random() % (MAX_DOCTORS - MIN_DOCTORS + 1) + MIN_DOCTORS);
         if(test1active == false){
             numDoorboys = numDoctors;
@@ -1082,7 +1082,7 @@ void HospINIT(int testmode = 0) {
         }
         
         
-            //5. Pharmacys
+            /*5. Pharmacys */
         numClerks= (Random() % (MAX_CLERKS - MIN_CLERKS +1) + MIN_CLERKS) ;
             print("Creating ");
             print(itoa(numClerks));
@@ -1096,7 +1096,7 @@ void HospINIT(int testmode = 0) {
         }
         
         
-            //1. Doctors
+            /*1. Doctors */
             
             print("Creating ");
             print(itoa(numDoctors));
@@ -1109,7 +1109,7 @@ void HospINIT(int testmode = 0) {
         }
         
         
-            //7. Patients
+            /*7. Patients */
         numPatients = Random() % (MAX_PATIENTS - MIN_PATIENTS +1) + MIN_PATIENTS; 
         Acquire(hospitalLock);
         peopleInHospital = numPatients;
@@ -1128,7 +1128,7 @@ void HospINIT(int testmode = 0) {
         
         
         
-            //6. HospitalManager
+            /*6. HospitalManager */
 
         print("Creating 1 Hospital Manager ");    
         Write("\n");
@@ -1138,7 +1138,7 @@ void HospINIT(int testmode = 0) {
         
         
         
-            //2. Receptionists
+            /*2. Receptionists */
         numRecp = (Random() % (RECP_MAX - RECP_MIN +1) + RECP_MIN) ;
             print("Creating ");
             print(itoa(numRecp));
@@ -1158,7 +1158,7 @@ void HospINIT(int testmode = 0) {
         
         
         
-            //3. Cashiers
+            /*3. Cashiers */
         numCashiers = (Random() % (MAX_CASHIER - MIN_CASHIER +1) + MIN_CASHIER) ;
             print("Creating ");
             print(itoa(numCashiers));
@@ -1171,7 +1171,7 @@ void HospINIT(int testmode = 0) {
             Fork((VoidFunctionPtr) cashier, i);
         }
         
-            //4. DoorBoys
+            /*4. DoorBoys */
         numDoctors = (Random() % (MAX_DOCTORS - MIN_DOCTORS + 1) + MIN_DOCTORS);
         if(test1active == false){
             numDoorboys = numDoctors;
@@ -1192,7 +1192,7 @@ void HospINIT(int testmode = 0) {
         }
         
         
-            //5. Pharmacys
+            /*5. Pharmacys */
         numClerks= (Random() % (MAX_CLERKS - MIN_CLERKS +1) + MIN_CLERKS) ;
         
             print("Creating ");
@@ -1207,7 +1207,7 @@ void HospINIT(int testmode = 0) {
         }
         
         
-            //1. Doctors
+            /*1. Doctors */
             print("Creating ");
             print(itoa(numDoctors));
             print(" Doctors");
@@ -1219,7 +1219,7 @@ void HospINIT(int testmode = 0) {
         }
         
         
-            //7. Patients
+            /*7. Patients */
         numPatients = Random() % (MAX_PATIENTS - MIN_PATIENTS +1) + MIN_PATIENTS; 
         Acquire(hospitalLock);
         peopleInHospital = numPatients;
@@ -1237,7 +1237,7 @@ void HospINIT(int testmode = 0) {
         
         
         
-            //6. HospitalManager
+            /*6. HospitalManager */
 
             
         print("Creating 1 Hospital Manager "); 
@@ -1249,7 +1249,7 @@ void HospINIT(int testmode = 0) {
         
         
         
-            //2. No Receptionists
+            /*2. No Receptionists */
         numRecp = (Random() % (RECP_MAX - RECP_MIN +1) + RECP_MIN) ;
         
     }else if (testmode == 52) {
@@ -1259,11 +1259,11 @@ void HospINIT(int testmode = 0) {
         
         
         
-            //3. No Cashiers
+            /*3. No Cashiers */
         numCashiers = (Random() % (MAX_CASHIER - MIN_CASHIER +1) + MIN_CASHIER) ;
         
         
-            //4. DoorBoys
+            /*4. DoorBoys */
         numDoctors = (Random() % (MAX_DOCTORS - MIN_DOCTORS + 1) + MIN_DOCTORS);
         if(test1active == false){
             numDoorboys = numDoctors;
@@ -1285,7 +1285,7 @@ void HospINIT(int testmode = 0) {
         }
         
         
-            //5. Pharmacys
+            /*5. Pharmacys */
         numClerks= (Random() % (MAX_CLERKS - MIN_CLERKS +1) + MIN_CLERKS) ;
             print("Creating ");
             print(itoa(numClerks));
@@ -1298,7 +1298,7 @@ void HospINIT(int testmode = 0) {
         }
         
         
-            //1. Doctors
+            /*1. Doctors */
             print("Creating ");
             print(itoa(numDoctors));
             print(" Doctors");
@@ -1311,7 +1311,7 @@ void HospINIT(int testmode = 0) {
         }
         
         
-            //7. Patients
+            /*7. Patients */
         numPatients = Random() % (MAX_PATIENTS - MIN_PATIENTS +1) + MIN_PATIENTS; 
         Acquire(hospitalLock);
         peopleInHospital = numPatients;
@@ -1331,7 +1331,7 @@ void HospINIT(int testmode = 0) {
         
         
         
-            //6. HospitalManager
+            /*6. HospitalManager */
 
             
             
@@ -1344,7 +1344,7 @@ void HospINIT(int testmode = 0) {
         
         
         
-            //2. Receptionists
+            /*2. Receptionists */
         numRecp = (Random() % (RECP_MAX - RECP_MIN +1) + RECP_MIN) ;
         
             print("Creating ");
@@ -1362,7 +1362,7 @@ void HospINIT(int testmode = 0) {
         int i = 0;
         char temp[] = "NACHOS_THREAD";
         
-            //3. Cashiers
+            /*3. Cashiers */
         numCashiers = (Random() % (MAX_CASHIER - MIN_CASHIER +1) + MIN_CASHIER) ;
             
             print("Creating ");
@@ -1376,7 +1376,7 @@ void HospINIT(int testmode = 0) {
             Fork((VoidFunctionPtr) cashier, i);
         }
         
-            //4. DoorBoys
+            /*4. DoorBoys */
         numDoctors = (Random() % (MAX_DOCTORS - MIN_DOCTORS + 1) + MIN_DOCTORS);
         if(test1active == false){
             numDoorboys = numDoctors;
@@ -1400,10 +1400,10 @@ void HospINIT(int testmode = 0) {
         }
         
         
-            //5. No Pharmacy clerks
+            /*5. No Pharmacy clerks */
         numClerks = (Random() % (MAX_CLERKS - MIN_CLERKS +1) + MIN_CLERKS) ;        
         
-            //1. Doctors
+            /*1. Doctors */
             print("Creating ");
             print(itoa(numDoctors));
             print(" Doctors");
@@ -1417,7 +1417,7 @@ void HospINIT(int testmode = 0) {
         }
         
         
-            //7. Patients
+            /*7. Patients */
         numPatients = Random() % (MAX_PATIENTS - MIN_PATIENTS +1) + MIN_PATIENTS; 
         Acquire(hospitalLock);
         peopleInHospital = numPatients;
@@ -1437,7 +1437,7 @@ void HospINIT(int testmode = 0) {
         
         
         
-            //6. HospitalManager
+            /*6. HospitalManager */
 
             
         print("Creating 1 Hospital Manager ");
@@ -1448,7 +1448,7 @@ void HospINIT(int testmode = 0) {
         
         
         
-            //2. Receptionists
+            /*2. Receptionists */
         numRecp = (Random() % (RECP_MAX - RECP_MIN +1) + RECP_MIN) ;
         
         print("Creating ");
@@ -1479,7 +1479,7 @@ int test2(){
 
 int test4(){
     test4active = true;
-        //start the process normally
+        /*start the process normally */
     HospINIT();
     return 0;
     

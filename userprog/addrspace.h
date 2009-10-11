@@ -56,7 +56,8 @@ class AddrSpace {
     std::string readCString(char* s);
     
     Table fileTable;            // Table of openfiles
-    
+
+#ifdef CHANGED
     Table locksTable;           //Table of Locks
     Table CVTable;              //Table of CVs
     set<PID> childThreads;        // PID of Children Threads
@@ -64,7 +65,8 @@ class AddrSpace {
     void addChildThread(PID);
     void removeChildThread(PID);
     void killAllThreads();
-
+#endif
+    
  private:
     // Assume linear page table translation
     // for now!
@@ -79,8 +81,10 @@ class AddrSpace {
 
     // keep track of the stacks in this process
     //std::vector<char> stackTable;
+#ifdef CHANGED
     Lock* stackTableLock;
     BitMap* stackTable;
+#endif
 };
 
 #endif // ADDRSPACE_H

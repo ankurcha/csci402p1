@@ -207,12 +207,34 @@ IV. Implementation:
         test/printtest.c
 
     + Data Structures added, and the file they were added to.
-        
-
+        userprog/system.h
+            struct ProcessTable
+        userprog/exception.cc
+            struct LockWrapper
+            struct ConditionWrapper
+            
     + Data Structures modified, and the file they were added to.
+        class AddrSpace{
+            Data Added:
+                Table locksTable;
+                Table CVTable;   
+                set<PID> childThreads;
+                Lock *childLock;
+                Lock* stackTableLock;
+                BitMap* stackTable;
+        }
 
+        threads/thread.h
+            class Thread{
+                Data Added:
+                    int PID;                           
+                    int stackID;                     
+            }
 
+                
+            
     + Functions added and in which file.
+        
 
     + Functions modified and in which file.
         
