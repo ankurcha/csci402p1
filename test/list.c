@@ -40,7 +40,7 @@ typedef struct {
 
 /*---------------------------------------------------------------------- */
 /* __ListElement */
-/*	Initialize a list element, so it can be added somewhere on a */list.
+/*	Initialize a list element, so it can be added somewhere on a list.
 /* */
 /*	"itemPtr" is the item to be put on the list.  It can be a pointer */
 /*		to anything. */
@@ -83,10 +83,10 @@ void _List(List *this)
 
 /*---------------------------------------------------------------------- */
 /* List_Append */
-/*     Append an "item" to the end of the */list.
+/*     Append an "item" to the end of the list.
 /*     */
 /*	Allocate a ListElement to keep track of the item. */
-/*     If the list is empty, then this will be the only */element.
+/*     If the list is empty, then this will be the only element.
 /*	Otherwise, put it at the end. */
 /* */
 /*	"item" is the thing to put on the list, it can be a pointer to  */
@@ -109,10 +109,10 @@ void List_Append(List *this, void *item)
 
 /*---------------------------------------------------------------------- */
 /* List_Prepend */
-/*     Put an "item" on the front of the */list.
+/*     Put an "item" on the front of the list.
 /*     */
 /*	Allocate a ListElement to keep track of the item. */
-/*     If the list is empty, then this will be the only */element.
+/*     If the list is empty, then this will be the only element.
 /*	Otherwise, put it at the beginning. */
 /* */
 /*	"item" is the thing to put on the list, it can be a pointer to  */
