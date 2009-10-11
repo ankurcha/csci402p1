@@ -1,13 +1,13 @@
-// patient.cc
-//    Hospital Management Simulation
-//
-//    Patient Thread Function
-// 
-// CS 402 Fall 2009
-// Group 11
-//  Ankur Chauhan, ankurcha
-//  Max Pflueger, pflueger
-//  Aneesha Mathew, aneesham
+/* patient.cc */
+/*    Hospital Management Simulation */
+/* */
+/*    Patient Thread Function */
+/*  */
+/* CS 402 Fall 2009 */
+/* Group 11 */
+/*  Ankur Chauhan, ankurcha */
+/*  Max Pflueger, pflueger */
+/*  Aneesha Mathew, aneesham */
 
 bool test_code2=true;
 void patients(int ID){
@@ -16,19 +16,19 @@ void patients(int ID){
     int myDoctor;
     int myPrescription;
 
-    //////////////////////////////////////////////////
-    ////// Begin interaction with Receptionist ///////
-    //////////////////////////////////////////////////
+    /*//////////////////////////////////////////////// */
+    /*//// Begin interaction with Receptionist /////// */
+    /*//////////////////////////////////////////////// */
 
     Write("P:Attempt to acquire recpLineLock...\n",100, ConsoleOutput);
     Acquire(recpLineLock);
     Write("P:success\n",100,1);
 
-    // Find the shortest line
+    /* Find the shortest line */
     int shortestline = 0;
     int len = receptionists[0].peopleInLine;
 
-    //Find shortest Line
+    /*Find shortest Line */
     if (test4active == true) {
         Write("P:TEST4: Searching for the receptionist with the shortest line\n",100,1);
     }else {
@@ -39,7 +39,7 @@ void patients(int ID){
     for (int i=0; i<numRecp; i++) {
         
         if (test4active == true) {
-                //Print the length of each line
+                /*Print the length of each line */
             Write("P:TEST4: Length of line at R_",100,1);
             Write(itoa(i),50,1);
             Write(" = ",3,1);
@@ -63,7 +63,7 @@ void patients(int ID){
         Write(itoa(shortestline),50,1);Write(" len: ",10,1);Write(itoa(len),50,1);Write("\n",1,1);
     }
 
-    // Wait in line
+    /* Wait in line */
     receptionists[shortestline].peopleInLine++;
     receptionists[shortestline].receptionCV->Wait(recpLineLock);
     Write("P_",2,1);
@@ -72,11 +72,11 @@ void patients(int ID){
     
     receptionists[shortestline].peopleInLine--;
     
-    //wait for the receptionist to prepare token for me, till then I wait
+    /*wait for the receptionist to prepare token for me, till then I wait */
     Release(recpLineLock);
     Acquire(receptionists[shortestline].transLock);
 
-    //token is ready just read it -- print it out in our case
+    /*token is ready just read it -- print it out in our case */
     Write("P_",2,1);
     Write(itoa(ID),50,1);
     Write(": Reading Token..\n",20,1);
@@ -87,7 +87,7 @@ void patients(int ID){
     Write(itoa(ID),50,1);
     Write("..yeah!!\n",50,1);
 
-    //Done, signal receptionist that he can proceed 
+    /*Done, signal receptionist that he can proceed  */
     Signal(receptionists[shortestline].receptionistWaitCV, receptionists[shortestline].transLock);
     Write("P_",2,1);
     Write(itoa(ID),50,1);
@@ -95,14 +95,14 @@ void patients(int ID){
     Write(itoa(shortestline),50,1);
     Write(" to continue, I am done\n",100,1);
 
-    //Release transaction lock
+    /*Release transaction lock */
     Release(receptionists[shortestline].transLock);
     
-    ///////////////////////////////////////////////////
-    /////// Interaction with Doctor and Doorboy ///////
-    ///////////////////////////////////////////////////
+    /*///////////////////////////////////////////////// */
+    /*///// Interaction with Doctor and Doorboy /////// */
+    /*///////////////////////////////////////////////// */
 
-    //Calculate which doctor I want to see
+    /*Calculate which doctor I want to see */
 
     myDoctor = (int)(Random()) % numDoctors;
     if(test2active==true)
@@ -126,10 +126,10 @@ void patients(int ID){
             Write("\n",1,1);
         }
 
-    // Acquire doc's line lock
+    /* Acquire doc's line lock */
     Acquire(doctors[myDoctor].LineLock);
 
-    // Wait on the line -- to be woken up by the doorboy
+    /* Wait on the line -- to be woken up by the doorboy */
     if(test2active==true)
 	{
             Write("P_",1,1);
@@ -150,7 +150,7 @@ void patients(int ID){
     Write(" : Doorboy told me to go to doctor, proceeding....\n",100,1);
     doctors[myDoctor].peopleInLine--;
 
-    // move into the doctor's transaction lock
+    /* move into the doctor's transaction lock */
     Release(doctors[myDoctor].LineLock);
       
     
@@ -166,10 +166,10 @@ void patients(int ID){
     Write("P_",2,1);
     Write(itoa(ID),50,1);
     Write(" : Giving doctor the token...\n",100,1);
-    //The doctor is waiting for me to provide my info, oblige him!!
+    /*The doctor is waiting for me to provide my info, oblige him!! */
     doctors[myDoctor].patientToken = myToken;
 
-    // hand off to the doctor thread for consultation
+    /* hand off to the doctor thread for consultation */
      if(test7active==true)
 	{
 	    Write("P_",2,1);
@@ -189,7 +189,7 @@ void patients(int ID){
     Signal(doctors[myDoctor].transCV, doctors[myDoctor].transLock);
     Wait(doctors[myDoctor].transCV, doctors[myDoctor].transLock);
 
-    // Consultation finished, now I have to get the prescription from the doctor
+    /* Consultation finished, now I have to get the prescription from the doctor */
     myPrescription = doctors[myDoctor].prescription;
     Write("P_",2,1);
     Write(itoa(ID),50,1);
@@ -197,21 +197,21 @@ void patients(int ID){
     Write(itoa(myPrescription),50,1);
     Write("\n",1,1);
 
-    // Signal the doctor that I have taken the prescription and left
+    /* Signal the doctor that I have taken the prescription and left */
     Signal(doctors[myDoctor].transCV, doctors[myDoctor].transLock);
     Release(doctors[myDoctor].transLock);
     Write("P_",2,1);
     Write(itoa(ID),50,1);
     Write(": Done with Doctor, going to cashier.\n",50,1);
-    ////////////////////////////////////////////
-    /////////  Interaction with Cashier ////////
-    ////////////////////////////////////////////
+    /*////////////////////////////////////////// */
+    /*///////  Interaction with Cashier //////// */
+    /*////////////////////////////////////////// */
     
     Acquire(cashierLineLock);
     Write("P_",2,1);
     Write(itoa(ID),50,1);
     Write(": Acquiring cashierLineLock\n",100,1);
-    // find the shortest line
+    /* find the shortest line */
     int myCashier = 0;
     int sLen = cashiers[0].lineLength;
     if (test4active == true) {
@@ -226,7 +226,7 @@ void patients(int ID){
 
     for(int i=1; i < numCashiers; ++i) {
         if (test4active == true) {
-                //Print the length of each line
+                /*Print the length of each line */
             Write("P_",2,1);
             Write(itoa(ID),50,1);
             Write(":TEST4: Length of line at R_",50,1);
@@ -256,8 +256,8 @@ void patients(int ID){
                ID,myCashier,sLen);
     }
 
-    //if(sLen > 0) {get in line} else {get in line}
-    // there are a lot of cases here, but they all result in us getting in line
+    /*if(sLen > 0) {get in line} else {get in line} */
+    /* there are a lot of cases here, but they all result in us getting in line */
     cashiers[myCashier].lineLength ++;
     Write("P_",2,1);
     Write(itoa(ID),50,1);
@@ -274,32 +274,32 @@ void patients(int ID){
     Write("\n",1,1);
     cashiers[myCashier].lineLength --;
 
-    //// APPROACH THE DESK ////
+    /*// APPROACH THE DESK //// */
     Release(cashierLineLock);
     Acquire(cashiers[myCashier].transLock);
 
-    // provide token to cashier
+    /* provide token to cashier */
     cashiers[myCashier].patToken = myToken;
 
-    // wait for cashier to come back with the fee
+    /* wait for cashier to come back with the fee */
     Signal(cashiers[myCashier].transCV, cashiers[myCashier].transLock);
     Wait(cashiers[myCashier].transCV, cashiers[myCashier].transLock);
 
-    // provide the money
+    /* provide the money */
     cashiers[myCashier].payment = cashiers[myCashier].fee;
     Write( "P_",2,1);
     Write(itoa(ID),50,1);
     Write(": Paying money.\n",50,1);
-    // done
+    /* done */
     Signal(cashiers[myCashier].transCV, cashiers[myCashier].transLock);
     Release(cashiers[myCashier].transLock);
     Write("P_",2,1);
     Write(itoa(ID),50,1);
     Write(": Done with cashier\n",100,1);
 
-    //////////////////////////////////////////////////
-    ////////  Interaction with Pharmacy Clerk ////////
-    //////////////////////////////////////////////////
+    /*//////////////////////////////////////////////// */
+    /*//////  Interaction with Pharmacy Clerk //////// */
+    /*//////////////////////////////////////////////// */
     
     Write("P_",3,1);
     Write(itoa(ID),50,1);
@@ -318,10 +318,10 @@ void patients(int ID){
         Write(": Finding shortest Line of clerks\n",100,1);
     }
     
-    //Find shortest Line
+    /*Find shortest Line */
     for (int i=0; i<numClerks; i++) {
         if (test4active == true) {
-                //Print the length of each line
+                /*Print the length of each line */
             Write("P_",2,1);
             Write(itoa(ID),50,1);
             Write(": TEST4: Length of line at CL_",100,1);
@@ -355,7 +355,7 @@ void patients(int ID){
         Write("\n",1,1);
     }
 
-        //wait in line for my turn
+        /*wait in line for my turn */
     clerks[shortestclerkline].patientsInLine++;
     cout << "P_"<<ID<<": Waiting in line for clerk CL_"<<shortestclerkline
     <<" to attend to me, Line length: "<<clerks[shortestclerkline].patientsInLine<<"\n";
@@ -369,34 +369,34 @@ void patients(int ID){
     
     Release(ClerkLinesLock);
     Acquire(clerks[shortestclerkline].ClerkTransLock);
-        //signal ParmacyClerk that i am ready to give Prescription
+        /*signal ParmacyClerk that i am ready to give Prescription */
     Write("P_",2,1);
     Write(itoa(ID),50,1);
     Write(": Acquired ClerkTransLock\n",100,1);
-        //Entered the line no need to hold all lines others may now continue
-    //wait for the PharmacyClerk to Get the prescription from me.. so I wait
+        /*Entered the line no need to hold all lines others may now continue */
+    /*wait for the PharmacyClerk to Get the prescription from me.. so I wait */
      clerks[shortestclerkline].patPrescription = myPrescription;
     Write( "P_",2,1);
     Write(itoa(ID),50,1);
     Write(": Gave prescriptiong, waiting for medicines.\n",100,1);;
-    // wait for clerk to give cost
+    /* wait for clerk to give cost */
     Signal(clerks[shortestclerkline].ClerkTransCV, clerks[shortestclerkline].ClerkTransLock);
     Wait(clerks[shortestclerkline].ClerkTransCV, clerks[shortestclerkline].ClerkTransLock);
 
-    // provide the money
+    /* provide the money */
     Write( "P_",2,1);
     Write(itoa(ID),50,1);
     Write(": Got Medicines, making payment.\n",50,1);
     clerks[shortestclerkline].payment = clerks[shortestclerkline].fee;
 
-    // done
+    /* done */
     Signal(clerks[shortestclerkline].ClerkTransCV,clerks[shortestclerkline].ClerkTransLock);
     Write("P_",3,1);
     Write(itoa(ID),50,1);
     Write(": Done with Clerk\n",50,1);
     Release(clerks[shortestclerkline].ClerkTransLock);
 
-    //7. get out - die die die( ;) muhahahhaha)
+    /*7. get out - die die die( ;) muhahahhaha) */
     Acquire(hospitalLock);
     Write("P_",2,1);
     Write(itoa(ID),50,1);

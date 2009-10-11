@@ -13,16 +13,11 @@
  *
  */
  
-
-
-
-
 #include "syscall.h"
 #include "list.h"
 #include "itoa.c"
 #include "print.c"
-using namespace std;
-
+#include "patient.c"
 #define BUSY 0
 #define FREE 1
 #define SLEEPING 2
@@ -37,6 +32,7 @@ struct node {
     int key, value;
     node* next;
 };
+
 struct linkedlist { 
         //Used for storing the <token,fees> pairs
     node* head;
