@@ -15,8 +15,10 @@
 // All rights reserved.  See copyright.h for copyright notice and limitation 
 // of liability and disclaimer of warranty provisions.
 
+#ifdef CHANGED
 #include <algorithm>
 #include <iostream>
+#endif
 
 #include "copyright.h"
 #include "system.h"
@@ -27,9 +29,11 @@
 
 extern "C" { int bzero(char *, int); };
 
+#ifdef CHANGED
 Lock* physMemMapLock = new Lock("physMemMapLock");
 BitMap physMemMap(NumPhysPages);
 Lock* childLock;
+#endif
 
 Table::Table(int s) : map(s), table(0), lock(0), size(s) {
     table = new void *[size];
@@ -124,6 +128,7 @@ SwapHeader (NoffHeader *noffH)
 //      constructed set to false.
 //----------------------------------------------------------------------
 
+#ifdef CHANGED
 AddrSpace::AddrSpace(OpenFile *executable) : fileTable(MaxOpenFiles), 
                                              locksTable(MaxLock), 
                                              CVTable(MaxCV) {
@@ -169,7 +174,6 @@ AddrSpace::AddrSpace(OpenFile *executable) : fileTable(MaxOpenFiles),
     unsigned int stackStart = 
             NumPhysPages - divRoundUp(UserStackSize, PageSize);
     
-    //TODO: this code was merged, i don't know about it -max
         //Take care of the number of child processes
     childLock = new Lock("childLock");
     this->childThreads.clear();
@@ -232,11 +236,6 @@ AddrSpace::AddrSpace(OpenFile *executable) : fileTable(MaxOpenFiles),
         bzero(&(machine->mainMemory[PageSize * physPage]), PageSize);
     }
     
-    // OLD 
-    // zero out the entire address space, to zero the unitialized data segment 
-    // and the stack segment
-    //bzero(machine->mainMemory, size);
-
     // then, copy in the code and data segments into memory
     if (noffH.code.size > 0) {
         DEBUG('a', "Initializing code segment, at vaddr 0x%x, size %d\n", 
@@ -260,11 +259,6 @@ AddrSpace::AddrSpace(OpenFile *executable) : fileTable(MaxOpenFiles),
             offset = 0;
             page++;
         }
-
-        //DEBUG('a', "Initializing code segment, at 0x%x, size %d\n", 
-        //              noffH.code.virtualAddr, noffH.code.size);
-        //executable->ReadAt(&(machine->mainMemory[noffH.code.virtualAddr]),
-        //              noffH.code.size, noffH.code.inFileAddr);
     }
     if (noffH.initData.size > 0) {
         DEBUG('a', "Initializing initData segment, at vaddr 0x%x, size %d\n", 
@@ -290,14 +284,10 @@ AddrSpace::AddrSpace(OpenFile *executable) : fileTable(MaxOpenFiles),
             offset = 0;
             page++;
         }
-
-        //DEBUG('a', "Initializing data segment, at 0x%x, size %d\n", 
-        //              noffH.initData.virtualAddr, noffH.initData.size);
-        //executable->ReadAt(&(machine->mainMemory[noffH.initData.virtualAddr]),
-        //              noffH.initData.size, noffH.initData.inFileAddr);
     }
 
 }
+#endif
 
 //----------------------------------------------------------------------
 // AddrSpace::~AddrSpace
@@ -308,6 +298,7 @@ AddrSpace::AddrSpace(OpenFile *executable) : fileTable(MaxOpenFiles),
 
 AddrSpace::~AddrSpace()
 {
+#ifdef CHANGED
     // free the physical memory being used by this page table
     for(unsigned int i=0; i < numPages; i++) {
         physMemMapLock->Acquire();
@@ -334,6 +325,7 @@ AddrSpace::~AddrSpace()
     //    childItr = childThread.begin();
     //    this->removeChild((PID) *childItr);
     //}
+#endif
 }
 
 //----------------------------------------------------------------------
@@ -363,14 +355,15 @@ void AddrSpace::InitRegisters()
     // Set the stack register to the end of the address space, where we
     // allocated the stack; but subtract off a bit, to make sure we don't
     // accidentally reference off the end!
+#ifdef CHANGED
     unsigned int stackRegister = NumPhysPages * PageSize - 16;
     machine->WriteRegister(StackReg, stackRegister);
     DEBUG('a', "Initializing stack register to %x for stack 0\n", 
           stackRegister);
-    //machine->WriteRegister(StackReg, numPages * PageSize - 16);
-    //DEBUG('a', "Initializing stack register to %x\n", numPages * PageSize - 16);
+#endif
 }
 
+#ifdef CHANGED
 //----------------------------------------------------------------------
 // AddrSpace::InitStack
 //      Create a new stack in the Addrspace and return it's stack id
@@ -486,6 +479,7 @@ void AddrSpace::ClearStack(int id) {
 
     return;
 }
+#endif
 
 //----------------------------------------------------------------------
 // AddrSpace::SaveState
@@ -512,6 +506,7 @@ void AddrSpace::RestoreState()
     machine->pageTableSize = numPages;
 }
 
+#ifdef CHANGED
 //----------------------------------------------------------------------
 // AddrSpace::readCString
 //      Read a c-style string stored at the virtual address s
@@ -555,7 +550,7 @@ std::string AddrSpace::readCString(char* s) {
 
     return ret;
 }
-#ifdef CHANGED
+
 void AddrSpace::addChildThread(PID pid){
     this->childLock->Acquire();
     this->childThreads.insert(pid);
@@ -577,4 +572,6 @@ void AddrSpace::killAllThreads(){
         this->removeChildThread((PID) *childItr);
     }
 }
+
 #endif
+
