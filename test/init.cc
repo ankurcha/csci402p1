@@ -300,18 +300,19 @@ void doorboy(int ID){
     int myDoctor = 0;
     
     while (true) {
-        Write("DB_",10,1);
-        Write(itoa(ID),10,1);
-        Write(": Alive ",50,ConsoleOutput);
+        print("DB_");
+        print(itoa(ID));
+        print(": Alive ");
         
             //Get into the doorboyLine till some doctor asks for me
         Acquire(doorboyLineLock)
         
         doorboyLineLength++;
 
-        Write("DB_",15,1);
-        Write(itoa(ID),10,1);
-        Write(": Waiting for some doctor to wake me up.\n",50,1) ;
+        print("DB_");
+        print(itoa(ID));
+        print(": Waiting for some doctor to wake me up.") ;
+        Write("\n");
         doorboyLineCV->Wait(doorboyLineLock);
 
         doorboyLineLength--;
@@ -319,25 +320,26 @@ void doorboy(int ID){
             //Some doctor woke me up, lets check who
             //myDoctor =  wakingDoctorID;
         if(wakingDoctorList->IsEmpty()) {
-        Write("DB_",10,1);
-        Write(itoa(ID),10,1);
-        Write(": ERROR: Waking doctor list is empty!\n",50,1);
+        print("DB_");
+        print(itoa(ID));
+        print(": ERROR: Waking doctor list is empty!");
+        Write("\n");
             continue;
         }
         myDoctor = (int) wakingDoctorList->Remove();
         if(test2active==true)
-        Write("DB_",10,1);
-        Write(itoa(ID),10,1);
-        Write(":TEST2: Servicing D_",50,1);
-        Write(itoa(myDoctor),50,1);
-        Write("\n",1,1);
+        print("DB_");
+        print(itoa(ID));
+        print(":TEST2: Servicing D_");
+        print(itoa(myDoctor));
+        Write("\n");
         else
 
-       	Write("DB_",10,1);
-        Write(itoa(ID),10,1);
-        Write(":Servicing D_",50,1);
-        Write(itoa(myDoctor),50,1);
-        Write("\n",1,1);
+       	print("DB_");
+        print(itoa(ID));
+        print(":Servicing D_");
+        print(itoa(myDoctor));
+        Write("\n");
            
         doorboyLineLock->Release();
 
@@ -352,10 +354,10 @@ void doorboy(int ID){
             //Acquire the lock to get the state of the line and take decision
 
         doctors[myDoctor].LineLock->Acquire();
-        Write("DB_",10,1);
-        Write(itoa(ID),10,1);
-        Write(": Checking for Patients\n",50,1);
-
+        print("DB_");
+        print(itoa(ID));
+        print(": Checking for Patients");
+        Write("\n");
         
             //while there is noone in line
         bool doorboyBreak = false;
@@ -365,20 +367,20 @@ void doorboy(int ID){
             
                 // prefix for test conditions
             if(myDoctor == 0 && test_state == 8)
-            	Write("T8: ",50,1);
-                //cout << "T8: ";
+            	print("T8: ");
+                
             if(test_state == 11)
-            	Write("T11: ",50,1);
-              //  cout << "T11: ";
-                // midfix for test 2
-            if(test2active==true) {
-            	Write("DB_",10,1);
-              Write(itoa(ID),10,1);
-               Write(":TEST2: Yawn!!...ZZZZzzzzz....\n",50,1);
+            	print("T11: ");
+              if(test2active==true) {
+            	print("DB_");
+              print(itoa(ID));
+               print(":TEST2: Yawn!!...ZZZZzzzzz....");
+               Write("\n");
             } else {
-            	Write("DB_",10,1);
-              Write(itoa(ID),10,1);
-               Write(": Yawn!!...ZZZZzzzzz....\n",50,1);
+            	print("DB_");
+              print(itoa(ID),);
+               print(": Yawn!!...ZZZZzzzzz....");
+               Write("\n");
                 
             }
             Wait(doctors[myDoctor].doorboyBreakCV, doctors[myDoctor].LineLock);
@@ -388,29 +390,33 @@ void doorboy(int ID){
         if(doorboyBreak) {
                 // prefix for test 8 condition
             if(myDoctor == 0 && test_state == 8) {
-            	Write("T8: \n",10,1);
+            	print("T8: ");
+            	Write("\n");
             
             
             }
-            Write("DB_",10,1);
-            Write(itoa(ID),10,1);
-            Write(": Woken up!\n",50,1);
+            print("DB_");
+            print(itoa(ID));
+            print(": Woken up!");
+            Write("\n");
         }
         
-        Write("DB_",10,1);
-        Write(itoa(ID),10,1);
-        Write(": Found ",20,1);
-        Write(itoa(doctors[myDoctor].peopleInLine),20,1);
-       Write(" patients waiting in line for D_ ",50,1);
-        Write(itoa(myDoctor),10,1);
+        print("DB_");
+        print(itoa(ID));
+        print(": Found ");
+        print(itoa(doctors[myDoctor].peopleInLine));
+       print(" patients waiting in line for D_ ");
+        print(itoa(myDoctor));
+        Write("\n");
              
         
             //Now wake the patient up to go to the doctor
 
-        Write("DB_",10,1);
-        Write(itoa(ID),10,1);
-        Write(":Tell patient to go to doctor D_",50,1);
-        Write(itoa(myDoctor),10,1);
+        print("DB_");
+        print(itoa(ID));
+        print(":Tell patient to go to doctor D_");
+        print(itoa(myDoctor));
+        Write("\n");
         
         doctors[myDoctor].LineCV->Signal(doctors[myDoctor].LineLock);
 
@@ -421,9 +427,10 @@ void doorboy(int ID){
         Release(doctors[myDoctor].LineLock);
         
     }//End of while
-    Write("DB_",10,1);
-    Write(itoa(ID),10,1);
-    Write(":Dying...AAAaaaahhhhhhhhh!!\n",50,1);
+    print("DB_");
+    print(itoa(ID));
+    print(":Dying...AAAaaaahhhhhhhhh!!");
+    Write("\n");
    
     
 }
@@ -433,20 +440,22 @@ void doctor(int ID){
     while(true) {
             // acquire a doorboy
 
-        Write("D_",50,1);
-        Write(itoa(ID),10,1);
-        Write(": Alive!!\n",50,1);
+        print("D_");
+        print(itoa(ID));
+        print(": Alive!!");
+        Write("\n");
         doorboyLineLock->Acquire();
 
         
             // assure that there is a doorboy in line
         while(doorboyLineLength <= 0) {
             if(waitingtime % 100 == 0){
-            	Write("D_",50,1);
-              Write(itoa(ID),10,1);
-              Write(": Doctor could not find a doorboy waittime: ",50,1);
-              Write(itoa(waitingtime),50,1);
-              Write("\n",10,1);
+            	print("D_");
+              print(itoa(ID));
+              print(": Doctor could not find a doorboy waittime: ");
+              print(itoa(waitingtime));
+              Write("\n");
+           
             }
             
             Release(doorboyLineLock);
@@ -454,15 +463,17 @@ void doctor(int ID){
             waitingtime--;
             Acquire(doorboyLineLock);
             if(waitingtime <= 0){
-                Write("Waited for a long time with no Doorboys, exiting...\n",50,1);
+                print("Waited for a long time with no Doorboys, exiting...");
+                Write("\n");
                 return;
             }
         }
         
             // pull the next doorboy off the line
-            Write("D_",50,1);
-            Write(itoa(ID),10,1);
-            Write(":Signaling doorboy!\n",50,1);
+            print("D_");
+            print(itoa(ID));
+            print(":Signaling doorboy!");
+            Write("\n");
             
         
             //wakingDoctorID = ID;
@@ -482,11 +493,12 @@ void doctor(int ID){
         if(test7active==true)
        	{
        		int numYields = 35;
-       		Write("D_",50,1);
-          Write(itoa(ID),10,1);
-          Write(" :TEST7: Going on break for ",50,1);
-          Write(itoa(numYields),50,1);
-          Write(" cycles!\n",50,1);
+       		print("D_");
+          print(itoa(ID));
+          print(" :TEST7: Going on break for ");
+          print(itoa(numYields));
+          print(" cycles!");
+          Write("\n");
             for(int i=0; i < numYields; ++i) {
                 currentThread->Yield();
             }
@@ -500,15 +512,16 @@ void doctor(int ID){
                 
                     // provide a handle for test 8, only uses doctor 0
                 if(ID == 0 && test_state == 8 ) { 
-                	Write("T8: ",50,1);
+                	print("T8: ");
                     
                 }
                 
-                Write("D_",50,1);
-                Write(itoa(ID),10,1);
-                Write(": Going on break for ",50,1);
-                Write(itoa(numYields),50,1);
-                Write(" cycles!\n",50,1);
+                print("D_");
+                print(itoa(ID));
+                print(": Going on break for ");
+                print(itoa(numYields));
+                print(" cycles!");
+                Write("\n");
                 
                 for(int i=0; i < numYields; ++i) {
                     currentThread->Yield();
@@ -519,36 +532,40 @@ void doctor(int ID){
         
             // provide a handle for test 8, only uses doctor 0
         if(ID == 0 && test_state == 8 && doctorBreak) { 
-        	Write("T8: ",50,1);
+        	print("T8: ");
             
         }
         if(doctorBreak) 
-        	Write("D_",50,1);
-        	 Write(itoa(ID),10,1);
+        	print("D_");
+        	 print(itoa(ID));
         	 
-           Write(": Back from Break\n",50,1);
+           print(": Back from Break");
+           Write("\n");
         
             // inform the doorboy that I am ready for a patient
         
         if(test7active==true)
        	{
-       		Write("D_",50,1);
-        	 Write(itoa(ID),10,1);
-       		Write(":TEST7: Back from Break,Signalling patient to come in.\n",50,1);
+       		print("D_");
+        	 print(itoa(ID));
+       		print(":TEST7: Back from Break,Signalling patient to come in.");
+       		Write("\n");
        		
        	}
        	else
-       		Write("D_",50,1);
-        	 Write(itoa(ID),10,1);
-       		Write(": Back from Break,Signalling patient to come in.\n",50,1);
+       		print("D_");
+        	 print(itoa(ID));
+       		print(": Back from Break,Signalling patient to come in.");
+       		Write("\n");
        		
             
         
 
         doctors[ID].transCV->Signal(doctors[ID].transLock);
-        Write("D_",50,1);
-        Write(itoa(ID),10,1);
-        Write(": Waiting for patient....\n",50,1);
+        print("D_");
+        print(itoa(ID));
+        print(": Waiting for patient....");
+        Write("\n");
         
 
             //////  PATIENT INTERACTION  //////
@@ -556,10 +573,10 @@ void doctor(int ID){
         Wait(doctors[ID].transCV, doctors[ID].transLock);
         
             // consult: 10-20 yields
-        Write("D_",50,1);
-        Write(itoa(ID),10,1);
-        Write(": Now Consulting patient\n",50,1);
-        
+        print("D_");
+        print(itoa(ID));
+        print(": Now Consulting patient");
+        Write("\n");
         int numYields = 10 + (Random() % 11);
         for(int i=0; i < numYields; ++i) {
             currentThread->Yield();  // I see ... mm hmm ... does it hurt here? ...
@@ -569,7 +586,11 @@ void doctor(int ID){
         doctors[ID].prescription = Random() % 100;
         
             // put consultation fees into the data structure for the cashier ($50-$250)
-        cout<<"D_"<<ID<<": Telling fee to cashiers\n";
+        print("D_");
+        print(itoa(ID));
+        print(": Telling fee to cashiers");
+        Write("\n");
+        
         int consultFee = 50 + (Random() % 201);
         Acquire(feeListLock-);
         feeList->append(doctors[ID].patientToken, consultFee);
@@ -577,19 +598,20 @@ void doctor(int ID){
         
             // pass the prescription to the patient and wait for them to leave
 
-        Write("D_",50,1);
-        Write(itoa(ID),10,1);
-        Write(": Waiting for the patient to leave\n",50,1);
+        print("D_");
+        print(itoa(ID));
+        print(": Waiting for the patient to leave");
+        Write("\n");
         
         doctors[ID].transCV->Signal(doctors[ID].transLock);
         doctors[ID].transCV->Wait(doctors[ID].transLock);
         
             // done, the patient has left
         doctors[ID].transLock->Release();
-        Write("D_",50,1);
-        Write(itoa(ID),10,1);
-        Write(": I'm ready for another one\n",50,1);
-        
+        print("D_");
+        print(itoa(ID));
+        print(": I'm ready for another one");
+        Write("\n");
 
         
     } //end while
@@ -598,10 +620,10 @@ void doctor(int ID){
 void receptionist(int ID){
     while (true) {
 
-    	Write("R_",50,1);
-      Write(itoa(ID),10,1);
-      Write(": Alive!\n",50,1);
-        
+    	print("R_");
+      print(itoa(ID));
+      print(": Alive!");
+      Write("\n");
         recpLineLock->Acquire();
 
         if (receptionists[ID].peopleInLine > 0) {
@@ -614,11 +636,11 @@ void receptionist(int ID){
                 // prefix for test condition
             if(test_state == 11)
 
-            Write( "T11: ",10,1);
-            Write("R_",50,1);
-            Write(itoa(ID),10,1);
-            Write(":Going to sleep\n",50,1);
-           
+            print( "T11: ");
+            print("R_");
+            print(itoa(ID));
+            print(":Going to sleep");
+            Write("\n");
             receptionists[ID].ReceptionistBreakCV->Wait(recpLineLock);
             recpLineLock->Release();
 
@@ -633,9 +655,10 @@ void receptionist(int ID){
             //Genetate token for the patient
 
         TokenCounterLock->Acquire();
-        Write("R_",50,1);
-        Write(itoa(ID),10,1);
-        Write(": Generating Token...\n",50,1);
+        print("R_");
+        print(itoa(ID));
+        print(": Generating Token...");
+        Write("\n");
         
         
 
@@ -644,17 +667,17 @@ void receptionist(int ID){
         
             //Sleep till you get Acknowledgement
 
-        Write("R_",50,1);
-        Write(itoa(ID),10,1);
-        Write(":  Waiting for Patient to pick up token...\n",50,1);
-        
+        print("R_");
+        print(itoa(ID));
+        print(":  Waiting for Patient to pick up token...");
+        Write("\n");
         receptionists[ID].receptionistWaitCV->Wait(receptionists[ID].transLock);
         
             //Patient successfully got the token, go back to work: Loop again
-        Write("R_",50,1);
-        Write(itoa(ID),10,1);
-        Write(": Patient got token, Continue to next Patient\n",50,1);
-        
+        print("R_");
+        print(itoa(ID));
+        print(": Patient got token, Continue to next Patient");
+        Write("\n");
         receptionists[ID].transLock->Release();
 
     }
@@ -664,19 +687,19 @@ void receptionist(int ID){
 void cashier(int ID) {
 
 	
-	  Write("Cash_",50,1);
-        Write(itoa(ID),10,1);
-        Write(":  Alive!!\n",50,1);
-	  
+	  print("Cash_");
+        print(itoa(ID));
+        print(":  Alive!!");
+	      Write("\n");
         while(true) {
         cashierLineLock->Acquire();
         
         if(cashiers[ID].lineLength > 0) { // someone in line
                                           //signal person on top
-        Write("Cash_",50,1);
-        Write(itoa(ID),10,1);
-        Write(":  someone in my line...\n",50,1);
-                                          
+        print("Cash_");
+        print(itoa(ID));
+        print(":  someone in my line...");
+        Write("\n");                                 
             
             cashiers[ID].lineCV->Signal(cashierLineLock);
 
@@ -686,10 +709,11 @@ void cashier(int ID) {
                 // prefix for test condition
             if(test_state == 11)
 
-            	Write("T11: ",50,1);
-        Write("Cash_",50,1);
-        Write(itoa(ID),10,1);
-        Write(":  No one in line... going on break\n",50,1);
+        print("T11: ");
+        print("Cash_");
+        print(itoa(ID));
+        print(":  No one in line... going on break");
+        Write("\n");
             
             cashiers[ID].breakCV->Wait(cashierLineLock);
             cashierLineLock->Release();
@@ -722,7 +746,7 @@ void cashier(int ID) {
         cashiers[ID].sales += cashiers[ID].payment;
         Release(feesPaidLock);
         if(cashiers[ID].payment < cashiers[ID].fee) {
-        	Write("ERROR: call security, that patient didin't pay!",50,1);
+        	print("ERROR: call security, that patient didin't pay!");
             
         }        
         
@@ -743,11 +767,12 @@ void clerk(int ID){
             
                 // prefix for test condition
             if(test_state == 11)
-            	Write("T11: ",50,1);
+            	print("T11: ");
                 
-            Write("CL_",10,1);
-            Write(itoa(ID),50,1);
-            Write(": Going on break\n",50,1);
+            print("CL_");
+            print(itoa(ID));
+            print(": Going on break");
+            Write("\n");
             
             
             Wait(clerks[ID].ClerkBreakCV, ClerkLinesLock);
@@ -766,9 +791,10 @@ void clerk(int ID){
         
             // patient gives prescription:
         
-            Write("CL_",10,1);
-            Write(itoa(ID),50,1);
-            Write(": gave Medicines!\n",50,1);
+            print("CL_");
+            print(itoa(ID));
+            print(": gave Medicines!");
+            Write("\n");
         
         
         Signal(clerks[ID].ClerkTransCV, clerks[ID].ClerkTransLock);
@@ -776,11 +802,12 @@ void clerk(int ID){
         Wait(clerks[ID].ClerkTransCV, clerks[ID].ClerkTransLock);
             //Collect payment
             
-            Write("CL_",50,1);
-            Write(itoa(ID),50,1);
-            Write(": The cost for the medicines are:",50,1);
-            Write(itoa(clerks[ID].fee),50,1);
-            Write(" Dollars\n",50,1);
+            print("CL_");
+            print(itoa(ID));
+            print(": The cost for the medicines are:");
+            print(itoa(clerks[ID].fee));
+            print(" Dollars");
+            Write("\n");
         
         
             // add this payment to our total collected
@@ -796,9 +823,10 @@ void clerk(int ID){
 
 
 void hospitalManager(int ID){
-	  Write("H_",50,1);
-	  Write(itoa(ID),50,1);
-	  Write(": Alive\n",50,1);
+	  print("H_");
+	  print(itoa(ID));
+	  print(": Alive");
+	  Write("\n");
     
     int sleeptime = Random() % 30000;
     int test5cycles = 1;
@@ -815,9 +843,10 @@ void hospitalManager(int ID){
         }
         Acquire(hospitalLock);
         if (peopleInHospital <= 0) {
-        	Write("H_",50,1);
-	  Write(itoa(ID),50,1);
-	  Write(":  No one to service, Killing myself!!!\n",50,1);
+        	print("H_");
+	  print(itoa(ID));
+	  print(":  No one to service, Killing myself!!!");
+	  Write("\n");
            
             return;
         }
@@ -825,11 +854,12 @@ void hospitalManager(int ID){
         
         sleeptime = Random() % 30000;
             //Sleep for some random amount of time
-       Write("H_",50,1);
-	  Write(itoa(ID),50,1);
-	  Write(":  Sleeping for",50,1);
-	  Write(itoa(sleeptime),50,1);
-	  Write(" cycles\n",50,1);
+       print("H_");
+	  print(itoa(ID));
+	  print(":  Sleeping for");
+	  print(itoa(sleeptime));
+	  print(" cycles");
+	  Write("\n");
             
        
         do{
@@ -837,17 +867,18 @@ void hospitalManager(int ID){
             sleeptime--;
         }while (sleeptime > 0);
             //I am on rounds now, Time to kick some ass
-        Write("H_",50,1);
-	      Write(itoa(ID),50,1);
-	      Write(": Going on rounds\n",50,1);
-        
+        print("H_");
+	      print(itoa(ID));
+	      print(": Going on rounds");
+        Write("\n");
         
         
         
             //1. Check on the Receptionists
-        Write("H_",50,1);
-	      Write(itoa(ID),50,1);
-	      Write(": Checking receptionists\n",50,1);
+        print("H_");
+	      print(itoa(ID));
+	      print(": Checking receptionists");
+	      Write("\n");
         
         int patientsWaiting=0;
         for (int j=0; j<numRecp; j++) {
@@ -863,21 +894,21 @@ void hospitalManager(int ID){
         }
             //2. Query Cashiers
             
-        Write("H_",50,1);
-	      Write(itoa(ID),50,1);
-	      Write(": Checking cashiers\n",50,1);
-        
+        print("H_");
+	      print(itoa(ID));
+	      print(": Checking cashiers");
+        Write("\n");
         for (int i=0; i<numCashiers; i++) {//Check for waiting patients
             if (cashiers[i].lineLength > 0 ) {
         
-        Write("H_",50,1);
-	      Write(itoa(ID),50,1);
-	      Write(": Found",50,1);
-	      Write(itoa(cashiers[i].lineLength),50,1);
-	      Write(" patients waiting for C_",50,1);
-        Write(itoa(i),50,1);
-        Write("  -> Signal Cashier\n",50,1);	      
-                
+        print("H_");
+	      print(itoa(ID));
+	      print(": Found");
+	      print(itoa(cashiers[i].lineLength));
+	      print(" patients waiting for C_");
+        print(itoa(i));
+        print("  -> Signal Cashier");	      
+        Write("\n");
                     //Wake up this receptionist up
                 Acquire(cashierLineLock);
                 Broadcast(cashiers[i].breakCV, cashierLineLock);
@@ -889,8 +920,8 @@ void hospitalManager(int ID){
             //Query cashiers for total sales
 
         feesPaidLock->Acquire();
-        Write(" T10: Total fees collected by cashiers:",50,1);
-        Write(itoa(feesPaid),50,1);
+        print(" T10: Total fees collected by cashiers:");
+        print(itoa(feesPaid));
         
 
         if( test_state == 10 ) {
@@ -898,16 +929,16 @@ void hospitalManager(int ID){
             IntStatus oldLevel = interrupt->SetLevel(IntOff);
             int sum = 0;
             for (int i=0; i<numCashiers; i++) {
-            	Write(" T10: cashier",50,1);
-            	Write(itoa(i),50,1);
-            	Write(" :",50,1);
-            	Write(itoa(cashiers[i].sales),50,1);
-              Write("\n",50,1);  
+            	print(" T10: cashier");
+            	print(itoa(i));
+            	print(" :");
+            	print(itoa(cashiers[i].sales));
+              Write("\n");  
               
                 sum += cashiers[i].sales;
             }
-            Write("T10: TOTAL:",50,1);
-            Write(itoa(sum),50,1);
+            print("T10: TOTAL:");
+            print(itoa(sum));
             
             
             
@@ -918,22 +949,23 @@ void hospitalManager(int ID){
         
         
             //3. Query pharmacy
-        Write("H_",50,1);
-        Write(itoa(ID),50,1);
-        Write(":Checking clerks\n",50,1);
+        print("H_");
+        print(itoa(ID));
+        print(":Checking clerks");
+        Write("\n");
         
         
         for (int i=0; i<numClerks; i++) {//Check for waiting patients
             if (clerks[i].patientsInLine > 0 ) {
 
-            	 Write("H_",50,1);
-            	 Write(itoa(ID),50,1);
-               Write(": found CL_",50,1);
-               Write(itoa(i),50,1);
-               Write(": sleeping and ",50,1);
-               Write(itoa(clerks[i].patientsInLine),50,1);
-               Write("waiting -> Signaling Clerk\n",50,1);
-               
+            	 print("H_");
+            	 print(itoa(ID));
+               print(": found CL_");
+               print(itoa(i));
+               print(": sleeping and ");
+               print(itoa(clerks[i].patientsInLine));
+               print("waiting -> Signaling Clerk");
+               Write("\n");
                 //Wake up this clerk up
                 ClerkLinesLock->Acquire();
                 clerks[i].ClerkBreakCV->Signal(ClerkLinesLock);
@@ -945,11 +977,11 @@ void hospitalManager(int ID){
             //Query clerks for total sales
 
         PaymentLock->Acquire();
-               Write("H_",50,1);
-            	 Write(itoa(ID),50,1);
-               Write("T10: Total amount collected by clerks: ",50,1);
-               Write(itoa(totalsales),50,1);
-               Write("\n",50,1);
+               print("H_");
+            	 print(itoa(ID));
+               print("T10: Total amount collected by clerks: ");
+               print(itoa(totalsales));
+               Write("\n");
         
 
         
@@ -959,16 +991,16 @@ void hospitalManager(int ID){
             int sum = 0;
             for (int i=0; i<numClerks; i++) {
             	
-            	 Write("T10: clerk ",50,1);
-            	 Write(itoa(i),50,1);
-               Write(" : ",50,1);
-               Write(itoa(clerks[i].sales),50,1);
-               Write("\n",50,1);
+            	 print("T10: clerk ");
+            	 print(itoa(i));
+               print(" : ");
+               print(itoa(clerks[i].sales));
+               Write("\n");
                
                 sum += clerks[i].sales;
             }
-            Write("T10: TOTAL: ",50,1);
-            Write(itoa(sum),50,1);
+            print("T10: TOTAL: ");
+            print(itoa(sum));
             
                 // sum just printed should match feesPaid, printed earlier
             (void) interrupt->SetLevel(oldLevel);
@@ -978,22 +1010,23 @@ void hospitalManager(int ID){
         Yield();
         
             //Check on the doorboys
-               Write("H_",50,1);
-            	 Write(itoa(ID),50,1);
-            	 Write(": Checking doorboys\n",50,1);
+               print("H_");
+            	 print(itoa(ID));
+            	 print(": Checking doorboys");
+            	 Write("\n");
         
         for (int i=0; i<numDoctors; i++) {//Check for waiting patients
             if (doctors[i].peopleInLine > 0 ) {
 
             	  
-            	 Write("H_",50,1);
-            	 Write(itoa(ID),50,1);
-               Write(": found ",50,1);
-               Write(itoa(doctors[i].peopleInLine),50,1);
-               Write(": people in doctor ",50,1);
-               Write(itoa(i),50,1);
-               Write("'s line -> Signal Doorboy\n",50,1);
-               
+            	 print("H_");
+            	 print(itoa(ID));
+               print(": found ");
+               print(itoa(doctors[i].peopleInLine));
+               print(": people in doctor ");
+               print(itoa(i));
+               print("'s line -> Signal Doorboy");
+               Write("\n");
                 
                 doctors[i].LineLock->Acquire();
                 doctors[i].doorboyBreakCV->Broadcast(doctors[i].LineLock);
@@ -1017,9 +1050,10 @@ void HospINIT(int testmode = 0) {
         
             //3. Cashiers
         numCashiers = (Random() % (MAX_CASHIER - MIN_CASHIER +1) + MIN_CASHIER) ;
-               Write("Creating ",50,1);
-            	 Write(itoa(numCashiers),50,1);
-               Write("Cashiers\n",50,1);
+               print("Creating ");
+            	 print(itoa(numCashiers));
+               print("Cashiers");
+               Write("\n");
         
         
         for(i=0;i<numCashiers;i++)
@@ -1032,10 +1066,10 @@ void HospINIT(int testmode = 0) {
         numDoctors = (Random() % (MAX_DOCTORS - MIN_DOCTORS + 1) + MIN_DOCTORS);
         if(test1active == false){
             numDoorboys = numDoctors;
-            Write("Creating ",50,1);
-            Write(itoa(numDoorboys),50,1);
-            Write(" Doorboys\n",50,1);
-            
+            print("Creating ");
+            print(itoa(numDoorboys));
+            print(" Doorboys");
+            Write("\n");
             for(i=0;i<numDoorboys;i++)
             {
                 
@@ -1043,17 +1077,17 @@ void HospINIT(int testmode = 0) {
             }            
         }else{
             numDoorboys = 0;
-            Write("Bypassing Doorboy Creation\n",50,1);
-            
+            print("Bypassing Doorboy Creation");
+            Write("\n");
         }
         
         
             //5. Pharmacys
         numClerks= (Random() % (MAX_CLERKS - MIN_CLERKS +1) + MIN_CLERKS) ;
-            Write("Creating ",50,1);
-            Write(itoa(numClerks),50,1);
-            Write(" Clerks\n",50,1);
-        
+            print("Creating ");
+            print(itoa(numClerks));
+            print(" Clerks");
+            Write("\n");
         
         for(i=0;i<numClerks;i++)
         {
@@ -1064,10 +1098,10 @@ void HospINIT(int testmode = 0) {
         
             //1. Doctors
             
-            Write("Creating ",50,1);
-            Write(itoa(numDoctors),50,1);
-            Write(" Doctors\n",50,1);
-        
+            print("Creating ");
+            print(itoa(numDoctors));
+            print(" Doctors");
+            Write("\n");
         for(i=0;i<numDoctors;i++)
         {
             
@@ -1081,10 +1115,10 @@ void HospINIT(int testmode = 0) {
         peopleInHospital = numPatients;
         Release(hospitalLock);    
         
-        Write("Creating ",50,1);
-            Write(itoa(numPatients),50,1);
-            Write(" Patients\n",50,1);
-            
+        print("Creating ");
+            print(itoa(numPatients));
+            print(" Patients");
+            Write("\n");
         
         for(i=0;i<numPatients;i++)
         {
@@ -1096,8 +1130,8 @@ void HospINIT(int testmode = 0) {
         
             //6. HospitalManager
 
-        Write("Creating 1 Hospital Manager\n ",50,1);    
-        
+        print("Creating 1 Hospital Manager ");    
+        Write("\n");
         t = new Thread("HospitalManager_0");
         t->Fork((VoidFunctionPtr) hospitalManager, 0);   
    
@@ -1106,10 +1140,10 @@ void HospINIT(int testmode = 0) {
         
             //2. Receptionists
         numRecp = (Random() % (RECP_MAX - RECP_MIN +1) + RECP_MIN) ;
-            Write("Creating ",50,1);
-            Write(itoa(numRecp),50,1);
-            Write(" Receptionists\n",50,1);
-            
+            print("Creating ");
+            print(itoa(numRecp));
+            print(" Receptionists");
+            Write("\n");
         
         for(i=0; i<numRecp; i++)
         {
@@ -1126,10 +1160,10 @@ void HospINIT(int testmode = 0) {
         
             //3. Cashiers
         numCashiers = (Random() % (MAX_CASHIER - MIN_CASHIER +1) + MIN_CASHIER) ;
-            Write("Creating ",50,1);
-            Write(itoa(numCashiers),50,1);
-            Write(" Cashiers\n",50,1);
-            
+            print("Creating ");
+            print(itoa(numCashiers));
+            print(" Cashiers");
+            Write("\n");
         
         for(i=0;i<numCashiers;i++)
         {
@@ -1141,10 +1175,10 @@ void HospINIT(int testmode = 0) {
         numDoctors = (Random() % (MAX_DOCTORS - MIN_DOCTORS + 1) + MIN_DOCTORS);
         if(test1active == false){
             numDoorboys = numDoctors;
-            Write("Creating ",50,1);
-            Write(itoa(numDoorboys),50,1);
-            Write(" Doorboys\n",50,1);
-            
+            print("Creating ");
+            print(itoa(numDoorboys));
+            print(" Doorboys");
+            Write("\n");
             
             for(i=0;i<numDoorboys;i++)
             {
@@ -1153,18 +1187,18 @@ void HospINIT(int testmode = 0) {
             }            
         }else{
             numDoorboys = 0;
-            Write(" Bypassing Doorboy Creation\n",50,1);
-            
+            print(" Bypassing Doorboy Creation");
+            Write("\n");
         }
         
         
             //5. Pharmacys
         numClerks= (Random() % (MAX_CLERKS - MIN_CLERKS +1) + MIN_CLERKS) ;
         
-            Write("Creating ",50,1);
-            Write(itoa(numClerks),50,1);
-            Write(" Clerks\n",50,1);
-
+            print("Creating ");
+            print(itoa(numClerks));
+            print(" Clerks");
+            Write("\n");
        
         for(i=0;i<numClerks;i++)
         {
@@ -1174,10 +1208,10 @@ void HospINIT(int testmode = 0) {
         
         
             //1. Doctors
-            Write("Creating ",50,1);
-            Write(itoa(numDoctors),50,1);
-            Write(" Doctors\n",50,1);
-        
+            print("Creating ");
+            print(itoa(numDoctors));
+            print(" Doctors");
+            Write("\n");
         for(i=0;i<numDoctors;i++)
         {
             
@@ -1191,10 +1225,10 @@ void HospINIT(int testmode = 0) {
         peopleInHospital = numPatients;
         Release(hospitalLock);    
         
-        Write("Creating ",50,1);
-            Write(itoa(numPatients),50,1);
-            Write(" Patients\n",50,1);
-        
+        print("Creating ");
+            print(itoa(numPatients));
+            print(" Patients");
+            Write("\n");
         for(i=0;i<numPatients;i++)
         {
             
@@ -1206,8 +1240,8 @@ void HospINIT(int testmode = 0) {
             //6. HospitalManager
 
             
-        Write("Creating 1 Hospital Manager\n ",50,1); 
-        
+        print("Creating 1 Hospital Manager "); 
+        Write("\n");
         t = new Thread("HospitalManager_0");
         t->Fork((VoidFunctionPtr) hospitalManager, 0);   
 
@@ -1234,10 +1268,10 @@ void HospINIT(int testmode = 0) {
         if(test1active == false){
             numDoorboys = numDoctors;
             
-            Write("Creating ",50,1);
-            Write(itoa(numDoorboys),50,1);
-            Write(" Doorboys\n",50,1);
-
+            print("Creating ");
+            print(itoa(numDoorboys));
+            print(" Doorboys");
+            Write("\n");
             
             for(i=0;i<numDoorboys;i++)
             {
@@ -1246,17 +1280,17 @@ void HospINIT(int testmode = 0) {
             }            
         }else{
             numDoorboys = 0;
-            Write(" Bypassing Doorboy Creation\n",50,1);
-            
+            print(" Bypassing Doorboy Creation");
+            Write("\n");
         }
         
         
             //5. Pharmacys
         numClerks= (Random() % (MAX_CLERKS - MIN_CLERKS +1) + MIN_CLERKS) ;
-            Write("Creating ",50,1);
-            Write(itoa(numClerks),50,1);
-            Write(" Clerks\n",50,1);
-        
+            print("Creating ");
+            print(itoa(numClerks));
+            print(" Clerks");
+            Write("\n");
         for(i=0;i<numClerks;i++)
         {
             
@@ -1265,10 +1299,10 @@ void HospINIT(int testmode = 0) {
         
         
             //1. Doctors
-            Write("Creating ",50,1);
-            Write(itoa(numDoctors),50,1);
-            Write(" Doctors\n",50,1);
-
+            print("Creating ");
+            print(itoa(numDoctors));
+            print(" Doctors");
+            Write("\n");
        
         for(i=0;i<numDoctors;i++)
         {
@@ -1283,10 +1317,10 @@ void HospINIT(int testmode = 0) {
         peopleInHospital = numPatients;
         Release(hospitalLock);    
         
-            Write("Creating ",50,1);
-            Write(itoa(numPatients),50,1);
-            Write(" Patients\n",50,1);
-        
+            print("Creating ");
+            print(itoa(numPatients));
+            print(" Patients");
+            Write("\n");
         
         for(i=0;i<numPatients;i++)
         {
@@ -1301,8 +1335,8 @@ void HospINIT(int testmode = 0) {
 
             
             
-        Write("Creating 1 Hospital Manager\n ",50,1);     
-        
+        print("Creating 1 Hospital Manager ");     
+        Write("\n");
         t = new Thread("HospitalManager_0");
         t->Fork((VoidFunctionPtr) hospitalManager, 0);   
 
@@ -1313,10 +1347,10 @@ void HospINIT(int testmode = 0) {
             //2. Receptionists
         numRecp = (Random() % (RECP_MAX - RECP_MIN +1) + RECP_MIN) ;
         
-            Write("Creating ",50,1);
-            Write(itoa(numRecp),50,1);
-            Write(" Receptionists\n",50,1);
-        
+            print("Creating ");
+            print(itoa(numRecp));
+            print(" Receptionists");
+            Write("\n");
         
         for(i=0; i<numRecp; i++)
         {
@@ -1331,10 +1365,10 @@ void HospINIT(int testmode = 0) {
             //3. Cashiers
         numCashiers = (Random() % (MAX_CASHIER - MIN_CASHIER +1) + MIN_CASHIER) ;
             
-            Write("Creating ",50,1);
-            Write(itoa(numCashiers),50,1);
-            Write(" Cashiers\n",50,1);
-
+            print("Creating ");
+            print(itoa(numCashiers));
+            print(" Cashiers");
+            Write("\n");
         
         for(i=0;i<numCashiers;i++)
         {
@@ -1347,10 +1381,10 @@ void HospINIT(int testmode = 0) {
         if(test1active == false){
             numDoorboys = numDoctors;
             
-            Write("Creating ",50,1);
-            Write(itoa(numDoorboys),50,1);
-            Write(" Doorboys\n",50,1);
-
+            print("Creating ");
+            print(itoa(numDoorboys));
+            print(" Doorboys");
+            Write("\n");
             
             for(i=0;i<numDoorboys;i++)
             {
@@ -1360,8 +1394,8 @@ void HospINIT(int testmode = 0) {
         }else{
             numDoorboys = 0;
             
-            Write(" Bypassing Doorboy Creation\n",50,1);
-            
+            print(" Bypassing Doorboy Creation");
+            Write("\n");
             
         }
         
@@ -1370,10 +1404,10 @@ void HospINIT(int testmode = 0) {
         numClerks = (Random() % (MAX_CLERKS - MIN_CLERKS +1) + MIN_CLERKS) ;        
         
             //1. Doctors
-            Write("Creating ",50,1);
-            Write(itoa(numDoctors),50,1);
-            Write(" Doctors\n",50,1);
-            
+            print("Creating ");
+            print(itoa(numDoctors));
+            print(" Doctors");
+            Write("\n");
            
        
         for(i=0;i<numDoctors;i++)
@@ -1390,10 +1424,10 @@ void HospINIT(int testmode = 0) {
         Release(hospitalLock);    
         
         
-            Write("Creating ",50,1);
-            Write(itoa(numPatients),50,1);
-            Write(" Patients\n",50,1);
-
+            print("Creating ");
+            print(itoa(numPatients));
+            print(" Patients");
+            Write("\n");
         
         for(i=0;i<numPatients;i++)
         {
@@ -1406,7 +1440,8 @@ void HospINIT(int testmode = 0) {
             //6. HospitalManager
 
             
-        Write("Creating 1 Hospital Manager\n ",50,1);      
+        print("Creating 1 Hospital Manager ");
+        Write("\n");      
         t = new Thread("HospitalManager_0");
         t->Fork((VoidFunctionPtr) hospitalManager, 0);   
 
@@ -1416,10 +1451,10 @@ void HospINIT(int testmode = 0) {
             //2. Receptionists
         numRecp = (Random() % (RECP_MAX - RECP_MIN +1) + RECP_MIN) ;
         
-        Write("Creating ",50,1);
-        Write(itoa(numRecp),50,1);
-        Write(" Receptionists\n",50,1);
-        
+        print("Creating ");
+        print(itoa(numRecp));
+        print(" Receptionists");
+        Write("\n");
         
         for(i=0; i<numRecp; i++)
         {
