@@ -19,11 +19,9 @@ void patients(int ID){
     /*//// Begin interaction with Receptionist /////// */
     /*//////////////////////////////////////////////// */
 
-    print("P:Attempt to acquire recpLineLock...");
-    Write("\n");
+    print("P:Attempt to acquire recpLineLock...\n");
     Acquire(recpLineLock);
-    print("P:success");
-    Write("\n");
+    print("P:success\n");
 
     /* Find the shortest line */
     int shortestline = 0;
@@ -31,11 +29,9 @@ void patients(int ID){
 
     /*Find shortest Line */
     if (test4active == 1) {
-        print("P:TEST4: Searching for the receptionist with the shortest line");
-        Write("\n");
+        print("P:TEST4: Searching for the receptionist with the shortest line\n");
     }else {
-        print("P: Searching for the receptionist with the shortest line");
-        Write("\n");
+        print("P: Searching for the receptionist with the shortest line\n");
         
     }
     
@@ -47,7 +43,7 @@ void patients(int ID){
             print(itoa(i));
             print(" = ");
             print(itoa(receptionists[i].peopleInLine));
-            Write("\n");
+            print("\n");
         }
         
         if(receptionists[i].peopleInLine < len){
@@ -61,10 +57,10 @@ void patients(int ID){
         print(itoa(ID));
         print(":TEST4: Found shortest line with R_");
         print(itoa(shortestline));print(" len: ");print(itoa(len));
-        Write("\n");
+        print("\n");
     }else{
         print("P_");print(itoa(ID));print(": Found shortest line with R_");
-        print(itoa(shortestline));print(" len: ");print(itoa(len));Write("\n");
+        print(itoa(shortestline));print(" len: ");print(itoa(len));print("\n");
     }
 
     /* Wait in line */
@@ -72,8 +68,7 @@ void patients(int ID){
     receptionists[shortestline].receptionCV->Wait(recpLineLock);
     print("P_");
     print(itoa(ID));
-    print(" Got woken up, get out of line and going to counter for token");
-    Write("\n");
+    print(" Got woken up, get out of line and going to counter for token\n");
     receptionists[shortestline].peopleInLine--;
     
     /*wait for the receptionist to prepare token for me, till then I wait */
@@ -83,23 +78,20 @@ void patients(int ID){
     /*token is ready just read it -- print it out in our case */
     print("P_");
     print(itoa(ID));
-    print(": Reading Token..");
-    Write("\n");
+    print(": Reading Token..\n");
     myToken = receptionists[shortestline].currentToken;
     print("P_");
     print(itoa(ID));
     print(": My token is ");
     print(itoa(ID));
-    print("..yeah!!");
-    Write("\n");
+    print("..yeah!!\n");
     /*Done, signal receptionist that he can proceed  */
     Signal(receptionists[shortestline].receptionistWaitCV, receptionists[shortestline].transLock);
     print("P_");
     print(itoa(ID));
     print(": Signal receptionist R_");
     print(itoa(shortestline));
-    print(" to continue, I am done");
-    Write("\n");
+    print(" to continue, I am done\n");
     /*Release transaction lock */
     Release(receptionists[shortestline].transLock);
     
@@ -116,7 +108,7 @@ void patients(int ID){
             print(itoa(ID));
             print(" :TEST2: Going to meet doctor D_");
             print(itoa(myDoctor));
-            Write("\n");
+            print("\n");
 	}
 	 if(test7active==1)
 	{
@@ -124,13 +116,11 @@ void patients(int ID){
             print(itoa(ID));
             print(" :TEST7: Waiting in doctor D_");
             print(itoa(myDoctor));
-           print(" Queue");
-           Write("\n");
+           print(" Queue\n");
 	}else{
             print("P_");
             print(itoa(ID));
-            print(" : Going to meet doctor D_");
-            Write("\n");
+            print(" : Going to meet doctor D_\n");
         }
 
     /* Acquire doc's line lock */
@@ -141,21 +131,18 @@ void patients(int ID){
 	{
             print("P_");
             print(itoa(ID));
-	    print(" :TEST2: Join line and Waiting for doorboy to tell me to go");
-            Write("\n");
+	    print(" :TEST2: Join line and Waiting for doorboy to tell me to go\n");
 	}
 	else{
             print("P_");
             print(itoa(ID));
-	    print(" : Join line and Waiting for doorboy to tell me to go");
-            Write("\n");
+	    print(" : Join line and Waiting for doorboy to tell me to go\n");
         }
     doctors[myDoctor].peopleInLine++;
     Wait(doctors[myDoctor].LineCV, doctors[myDoctor].LineLock);
     print("P_");
     print(itoa(ID));
-    print(" : Doorboy told me to go to doctor, proceeding....");
-    Write("\n");
+    print(" : Doorboy told me to go to doctor, proceeding....\n");
     doctors[myDoctor].peopleInLine--;
 
     /* move into the doctor's transaction lock */
@@ -164,19 +151,16 @@ void patients(int ID){
     
     print("P_");
     print(itoa(ID));
-    print(" : Trying to acquire doctor's translock");
-    Write("\n");
+    print(" : Trying to acquire doctor's translock\n");
    
     Acquire(doctors[myDoctor].transLock);
     print("P_");
     print(itoa(ID));
-    print(" : Success");
-    Write("\n");
+    print(" : Success\n");
 
     print("P_");
     print(itoa(ID));
-    print(" : Giving doctor the token...");
-    Write("\n");
+    print(" : Giving doctor the token...\n");
     /*The doctor is waiting for me to provide my info, oblige him!! */
     doctors[myDoctor].patientToken = myToken;
 
@@ -187,16 +171,14 @@ void patients(int ID){
             print(itoa(ID));
             print(" :TEST7: Consulting Doctor D_");
             print(itoa(myDoctor));
-            print(" now...");
-				    Write("\n");
+            print(" now...\n");
 	}
 	else{
             print("P_");
             print(itoa(ID));
             print(" : Consulting Doctor D_");
             print(itoa(myDoctor));
-            print(" now...");
-            Write("\n");
+            print(" now...\n");
         }
     Signal(doctors[myDoctor].transCV, doctors[myDoctor].transLock);
     Wait(doctors[myDoctor].transCV, doctors[myDoctor].transLock);
@@ -207,15 +189,14 @@ void patients(int ID){
     print(itoa(ID));
     print(" : Consultation finished and  Got prescription ");
     print(itoa(myPrescription));
-    Write("\n");
+    print("\n");
 
     /* Signal the doctor that I have taken the prescription and left */
     Signal(doctors[myDoctor].transCV, doctors[myDoctor].transLock);
     Release(doctors[myDoctor].transLock);
     print("P_");
     print(itoa(ID));
-    print(": Done with Doctor, going to cashier.");
-    Write("\n");
+    print(": Done with Doctor, going to cashier.\n");
     /*////////////////////////////////////////// */
     /*///////  Interaction with Cashier //////// */
     /*////////////////////////////////////////// */
@@ -223,21 +204,18 @@ void patients(int ID){
     Acquire(cashierLineLock);
     print("P_");
     print(itoa(ID));
-    print(": Acquiring cashierLineLock");
-    Write("\n");
+    print(": Acquiring cashierLineLock\n");
     /* find the shortest line */
     int myCashier = 0;
     int sLen = cashiers[0].lineLength;
     if (test4active == 1) {
         print("P_");
         print(itoa(ID));
-        print(":TEST4: Finding shortest Line of cashiers");
-        Write("\n");
+        print(":TEST4: Finding shortest Line of cashiers\n");
     }else {
         print("P_");
         print(itoa(ID));
-        print(": Finding shortest Line of cashiers");
-        Write("\n");
+        print(": Finding shortest Line of cashiers\n");
     }
 
     for(int i=1; i < numCashiers; ++i) {
@@ -249,7 +227,7 @@ void patients(int ID){
             print(itoa(i));
             print(" = ");
             print(itoa(cashiers[i].lineLength));
-            Write("\n");
+            print("\n");
         }
         
         if(cashiers[i].lineLength < sLen) {
@@ -265,7 +243,7 @@ void patients(int ID){
         print(itoa(myCashier));
         print("len: ");
         print(itoa(sLen));
-        Write("\n");
+        print("\n");
     }else {
     	     print("P_");
         print(itoa(ID));
@@ -273,7 +251,7 @@ void patients(int ID){
         print(itoa(myCashier));
         print("len: ");
         print(itoa(sLen));
-        Write("\n");
+        print("\n");
     	
         
     }
@@ -287,13 +265,13 @@ void patients(int ID){
     print(itoa(myCashier));
     print(" to attend to me, Line length: ");
     print(itoa(cashiers[myCashier].lineLength));
-    Write("\n");
+    print("\n");
     Wait(cashiers[myCashier].lineCV,cashierLineLock);
     print("P_");
     print(itoa(ID));
     print(": Going to meet cashier C_");
     print(itoa(myCashier));
-    Write("\n");
+    print("\n");
     cashiers[myCashier].lineLength --;
 
     /*// APPROACH THE DESK //// */
@@ -311,38 +289,32 @@ void patients(int ID){
     cashiers[myCashier].payment = cashiers[myCashier].fee;
     print( "P_");
     print(itoa(ID));
-    print(": Paying money.");
-    Write("\n");
+    print(": Paying money.\n");
     /* done */
     Signal(cashiers[myCashier].transCV, cashiers[myCashier].transLock);
     Release(cashiers[myCashier].transLock);
     print("P_");
     print(itoa(ID));
-    print(": Done with cashier");
-    Write("\n");
+    print(": Done with cashier\n");
     /*//////////////////////////////////////////////// */
     /*//////  Interaction with Pharmacy Clerk //////// */
     /*//////////////////////////////////////////////// */
     
     print("P_");
     print(itoa(ID));
-    print(":Attempt to acquire ClerkLinesLock...");
-    Write("\n");
+    print(":Attempt to acquire ClerkLinesLock...\n");
     Acquire(ClerkLinesLock)
-    print("success");
-    Write("\n");
+    print("success\n");
     int shortestclerkline = 0;
     int length = clerks[0].patientsInLine;
     if (test4active == 1) {
         print("P_");
         print(itoa(ID));
-        print(":TEST4: Finding shortest Line of clerks");
-        Write("\n");
+        print(":TEST4: Finding shortest Line of clerks\n");
     }else {
         print("P_");
         print(itoa(ID));
-        print(": Finding shortest Line of clerks");
-        Write("\n");
+        print(": Finding shortest Line of clerks\n");
     }
     
     /*Find shortest Line */
@@ -355,7 +327,7 @@ void patients(int ID){
             print(itoa(i));
             print(" = ");
             print(itoa(clerks[i].patientsInLine));
-            Write("\n");
+            print("\n");
         }
         if(clerks[i].patientsInLine < length){
             length = clerks[i].patientsInLine;
@@ -371,7 +343,7 @@ void patients(int ID){
         print(itoa(shortestclerkline));
         print(" len: ");
         print(itoa(length));
-        Write("\n");
+        print("\n");
     }else {
         print("P_");
         print(itoa(ID));
@@ -379,7 +351,7 @@ void patients(int ID){
         print(itoa(shortestclerkline));
         print(" len: ");
         print(itoa(length));
-        Write("\n");
+        print("\n");
     }
 
         /*wait in line for my turn */
@@ -391,15 +363,14 @@ void patients(int ID){
         print(itoa(shortestclerkline));
         print(" to attend to me, Line length:: ");
         print(itoa(clerks[shortestclerkline].patientsInLine));
-        Write("\n");
+        print("\n");
     
       
     Wait(clerks[shortestclerkline].ClerkCV, ClerkLinesLock);
     
     print("P_");
     print(itoa(ID));
-    print(" Got woken up, got out of line and going to the Pharmacy CLerk to give prescription.");
-    Write("\n");
+    print(" Got woken up, got out of line and going to the Pharmacy CLerk to give prescription.\n");
     clerks[shortestclerkline].patientsInLine--;
     
     Release(ClerkLinesLock);
@@ -407,15 +378,13 @@ void patients(int ID){
         /*signal ParmacyClerk that i am ready to give Prescription */
     print("P_");
     print(itoa(ID));
-    print(": Acquired ClerkTransLock");
-    Write("\n");
+    print(": Acquired ClerkTransLock\n");
         /*Entered the line no need to hold all lines others may now continue */
     /*wait for the PharmacyClerk to Get the prescription from me.. so I wait */
      clerks[shortestclerkline].patPrescription = myPrescription;
     print( "P_");
     print(itoa(ID));
-    print(": Gave prescriptiong, waiting for medicines.");
-    Write("\n");
+    print(": Gave prescriptiong, waiting for medicines.\n");
     /* wait for clerk to give cost */
     Signal(clerks[shortestclerkline].ClerkTransCV, clerks[shortestclerkline].ClerkTransLock);
     Wait(clerks[shortestclerkline].ClerkTransCV, clerks[shortestclerkline].ClerkTransLock);
@@ -423,24 +392,21 @@ void patients(int ID){
     /* provide the money */
     print( "P_");
     print(itoa(ID));
-    print(": Got Medicines, making payment.");
-    Write("\n");
+    print(": Got Medicines, making payment.\n");
     clerks[shortestclerkline].payment = clerks[shortestclerkline].fee;
 
     /* done */
     Signal(clerks[shortestclerkline].ClerkTransCV,clerks[shortestclerkline].ClerkTransLock);
     print("P_");
     print(itoa(ID));
-    print(": Done with Clerk");
-    Write("\n");
+    print(": Done with Clerk\n");
     Release(clerks[shortestclerkline].ClerkTransLock);
 
     /*7. get out - die die die( ;) muhahahhaha) */
     Acquire(hospitalLock);
     print("P_");
     print(itoa(ID));
-    print(" Getting out of the hospital");
-    Write("\n");
+    print(" Getting out of the hospital\n");
     peopleInHospital--;
     Release(hospitalLock);
 }
