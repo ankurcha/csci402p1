@@ -27,7 +27,7 @@ III. Design:
         Table and the process table has been delt with by using the Locks internally
         and this aspect is made transparent to the user.
 
-        LockId CreateLock( name )
+        LockId CreateLock(name)
             This system call is used to create a new Lock. Each lock, as it is
             created is entered into the LocksTable and then the lock is referenced using
             the lockId as returned by this function. In case of a failure in the creation
@@ -54,7 +54,81 @@ III. Design:
             is marked for deleting, it will remove the lock from the lockTable and also
             delete the Lock from memory.
 
+        CVId CreateCondition(name)
+            This system call is used to create a new Condition Variable. Each condition
+            variable, as it is created is entered into the condition variables table -
+            CVTable and then the condition variable is referenced using the CVId as
+            returned by this call. In case of failure in the creation of the condition
+            variable or failure to import the CV to the CVTable the system call returns -1.
+        
+        Wait(CVId, LockId)
+            This is used to call Wait on a condition variable using the lock that is given
+            as the second argument to this call. In case of any errors, either the lock is
+            non existant or CVId is invalid or the lock used with the CVId is not the one
+            for which the CV is being used or the Lock is not currently held by the current
+            Thread, the program/kernel doesn't halt, instead it just displays the error and
+            simply returns.
 
+        Signal(CVId, LockId)
+            This signal is used to send a signal to a condition Variable referenced using
+            CVId. All the error conditions are same as that for Wait system call. It causes
+            a single thread waiting on the condition variable to wake up.
+
+        Broadcast(CVId, LockId)
+            This system call is same as signal but instead of waking up just one thread
+            waiting on the condition variable, it wakes up all the threads that are waiting
+            on the condition variable. The error conditions are same as that mentioned for
+            Wait() system call and are ignored and execution continues.
+
+        Fork(VoidFunctionPtr)
+            This system call is used to fork a new thread. When we call this function we
+            get the virtual address of the function to be forked from the machine
+            register(2). Then we first make a new thread. And we make the address space
+            pointer point to the same address space as that of the spawning process. We
+            then fork the kernel_thread function with the virtual address of the function
+            to initialize the registers and allocate a new stack. This call also creates
+            the required entries to the process table and the childThreads table of the
+            address space associated with this thread.
+
+        kernel_thread()
+            This is a helper function for the fork system call. It does the following steps:
+                1. Load the Reg with virtual address.
+                2. Load the Next Reg with virtual address + 4
+                3. Restore the CPU state of a user program;
+                4. increment the number of user stacks for currentThread i.e.increment the process by 1
+                5. Load the stack register with the stack address of new stack;
+                6. Start the CPU so that it starts  running the user program thread;
+        
+        Exec(char *filename)
+            This system call is used to create a new process. The new process which is
+            created is like the one in fork but it has its own address space rather than
+            sharing the address space with the spawning thread. The system call copies the
+            code of the executable from the file specified by the argument and enters the
+            entry into both the process table and the new address space's childThreads
+            table. This system call then forks the proces  with exec_thread which then
+            initializes the different registers and prepares the process to run.
+
+        exec_thread()
+            This is a helper function similar to kernel_thread(). This function takes the
+            following steps: 
+                1. Initialize the register by using currentThread->space.
+                2. Call Restore State through currentThread->space.
+                3. Call machine->Run() 
+
+        Exit()
+            This system call prepares the thread to exit properly. This funtion has the following steps
+                if this is the last process in the system
+                    Call Halt interrupt.
+                if this is the last thread of the process but not the last process in the system
+                    Clear the entry corresponding to this object from bitmap of Process tables.
+                    Remove entries form process table and childThreads table.
+                    Exit the current thread.
+                if this is just another process neither the last nor the end of the system
+                    Remove entry from the child process table and the theads table.
+                    Exit current Thread.
+
+        Yield()
+            Yield causes the current thread to give up the CPU.
 
     Part 2:
         
@@ -109,13 +183,31 @@ III. Design:
 IV. Implementation:
 
     + Files Modified
-        addrspace.cc
-        addrspace.h
+        userprog/addrspace.cc
+        userprog/addrspace.h
+        userprog/syscall.h
+        userprog/exception.cc
+        threads/thread.h
+        threads/thread.cc
+        threads/system.h
+        threads/system.cc
 
     + Files added
+        test/acquire.c
+        test/createcv.c
+        test/destroycv.c
+        test/destroylock.c
+        test/exec.c
+        test/exectest.c
+        test/fork.c
+        test/halt.c
+        test/itoa.c
+        test/lockcreate.c
+        test/print.c
+        test/printtest.c
 
     + Data Structures added, and the file they were added to.
-
+        
 
     + Data Structures modified, and the file they were added to.
 

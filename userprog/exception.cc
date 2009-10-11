@@ -430,7 +430,7 @@ void ReleaseLock_Syscall(LockId lockId){
 CVId CreateCondition_Syscall(char* name){
 	DEBUG('a',"%s : CreateCondition_Syscall initialized.\n",currentThread->getName());
     std::string cname = currentThread->space->readCString(name);
-    cout<<"Lock Name: "<<cname;
+    cout<<"Condition Name: "<<cname;
     char *c_name = new char[cname.size()+1];
     strcpy(c_name, cname.c_str());    
     
