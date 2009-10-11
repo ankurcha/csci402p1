@@ -260,53 +260,66 @@ void Close_Syscall(int fd) {
 
     //-------------PENDING SYSCALLS-------------//
 void kernel_thread(int virtAddr){
-        //Setup new Thread
+        // Setup new thread.
     machine->WriteRegister(PCReg, virtAddr);
     machine->WriteRegister(NextPCReg, virtAddr+4);
     currentThread->space->RestoreState();
-        //TODO: Create a new Stack for this thread and write virtAddr to
-        // StackRegister - MAX's Voodoo
+        // Allocate Stack space for the new Thread and write the stackstart
+        // address to the stack register.
+    int stackId = currentThread->space->InitStack();
+    if(stackId < 0){
+        DEBUG('a', "%s: Unable to allocate stack for the new process\n",currentThread->getName());
+            // Kill Process and all its children
+        currentThread->space->killAllThreads();
+        return;
+    }
     machine->Run();
 }
 
 void Fork_Syscall(int funcAddr){
     DEBUG('a', "%s: Called Fork_Syscall.\n",currentThread->getName());
-        // TODO: Waiting for Max to give insight into the organizaton of the
-        // code in the address space
+        // Create new thread.kernel_thread()
     Thread *t = new Thread(currentThread->getName());
-    t->setPID(processTable->addProcess(t)); //Add Process to the system's process table
+    // Stack was successfully created.
+    // Add Process to the system's process table.
+    t->setPID(processTable->addProcess(t));
     currentThread->space->addChildThread(t->getPID());
+        // Address space for new Thread and the spawning thread is the same.
     t->space = currentThread->space;
+        // Fork to get the new thread.
     t->Fork((VoidFunctionPtr) kernel_thread, funcAddr);
+        // Restore state.
     currentThread->space->RestoreState();
-    return;
 }
 
 void exec_thread(int arg){
     currentThread->space->InitRegisters();
     currentThread->space->RestoreState();
     machine->Run();
-    
-    ASSERT(FALSE);
+        // We should never reach here.
 }
 
 spaceId Exec_Syscall(char *filename){
     DEBUG('a', "%s: Called Exec_Syscall\n",currentThread->getName());
-        // TODO: Waiting for Max to give insight into the organizaton of the
-        // code in the address space
-    OpenFile *executable = fileSystem->Open(filename);
-    AddrSpace *space;
-    
+    std::string cname = currentThread->space->readCString(filename);
+    cout<<"EXEC::"<<cname<<endl;
+    char *c_name = new char[cname.size()+1];
+    strcpy(c_name, cname.c_str());
+    OpenFile *executable = fileSystem->Open(c_name);
     if(!executable){
         DEBUG('a',"%s: Unable to open file %s .\n", currentThread->getName(),
-              filename);
+              c_name);
         return -1;
     }
-    Thread *t = new Thread(filename);
+        // Create new thread.
+    Thread *t = new Thread(c_name);
+        // Create new Address space and allocate it to the thread.
     t->space = new AddrSpace(executable);
-        //Add Thread to processTable and get the PID
-    DEBUG('a', "%s: New thread created with PID: %d.\n",currentThread->getName(),
-          t->getPID());
+        // Add process to process table.
+    t->setPID(processTable->addProcess(t));
+    currentThread->space->addChildThread(t->getPID());
+    DEBUG('a', "%s: New thread created with PID: %d.\n",currentThread->getName(), t->getPID());
+    
     t->Fork((VoidFunctionPtr) exec_thread, 0);
     return (spaceId) t->space;
 }
@@ -314,18 +327,16 @@ spaceId Exec_Syscall(char *filename){
 void Exit_Syscall(int status){
     cout <<currentThread->getName()<<": Exit status: "<<status<<endl;
     if (processTable->getProcessCount() == 1 && currentThread->space->childThreads.size() == 0) {
-        DEBUG('a', "End of all processes across NACHOS\n");
+        DEBUG('a', "Exit_Syscall:End of all processes across NACHOS\n");
         interrupt->Halt();
     }else if (currentThread->space->childThreads.size() == 0 && processTable->getProcessCount()>1) {
-        DEBUG('a', "End of Process PID: %d\n", currentThread->getPID());
+        DEBUG('a', "Exit_Syscall:End of Process PID: %d\n", currentThread->getPID());
         currentThread->space->removeChildThread(currentThread->getPID());
-        processTable->killProcess(currentThread->getPID());
         currentThread->Finish();
     }else {
             //Neither the end of process nor the end of Nachos
-        DEBUG('a',"End of Thread PID: %d\n", currentThread->getPID());
+        DEBUG('a',"Exit_Syscall:End of Thread PID: %d\n", currentThread->getPID());
         currentThread->space->removeChildThread(currentThread->getPID());
-        processTable->killProcess(currentThread->getPID());
         currentThread->Finish();
     }
 }
@@ -437,6 +448,7 @@ CVId CreateCondition_Syscall(char* name){
 }
 
 void DestroyCondition_Syscall(CVId id){
+    DEBUG('a', "DestroyCondition syscall.\n");
 	ConditionWrapper *target = (ConditionWrapper*) currentThread->space->CVTable.Get(id);
     if(target){
         if (target->mark && target->counter == 0) {

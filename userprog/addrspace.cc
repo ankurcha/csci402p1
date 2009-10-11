@@ -321,6 +321,13 @@ AddrSpace::~AddrSpace()
             delete f;
         }
     }
+    
+    // kill all child processes
+    //set<PID>::iterator childItr;
+    //while(childThread.size()>0){
+    //    childItr = childThread.begin();
+    //    this->removeChild((PID) *childItr);
+    //}
 }
 
 //----------------------------------------------------------------------
@@ -551,6 +558,16 @@ void AddrSpace::addChildThread(PID pid){
 
 void AddrSpace::removeChildThread(PID pid){
     this->childLock->Acquire();
+    processTable->killProcess(pid); 
     this->childThreads.erase(pid);
     this->childLock->Release();
+}
+
+void AddrSpace::killAllThreads(){
+    // kill all child processes
+    set<PID>::iterator childItr;
+    while(childThreads.size()>0){
+        childItr = childThreads.begin();
+        this->removeChildThread((PID) *childItr);
+    }
 }

@@ -1,5 +1,8 @@
 #include "syscall.h"
 
+#ifndef PRINT_C
+#define PRINT_C
+
 void print(char* str) {
     int i = 0;
     while(str[i] != 0) {
@@ -10,3 +13,4 @@ void print(char* str) {
     return;
 }
 
+#endif /* PRINT_C */

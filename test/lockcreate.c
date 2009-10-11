@@ -1,17 +1,21 @@
 #include "syscall.h"
-#include "print.c"
 
-main() {
+char* itoa(int a){
+    static char str[50];
+    int i = 49;
+    do{
+        str[i] = '0'+ a%10;
+    }while((a=a/10) && i>=0);
 
-int w = CreateLock("lock_test");
-Acquire(w);
-Release(w);
-if(w>=0){
-	print(" Testing lock creation...Pass\n");
- }
-else {
-	print(" Testing lock creation...Fail\n");
+ return str;
 }
 
-
-       }
+int main() {
+    int w = CreateLock("lockTest");
+    Write(itoa(0),1,1);
+    if(w>=0){
+        Write("Pass2\n",6,1);
+    }else{
+        Write("Fail3\n",6,1);
+    }
+}
