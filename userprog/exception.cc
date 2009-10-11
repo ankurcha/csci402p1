@@ -300,10 +300,11 @@ void exec_thread(int arg){
 
 spaceId Exec_Syscall(char *filename){
     DEBUG('a', "%s: Called Exec_Syscall\n",currentThread->getName());
+        // Get filename to kernel space
     std::string cname = currentThread->space->readCString(filename);
-    cout<<"EXEC::"<<cname<<endl;
     char *c_name = new char[cname.size()+1];
     strcpy(c_name, cname.c_str());
+    cout << "Exec_Syscall: Arg: " <<c_name<<endl;
     OpenFile *executable = fileSystem->Open(c_name);
     if(!executable){
         DEBUG('a',"%s: Unable to open file %s .\n", currentThread->getName(),c_name);
@@ -348,6 +349,7 @@ void Yield_Syscall(){
 LockId CreateLock_Syscall(char* name){
     DEBUG('a',"%s: CreateLock_Syscall initiated.\n", currentThread->getName());
     std::string cname = currentThread->space->readCString(name);
+    cout<<"Lock Name: "<<cname;
     char *c_name = new char[cname.size()+1];
     strcpy(c_name, cname.c_str());
     LockWrapper *newLock = new LockWrapper(new Lock(c_name), 0, false);
@@ -428,6 +430,7 @@ void ReleaseLock_Syscall(LockId lockId){
 CVId CreateCondition_Syscall(char* name){
 	DEBUG('a',"%s : CreateCondition_Syscall initialized.\n",currentThread->getName());
     std::string cname = currentThread->space->readCString(name);
+    cout<<"Condition Name: "<<cname;
     char *c_name = new char[cname.size()+1];
     strcpy(c_name, cname.c_str());    
     
@@ -560,7 +563,6 @@ void ExceptionHandler(ExceptionType which) {
                 Close_Syscall(machine->ReadRegister(4));
                 break;
 #ifdef CHANGED
-                    //Incomplete------------
             case SC_Fork:
                 DEBUG('a', "Fork syscall.\n");
                 Fork_Syscall(machine->ReadRegister(4));
@@ -573,7 +575,6 @@ void ExceptionHandler(ExceptionType which) {
                 DEBUG('a', "Exit syscall.\n");
                 Exit_Syscall((int) machine->ReadRegister(4));
                 break;
-                    //----------------------
             case SC_Yield:
                 (void) Yield_Syscall();
                 break;                

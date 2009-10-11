@@ -1,8 +1,9 @@
 #include "syscall.h"
+#include "print.c"
 
 main(){
 
-  Exec("./nachos");
+  Exec("../test/exectest");
   Exit(0);
 
 }
