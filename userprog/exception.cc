@@ -301,14 +301,18 @@ void exec_thread(int arg){
 
 spaceId Exec_Syscall(char *filename){
     DEBUG('a', "%s: Called Exec_Syscall\n",currentThread->getName());
-    OpenFile *executable = fileSystem->Open(filename);
+    std::string cname = currentThread->space->readCString(filename);
+    cout<<"EXEC::"<<cname<<endl;
+    char *c_name = new char[cname.size()+1];
+    strcpy(c_name, cname.c_str());
+    OpenFile *executable = fileSystem->Open(c_name);
     if(!executable){
         DEBUG('a',"%s: Unable to open file %s .\n", currentThread->getName(),
-              filename);
+              c_name);
         return -1;
     }
         // Create new thread.
-    Thread *t = new Thread(filename);
+    Thread *t = new Thread(c_name);
         // Create new Address space and allocate it to the thread.
     t->space = new AddrSpace(executable);
         // Add process to process table.
@@ -323,18 +327,16 @@ spaceId Exec_Syscall(char *filename){
 void Exit_Syscall(int status){
     cout <<currentThread->getName()<<": Exit status: "<<status<<endl;
     if (processTable->getProcessCount() == 1 && currentThread->space->childThreads.size() == 0) {
-        DEBUG('a', "End of all processes across NACHOS\n");
+        DEBUG('a', "Exit_Syscall:End of all processes across NACHOS\n");
         interrupt->Halt();
     }else if (currentThread->space->childThreads.size() == 0 && processTable->getProcessCount()>1) {
-        DEBUG('a', "End of Process PID: %d\n", currentThread->getPID());
+        DEBUG('a', "Exit_Syscall:End of Process PID: %d\n", currentThread->getPID());
         currentThread->space->removeChildThread(currentThread->getPID());
-        processTable->killProcess(currentThread->getPID());
         currentThread->Finish();
     }else {
             //Neither the end of process nor the end of Nachos
-        DEBUG('a',"End of Thread PID: %d\n", currentThread->getPID());
+        DEBUG('a',"Exit_Syscall:End of Thread PID: %d\n", currentThread->getPID());
         currentThread->space->removeChildThread(currentThread->getPID());
-        processTable->killProcess(currentThread->getPID());
         currentThread->Finish();
     }
 }
