@@ -79,8 +79,7 @@ createcv.o: createcv.c
 createcv: createcv.o start.o
 	$(LD) $(LDFLAGS) start.o createcv.o -o createcv.coff
 	../bin/coff2noff createcv.coff createcv
-destroycv.o:
-	destroycv.o: destroycv.c
+destroycv.o: destroycv.c
 	$(CC) $(CFLAGS) -c destroycv.c
 destroycv: destroycv.o start.o
 	$(LD) $(LDFLAGS) start.o destroycv.o -o destroycv.coff

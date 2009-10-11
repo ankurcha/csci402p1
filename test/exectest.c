@@ -1,6 +1,7 @@
 #include "syscall.h"
+#include "print.c"
 
 main(){
-  Write("Hello World",11,1);
+  print("Hello World");
   Exit(-1);
 }
