@@ -258,7 +258,6 @@ void Close_Syscall(int fd) {
     }
 }
 
-    //-------------PENDING SYSCALLS-------------//
 void kernel_thread(int virtAddr){
         // Setup new thread.
     machine->WriteRegister(PCReg, virtAddr);
@@ -307,8 +306,8 @@ spaceId Exec_Syscall(char *filename){
     strcpy(c_name, cname.c_str());
     OpenFile *executable = fileSystem->Open(c_name);
     if(!executable){
-        DEBUG('a',"%s: Unable to open file %s .\n", currentThread->getName(),
-              c_name);
+        DEBUG('a',"%s: Unable to open file %s .\n", currentThread->getName(),c_name);
+        cout<<"Exec_syscall: Unable to open file "<<c_name<<endl;
         return -1;
     }
         // Create new thread.
@@ -341,7 +340,6 @@ void Exit_Syscall(int status){
     }
 }
 
-    //----------------------------------------//
 
 void Yield_Syscall(){
     (void) currentThread->Yield();
