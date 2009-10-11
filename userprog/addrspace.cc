@@ -272,6 +272,7 @@ AddrSpace::AddrSpace(OpenFile *executable) : fileTable(MaxOpenFiles),
         // initialize the initData segment one page at a time
         int page = noffH.initData.virtualAddr / PageSize;
         int offset = noffH.initData.virtualAddr % PageSize; // only !=0 for page 1
+        DEBUG('a', "Offset is %d\n", offset);
         int fileAddr = noffH.initData.inFileAddr;
         for( int data = noffH.initData.size; data > 0; data -= (PageSize - offset)) {
             DEBUG('a', "  %d bytes remain\n", data);
