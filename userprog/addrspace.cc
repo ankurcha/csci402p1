@@ -246,9 +246,11 @@ AddrSpace::AddrSpace(OpenFile *executable) : fileTable(MaxOpenFiles),
         int page = noffH.code.virtualAddr / PageSize;
         int offset = noffH.code.virtualAddr % PageSize; // only !=0 for page 1
         int fileAddr = noffH.code.inFileAddr;
-        for( int code = noffH.code.size; code > 0; code -= PageSize) {
+        int _size = -1;
+        for( int code = noffH.code.size; code > 0; code -= _size) {
+            ASSERT(pageTable[page].valid);
             int paddr = (pageTable[page].physicalPage * PageSize) + offset;
-            int _size = min(code, PageSize) - offset;
+            _size = min(code, PageSize - offset);
             DEBUG('a', "Initializing code segment, at paddr 0x%x, size %d\n", 
                             paddr, _size);
 
@@ -271,10 +273,14 @@ AddrSpace::AddrSpace(OpenFile *executable) : fileTable(MaxOpenFiles),
         // initialize the initData segment one page at a time
         int page = noffH.initData.virtualAddr / PageSize;
         int offset = noffH.initData.virtualAddr % PageSize; // only !=0 for page 1
+        DEBUG('a', "Offset is %d\n", offset);
         int fileAddr = noffH.initData.inFileAddr;
-        for( int data = noffH.initData.size; data > 0; data -= PageSize) {
+        int _size = -1;
+        for( int data = noffH.initData.size; data > 0; data -= _size) {
+            DEBUG('a', "  %d bytes remain\n", data);
+            ASSERT(pageTable[page].valid);
             int paddr = (pageTable[page].physicalPage * PageSize) + offset;
-            int _size = min(data, PageSize) - offset;
+            _size = min(data, PageSize - offset);
             DEBUG('a', "Initializing initData segment, at paddr 0x%x, size %d\n", 
                             paddr, _size);
 
