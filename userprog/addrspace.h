@@ -22,7 +22,7 @@
 
 using namespace std; // this is bad practice in .h files -max
 typedef int PID;
-#define UserStackSize        1024     // increase this as necessary!
+#define UserStackSize   1024     // increase this as necessary!
 
 #define MaxOpenFiles 256
 #define MaxChildSpaces 256

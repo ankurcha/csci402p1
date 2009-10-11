@@ -21,6 +21,40 @@ II. Assumptions:
 III. Design:
 
     Part 1:
+        
+        The system calls have been implemented as they were described in the
+        student documentation. Synchronization of the lockTable, Condition variables
+        Table and the process table has been delt with by using the Locks internally
+        and this aspect is made transparent to the user.
+
+        LockId CreateLock( name )
+            This system call is used to create a new Lock. Each lock, as it is
+            created is entered into the LocksTable and then the lock is referenced using
+            the lockId as returned by this function. In case of a failure in the creation
+            of the lock or failure to import the lock into the lockTable the system call
+            would return -1 as the lockId.
+
+        Acquire(LockId)
+            This system call is used to acquire a lock that had been created by
+            the user. In case the lock does not exist, this system call would just ignore
+            the error, print out a message, "unable to find lock...".  Release(LockId) This
+            system call is used to release a lock that is currently acquired by the thread.
+            In case, the lock is not in the lockTable or if the lock is not currently
+            acquired by the thread, the error is printed on the screen when in debug mode.
+
+        Release(LockId)
+            This used 
+
+        DestroyLock(LockId)
+            This system call is used to delete the lock which had been
+            previously created. In case there are other threads in the waiting queue, the
+            lock is simply marked for deletion, the actual deletion would then happen all
+            the threads have left the queue and the last thread also performs the release.
+            At this point it will check if it is the only thread on the queue and the lock
+            is marked for deleting, it will remove the lock from the lockTable and also
+            delete the Lock from memory.
+
+
 
     Part 2:
         
