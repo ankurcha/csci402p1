@@ -12,10 +12,16 @@
  *    Aneesha Mathew, aneesham
  *
  */
+ 
+
+
+
 
 #include "syscall.h"
+#include "list.h"
 #include "itoa.c"
 #include "print.c"
+using namespace std;
 
 #define BUSY 0
 #define FREE 1
@@ -51,6 +57,25 @@ void linkedlist_append(linkedlist* this, int key, int val){
         p->value = val;
         p->next = head;
         this->head = p;
+        this->length++;
+ 
+      }
+}
+
+
+void append(int key, int val){
+    if (head == NULL) {
+        head = new node;
+        head->key = key;
+        head->value = val;
+        head->next = NULL;
+        this->length++;
+    }else {
+        node *p = new node;
+        p->key = key;
+        p->value = val;
+        p->next = head;
+        head = p;
         this->length++;
     }
 }
@@ -1477,4 +1502,3 @@ int test7(){
     HospINIT();
     return 0;
 }
-
