@@ -14,7 +14,6 @@
 #define ADDRSPACE_H
 
 #include <string>
-#include <vector>
 
 #include "copyright.h"
 #include "filesys.h"
@@ -78,7 +77,9 @@ class AddrSpace {
     unsigned int dataPages;
 
     // keep track of the stacks in this process
-    std::vector<char> stackTable;
+    //std::vector<char> stackTable;
+    Lock* stackTableLock;
+    BitMap* stackTable;
 };
 
 #endif // ADDRSPACE_H

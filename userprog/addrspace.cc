@@ -128,7 +128,7 @@ AddrSpace::AddrSpace(OpenFile *executable) : fileTable(MaxOpenFiles),
                                              locksTable(MaxLock), 
                                              CVTable(MaxCV) {
     NoffHeader noffH;
-    unsigned int i, size;
+    unsigned int i, size, neededPages;
 
     // Don't allocate the input or output to disk files
     fileTable.Put(0);
@@ -145,24 +145,29 @@ AddrSpace::AddrSpace(OpenFile *executable) : fileTable(MaxOpenFiles),
 
     dataSize = noffH.code.size + noffH.initData.size + noffH.uninitData.size ;
     dataPages = divRoundUp(dataSize, PageSize);
-    numPages = dataPages + divRoundUp(UserStackSize,PageSize);
+    neededPages = dataPages + divRoundUp(UserStackSize,PageSize);
                                                 // we need to increase the size
                                                 // to leave room for the stack
-    size = numPages * PageSize;
 
-    ASSERT(numPages <= NumPhysPages);           // check we're not trying
+    ASSERT(neededPages <= NumPhysPages);           // check we're not trying
                                                 // to run anything too big --
                                                 // at least until we have
                                                 // virtual memory
+    DEBUG('a', "Initializing address space with %d valid pages, size %d\n",
+          neededPages, neededPages*PageSize);
     
+    // set the stackTable to hold the number of stacks that may exist
+    stackTableLock = new Lock("StackTableLock");
+    stackTable = new BitMap((NumPhysPages - dataPages) 
+                            / divRoundUp(UserStackSize, PageSize));
+
     // the first stack is in position 0
-    stackTable.push_back((char) true);
+    //stackTable.push_back((char) true);
+    stackTable->Mark(0);
+
     // and its stack sits in the last pages of the address space
     unsigned int stackStart = 
             NumPhysPages - divRoundUp(UserStackSize, PageSize);
-
-    DEBUG('a', "Initializing address space, num pages %d, size %d\n", 
-                                        numPages, size);
     
     //TODO: this code was merged, i don't know about it -max
         //Take care of the number of child processes
@@ -170,7 +175,11 @@ AddrSpace::AddrSpace(OpenFile *executable) : fileTable(MaxOpenFiles),
     this->childThreads.clear();
     
     // first, set up the translation
-    pageTable = new TranslationEntry[NumPhysPages];
+    numPages = NumPhysPages;
+    size = numPages * PageSize;
+    DEBUG('a', "Initializing page table, num pages %d, size %d\n", 
+                                        numPages, size);
+    pageTable = new TranslationEntry[numPages];
 
     // allocate physical memory for the pages we are using,
     //  mark the others invalid
@@ -294,7 +303,7 @@ AddrSpace::AddrSpace(OpenFile *executable) : fileTable(MaxOpenFiles),
 AddrSpace::~AddrSpace()
 {
     // free the physical memory being used by this page table
-    for(int i=0; i < numPages; i++) {
+    for(unsigned int i=0; i < numPages; i++) {
         physMemMapLock->Acquire();
         physMemMap.Clear(pageTable[i].physicalPage);
         physMemMapLock->Release();
@@ -302,10 +311,12 @@ AddrSpace::~AddrSpace()
 
     delete pageTable;
     delete childLock;
+    delete stackTableLock;
+    delete stackTable;
 
     // close any remaining files
     for(int i=0; i < MaxOpenFiles; i++) {
-        Openfile* f = (OpenFile*) fileTable.Remove(i);
+        OpenFile* f = (OpenFile*) fileTable.Remove(i);
         if(f) {
             delete f;
         }
@@ -355,26 +366,36 @@ void AddrSpace::InitRegisters()
 
 int AddrSpace::InitStack() {
     // find the first open stack in this process
-    int stack = -1;
-    for(unsigned int i=0; i < stackTable.size(); i++) {
-        if(stackTable[i] == false) {
-            stack = i;
-            stackTable[i] = true;
-            break;
-        }
-    }
+    stackTableLock->Acquire();
+    int stack = stackTable->Find();
+    stackTableLock->Release();
+    //int stack = -1;
+    //for(unsigned int i=0; i < stackTable.size(); i++) {
+    //    if(stackTable[i] == false) {
+    //        stack = i;
+    //        stackTable[i] = true;
+    //        break;
+    //    }
+    //}
 
     // if no stacks were open, create one
+    //if(stack < 0) {
+    //    stack = stackTable.size();
+    //    stackTable.push_back((char) true);
+    //    
+    //    //if(numPages < dataPages + stack * stackPages) {
+    //    //    // double size of pageTable
+    //    //    newNumPages = min(NumPhysPages, numPages*2);
+    //    //    ASSERT(newNumPages >= dataPages + stack * stackPages);
+    //    //    TranslationEntry* newPageTable = new TranslationEntry[numPages * 2];
+    //    //}
+    //}
+
+    // check if there was room for another stack
     if(stack < 0) {
-        stack = stackTable.size();
-        stackTable.push_back((char) true);
-        
-        //if(numPages < dataPages + stack * stackPages) {
-        //    // double size of pageTable
-        //    newNumPages = min(NumPhysPages, numPages*2);
-        //    ASSERT(newNumPages >= dataPages + stack * stackPages);
-        //    TranslationEntry* newPageTable = new TranslationEntry[numPages * 2];
-        //}
+        // this needs to be handled appropriately
+        cerr << "ERROR: Stack limit exceeded, no new stacks can be created!\n";
+        return -1;
     }
 
     int stackPages = divRoundUp(UserStackSize,PageSize); //pages per stack
@@ -423,10 +444,19 @@ int AddrSpace::InitStack() {
 //----------------------------------------------------------------------
 
 void AddrSpace::ClearStack(int id) {
-    int stackPages = divRoundUp(UserStackSize,PageSize); //pages per stack
+    stackTableLock->Acquire();
+    if(!stackTable->Test(id)) {
+        // this stack is not in use
+        cerr << "ERROR: tried to clear stack [" << id 
+             << "] that was not allocated\n";
+        return;
+    }
+    
+    // pages per stack
+    int stackPages = divRoundUp(UserStackSize,PageSize);
 
     // lowest index page of this stack
-    int start = numPages - (stackPages * (stack + 1));
+    int start = numPages - (stackPages * (id + 1));
 
     // free the physical memory associated with this stack
     for(int i = start; i < start + stackPages; i++) {
@@ -437,6 +467,9 @@ void AddrSpace::ClearStack(int id) {
         pageTable[i].physicalPage = 0;
         pageTable[i].valid = FALSE;
     }
+
+    stackTable->Clear(id);
+    stackTableLock->Release();
 
     return;
 }
@@ -476,7 +509,7 @@ void AddrSpace::RestoreState()
 std::string AddrSpace::readCString(char* s) {
     std::string ret = "";
 
-    int page = (unsigned int) s / PageSize;
+    unsigned int page = (unsigned int) s / PageSize;
     if(page >= numPages || !pageTable[page].valid) {
         cerr << "ERROR: virtual address [" << (unsigned int) s 
              << "] passed to readCString is invalid\n"
