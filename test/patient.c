@@ -1,4 +1,3 @@
-/* patient.cc */
 /*    Hospital Management Simulation */
 /* */
 /*    Patient Thread Function */
