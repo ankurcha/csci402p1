@@ -428,7 +428,7 @@ void ReleaseLock_Syscall(LockId lockId){
 
 
 CVId CreateCondition_Syscall(char* name){
-	DEBUG('a',"%s : CreateCondition_Syscall initialized.\n",currentThread->getName());
+    DEBUG('a',"%s : CreateCondition_Syscall initialized.\n",currentThread->getName());
     std::string cname = currentThread->space->readCString(name);
     cout<<"Condition Name: "<<cname;
     char *c_name = new char[cname.size()+1];
@@ -452,12 +452,13 @@ void DestroyCondition_Syscall(CVId id){
     DEBUG('a', "DestroyCondition syscall.\n");
 	ConditionWrapper *target = (ConditionWrapper*) currentThread->space->CVTable.Get(id);
     if(target){
-        if (target->mark && target->counter == 0) {
+        if (target->counter == 0) {
                 //We can delete
             delete target->cv;
             delete target;
             DEBUG('a',"%s : DestroyCondition_Syscall: Successfully deleted CV %d .\n",
                   currentThread->getName(), id);
+            currentThread->space->CVTable.Remove(id);
         }else {
                 //Cannot delete need to persist just mark for deletion
             target->mark = true;
@@ -465,10 +466,9 @@ void DestroyCondition_Syscall(CVId id){
                   currentThread->getName(), id);
         }        
     }else{
-		DEBUG('a',"%s: DestroyCondition_Syscall: Unable to find CV %d for deletion.\n",
-              currentThread->getName(), id);
-	}
-	currentThread->space->CVTable.Remove(id);
+        DEBUG('a',"%s: DestroyCondition_Syscall: Unable to find CV %d for deletion.\n",
+               currentThread->getName(), id);
+    }
 }
 
 void WaitCV_Syscall(CVId cvId, LockId lockId){
