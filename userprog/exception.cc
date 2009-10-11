@@ -516,14 +516,16 @@ void BroadcastCV_Syscall(CVId cvId, LockId lockId){
     LockWrapper *ConditionLockWrapper = (LockWrapper*) currentThread->space->locksTable.Get(lockId);
     ConditionWrapper *CV = (ConditionWrapper*) currentThread->space->CVTable.Get(cvId);
     
-    if (ConditionLockWrapper == NULL || CV == NULL) {
+    if (ConditionLockWrapper == NULL || CV == NULL || ConditionLockWrapper->lock == NULL || CV->cv == NULL) {
+        printf("HELP %d %d",cvId,lockId);
         return;
     }
     
         //Set wait on this condition variable
-    DEBUG('a',"%s: WaitCV_Syscall: Called for CVId: %d lockId %d .\n",
+    DEBUG('a',"%s: BroadcastCV_Syscall: Called for CVId: %d lockId %d .\n",
           currentThread->getName(), cvId, lockId);
     (void) CV->cv->Broadcast(ConditionLockWrapper->lock);
+    CV->counter = 0;
 }
 
 void ExceptionHandler(ExceptionType which) {

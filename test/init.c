@@ -21,56 +21,56 @@
 #define FREE 1
 #define SLEEPING 2
 
-bool test1active = false;
-bool test2active = false;
-bool test4active = false;
-bool test7active = false;
-bool test5active = false;
+char test1active = 0;
+char test2active = 0;
+char test4active = 0;
+char test7active = 0;
+char test5active = 0;
 
-struct node {
+typedef struct {
     int key, value;
     node* next;
-};
-struct linkedlist { 
+}node;
+
+typedef struct { 
         //Used for storing the <token,fees> pairs
     node* head;
     int length;
-    
-    void append(int key, int val){
-        if (head == NULL) {
-            head = new node;
-            head->key = key;
-            head->value = val;
-            head->next = NULL;
-            this->length++;
-        }else {
-            node *p = new node;
-            p->key = key;
-            p->value = val;
-            p->next = head;
-            head = p;
-            this->length++;
-        }
+}linkedlist;
+
+void linkedlist_append(linkedlist* this, int key, int val){
+    if (this->head == 0) {
+        this->head = (node*) malloc(sizeof(node));
+        this->head->key = key;
+        this->head->value = val;
+        this->head->next = 0;
+        this->length++;
+    }else {
+        node *p = (node*) malloc(sizeof(node));
+        p->key = key;
+        p->value = val;
+        p->next = head;
+        this->head = p;
+        this->length++;
     }
-    
-    int getValue(int key){
-        node *p = head;
-        if(head!=NULL){
-            while (p!=NULL) {
-                if (p->key == key) {
-                    return p->value;
-                }else {
-                    p = p->next;
-                }
-            }//End of While
-        }else{
-                //empty list
-            return -1;
-        }
+}
+
+int linkedlist_getValue(linkedlist *this, int key){
+    node *p = this->head;
+    if(head!=0){
+        while (p!=0) {
+            if (p->key == this->key) {
+                return p->value;
+            }else {
+                p = p->next;
+            }
+        }//End of While
+    }else{
+            //empty list
         return -1;
     }
-};
-
+    return -1;
+}
 
 
 
@@ -84,7 +84,7 @@ int TokenCounter;
 LockId recpLineLock = CreateLock("recpLineLock");
 
     //shared data struct related to a Receptionist
-struct Receptionists{
+typedef struct {
         // receptionist line CV
     CVId receptionCV;
     int peopleInLine;
@@ -107,7 +107,7 @@ struct Receptionists{
         ReceptionistBreakCV = CreateCondition("ReceptionistBreakCV");
         currentToken = 0;
     }
-};
+}Receptionists;
 
     // list mapping patient tokens to consultFees
 LockId feeListLock = CreateLock("feeListLock");
@@ -285,7 +285,7 @@ int test_state = 0;
 void doorboy(int ID){
     int myDoctor = 0;
     
-    while (true) {
+    while (1) {
         print("DB_");
         print(itoa(ID));
         print(": Alive ");
@@ -313,7 +313,7 @@ void doorboy(int ID){
             continue;
         }
         myDoctor = (int) wakingDoctorList->Remove();
-        if(test2active==true)
+        if(test2active==1)
         print("DB_");
         print(itoa(ID));
         print(":TEST2: Servicing D_");
@@ -346,9 +346,9 @@ void doorboy(int ID){
         Write("\n");
         
             //while there is noone in line
-        bool doorboyBreak = false;
+        char doorboyBreak = 0;
         while(doctors[myDoctor].peopleInLine <= 0) { 
-            doorboyBreak = true;
+            doorboyBreak = 1;
                 //I will be woken up by the manager only!!
             
                 // prefix for test conditions
@@ -357,7 +357,7 @@ void doorboy(int ID){
                 
             if(test_state == 11)
             	print("T11: ");
-              if(test2active==true) {
+              if(test2active==1) {
             	print("DB_");
               print(itoa(ID));
                print(":TEST2: Yawn!!...ZZZZzzzzz....");
@@ -423,7 +423,7 @@ void doorboy(int ID){
 
 void doctor(int ID){
     int waitingtime = 10000;
-    while(true) {
+    while(1) {
             // acquire a doorboy
 
         print("D_");
@@ -473,10 +473,10 @@ void doctor(int ID){
             //////  DOORBOY INTERACTION  //////
         Wait(doctors[ID].transCV, doctors[ID].transLock);
         
-        bool doctorBreak = false;
+        char doctorBreak = 0;
             // go on break if so inclined
         
-        if(test7active==true)
+        if(test7active==1)
        	{
        		int numYields = 35;
        		print("D_");
@@ -492,7 +492,7 @@ void doctor(int ID){
        	}
         else
             if(Random() % 100 > 49) { // go on break
-                doctorBreak = true;
+                doctorBreak = 1;
                     // 5-15 yields
                 int numYields = 5 + (Random() % 11);
                 
@@ -530,7 +530,7 @@ void doctor(int ID){
         
             // inform the doorboy that I am ready for a patient
         
-        if(test7active==true)
+        if(test7active==1)
        	{
        		print("D_");
         	 print(itoa(ID));
@@ -604,7 +604,7 @@ void doctor(int ID){
 }
 
 void receptionist(int ID){
-    while (true) {
+    while (1) {
 
     	print("R_");
       print(itoa(ID));
@@ -677,7 +677,7 @@ void cashier(int ID) {
         print(itoa(ID));
         print(":  Alive!!");
 	      Write("\n");
-        while(true) {
+        while(1) {
         cashierLineLock->Acquire();
         
         if(cashiers[ID].lineLength > 0) { // someone in line
@@ -742,7 +742,7 @@ void cashier(int ID) {
 
 
 void clerk(int ID){
-    while(true){
+    while(1){
         Acquire(ClerkLinesLock);
         
         if(clerks[ID].patientsInLine > 0) { // someone in line
@@ -816,7 +816,7 @@ void hospitalManager(int ID){
     
     int sleeptime = Random() % 30000;
     int test5cycles = 1;
-    while (true) {
+    while (1) {
         if (test_state == 51 || test_state == 52 || test_state == 53) {
                 //The patients will always be there in the system.
                 //For test purposes, lets assume the simulation to be
@@ -1050,7 +1050,7 @@ void HospINIT(int testmode = 0) {
         
             //4. DoorBoys
         numDoctors = (Random() % (MAX_DOCTORS - MIN_DOCTORS + 1) + MIN_DOCTORS);
-        if(test1active == false){
+        if(test1active == 0){
             numDoorboys = numDoctors;
             print("Creating ");
             print(itoa(numDoorboys));
@@ -1159,7 +1159,7 @@ void HospINIT(int testmode = 0) {
         
             //4. DoorBoys
         numDoctors = (Random() % (MAX_DOCTORS - MIN_DOCTORS + 1) + MIN_DOCTORS);
-        if(test1active == false){
+        if(test1active == 0){
             numDoorboys = numDoctors;
             print("Creating ");
             print(itoa(numDoorboys));
@@ -1251,7 +1251,7 @@ void HospINIT(int testmode = 0) {
         
             //4. DoorBoys
         numDoctors = (Random() % (MAX_DOCTORS - MIN_DOCTORS + 1) + MIN_DOCTORS);
-        if(test1active == false){
+        if(test1active == 0){
             numDoorboys = numDoctors;
             
             print("Creating ");
@@ -1364,7 +1364,7 @@ void HospINIT(int testmode = 0) {
         
             //4. DoorBoys
         numDoctors = (Random() % (MAX_DOCTORS - MIN_DOCTORS + 1) + MIN_DOCTORS);
-        if(test1active == false){
+        if(test1active == 0){
             numDoorboys = numDoctors;
             
             print("Creating ");
@@ -1452,19 +1452,19 @@ void HospINIT(int testmode = 0) {
 
 
 int test1(){
-    test1active = true;
+    test1active = 1;
     HospINIT();
     return 0;
 }
 
 int test2(){
-	test2active=true;
+	test2active=1;
 	HospINIT();
 	return 0;
 }
 
 int test4(){
-    test4active = true;
+    test4active = 1;
         //start the process normally
     HospINIT();
     return 0;
@@ -1473,7 +1473,7 @@ int test4(){
 
 
 int test7(){
-    test7active = true;
+    test7active = 1;
     HospINIT();
     return 0;
 }
