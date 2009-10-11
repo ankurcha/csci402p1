@@ -12,10 +12,16 @@
  *    Aneesha Mathew, aneesham
  *
  */
+ 
+
+
+
 
 #include "syscall.h"
+#include "list.h"
 #include "itoa.c"
 #include "print.c"
+using namespace std;
 
 #define BUSY 0
 #define FREE 1
@@ -35,7 +41,8 @@ struct linkedlist {
         //Used for storing the <token,fees> pairs
     node* head;
     int length;
-    
+ 
+  
     void append(int key, int val){
         if (head == NULL) {
             head = new node;
@@ -1477,4 +1484,3 @@ int test7(){
     HospINIT();
     return 0;
 }
-
