@@ -524,7 +524,7 @@ std::string AddrSpace::readCString(char* s) {
              << " segmentation fault?\n";
         return ret;
     }
-    int offset = (unsigned int) s % PageSize;
+    unsigned int offset = (unsigned int) s % PageSize;
     unsigned int paddr = (pageTable[page].physicalPage * PageSize) + offset;
 
     // read the string till we hit null
