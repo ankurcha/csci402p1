@@ -18,5 +18,5 @@ int
 main()
 {
     /* not reached */
-    Exit(-1);
+    Halt();
 }
