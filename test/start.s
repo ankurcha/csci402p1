@@ -50,6 +50,7 @@ Halt:
 	j	$31
 	.end Halt
 
+
 	.globl Exit
 	.ent	Exit
 Exit:
@@ -57,6 +58,8 @@ Exit:
 	syscall
 	j	$31
 	.end Exit
+    
+    
 
 	.globl Exec
 	.ent	Exec
@@ -65,9 +68,11 @@ Exec:
 	syscall
 	j	$31
 	.end Exec
+    
+    
 
 	.globl Join
-	.ent	Join
+	.ent    Join
 Join:
 	addiu $2,$0,SC_Join
 	syscall

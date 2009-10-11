@@ -1,20 +1,13 @@
 #include "syscall.h"
-
+#include "print.c"
 void func1( ){
-  Write("Fork 1\n",7,1);
+    print("Forked func1, yielding for 1 cycle");
   Yield();
-  Write("Fork 1 exit\n",12,1);
-  Exit(0);
-}
-
-void func2(){
-  Write("Fork 2\n",7,1);
-  Exec("../test/exectest");
-  Exit(0);
+  print("func1: Exiting with status code -1");
+  Exit(-1);
 }
 
 void main(){
   Fork(func1);
-  Fork(func2);
   Exit(0);
 }
