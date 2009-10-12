@@ -47,6 +47,7 @@
 
 #define totalHospMan 1
 
+typedef void (*VoidFunctionPtr)(int arg); 
 
 int numDoctors = 0;
 int numCashiers = 0;
@@ -396,6 +397,7 @@ void createhospitalManager(){
 
 void doorboy(int ID){
     int myDoctor = 0;
+    char doorboyBreak = 0;
     
     while (1) {
         print("DB_");
@@ -403,7 +405,7 @@ void doorboy(int ID){
         print(": Alive ");
         
             /*Get into the doorboyLine till some doctor asks for me */
-        Acquire(doorboyLineLock)
+        Acquire(doorboyLineLock);
         
         doorboyLineLength++;
 
@@ -424,19 +426,19 @@ void doorboy(int ID){
             continue;
         }
         myDoctor = (int) wakingDoctorList->Remove();
-        if(test2active==1)
-        print("DB_");
-        print(itoa(ID));
-        print(":TEST2: Servicing D_");
-        print(itoa(myDoctor));
-        print("\n");
-        else
-
-       	print("DB_");
-        print(itoa(ID));
-        print(":Servicing D_");
-        print(itoa(myDoctor));
-        print("\n");
+        if(test2active==1) {
+            print("DB_");
+            print(itoa(ID));
+            print(":TEST2: Servicing D_");
+            print(itoa(myDoctor));
+            print("\n");
+        } else {
+            print("DB_");
+            print(itoa(ID));
+            print(":Servicing D_");
+            print(itoa(myDoctor));
+            print("\n");
+        }
            
         doorboyLineLock->Release();
 
@@ -456,7 +458,7 @@ void doorboy(int ID){
         print(": Checking for Patients\n");
         
             /*while there is noone in line */
-        char doorboyBreak = 0;
+        doorboyBreak = 0;
         while(doctors[myDoctor].peopleInLine <= 0) { 
             doorboyBreak = 1;
                 /*I will be woken up by the manager only!! */
@@ -527,7 +529,12 @@ void doorboy(int ID){
 }
 
 void doctor(int ID){
+    /* declare variables */
     int waitingtime = 10000;
+    int i, numYields, consultFee;
+    char doctorBreak = 0;
+
+    while(1) {
             /* acquire a doorboy */
 
         print("D_");
@@ -574,18 +581,18 @@ void doctor(int ID){
             /*////  DOORBOY INTERACTION  ////// */
         Wait(doctors[ID].transCV, doctors[ID].transLock);
         
-        char doctorBreak = 0;
+        doctorBreak = 0;
             /* go on break if so inclined */
         
         if(test7active==1)
        	{
-       		int numYields = 35;
+                numYields = 35;
        		print("D_");
           print(itoa(ID));
           print(" :TEST7: Going on break for ");
           print(itoa(numYields));
           print(" cycles!\n");
-            for(int i=0; i < numYields; ++i) {
+            for(i=0; i < numYields; ++i) {
                 currentThread->Yield();
             }
        		
@@ -594,7 +601,7 @@ void doctor(int ID){
             if(Random() % 100 > 49) { /* go on break */
                 doctorBreak = 1;
                     /* 5-15 yields */
-                int numYields = 5 + (Random() % 11);
+                numYields = 5 + (Random() % 11);
                 
                     /* provide a handle for test 8, only uses doctor 0 */
                 if(ID == 0 && test_state == 8 ) { 
@@ -608,7 +615,7 @@ void doctor(int ID){
                 print(itoa(numYields));
                 print(" cycles!\n");
                 
-                for(int i=0; i < numYields; ++i) {
+                for(i=0; i < numYields; ++i) {
                     currentThread->Yield();
                 }
             }
@@ -657,8 +664,8 @@ void doctor(int ID){
         print("D_");
         print(itoa(ID));
         print(": Now Consulting patient\n");
-        int numYields = 10 + (Random() % 11);
-        for(int i=0; i < numYields; ++i) {
+        numYields = 10 + (Random() % 11);
+        for(i=0; i < numYields; ++i) {
             currentThread->Yield();  /* I see ... mm hmm ... does it hurt here? ... */
         }
         
@@ -670,7 +677,7 @@ void doctor(int ID){
         print(itoa(ID));
         print(": Telling fee to cashiers\n");
         
-        int consultFee = 50 + (Random() % 201);
+        consultFee = 50 + (Random() % 201);
         Acquire(feeListLock-);
         feeList->append(doctors[ID].patientToken, consultFee);
         Release(feeListLock);
@@ -888,13 +895,17 @@ void clerk(int ID){
 }
 
 
-void hospitalManager(int ID){
-	  print("H_");
-	  print(itoa(ID));
-	  print(": Alive\n");
-    
-    int sleeptime = Random() % 30000;
+void hospitalManager(int ID) {
+    int sleeptime = 0;
     int test5cycles = 1;
+    int patientsWaiting=0;
+    int i, j, sum;
+
+    print("H_");
+    print(itoa(ID));
+    print(": Alive\n");
+    
+    sleeptime = Random() % 30000;
     while (1) {
         if (test_state == 51 || test_state == 52 || test_state == 53) {
                 /*The patients will always be there in the system. */
@@ -941,13 +952,13 @@ void hospitalManager(int ID){
 	      print(itoa(ID));
 	      print(": Checking receptionists\n");
         
-        int patientsWaiting=0;
-        for (int j=0; j<numRecp; j++) {
+        patientsWaiting=0;
+        for (j=0; j<numRecp; j++) {
             patientsWaiting += receptionists[j].peopleInLine;
         }
         
         if (patientsWaiting > 1) {
-            for (int j=0; j<numRecp; j++) {
+            for (j=0; j<numRecp; j++) {
                 recpLineLock->Acquire();
                 Signal(receptionists[j].ReceptionistBreakCV, recpLineLock);
                 Release(recpLineLock);
@@ -958,7 +969,7 @@ void hospitalManager(int ID){
         print("H_");
 	      print(itoa(ID));
 	      print(": Checking cashiers\n");
-        for (int i=0; i<numCashiers; i++) {/*Check for waiting patients */
+        for (i=0; i<numCashiers; i++) {/*Check for waiting patients */
             if (cashiers[i].lineLength > 0 ) {
         
         print("H_");
@@ -986,8 +997,8 @@ void hospitalManager(int ID){
         if( test_state == 10 ) {
                 /* this is a test for race conditions, so we can't have any: */
             IntStatus oldLevel = interrupt->SetLevel(IntOff);
-            int sum = 0;
-            for (int i=0; i<numCashiers; i++) {
+            sum = 0;
+            for (i=0; i<numCashiers; i++) {
             	print(" T10: cashier");
             	print(itoa(i));
             	print(" :");
@@ -1013,7 +1024,7 @@ void hospitalManager(int ID){
         print(":Checking clerks\n");
         
         
-        for (int i=0; i<numClerks; i++) {/*Check for waiting patients */
+        for (i=0; i<numClerks; i++) {/*Check for waiting patients */
             if (clerks[i].patientsInLine > 0 ) {
 
             	 print("H_");
@@ -1045,8 +1056,8 @@ void hospitalManager(int ID){
         if( test_state == 10 ) {
                 /* this is a test for race conditions, so we can't have any: */
             IntStatus oldLevel = interrupt->SetLevel(IntOff);
-            int sum = 0;
-            for (int i=0; i<numClerks; i++) {
+            sum = 0;
+            for (i=0; i<numClerks; i++) {
             	
             	 print("T10: clerk ");
             	 print(itoa(i));
@@ -1071,7 +1082,7 @@ void hospitalManager(int ID){
             	 print(itoa(ID));
             	 print(": Checking doorboys\n");
         
-        for (int i=0; i<numDoctors; i++) {/*Check for waiting patients */
+        for (i=0; i<numDoctors; i++) {/*Check for waiting patients */
             if (doctors[i].peopleInLine > 0 ) {
 
             	  
@@ -1093,13 +1104,13 @@ void hospitalManager(int ID){
 }
 
 void HospINIT(int testmode = 0) {
+    int i;
     
         /* set a global so everyone will know the test mode */
     test_state = testmode;
     
     if(testmode != 1 && testmode != 51 && testmode != 52 && testmode != 53 ){
-        int i = 0;
-        char temp[] = "NACHOS_THREAD";
+        i = 0;
         
             /*cout << "Simulation startup\n\n"; */
         
@@ -1113,7 +1124,7 @@ void HospINIT(int testmode = 0) {
         for(i=0;i<numCashiers;i++)
         {
             
-            Fork((VoidFunctionPtr) cashier, i);
+            Fork(createCashier);
         }
         
             /*4. DoorBoys */
@@ -1126,7 +1137,7 @@ void HospINIT(int testmode = 0) {
             for(i=0;i<numDoorboys;i++)
             {
                 
-                Fork((VoidFunctionPtr) doorboy, i);
+                Fork(createDoorboy);
             }            
         }else{
             numDoorboys = 0;
@@ -1143,7 +1154,7 @@ void HospINIT(int testmode = 0) {
         for(i=0;i<numClerks;i++)
         {
             
-            Fork((VoidFunctionPtr) clerk, i);
+            Fork(createClerk);
         }
         
         
@@ -1155,7 +1166,7 @@ void HospINIT(int testmode = 0) {
         for(i=0;i<numDoctors;i++)
         {
             
-            Fork((VoidFunctionPtr) doctor, i);
+            Fork(createDoctor);
         }
         
         
@@ -1172,7 +1183,7 @@ void HospINIT(int testmode = 0) {
         for(i=0;i<numPatients;i++)
         {
             
-            Fork((VoidFunctionPtr) patients, i);
+            Fork(createPatients);
         }
         
         
@@ -1182,7 +1193,7 @@ void HospINIT(int testmode = 0) {
         print("Creating 1 Hospital Manager \n");
         t= (Thread*)malloc(sizeof(Thread));
         
-        t->Fork((VoidFunctionPtr) hospitalManager, 0);   
+        t->Fork(createHospitalManager);   
    
         
         
@@ -1195,7 +1206,7 @@ void HospINIT(int testmode = 0) {
         
         for(i=0; i<numRecp; i++)
         {
-            Fork((VoidFunctionPtr) receptionist, i);
+            Fork(createReceptionist);
         }
         
         
@@ -1204,8 +1215,7 @@ void HospINIT(int testmode = 0) {
     
     else if (testmode == 51) {
         
-        int i = 0;
-        char temp[] = "NACHOS_THREAD";
+        i = 0;
         
         
         
@@ -1218,7 +1228,7 @@ void HospINIT(int testmode = 0) {
         for(i=0;i<numCashiers;i++)
         {
             
-            Fork((VoidFunctionPtr) cashier, i);
+            Fork(createCashier);
         }
         
             /*4. DoorBoys */
@@ -1232,7 +1242,7 @@ void HospINIT(int testmode = 0) {
             for(i=0;i<numDoorboys;i++)
             {
                 
-                Fork((VoidFunctionPtr) doorboy, i);
+                Fork(createDoorboy);
             }            
         }else{
             numDoorboys = 0;
@@ -1250,7 +1260,7 @@ void HospINIT(int testmode = 0) {
         for(i=0;i<numClerks;i++)
         {
             
-            Fork((VoidFunctionPtr) clerk, i);
+            Fork(createClerk);
         }
         
         
@@ -1261,7 +1271,7 @@ void HospINIT(int testmode = 0) {
         for(i=0;i<numDoctors;i++)
         {
             
-            Fork((VoidFunctionPtr) doctor, i);
+            Fork(createDoctor);
         }
         
         
@@ -1277,7 +1287,7 @@ void HospINIT(int testmode = 0) {
         for(i=0;i<numPatients;i++)
         {
             
-            Fork((VoidFunctionPtr) patients, i);
+            Fork(createPatients);
         }
         
         
@@ -1288,7 +1298,7 @@ void HospINIT(int testmode = 0) {
         print("Creating 1 Hospital Manager \n");
         t= (Thread*)malloc(sizeof(Thread));
         
-        t->Fork((VoidFunctionPtr) hospitalManager, 0);   
+        t->Fork(createHospitalManager);   
 
         
         
@@ -1298,8 +1308,7 @@ void HospINIT(int testmode = 0) {
         numRecp = (Random() % (RECP_MAX - RECP_MIN +1) + RECP_MIN) ;
         
     }else if (testmode == 52) {
-        int i = 0;
-        char temp[] = "NACHOS_THREAD";
+        i = 0;
         Thread *t;   
         
         
@@ -1320,7 +1329,7 @@ void HospINIT(int testmode = 0) {
             for(i=0;i<numDoorboys;i++)
             {
                 
-                Fork((VoidFunctionPtr) doorboy, i);
+                Fork(createDoorboy);
             }            
         }else{
             numDoorboys = 0;
@@ -1336,7 +1345,7 @@ void HospINIT(int testmode = 0) {
         for(i=0;i<numClerks;i++)
         {
             
-            Fork((VoidFunctionPtr) clerk, i);
+            Fork(createClerk);
         }
         
         
@@ -1348,7 +1357,7 @@ void HospINIT(int testmode = 0) {
         for(i=0;i<numDoctors;i++)
         {
             
-            Fork((VoidFunctionPtr) doctor, i);
+            Fork(createDoctor);
         }
         
         
@@ -1364,9 +1373,7 @@ void HospINIT(int testmode = 0) {
         
         for(i=0;i<numPatients;i++)
         {
-            t= (Thread*)malloc(sizeof(Thread));
-            t=new Thread(temp);
-            t->Fork((VoidFunctionPtr) patients, i);
+            Fork(createPatient);
         }
         
         
@@ -1377,7 +1384,7 @@ void HospINIT(int testmode = 0) {
             
         print("Creating 1 Hospital Manager \n");
         t = new Thread("HospitalManager_0");
-        t->Fork((VoidFunctionPtr) hospitalManager, 0);   
+        t->Fork(createHospitalManager);   
 
         
         
@@ -1392,13 +1399,12 @@ void HospINIT(int testmode = 0) {
         
         for(i=0; i<numRecp; i++)
         {
-            Fork((VoidFunctionPtr) receptionist, i);
+            Fork(createReceptionist);
         }
         
         
     }else if (testmode == 53) {
-        int i = 0;
-        char temp[] = "NACHOS_THREAD";
+        i = 0;
         
             /*3. Cashiers */
         numCashiers = (Random() % (MAX_CASHIER - MIN_CASHIER +1) + MIN_CASHIER) ;
@@ -1410,7 +1416,7 @@ void HospINIT(int testmode = 0) {
         for(i=0;i<numCashiers;i++)
         {
             
-            Fork((VoidFunctionPtr) cashier, i);
+            Fork(createCashier);
         }
         
             /*4. DoorBoys */
@@ -1425,7 +1431,7 @@ void HospINIT(int testmode = 0) {
             for(i=0;i<numDoorboys;i++)
             {
                 
-                Fork((VoidFunctionPtr) doorboy, i);
+                Fork(createDoorboy);
             }            
         }else{
             numDoorboys = 0;
@@ -1447,7 +1453,7 @@ void HospINIT(int testmode = 0) {
         for(i=0;i<numDoctors;i++)
         {
             
-            Fork((VoidFunctionPtr) doctor, i);
+            Fork(createDoctor);
         }
         
         
@@ -1465,7 +1471,7 @@ void HospINIT(int testmode = 0) {
         for(i=0;i<numPatients;i++)
         {
             
-            Fork((VoidFunctionPtr) patients, i);
+            Fork(createPatients);
         }
         
         
@@ -1475,7 +1481,7 @@ void HospINIT(int testmode = 0) {
             
         print("Creating 1 Hospital Manager \n");      
         t = new Thread("HospitalManager_0");
-        t->Fork((VoidFunctionPtr) hospitalManager, 0);   
+        t->Fork(createHospitalManager);   
 
         
         
@@ -1489,7 +1495,7 @@ void HospINIT(int testmode = 0) {
         
         for(i=0; i<numRecp; i++)
         {
-            Fork((VoidFunctionPtr) receptionist, i);
+            Fork(createReceptionist);
         }
     }else if (testmode == 2) {
     }
