@@ -33,7 +33,6 @@
 
 Thread::Thread(char* threadName)
 {
-    PID = processTable->addProcess(this);
     name = threadName;
     stackTop = NULL;
     stack = NULL;

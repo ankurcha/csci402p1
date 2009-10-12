@@ -7,36 +7,27 @@ void test1();
 void test1_t();
 void test2();
 void test2_thread2();
-void p2test2_thread3();
-void p2test3();
-void p2test3_thread2();
-void p2test3_thread3();
-void p2test3_thread4();
+void test2_thread3();
+void test3();
+void test3_thread2();
+void test3_thread3();
+void test3_thread4();
 int main()
 {
-    print("Starting Test1");
+    print("Starting Test1\n");
     
-    print("Starting Test2");
+    print("Starting Test2\n");
     print("test3 start\n");
     test1();
-    test1_t();
-    
     test2();
-    test2_thread2();
-    p2test2_thread3();
-    
-    p2test3();
-    p2test3_thread2();
-    p2test3_thread3();
-    p2test3_thread4();
-    
+    test3();
     Yield();
     Exit(0);
 }
 
 void test1()
 {
-	lockId= CreateLock("t1_l1");                                             
+	lockId= CreateLock("");                                             
     /* Lock is Created */
 	Fork(test1_t);                                               
     /* Fork to create second thread */              
@@ -47,6 +38,7 @@ void test1()
 	Release(lockId);                                                   
     /* Calling a Release function*/
     print("Thread 1 lock released\n" );
+
 }
 
 void test1_t()
@@ -57,6 +49,7 @@ void test1_t()
     /* Printout for releasing a lock*/
 	Release(lockId);
     print("thread 2 lock released\n" );               
+        Exit(11);
 }
 
 void test2()
@@ -74,6 +67,7 @@ void test2()
 	Release(lockId);                                                  
     /* Calling the release function */
 	print("thread 1 lock released\n" );
+
 }
 
 void test2_thread2()
@@ -86,12 +80,13 @@ void test2_thread2()
     /* Destroying a lock */
 	print("thread 2 destroy lock\n" );                  
     /* Printout that lock is destroyed */
+        Exit(22);
 }
 
 void test2_thread3()
 {	
     int i=50;
-	lockId= CreateLock("t2_l2");                                                 
+	lockId= CreateLock("");                                                 
     /* Lock is created*/
 	print("thread 3 acquiring lock\n" );                  
     /* Printout for acquiring a lock*/
@@ -102,11 +97,12 @@ void test2_thread3()
     /* Lock is released */
 	print("thread 3 releasing lock\n" );                  
     /* Printout that lock is released*/
+        Exit(23);
 }	
 
 void test3()
 {
-	conditionId= CreateCondition("t3_c1");                                                                   
+	conditionId= CreateCondition("");                                                                   
     /* Condition variable is created */
 	print("thread 1  creating condition variable\n" );                                
     /* Printout for creating a condition variable*/
@@ -136,7 +132,7 @@ void test3()
 
 void test3_thread2()
 {
-	lockId= CreateLock("t3_l2");                                                          
+	lockId= CreateLock("");                                                          
     /* Lock is created */
 	print("thread 2 creating a lock\n" );                
 	Wait(conditionId, lockId);                                                    
@@ -150,11 +146,12 @@ void test3_thread2()
 	print("thread 2 broadcasting\n");
 	DestroyCondition(conditionId);                                                 
     /* Destroying a condition variable */
+        Exit(32);
 }
 
 void test3_thread3()
 {
-	conditionId= CreateCondition("t3_c2");                                       
+	conditionId= CreateCondition("");                                       
     /* Condition variable is created */
 	print("thread 3 creating a condition variable\n"); 
 	Signal(conditionId, lockId);                                         
@@ -163,6 +160,7 @@ void test3_thread3()
 	Broadcast(conditionId, lockId);                                      
     /*Broadcast function is called*/
 	print("thread 3 broadcasting \n");
+        Exit(33);
 }
 
 void test3_thread4()
@@ -172,9 +170,10 @@ void test3_thread4()
 	print("thread 4 waiting on a condition \n");
 	Signal(conditionId, lockId);                       
 	print("signalling thread 4\n");
-	Broadcast(conditionId, lockId);
+	/*Broadcast(conditionId, lockId);*/
 	print("thread 4 broadcasting\n");
 	DestroyCondition(conditionId);                           
     /* Destroying a condition variable */
+        Exit(34);
 }
 
