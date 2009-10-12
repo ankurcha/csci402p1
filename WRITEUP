@@ -10,9 +10,38 @@ Group Num 11: Name              Email               Student ID
  vim:textwidth=75
 
 I. Requirements:
-    + Part 1:
+    Part 1:
+        
+        For part 1 of the project we are required to implement the suite of
+        system calls and exception handling defined in the project handout.
+        This includes the implementations of the system calls as well as test
+        cases showing that the system calls are both correct and safe.  Exec
+        and Fork in particular will require additional underlying mechanisms to
+        produce the correct behavior.
 
-    + Part 2:
+    Part 2:
+        
+        For part 2 of the project we are required to modify the existing code
+        to support multiple processes, and multiple threads within a process.
+        In order to achieve this we have to allocate system memory in such a
+        way that virtual addresses may not match physical addresses (to support
+        multiple processes that want the same address space).  We also have to
+        provide a mechanism for creating multiple stacks within a single
+        process and address space for the threads of that process.  This
+        section is closely tied to the part 1 system calls Exec and Fork which
+        will use the code from part 2, as in part 1, tests must be provided to
+        ensure that part 2 code is behaving properly and is safe from malicious
+        user programs.
+
+    Part 3:
+        
+        For part 3 of the project we are required to adapt our hospital
+        simulation from project 1 to run as a user process with our project 2
+        code.  Everything that was previously implemented as a thread of the
+        kernel in project 1, will now be a thread of the user process.  It
+        should be possible to run multiple Hospitals simultaneously as separate
+        user threads.  We should provide tests to show that all of this
+        behavior is correct.
 
 II. Assumptions:
 
@@ -23,108 +52,124 @@ III. Design:
     Part 1:
         
         The system calls have been implemented as they were described in the
-        student documentation. Synchronization of the lockTable, Condition variables
-        Table and the process table has been delt with by using the Locks internally
-        and this aspect is made transparent to the user.
+        student documentation. Synchronization of the lockTable, Condition
+        variables Table and the process table has been delt with by using the
+        Locks internally and this aspect is made transparent to the user.
 
         LockId CreateLock(name)
             This system call is used to create a new Lock. Each lock, as it is
-            created is entered into the LocksTable and then the lock is referenced using
-            the lockId as returned by this function. In case of a failure in the creation
-            of the lock or failure to import the lock into the lockTable the system call
-            would return -1 as the lockId.
+            created is entered into the LocksTable and then the lock is
+            referenced using the lockId as returned by this function. In case
+            of a failure in the creation of the lock or failure to import the
+            lock into the lockTable the system call would return -1 as the
+            lockId.
 
         Acquire(LockId)
             This system call is used to acquire a lock that had been created by
-            the user. In case the lock does not exist, this system call would just ignore
-            the error, print out a message, "unable to find lock...".  Release(LockId) This
-            system call is used to release a lock that is currently acquired by the thread.
-            In case, the lock is not in the lockTable or if the lock is not currently
-            acquired by the thread, the error is printed on the screen when in debug mode.
+            the user. In case the lock does not exist, this system call would
+            just ignore the error, print out a message, "unable to find
+            lock...".  Release(LockId) This system call is used to release a
+            lock that is currently acquired by the thread.  In case, the lock
+            is not in the lockTable or if the lock is not currently acquired by
+            the thread, the error is printed on the screen when in debug mode.
 
         Release(LockId)
             This used 
 
         DestroyLock(LockId)
             This system call is used to delete the lock which had been
-            previously created. In case there are other threads in the waiting queue, the
-            lock is simply marked for deletion, the actual deletion would then happen all
-            the threads have left the queue and the last thread also performs the release.
-            At this point it will check if it is the only thread on the queue and the lock
-            is marked for deleting, it will remove the lock from the lockTable and also
+            previously created. In case there are other threads in the waiting
+            queue, the lock is simply marked for deletion, the actual deletion
+            would then happen all the threads have left the queue and the last
+            thread also performs the release.  At this point it will check if
+            it is the only thread on the queue and the lock is marked for
+            deleting, it will remove the lock from the lockTable and also
             delete the Lock from memory.
 
         CVId CreateCondition(name)
-            This system call is used to create a new Condition Variable. Each condition
-            variable, as it is created is entered into the condition variables table -
-            CVTable and then the condition variable is referenced using the CVId as
-            returned by this call. In case of failure in the creation of the condition
-            variable or failure to import the CV to the CVTable the system call returns -1.
+            This system call is used to create a new Condition Variable. Each
+            condition variable, as it is created is entered into the condition
+            variables table - CVTable and then the condition variable is
+            referenced using the CVId as returned by this call. In case of
+            failure in the creation of the condition variable or failure to
+            import the CV to the CVTable the system call returns -1.
         
         Wait(CVId, LockId)
-            This is used to call Wait on a condition variable using the lock that is given
-            as the second argument to this call. In case of any errors, either the lock is
-            non existant or CVId is invalid or the lock used with the CVId is not the one
-            for which the CV is being used or the Lock is not currently held by the current
-            Thread, the program/kernel doesn't halt, instead it just displays the error and
+            This is used to call Wait on a condition variable using the lock
+            that is given as the second argument to this call. In case of any
+            errors, either the lock is non existant or CVId is invalid or the
+            lock used with the CVId is not the one for which the CV is being
+            used or the Lock is not currently held by the current Thread, the
+            program/kernel doesn't halt, instead it just displays the error and
             simply returns.
 
         Signal(CVId, LockId)
-            This signal is used to send a signal to a condition Variable referenced using
-            CVId. All the error conditions are same as that for Wait system call. It causes
-            a single thread waiting on the condition variable to wake up.
+            This signal is used to send a signal to a condition Variable
+            referenced using CVId. All the error conditions are same as that
+            for Wait system call. It causes a single thread waiting on the
+            condition variable to wake up.
 
         Broadcast(CVId, LockId)
-            This system call is same as signal but instead of waking up just one thread
-            waiting on the condition variable, it wakes up all the threads that are waiting
-            on the condition variable. The error conditions are same as that mentioned for
-            Wait() system call and are ignored and execution continues.
+            This system call is same as signal but instead of waking up just
+            one thread waiting on the condition variable, it wakes up all the
+            threads that are waiting on the condition variable. The error
+            conditions are same as that mentioned for Wait() system call and
+            are ignored and execution continues.
 
         Fork(VoidFunctionPtr)
-            This system call is used to fork a new thread. When we call this function we
-            get the virtual address of the function to be forked from the machine
-            register(2). Then we first make a new thread. And we make the address space
-            pointer point to the same address space as that of the spawning process. We
-            then fork the kernel_thread function with the virtual address of the function
-            to initialize the registers and allocate a new stack. This call also creates
-            the required entries to the process table and the childThreads table of the
-            address space associated with this thread.
+            This system call is used to fork a new thread. When we call this
+            function we get the virtual address of the function to be forked
+            from the machine register(2). Then we first make a new thread. And
+            we make the address space pointer point to the same address space
+            as that of the spawning process. We then fork the kernel_thread
+            function with the virtual address of the function to initialize the
+            registers and allocate a new stack. This call also creates the
+            required entries to the process table and the childThreads table of
+            the address space associated with this thread.
 
         kernel_thread()
-            This is a helper function for the fork system call. It does the following steps:
+            This is a helper function for the fork system call. It does the
+            following steps:
                 1. Load the Reg with virtual address.
                 2. Load the Next Reg with virtual address + 4
                 3. Restore the CPU state of a user program;
-                4. increment the number of user stacks for currentThread i.e.increment the process by 1
+                4. increment the number of user stacks for currentThread
+                   i.e.increment the process by 1
                 5. Load the stack register with the stack address of new stack;
                 6. Start the CPU so that it starts  running the user program thread;
         
         Exec(char *filename)
-            This system call is used to create a new process. The new process which is
-            created is like the one in fork but it has its own address space rather than
-            sharing the address space with the spawning thread. The system call copies the
-            code of the executable from the file specified by the argument and enters the
-            entry into both the process table and the new address space's childThreads
-            table. This system call then forks the proces  with exec_thread which then
-            initializes the different registers and prepares the process to run.
+            This system call is used to create a new process. The new process
+            which is created is like the one in fork but it has its own address
+            space rather than sharing the address space with the spawning
+            thread. The system call copies the code of the executable from the
+            file specified by the argument and enters the entry into both the
+            process table and the new address space's childThreads table. This
+            system call then forks the proces  with exec_thread which then
+            initializes the different registers and prepares the process to
+            run.
 
         exec_thread()
-            This is a helper function similar to kernel_thread(). This function takes the
-            following steps: 
+            This is a helper function similar to kernel_thread(). This function
+            takes the following steps: 
                 1. Initialize the register by using currentThread->space.
                 2. Call Restore State through currentThread->space.
                 3. Call machine->Run() 
 
         Exit()
-            This system call prepares the thread to exit properly. This funtion has the following steps
+            This system call prepares the thread to exit properly. This funtion
+            has the following steps
                 if this is the last process in the system
                     Call Halt interrupt.
-                if this is the last thread of the process but not the last process in the system
-                    Clear the entry corresponding to this object from bitmap of Process tables.
-                    Remove entries form process table and childThreads table.
-                    Exit the current thread.
-                if this is just another process neither the last nor the end of the system
-                    Remove entry from the child process table and the theads table.
+                if this is the last thread of the process but not the last
+                process in the system
+                    Clear the entry corresponding to this object from bitmap of
+                    Process tables.  Remove entries form process table and
+                    childThreads table.  Exit the current thread.
+                if this is just another process neither the last nor the end of
+                the system
+                    Remove entry from the child process table and the theads
+                    table.
                     Exit current Thread.
 
         Yield()
