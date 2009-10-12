@@ -11,9 +11,18 @@
 char test_code2=0;
 void patients(int ID){
     
+    /* declare variables */
     int myToken;
     int myDoctor;
     int myPrescription;
+
+    int shortestline = 0;
+    int len = 0;
+    int i = 0;
+    int myCashier = 0;
+    int sLen = 0;
+
+    len = receptionists[0].peopleInLine;
 
     /*//////////////////////////////////////////////// */
     /*//// Begin interaction with Receptionist /////// */
@@ -23,10 +32,6 @@ void patients(int ID){
     Acquire(recpLineLock);
     print("P:success\n");
 
-    /* Find the shortest line */
-    int shortestline = 0;
-    int len = receptionists[0].peopleInLine;
-
     /*Find shortest Line */
     if (test4active == 1) {
         print("P:TEST4: Searching for the receptionist with the shortest line\n");
@@ -35,7 +40,7 @@ void patients(int ID){
         
     }
     
-    for (int i=0; i<numRecp; i++) {
+    for (i=0; i<numRecp; i++) {
         
         if (test4active == 1) {
                 /*Print the length of each line */
@@ -205,9 +210,9 @@ void patients(int ID){
     print("P_");
     print(itoa(ID));
     print(": Acquiring cashierLineLock\n");
+
     /* find the shortest line */
-    int myCashier = 0;
-    int sLen = cashiers[0].lineLength;
+    sLen = cashiers[0].lineLength;
     if (test4active == 1) {
         print("P_");
         print(itoa(ID));
