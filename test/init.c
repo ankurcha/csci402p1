@@ -633,7 +633,7 @@ void receptionist(int ID){
             print("R_");
             print(itoa(ID));
             print(":Going to sleep\n");
-            receptionists[ID].ReceptionistBreakCV->Wait(recpLineLock);
+            Wait(receptionists[ID].ReceptionistBreakCV, recpLineLock);
             Release(recpLineLock);
 
                 /*HospitalManager kicked my ass for sleeping on the job!! */
@@ -661,7 +661,7 @@ void receptionist(int ID){
         print("R_");
         print(itoa(ID));
         print(":  Waiting for Patient to pick up token...\n");
-        receptionists[ID].receptionistWaitCV->Wait(receptionists[ID].transLock);
+        Wait(receptionists[ID].receptionistWaitCV, receptionists[ID].transLock);
         
             /*Patient successfully got the token, go back to work: Loop again */
         print("R_");
@@ -701,7 +701,7 @@ void cashier(int ID) {
         print(itoa(ID));
         print(":  No one in line... going on break\n");
             
-            cashiers[ID].breakCV->Wait(cashierLineLock);
+            Wait(cashiers[ID].breakCV, cashierLineLock);
             Release(cashierLineLock);
 
             continue;
