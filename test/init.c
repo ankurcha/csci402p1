@@ -21,7 +21,7 @@
 #include "list.c"
 #include "itoa.c"
 #include "print.c"
-using namespace std;
+/*using namespace std;*/
 
 #define BUSY 0
 #define FREE 1
@@ -35,35 +35,38 @@ char test5active = 0;
 
 struct node {
     int key, value;
-    node* next;
+    struct node* next;
 };
+typedef struct node node;
 struct linkedlist { 
         /*Used for storing the <token,fees> pairs */
     node* head;
     int length;
  
+};
+  typedef struct linkedlist linkedlist;
   
-    void append(int key, int val){
-        if (head == NULL) {
-            head = new node;
-            head->key = key;
-            head->value = val;
-            head->next = NULL;
-            this->length++;
+    void append(linkedlist *ll,int key, int val){
+        if (ll->head == 0) {
+           ll->head = (node*) malloc(sizeof(node));
+           ll-> head->key = key;
+           ll-> head->value = val;
+           ll-> head->next = 0;
+           ll->length++;
         }else {
-            node *p = new node;
+            node *p = (node*) malloc(sizeof(node));
             p->key = key;
             p->value = val;
-            p->next = head;
-            head = p;
-            this->length++;
+            p->next = ll->head;
+            ll->head = p;
+            ll->length++;
         }
     }
     
-    int getValue(int key){
-        node *p = head;
-        if(head!=NULL){
-            while (p!=NULL) {
+    int getValue(linkedlist *ll,int key){
+        node *p = ll->head;
+        if(ll->head!=0){
+            while (p!=0) {
                 if (p->key == key) {
                     return p->value;
                 }else {
@@ -76,7 +79,7 @@ struct linkedlist {
         }
         return -1;
     }
-};
+
 
 
 
@@ -91,7 +94,7 @@ int TokenCounter;
 LockId recpLineLock = CreateLock("recpLineLock");
 
     /*shared data struct related to a Receptionist */
-typedef struct {
+ struct Receptionists_ {
         /* receptionist line CV */
     CVId receptionCV;
     int peopleInLine;
@@ -104,8 +107,9 @@ typedef struct {
         /* receptionist break CV */
     CVId ReceptionistBreakCV;
     
-    }Receptionists;
+    };
     
+    typdef struct Receptionists_ Receptionists;
        void __Receptionists(Receptionists *recep ){
        recep->peopleInLine = 0;
         
@@ -120,7 +124,7 @@ typedef struct {
 
     /* list mapping patient tokens to consultFees */
 LockId feeListLock = CreateLock("feeListLock");
-linkedlist* feeList = new linkedlist();
+linkedlist* feeList = (linkedlist*) malloc(sizeof(linkedlist));
 
     /* global for all cashiers */
 LockId cashierLineLock = CreateLock("cashierLineLock");
@@ -128,7 +132,7 @@ LockId feesPaidLock = CreateLock("feesPaidLock");
 int feesPaid = 0;
 
     /* shared data struct related to a Cashier */
-typedef struct  {
+ struct Cashier_ {
         /* line CV and length */
     int lineLength;
     CVId lineCV;
@@ -145,7 +149,8 @@ typedef struct  {
     
         /* cashier's CV for going on break */
     CVId breakCV;
-  }Cashier;
+  };
+  typedef struct Cashier_ Cashier;
   
     void __Cashier(Cashier *cash) {
        cash-> lineLength = 0;
@@ -176,7 +181,7 @@ LockId hospitalLock = CreateLock("HospitalLock");
 int peopleInHospital = 1;
 
 
-typedef struct {
+struct PharmacyClerks_ {
     int patientsInLine;
     int state;
     int payment;
@@ -190,7 +195,8 @@ typedef struct {
     
         /*protected by PaymentLock */
     int sales;
-  }PharmacyClerks;
+  };
+  typedef struct PharmacyClerks_ PharmacyClerks;
   
    void _PharmacyClerks(PharmacyClerks *pcl){
       pcl-> patientsInLine= 0;
@@ -206,7 +212,7 @@ typedef struct {
     }  
 
 
-typedef struct {
+struct Doctor_ {
         /* line lock and CV and protected variables */
     LockId LineLock;
     CVId LineCV;
@@ -220,8 +226,9 @@ typedef struct {
     CVId transCV;
     int prescription;
     int patientToken;
-    }Doctor ;
-    
+    } ;
+   typedef struct Doctor_ Doctor;
+ 
     void __Doctor(Doctor *doc) {
         doc->prescription = -1;
         doc->patientToken = -1;
@@ -236,11 +243,11 @@ typedef struct {
     }
     
     void _Doctor(Doctor *doc) {
-        doc->destroyLock(LineLock);
-        doc->destroyCondition(LineCV);
-        doc->destroyCondition(doorboyBreakCV);
-        doc->destroyLock(transLock);
-        doc->destroyLock(transCV);
+        destroyLock(doc->LineLock);
+        destroyCondition(doc->LineCV);
+        destroyCondition(doc->doorboyBreakCV);
+        destroyLock(doc->transLock);
+        destroyLock(doc->transCV);
     }
 
 
@@ -249,34 +256,32 @@ LockId doorboyLineLock = CreateLock("doorboyLineLock");
 CVId doorboyLineCV = CreateCondition("doorboyLineCV");
 int doorboyLineLength = 0;
     /*int wakingDoctorID = 0; */
-List* wakingDoctorList = new List();
+List* wakingDoctorList = (List*) malloc(sizeof(List));
 
-typedef struct  {
+struct DoorBoy_ {
     
-}DoorBoy;
+};
+typedef struct Doorboy_ Doorboy;
 
-DoorBoy(DoorBoy *db){
-    }
+#define MAX_DOCTORS 10
+#define MIN_DOCTORS 4
 
-const int MAX_DOCTORS = 10;
-const int MIN_DOCTORS = 4;
+#define MAX_DOORB 10
+#define MIN_DOORB 4
 
-const int MAX_DOORB = MAX_DOCTORS;
-const int MIN_DOORB = MIN_DOCTORS;
+#define MAX_PATIENTS 100
+#define MIN_PATIENTS 20
 
-const int MAX_PATIENTS = 100;
-const int MIN_PATIENTS = 20;
+#define RECP_MAX 5
+#define RECP_MIN 3
 
-const int RECP_MAX = 5;
-const int RECP_MIN = 3;
+#define MAX_CLERKS 5
+#define MIN_CLERKS 3
 
-const int MAX_CLERKS = 5;
-const int MIN_CLERKS = 3;
+#define MAX_CASHIER 5
+#define MIN_CASHIER 3
 
-const int MAX_CASHIER = 5;
-const int MIN_CASHIER = 3;
-
-const int totalHospMan = 1;
+#define totalHospMan 1
 
 
 int numDoctors = 0;
