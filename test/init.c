@@ -634,7 +634,7 @@ void receptionist(int ID){
             print(itoa(ID));
             print(":Going to sleep\n");
             receptionists[ID].ReceptionistBreakCV->Wait(recpLineLock);
-            recpLineLock->Release();
+            Release(recpLineLock);
 
                 /*HospitalManager kicked my ass for sleeping on the job!! */
                 /*Loop back!! */
@@ -667,7 +667,7 @@ void receptionist(int ID){
         print("R_");
         print(itoa(ID));
         print(": Patient got token, Continue to next Patient\n");
-        receptionists[ID].transLock->Release();
+        Release(receptionists[ID].transLock);
 
     }
     
@@ -702,7 +702,7 @@ void cashier(int ID) {
         print(":  No one in line... going on break\n");
             
             cashiers[ID].breakCV->Wait(cashierLineLock);
-            cashierLineLock->Release();
+            Release(cashierLineLock);
 
             continue;
         }
@@ -947,7 +947,7 @@ void hospitalManager(int ID) {
                 /*Wake up this clerk up */
                 ClerkLinesLock->Acquire();
                 Signal(clerks[i].ClerkBreakCV, ClerkLinesLock);
-                ClerkLinesLock->Release();
+                Release(ClerkLinesLock);
 
             }
         }
@@ -1006,7 +1006,7 @@ void hospitalManager(int ID) {
                 
                 doctors[i].LineLock->Acquire();
                 doctors[i].doorboyBreakCV->Broadcast(doctors[i].LineLock);
-                doctors[i].LineLock->Release();
+                Release(doctors[i].LineLock);
 
             }
         }        
