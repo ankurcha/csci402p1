@@ -16,382 +16,8 @@
 
 
 
-
-#include "syscall.h"
-#include "list.c"
-#include "itoa.c"
-#include "print.c"
-/*using namespace std;*/
-
-#define BUSY 0
-#define FREE 1
-#define SLEEPING 2
-
-#define MAX_DOCTORS 10
-#define MIN_DOCTORS 4
-
-#define MAX_DOORB 10
-#define MIN_DOORB 4
-
-#define MAX_PATIENTS 100
-#define MIN_PATIENTS 20
-
-#define RECP_MAX 5
-#define RECP_MIN 3
-
-#define MAX_CLERKS 5
-#define MIN_CLERKS 3
-
-#define MAX_CASHIER 5
-#define MIN_CASHIER 3
-
-#define totalHospMan 1
-
-int numDoctors = 0;
-int numCashiers = 0;
-int numClerks = 0;
-int numDoorboys = 0;
-int numRecp = 0;
-int numPatients = 0;
-
-char test1active = 0;
-char test2active = 0;
-char test4active = 0;
-char test7active = 0;
-char test5active = 0;
-int feesPaid = 0;
-
-typedef struct {
-    int key, value;
-    struct node* next;
-};
-typedef struct node node;
-struct linkedlist { 
-        /*Used for storing the <token,fees> pairs */
-    node* head;
-    int length;
-}linkedlist;
-
-void linkedlist_append(linkedlist* this, int key, int val){
-    if (this->head == 0) {
-        this->head = (node*) malloc(sizeof(node));
-        this->head->key = key;
-        this->head->value = val;
-        this->head->next = 0;
-        this->length++;
-    }else {
-        node *p = (node*) malloc(sizeof(node));
-        p->key = key;
-        p->value = val;
-        p->next = head;
-        this->head = p;
-        this->length++;
-    }
-}
-  typedef struct linkedlist linkedlist;
-  
-    void append(linkedlist *ll,int key, int val){
-        if (ll->head == 0) {
-           ll->head = (node*) malloc(sizeof(node));
-           ll-> head->key = key;
-           ll-> head->value = val;
-           ll-> head->next = 0;
-           ll->length++;
-        }else {
-            node *p = (node*) malloc(sizeof(node));
-            p->key = key;
-            p->value = val;
-            p->next = ll->head;
-            ll->head = p;
-            ll->length++;
-        }
-    }
-    
-    int getValue(linkedlist *ll,int key){
-        node *p = ll->head;
-        if(ll->head!=0){
-            while (p!=0) {
-                if (p->key == key) {
-                    return p->value;
-                }else {
-                    p = p->next;
-                }
-            }/*End of While */
-        }else{
-                /*empty list */
-            return -1;
-        }
-        return -1;
-    }
-
-
-
-LockId testlock = CreateLock("TestLock");
-
-    /* tokenCounter for assigning tokens to patients */
-LockId TokenCounterLock = CreateLock("TokenCounterLock");
-int TokenCounter;
-
-    /* global for all receptionists */
-LockId recpLineLock = CreateLock("recpLineLock");
-
-    /*shared data struct related to a Receptionist */
- struct Receptionists_ {
-        /* receptionist line CV */
-    CVId receptionCV;
-    int peopleInLine;
-    
-        /* receptionist transactional lock and CV and protected variables */
-    LockId transLock;
-    CVId receptionistWaitCV;
-    int currentToken;
-    
-        /* receptionist break CV */
-    CVId ReceptionistBreakCV;
-    
-    };
-        typdef struct Receptionists_ Receptionists;
-        
-       void __Receptionists(Receptionists *recep ){
-       recep->peopleInLine = 0;
-        
-       recep->receptionCV = CreateCondition("receptionCV");
-        
-       recep->transLock = CreateLock("Receptionists.transLock");
-       recep->receptionistWaitCV = CreateCondition("receptionistWaitCV");
-       recep->ReceptionistBreakCV = CreateCondition("ReceptionistBreakCV");
-       recep->currentToken = 0;
-    }
-
-
-    /* list mapping patient tokens to consultFees */
-LockId feeListLock = CreateLock("feeListLock");
-linkedlist* feeList = (linkedlist*) malloc(sizeof(linkedlist));
-
-    /* global for all cashiers */
-LockId cashierLineLock = CreateLock("cashierLineLock");
-LockId feesPaidLock = CreateLock("feesPaidLock");
-
-
-    /* shared data struct related to a Cashier */
- struct Cashier_ {
-        /* line CV and length */
-    int lineLength;
-    CVId lineCV;
-    
-        /* transaction lock, CV, and variables protected by the former */
-    LockId transLock;
-    CVId transCV;
-    int patToken;
-    int fee;
-    int payment;
-    
-        /*protected by feesPaidLock, but only modified by one thread */
-    int sales;
-    
-        /* cashier's CV for going on break */
-    CVId breakCV;
-  };
-  typedef struct Cashier_ Cashier;
-  
-    void __Cashier(Cashier *cash) {
-       cash-> lineLength = 0;
-       cash-> patToken = 0;
-       cash-> fee = 0;
-       cash-> payment = 0;
-        
-        cash->lineCV = CreateCondition("Cashier.lineCV");
-        cash->transLock = CreateLock("Cashier.transLock");
-        cash->transCV = CreateCondition("Cashier.transCV");
-        cash->breakCV = CreateCondition("Cashier.breakCV");
-    }
-    
-   void _Cashier(Cashier *cash) {
-        destroyCondition( cash->lineCV );
-        destroyLock( cash->transLock );
-        destroyCondition( cash->transCV );
-        destroyCondition( cash->breakCV );
-    }
-
-
-LockId ClerkLinesLock= CreateLock("ClerkLineLock");
-LockId PaymentLock= CreateLock("PaymentLock");
-int totalsales=0;
-
-    /* hospitalLock protects the count of patients remaining in the hospital */
-LockId hospitalLock = CreateLock("HospitalLock");
-int peopleInHospital = 1;
-
-
-struct PharmacyClerks_ {
-    int patientsInLine;
-    int state;
-    int payment;
-    int fee;
-    int patPrescription;
-    CVId ClerkCV;
-    
-    CVId ClerkBreakCV;
-    LockId ClerkTransLock;
-    CVId ClerkTransCV;
-    
-        /*protected by PaymentLock */
-    int sales;
-  };
-  typedef struct PharmacyClerks_ PharmacyClerks;
-  
-   void _PharmacyClerks(PharmacyClerks *pcl){
-      pcl-> patientsInLine= 0;
-      pcl->state=FREE;
-      pcl->payment=0;
-      pcl->fee=(int)(Random())%100;
-      pcl->patPrescription=0;
-        
-        pcl->ClerkCV = CreateCondition("ClerkCV");
-        pcl->ClerkBreakCV = CreateCondition("ClerkBreakCV");
-        pcl->ClerkTransLock = CreateLock("ClerkTransLock");
-        pcl->ClerkTransCV = CreateCondition("ClerkTransCV");
-    }  
-
-
-struct Doctor_ {
-        /* line lock and CV and protected variables */
-    LockId LineLock;
-    CVId LineCV;
-    int peopleInLine;
-        /*CV for doorboys to sleep on */
-    CVId doorboyBreakCV;
-    
-    
-        /*transaction lock and CV and variables protected */
-    LockId transLock;
-    CVId transCV;
-    int prescription;
-    int patientToken;
-    } ;
-   typedef struct Doctor_ Doctor;
- 
-    void __Doctor(Doctor *doc) {
-        doc->prescription = -1;
-        doc->patientToken = -1;
-        
-        doc->peopleInLine = 0;
-        doc->LineLock = CreateLock("LineLock");
-        doc->LineCV = CreateCondition("LineCV");
-        doc->doorboyBreakCV = CreateCondition("Doctor.doorboyBreakCV");
-        
-        doc->transLock = CreateLock("Doctor.transLock");
-        doc->transCV = CreateCondition("Doctor.transCV");
-    }
-    
-    void _Doctor(Doctor *doc) {
-        destroyLock(doc->LineLock);
-        destroyCondition(doc->LineCV);
-        destroyCondition(doc->doorboyBreakCV);
-        destroyLock(doc->transLock);
-        destroyLock(doc->transCV);
-    }
-
-
-    /* globals to track the queue of doorboys waiting to service doctors */
-LockId doorboyLineLock = CreateLock("doorboyLineLock");
-CVId doorboyLineCV = CreateCondition("doorboyLineCV");
-int doorboyLineLength = 0;
-    /*int wakingDoctorID = 0; */
-List* wakingDoctorList = (List*) malloc(sizeof(List));
-
-struct DoorBoy_ {
-    
-};
-typedef struct Doorboy_ Doorboy;
-
-
-
-Receptionists receptionists[RECP_MAX];
-DoorBoy doorboys[MAX_DOCTORS];
-Doctor doctors[MAX_DOCTORS];
-Cashier cashiers[MAX_CASHIER];
-PharmacyClerks clerks[MAX_CLERKS];
-
-int test_state = 0;
-
-LockId creationLock = CreateLock("creationLock");
-int patientCount = 0;
-int recptionistCount = 0;
-int doorboyCount = 0;
-int doctorCount = 0;
-int cashierCount = 0;
-int pharmacyCount = 0;
-int hospitalmanagerCount = 0;
-
+#include "init.h"
 #include "patient.c"
-
-void createPatient(){
-    int temp;
-    Acquire(creationLock);
-    temp = patientCount;
-    patientCount++;
-    Release(creationLock);
-    patients(temp);
-    Exit(0);
-}
-
-void createReceptionist(){
-    int temp;
-    Acquire(creationLock);
-    temp = recptionistCount;
-    recptionistCount++;
-    Release(creationLock);
-    receptionist(temp);
-    Exit(0);
-}
-void createDoorBoy(){
-    int temp;
-    Acquire(creationLock);
-    temp = doorboyCount;
-    doorboyCount++;
-    Release(creationLock);
-    doorboy(temp);
-    Exit(0);
-}
-void createDoctor(){
-    int temp;
-    Acquire(creationLock);
-    temp = doctorCount;
-    doctorCount++;
-    Release(creationLock);
-    doctor(temp);
-    Exit(0);
-    
-}
-void createCashier(){
-    int temp;
-    Acquire(creationLock);
-    temp = cashierCount;
-    cashierCount++;
-    Release(creationLock);
-    cashier(temp);
-    Exit(0);
-}
-void createPharmacyClerk(){
-    int temp;
-    Acquire(creationLock);
-    temp = pharmacyCount;
-    pharmacyCount++;
-    Release(creationLock);
-    clerk(temp);
-    Exit(0);
-}
-void createhospitalManager(){
-    int temp;
-    Acquire(creationLock);
-    temp = hospitalmanagerCount;
-    hospitalmanagerCount++;
-    Release(creationLock);
-    hospitalManager(temp);
-    Exit(0);
-}
-
 
 void doorboy(int ID){
     int myDoctor = 0;
@@ -1525,4 +1151,92 @@ int test7(){
     test7active = 1;
     HospINIT();
     return 0;
+}
+
+void createPatient(){
+    int temp;
+    Acquire(creationLock);
+    temp = patientCount;
+    patientCount++;
+    Release(creationLock);
+    patients(temp);
+    Exit(0);
+}
+
+void createReceptionist(){
+    int temp;
+    Acquire(creationLock);
+    temp = recptionistCount;
+    recptionistCount++;
+    Release(creationLock);
+    receptionist(temp);
+    Exit(0);
+}
+
+void createDoorBoy(){
+    int temp;
+    Acquire(creationLock);
+    temp = doorboyCount;
+    doorboyCount++;
+    Release(creationLock);
+    doorboy(temp);
+    Exit(0);
+}
+
+void createDoctor(){
+    int temp;
+    Acquire(creationLock);
+    temp = doctorCount;
+    doctorCount++;
+    Release(creationLock);
+    doctor(temp);
+    Exit(0);
+    
+}
+
+void createCashier(){
+    int temp;
+    Acquire(creationLock);
+    temp = cashierCount;
+    cashierCount++;
+    Release(creationLock);
+    cashier(temp);
+    Exit(0);
+}
+
+void createPharmacyClerk(){
+    int temp;
+    Acquire(creationLock);
+    temp = pharmacyCount;
+    pharmacyCount++;
+    Release(creationLock);
+    clerk(temp);
+    Exit(0);
+}
+
+void createhospitalManager(){
+    int temp;
+    Acquire(creationLock);
+    temp = hospitalmanagerCount;
+    hospitalmanagerCount++;
+    Release(creationLock);
+    hospitalManager(temp);
+    Exit(0);
+}
+
+int main(){
+    testlock = CreateLock("TestLock");
+    TokenCounterLock = CreateLock("TokenCounterLock");
+    recpLineLock = CreateLock("recpLineLock");
+    feeListLock = CreateLock("feeListLock")
+    feeList = (linkedlist*) malloc(sizeof(linkedlist));
+    cashierLineLock = CreateLock("cashierLineLock");
+    feesPaidLock = CreateLock("feesPaidLock");
+    ClerkLinesLock= CreateLock("ClerkLineLock");
+    PaymentLock= CreateLock("PaymentLock");
+    hospitalLock = CreateLock("HospitalLock");
+    doorboyLineLock = CreateLock("doorboyLineLock");
+    doorboyLineCV = CreateCondition("doorboyLineCV");
+    wakingDoctorList = (List*) malloc(sizeof(List));
+    creationLock = CreateLock("creationLock");
 }

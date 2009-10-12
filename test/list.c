@@ -18,6 +18,7 @@
 /* Internal data structures kept public so that List operations can */
 /* access them directly. */
 
+typedef void (*VoidFunctionPtr)(int arg); 
 struct _ListElement{
     struct _ListElement *next;		/* next element on list,  */
                             /* 0 if this is the last */
@@ -32,11 +33,15 @@ typedef struct _ListElement ListElement;
 /* By using the "Sorted" functions, the list can be kept in sorted */
 /* in increasing order by "key" in ListElement. */
 
-typedef struct {
+ struct _List {
     ListElement *first;  	/* Head of the list, 0 if list is empty */
     ListElement *last;		/* Last element of list */
-}List;
+};
+typedef struct _List List;
 
+void List_SortedInsert(List *this, void *item, int sortKey);
+char List_IsEmpty(List *this);
+void * List_SortedRemove(List *this, int *keyPtr);
 
 /*---------------------------------------------------------------------- */
 /* __ListElement */
@@ -129,7 +134,7 @@ List__Prepend(List *this, void *item)
         this->first = element;
         this->last = element;
     } else {			/*else put it before first*/
-        element->next = first;
+        element->next = this->first;
         this->first = element;
     }
 }
@@ -158,21 +163,21 @@ List_Remove(List *this)
 /*	"func" is the procedure to apply to each element of the list. */
 /*---------------------------------------------------------------------- */
 
-void
-List_Mapcar(List *this, VoidFunctionPtr func)
-{
-    for (ListElement *ptr = this->first; ptr != 0; ptr = ptr->next) {
-        (*func)((int)ptr->item);
+void List_Mapcar(List *this,int func)
+{  
+	ListElement *ptr;
+	  
+    for (ptr = this->first; ptr != 0; ptr = ptr->next) {
+        ((int)ptr->item);
     }
 }
 
 /*---------------------------------------------------------------------- */
 /* List_IsEmpty */
-/*     Returns TRUE if the list is empty (has no */items).
+/*     Returns TRUE if the list is empty (has no items).
 /*---------------------------------------------------------------------- */
 
-char
-List_IsEmpty(List *this) 
+char List_IsEmpty(List *this) 
 { 
     if (this->first == 0)
         return 1;
@@ -201,9 +206,9 @@ List_SortedInsert(List *this, void *item, int sortKey)
     ListElement *element = (ListElement*) malloc(sizeof(ListElement));
     __ListElement(element, item, sortKey);
     
-    ListElement *ptr;		/*keep track */
     
-    if (this->IsEmpty()) {	/*if list is empty, put */
+    
+    if (List_IsEmpty(this)) {	/*if list is empty, put */
         this->first = element;
         this->last = element;
     } else if (sortKey < this->first->key) {	
@@ -211,7 +216,8 @@ List_SortedInsert(List *this, void *item, int sortKey)
         element->next = this->first;
         this->first = element;
     } else {		/*look for first elt in list bigger than item*/
-        for (ptr = first; ptr->next != 0; ptr = ptr->next) {
+    	ListElement *ptr;
+        for (ptr =this->first; ptr->next != 0; ptr = ptr->next) {
             if (sortKey < ptr->next->key) {
                 element->next = ptr->next;
                 ptr->next = element;
@@ -236,13 +242,12 @@ List_SortedInsert(List *this, void *item, int sortKey)
 /*		priority of the removed item. */
 /*---------------------------------------------------------------------- */
 
-void *
-List_SortedRemove(List *this, int *keyPtr)
+void * List_SortedRemove(List *this, int *keyPtr)
 {
     ListElement *element = this->first;
     void *thing;
     
-    if (this->IsEmpty()) 
+    if (List_IsEmpty(this)) 
         return 0;
     
     thing = this->first->item;
@@ -254,6 +259,6 @@ List_SortedRemove(List *this, int *keyPtr)
     }
     if (keyPtr != 0)
         *keyPtr = element->key;
-    delete element;
+    free (element);
     return thing;
 }
