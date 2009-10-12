@@ -267,18 +267,6 @@ III. Design:
                 messiness of making sure a virtual address is valid and that it
                 stays valid until the string terminates.
 
-            void addChildThread(PID);           
-
-                TODO
-
-            void removeChildThread(PID);        
-
-                TODO
-
-            void killAllThreads();
-
-                TODO
-
     Part 3:
         
 
@@ -337,9 +325,6 @@ IV. Implementation:
                     int InitStack();
                     void ClearStack(int);
                     string readCString(char*);
-                    void addChildThread(PID);           
-                    void removeChildThread(PID);        
-                    void killAllThreads();
 
                 Methods modified:
                     constructor
