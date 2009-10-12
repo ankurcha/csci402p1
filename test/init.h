@@ -54,6 +54,7 @@ struct linkedlist_element {
     int key, value;
 };
 
+
 struct list {
     struct linkedlist_element listArray[MAX_PATIENTS];
     int head;
@@ -63,6 +64,7 @@ typedef struct list List;
 int List_Append(List* l, int key, int val){
     if (l == 0) {
         return -1;
+
     }
     if(l->head == MAX_PATIENTS + 1){
         print("List is full\n");
