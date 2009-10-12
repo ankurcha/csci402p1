@@ -18,13 +18,13 @@
 /* Internal data structures kept public so that List operations can */
 /* access them directly. */
 
-typedef struct{
-    ListElement *next;		/* next element on list,  */
+struct _ListElement{
+    struct _ListElement *next;		/* next element on list,  */
                             /* 0 if this is the last */
     int key;		    	/* priority, for a sorted list */
     void *item; 	    	/* pointer to item on the list */
-}ListElement;
-
+};
+typedef struct _ListElement ListElement;
 
 /* The following class defines a "list" -- a singly linked list of */
 /* list elements, each of which points to a single item on the list. */
@@ -129,7 +129,7 @@ List__Prepend(List *this, void *item)
         this->first = element;
         this->last = element;
     } else {			/*else put it before first*/
-        this->element->next = first;
+        element->next = first;
         this->first = element;
     }
 }

@@ -377,27 +377,6 @@ int AddrSpace::InitStack() {
     stackTableLock->Acquire();
     int stack = stackTable->Find();
     stackTableLock->Release();
-    //int stack = -1;
-    //for(unsigned int i=0; i < stackTable.size(); i++) {
-    //    if(stackTable[i] == false) {
-    //        stack = i;
-    //        stackTable[i] = true;
-    //        break;
-    //    }
-    //}
-
-    // if no stacks were open, create one
-    //if(stack < 0) {
-    //    stack = stackTable.size();
-    //    stackTable.push_back((char) true);
-    //    
-    //    //if(numPages < dataPages + stack * stackPages) {
-    //    //    // double size of pageTable
-    //    //    newNumPages = min(NumPhysPages, numPages*2);
-    //    //    ASSERT(newNumPages >= dataPages + stack * stackPages);
-    //    //    TranslationEntry* newPageTable = new TranslationEntry[numPages * 2];
-    //    //}
-    //}
 
     // check if there was room for another stack
     if(stack < 0) {
@@ -407,10 +386,6 @@ int AddrSpace::InitStack() {
     }
 
     int stackPages = divRoundUp(UserStackSize,PageSize); //pages per stack
-
-    //first page in this stack
-    // [...data...][0][...][stack-1][stack]
-    //int start = (dataPages - 1) + (stack-1) * stackPages + 1;
 
     // first page in this stack
     // [...data...][-unallocated-][stack][lower stacks...]
