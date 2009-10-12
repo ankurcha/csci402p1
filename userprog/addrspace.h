@@ -45,9 +45,6 @@ class AddrSpace {
 
     void SaveState();            // Save/restore address space-specific
     void RestoreState();        // info on a context switch
-
-    Table fileTable;            // Table of openfiles
-
 #ifdef CHANGED
     // create a new stack for a thread and set StackReg there
     int InitStack();
@@ -60,7 +57,6 @@ class AddrSpace {
     
     Table fileTable;            // Table of openfiles
 
-#ifdef CHANGED
     Lock *locksTableLock;
     Table locksTable;           //Table of Locks
     Table CVTable;              //Table of CVs

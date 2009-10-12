@@ -731,432 +731,6 @@ void hospitalManager(int ID) {
     }
 }
 
-void HospINIT(testmode) {
-    int i;
-    
-        /* set a global so everyone will know the test mode */
-    test_state = testmode;
-    
-    if(testmode != 1 && testmode != 51 && testmode != 52 && testmode != 53 ){
-        i = 0;
-        
-            /*cout << "Simulation startup\n\n"; */
-        
-            /*3. Cashiers */
-        numCashiers = (Random() % (MAX_CASHIER - MIN_CASHIER +1) + MIN_CASHIER) ;
-               print("Creating ");
-            	 print(itoa(numCashiers));
-               print("Cashiers\n");
-        
-        
-        for(i=0;i<numCashiers;i++)
-        {
-            
-            Fork(createCashier);
-        }
-        
-            /*4. DoorBoys */
-        numDoctors = (Random() % (MAX_DOCTORS - MIN_DOCTORS + 1) + MIN_DOCTORS);
-        if(test1active == 0){
-            numDoorboys = numDoctors;
-            print("Creating ");
-            print(itoa(numDoorboys));
-            print(" Doorboys\n");
-            for(i=0;i<numDoorboys;i++)
-            {
-                
-                Fork(createDoorboy);
-            }            
-        }else{
-            numDoorboys = 0;
-            print("Bypassing Doorboy Creation\n");
-        }
-        
-        
-            /*5. Pharmacys */
-        numClerks= (Random() % (MAX_CLERKS - MIN_CLERKS +1) + MIN_CLERKS) ;
-            print("Creating ");
-            print(itoa(numClerks));
-            print(" Clerks\n");
-        
-        for(i=0;i<numClerks;i++)
-        {
-            
-            Fork(createClerk);
-        }
-        
-        
-            /*1. Doctors */
-            
-            print("Creating ");
-            print(itoa(numDoctors));
-            print(" Doctors\n");
-        for(i=0;i<numDoctors;i++)
-        {
-            
-            Fork(createDoctor);
-        }
-        
-        
-            /*7. Patients */
-        numPatients = Random() % (MAX_PATIENTS - MIN_PATIENTS +1) + MIN_PATIENTS; 
-        Acquire(hospitalLock);
-        peopleInHospital = numPatients;
-        Release(hospitalLock);    
-        
-        print("Creating ");
-            print(itoa(numPatients));
-            print(" Patients\n");
-        
-        for(i=0;i<numPatients;i++)
-        {
-            
-            Fork(createPatients);
-        }
-        
-        
-        
-            /*6. HospitalManager */
-
-        print("Creating 1 Hospital Manager \n");
-        
-        
-        Fork(createHospitalManager);   
-   
-        
-        
-        
-            /*2. Receptionists */
-        numRecp = (Random() % (RECP_MAX - RECP_MIN +1) + RECP_MIN) ;
-            print("Creating ");
-            print(itoa(numRecp));
-            print(" Receptionists\n");
-        
-        for(i=0; i<numRecp; i++)
-        {
-            Fork(createReceptionist);
-        }
-        
-        
-    }
-    
-    
-    else if (testmode == 51) {
-        
-        i = 0;
-        
-        
-        
-            /*3. Cashiers */
-        numCashiers = (Random() % (MAX_CASHIER - MIN_CASHIER +1) + MIN_CASHIER) ;
-            print("Creating ");
-            print(itoa(numCashiers));
-            print(" Cashiers\n");
-        
-        for(i=0;i<numCashiers;i++)
-        {
-            
-            Fork(createCashier);
-        }
-        
-            /*4. DoorBoys */
-        numDoctors = (Random() % (MAX_DOCTORS - MIN_DOCTORS + 1) + MIN_DOCTORS);
-        if(test1active == 0){
-            numDoorboys = numDoctors;
-            print("Creating ");
-            print(itoa(numDoorboys));
-            print(" Doorboys\n");
-            
-            for(i=0;i<numDoorboys;i++)
-            {
-                
-                Fork(createDoorboy);
-            }            
-        }else{
-            numDoorboys = 0;
-            print(" Bypassing Doorboy Creation\n");
-        }
-        
-        
-            /*5. Pharmacys */
-        numClerks= (Random() % (MAX_CLERKS - MIN_CLERKS +1) + MIN_CLERKS) ;
-        
-            print("Creating ");
-            print(itoa(numClerks));
-            print(" Clerks\n");
-       
-        for(i=0;i<numClerks;i++)
-        {
-            
-            Fork(createClerk);
-        }
-        
-        
-            /*1. Doctors */
-            print("Creating ");
-            print(itoa(numDoctors));
-            print(" Doctors\n");
-        for(i=0;i<numDoctors;i++)
-        {
-            
-            Fork(createDoctor);
-        }
-        
-        
-            /*7. Patients */
-        numPatients = Random() % (MAX_PATIENTS - MIN_PATIENTS +1) + MIN_PATIENTS; 
-        Acquire(hospitalLock);
-        peopleInHospital = numPatients;
-        Release(hospitalLock);    
-        
-        print("Creating ");
-            print(itoa(numPatients));
-            print(" Patients\n");
-        for(i=0;i<numPatients;i++)
-        {
-            
-            Fork(createPatients);
-        }
-        
-        
-        
-            /*6. HospitalManager */
-
-            
-        print("Creating 1 Hospital Manager \n");
-       
-        
-        Fork(createHospitalManager);   
-
-        
-        
-        
-        
-            /*2. No Receptionists */
-        numRecp = (Random() % (RECP_MAX - RECP_MIN +1) + RECP_MIN) ;
-        
-    }else if (testmode == 52) {
-        i = 0;
-        Thread *t;   
-        
-        
-        
-            /*3. No Cashiers */
-        numCashiers = (Random() % (MAX_CASHIER - MIN_CASHIER +1) + MIN_CASHIER) ;
-        
-        
-            /*4. DoorBoys */
-        numDoctors = (Random() % (MAX_DOCTORS - MIN_DOCTORS + 1) + MIN_DOCTORS);
-        if(test1active == 0){
-            numDoorboys = numDoctors;
-            
-            print("Creating ");
-            print(itoa(numDoorboys));
-            print(" Doorboys\n");
-            
-            for(i=0;i<numDoorboys;i++)
-            {
-                
-                Fork(createDoorboy);
-            }            
-        }else{
-            numDoorboys = 0;
-            print(" Bypassing Doorboy Creation\n");
-        }
-        
-        
-            /*5. Pharmacys */
-        numClerks= (Random() % (MAX_CLERKS - MIN_CLERKS +1) + MIN_CLERKS) ;
-            print("Creating ");
-            print(itoa(numClerks));
-            print(" Clerks\n");
-        for(i=0;i<numClerks;i++)
-        {
-            
-            Fork(createClerk);
-        }
-        
-        
-            /*1. Doctors */
-            print("Creating ");
-            print(itoa(numDoctors));
-            print(" Doctors\n");
-       
-        for(i=0;i<numDoctors;i++)
-        {
-            
-            Fork(createDoctor);
-        }
-        
-        
-            /*7. Patients */
-        numPatients = Random() % (MAX_PATIENTS - MIN_PATIENTS +1) + MIN_PATIENTS; 
-        Acquire(hospitalLock);
-        peopleInHospital = numPatients;
-        Release(hospitalLock);    
-        
-            print("Creating ");
-            print(itoa(numPatients));
-            print(" Patients\n");
-        
-        for(i=0;i<numPatients;i++)
-        {
-            Fork(createPatient);
-        }
-        
-        
-        
-            /*6. HospitalManager */
-
-            
-            
-        print("Creating 1 Hospital Manager \n");
-        
-        Fork(createHospitalManager);   
-
-        
-        
-        
-        
-            /*2. Receptionists */
-        numRecp = (Random() % (RECP_MAX - RECP_MIN +1) + RECP_MIN) ;
-        
-            print("Creating ");
-            print(itoa(numRecp));
-            print(" Receptionists\n");
-        
-        for(i=0; i<numRecp; i++)
-        {
-            Fork(createReceptionist);
-        }
-        
-        
-    }else if (testmode == 53) {
-        i = 0;
-        
-            /*3. Cashiers */
-        numCashiers = (Random() % (MAX_CASHIER - MIN_CASHIER +1) + MIN_CASHIER) ;
-            
-            print("Creating ");
-            print(itoa(numCashiers));
-            print(" Cashiers\n");
-        
-        for(i=0;i<numCashiers;i++)
-        {
-            
-            Fork(createCashier);
-        }
-        
-            /*4. DoorBoys */
-        numDoctors = (Random() % (MAX_DOCTORS - MIN_DOCTORS + 1) + MIN_DOCTORS);
-        if(test1active == 0){
-            numDoorboys = numDoctors;
-            
-            print("Creating ");
-            print(itoa(numDoorboys));
-            print(" Doorboys\n");
-            
-            for(i=0;i<numDoorboys;i++)
-            {
-                
-                Fork(createDoorboy);
-            }            
-        }else{
-            numDoorboys = 0;
-            
-            print(" Bypassing Doorboy Creation\n");
-            
-        }
-        
-        
-            /*5. No Pharmacy clerks */
-        numClerks = (Random() % (MAX_CLERKS - MIN_CLERKS +1) + MIN_CLERKS) ;        
-        
-            /*1. Doctors */
-            print("Creating ");
-            print(itoa(numDoctors));
-            print(" Doctors\n");
-           
-       
-        for(i=0;i<numDoctors;i++)
-        {
-            
-            Fork(createDoctor);
-        }
-        
-        
-            /*7. Patients */
-        numPatients = Random() % (MAX_PATIENTS - MIN_PATIENTS +1) + MIN_PATIENTS; 
-        Acquire(hospitalLock);
-        peopleInHospital = numPatients;
-        Release(hospitalLock);    
-        
-        
-            print("Creating ");
-            print(itoa(numPatients));
-            print(" Patients\n");
-        
-        for(i=0;i<numPatients;i++)
-        {
-            
-            Fork(createPatients);
-        }
-        
-        
-        
-            /*6. HospitalManager */
-
-            
-        print("Creating 1 Hospital Manager \n");      
-        
-        Fork(createHospitalManager);   
-
-        
-        
-        
-            /*2. Receptionists */
-        numRecp = (Random() % (RECP_MAX - RECP_MIN +1) + RECP_MIN) ;
-        
-        print("Creating ");
-        print(itoa(numRecp));
-        print(" Receptionists\n");
-        
-        for(i=0; i<numRecp; i++)
-        {
-            Fork(createReceptionist);
-        }
-    }else if (testmode == 2) {
-    }
-}
-
-
-int test1(){
-    test1active = 1;
-    HospINIT();
-    return 0;
-}
-
-int test2(){
-	test2active=1;
-	HospINIT();
-	return 0;
-}
-
-int test4(){
-    test4active = 1;
-        /*start the process normally */
-    HospINIT();
-    return 0;
-    
-}
-
-
-int test7(){
-    test7active = 1;
-    HospINIT();
-    return 0;
-}
-
 void createPatient(){
     int temp;
     Acquire(creationLock);
@@ -1218,7 +792,7 @@ void createPharmacyClerk(){
     Exit(0);
 }
 
-void createhospitalManager(){
+void createHospitalManager(){
     int temp;
     Acquire(creationLock);
     temp = hospitalmanagerCount;
@@ -1227,6 +801,409 @@ void createhospitalManager(){
     hospitalManager(temp);
     Exit(0);
 }
+
+
+void HospINIT(int testmode = 0) {
+    int i;
+    
+        /* set a global so everyone will know the test mode */
+    test_state = testmode;
+    
+    if(testmode != 1 && testmode != 51 && testmode != 52 && testmode != 53 ){
+        i = 0;
+        
+            /*cout << "Simulation startup\n\n"; */
+        
+            /*3. Cashiers */
+        numCashiers = (Random() % (MAX_CASHIER - MIN_CASHIER +1) + MIN_CASHIER) ;
+               print("Creating ");
+            	 print(itoa(numCashiers));
+               print("Cashiers\n");
+        
+        
+        for(i=0;i<numCashiers;i++)
+        {
+            
+            Fork(createCashier);
+        }
+        
+            /*4. DoorBoys */
+        numDoctors = (Random() % (MAX_DOCTORS - MIN_DOCTORS + 1) + MIN_DOCTORS);
+        if(test1active == 0){
+            numDoorboys = numDoctors;
+            print("Creating ");
+            print(itoa(numDoorboys));
+            print(" Doorboys\n");
+            for(i=0;i<numDoorboys;i++)
+            {
+                Fork(createDoorBoy);
+            }            
+        }else{
+            numDoorboys = 0;
+            print("Bypassing Doorboy Creation\n");
+        }
+        /*5. Pharmacys */
+        numClerks= (Random() % (MAX_CLERKS - MIN_CLERKS +1) + MIN_CLERKS) ;
+            print("Creating ");
+            print(itoa(numClerks));
+            print(" Clerks\n");
+        
+        for(i=0;i<numClerks;i++)
+        {
+            Fork(createPharmacyClerk);
+        }
+        /*1. Doctors */
+        print("Creating ");
+        print(itoa(numDoctors));
+        print(" Doctors\n");
+        for(i=0;i<numDoctors;i++)
+        {
+            
+            Fork(createDoctor);
+        }
+        
+        
+            /*7. Patients */
+        numPatients = Random() % (MAX_PATIENTS - MIN_PATIENTS +1) + MIN_PATIENTS; 
+        Acquire(hospitalLock);
+        peopleInHospital = numPatients;
+        Release(hospitalLock);    
+        
+        print("Creating ");
+            print(itoa(numPatients));
+            print(" Patients\n");
+        
+        for(i=0;i<numPatients;i++)
+        {
+            
+            Fork(createPatient);
+        }
+        
+        
+        
+            /*6. HospitalManager */
+
+        print("Creating 1 Hospital Manager \n");
+        
+        
+        Fork(createHospitalManager);   
+   
+        
+        
+        
+            /*2. Receptionists */
+        numRecp = (Random() % (RECP_MAX - RECP_MIN +1) + RECP_MIN) ;
+            print("Creating ");
+            print(itoa(numRecp));
+            print(" Receptionists\n");
+        
+        for(i=0; i<numRecp; i++)
+        {
+            Fork(createReceptionist);
+        }
+        
+        
+    }
+    
+    
+    else if (testmode == 51) {
+        
+        i = 0;
+        
+        
+        
+            /*3. Cashiers */
+        numCashiers = (Random() % (MAX_CASHIER - MIN_CASHIER +1) + MIN_CASHIER) ;
+            print("Creating ");
+            print(itoa(numCashiers));
+            print(" Cashiers\n");
+        
+        for(i=0;i<numCashiers;i++)
+        {
+            
+            Fork(createCashier);
+        }
+        
+            /*4. DoorBoys */
+        numDoctors = (Random() % (MAX_DOCTORS - MIN_DOCTORS + 1) + MIN_DOCTORS);
+        if(test1active == 0){
+            numDoorboys = numDoctors;
+            print("Creating ");
+            print(itoa(numDoorboys));
+            print(" Doorboys\n");
+            
+            for(i=0;i<numDoorboys;i++)
+            {
+                
+                Fork(createDoorBoy);
+            }            
+        }else{
+            numDoorboys = 0;
+            print(" Bypassing Doorboy Creation\n");
+        }
+        
+        
+            /*5. Pharmacys */
+        numClerks= (Random() % (MAX_CLERKS - MIN_CLERKS +1) + MIN_CLERKS) ;
+        
+            print("Creating ");
+            print(itoa(numClerks));
+            print(" Clerks\n");
+       
+        for(i=0;i<numClerks;i++)
+        {
+            
+            Fork(createPharmacyClerk);
+        }
+        
+        
+            /*1. Doctors */
+            print("Creating ");
+            print(itoa(numDoctors));
+            print(" Doctors\n");
+        for(i=0;i<numDoctors;i++)
+        {
+            
+            Fork(createDoctor);
+        }
+        
+        
+            /*7. Patients */
+        numPatients = Random() % (MAX_PATIENTS - MIN_PATIENTS +1) + MIN_PATIENTS; 
+        Acquire(hospitalLock);
+        peopleInHospital = numPatients;
+        Release(hospitalLock);    
+        
+        print("Creating ");
+            print(itoa(numPatients));
+            print(" Patients\n");
+        for(i=0;i<numPatients;i++)
+        {
+            
+            Fork(createPatient);
+        }
+        /*6. HospitalManager */
+        print("Creating 1 Hospital Manager \n");
+
+       
+        
+        Fork(createHospitalManager);   
+
+        
+        
+        
+        
+            /*2. No Receptionists */
+       
+
+        numRecp = (Random() % (RECP_MAX - RECP_MIN +1) + RECP_MIN) ;
+        
+    }else if (testmode == 52) {
+        i = 0;
+        Thread *t;   
+        
+        
+        
+            /*3. No Cashiers */
+        numCashiers = (Random() % (MAX_CASHIER - MIN_CASHIER +1) + MIN_CASHIER) ;
+        
+        
+            /*4. DoorBoys */
+        numDoctors = (Random() % (MAX_DOCTORS - MIN_DOCTORS + 1) + MIN_DOCTORS);
+        if(test1active == 0){
+            numDoorboys = numDoctors;
+            
+            print("Creating ");
+            print(itoa(numDoorboys));
+            print(" Doorboys\n");
+            
+            for(i=0;i<numDoorboys;i++)
+            {
+                
+                Fork(createDoorBoy);
+            }            
+        }else{
+            numDoorboys = 0;
+            print(" Bypassing Doorboy Creation\n");
+        }
+        
+        
+            /*5. Pharmacys */
+        numClerks= (Random() % (MAX_CLERKS - MIN_CLERKS +1) + MIN_CLERKS) ;
+            print("Creating ");
+            print(itoa(numClerks));
+            print(" Clerks\n");
+        for(i=0;i<numClerks;i++)
+        {
+            
+            Fork(createPharmacyClerk);
+        }
+        
+        
+        /*1. Doctors */
+        print("Creating ");
+        print(itoa(numDoctors));
+        print(" Doctors\n");
+        for(i=0;i<numDoctors;i++)
+        {   
+            Fork(createDoctor);
+        }
+        /*7. Patients */
+        numPatients = Random() % (MAX_PATIENTS - MIN_PATIENTS +1) + MIN_PATIENTS; 
+        Acquire(hospitalLock);
+        peopleInHospital = numPatients;
+        Release(hospitalLock);    
+        
+            print("Creating ");
+            print(itoa(numPatients));
+            print(" Patients\n");
+        
+        for(i=0;i<numPatients;i++)
+        {
+            Fork(createPatient);
+        }
+        /*6. HospitalManager */
+        print("Creating 1 Hospital Manager \n");
+
+        
+        Fork(createHospitalManager);   
+
+        
+        
+        
+        
+            /*2. Receptionists */
+
+        numRecp = (Random() % (RECP_MAX - RECP_MIN +1) + RECP_MIN) ;
+        print("Creating ");
+        print(itoa(numRecp));
+        print(" Receptionists\n");
+        for(i=0; i<numRecp; i++)
+        {
+            Fork(createReceptionist);
+        }
+    }else if (testmode == 53) {
+        i = 0;
+        /*3. Cashiers */
+        numCashiers = (Random() % (MAX_CASHIER - MIN_CASHIER +1) + MIN_CASHIER) ;
+            
+            print("Creating ");
+            print(itoa(numCashiers));
+            print(" Cashiers\n");
+        
+        for(i=0;i<numCashiers;i++)
+        {
+            
+            Fork(createCashier);
+        }
+        
+            /*4. DoorBoys */
+        numDoctors = (Random() % (MAX_DOCTORS - MIN_DOCTORS + 1) + MIN_DOCTORS);
+        if(test1active == 0){
+            numDoorboys = numDoctors;
+            
+            print("Creating ");
+            print(itoa(numDoorboys));
+            print(" Doorboys\n");
+            
+            for(i=0;i<numDoorboys;i++)
+            {
+                
+                Fork(createDoorBoy);
+            }            
+        }else{
+            numDoorboys = 0;
+            
+            print(" Bypassing Doorboy Creation\n");
+            
+        }
+        
+        
+            /*5. No Pharmacy clerks */
+        numClerks = (Random() % (MAX_CLERKS - MIN_CLERKS +1) + MIN_CLERKS) ;        
+        
+            /*1. Doctors */
+            print("Creating ");
+            print(itoa(numDoctors));
+            print(" Doctors\n");
+           
+       
+        for(i=0;i<numDoctors;i++)
+        {
+            
+            Fork(createDoctor);
+        }
+        
+        
+            /*7. Patients */
+        numPatients = Random() % (MAX_PATIENTS - MIN_PATIENTS +1) + MIN_PATIENTS; 
+        Acquire(hospitalLock);
+        peopleInHospital = numPatients;
+        Release(hospitalLock);    
+        
+        
+            print("Creating ");
+            print(itoa(numPatients));
+            print(" Patients\n");
+        
+        for(i=0;i<numPatients;i++)
+        {
+            
+            Fork(createPatient);
+        }
+        
+        
+        
+            /*6. HospitalManager */
+
+            
+        print("Creating 1 Hospital Manager \n");      
+
+        Fork(createHospitalManager);   
+        /*2. Receptionists */
+
+        numRecp = (Random() % (RECP_MAX - RECP_MIN +1) + RECP_MIN) ;
+        
+        print("Creating ");
+        print(itoa(numRecp));
+        print(" Receptionists\n");
+        
+        for(i=0; i<numRecp; i++)
+        {
+            Fork(createReceptionist);
+        }
+    }else if (testmode == 2) {
+    }
+}
+
+
+int test1(){
+    test1active = 1;
+    HospINIT();
+    return 0;
+}
+
+int test2(){
+	test2active=1;
+	HospINIT();
+	return 0;
+}
+
+int test4(){
+    test4active = 1;
+        /*start the process normally */
+    HospINIT();
+    return 0;
+    
+}
+
+
+int test7(){
+    test7active = 1;
+    HospINIT();
+    return 0;
+}
+
 
 int main(){
     testlock = CreateLock("TestLock");
@@ -1243,4 +1220,29 @@ int main(){
     doorboyLineCV = CreateCondition("doorboyLineCV");
     wakingDoctorList = (List*) malloc(sizeof(List));
     creationLock = CreateLock("creationLock");
+        /*Initialize datastructures for all the threads
+        //1. Patients don't need initialization
+        //2. Receptionists
+         */
+    for (i=0; i<RECP_MAX; i++) {
+        __Receptionists(&receptionists[i]);
+    }
+        /*3. DoorBoy doesn't need anything
+        //4. Doctors*/
+    for (i=0; i<MAX_DOCTORS; i++) {
+        __Doctor(&doctors[i]);
+    }
+        /*5. Cashiers*/
+    for (i=0; i<MAX_CASHIER; i++) {
+        __Cashier(&cashiers[i]);
+    }
+        /*6. Clerks */
+    for (i=0; i<MAX_CLERKS; i++) {
+        __PharmacyClerks(&clerks[i]);
+    }
+        /* 7. Hospital Manager */
+    for (i=0; i<totalHospMan; i++) {
+    }
+    
+    HospINIT(testmode);
 }
