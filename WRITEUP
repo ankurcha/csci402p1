@@ -220,7 +220,29 @@ III. Design:
 
             Constructor
 
-                This is where AddrSpace does most of the work.
+                This is where AddrSpace does most of the work, but the concept
+                is pretty simple.  The constructor determines the number of
+                pages necessary to hold the combined code and data sections of
+                the program, as well as the number of pages necessary for the
+                stack.  The pageTable is created at its maximum size to leave
+                room for additional stacks.  Then we iterate over all pages in
+                the table and allocate physical memory for those that need it,
+                pages that are unused are marked as invalid.  Then we copy the
+                code and data sections of the program into memory, making sure
+                to put them in the proper position in physical memory.
+
+            Destructor
+
+                The destructor here performs the special tasks of deallocating
+                any memory still associated with this process, and closing any
+                open files.  It also performs the usual deletes on any
+                variables created on the heap.
+
+            InitRegisters
+
+                InitRegisters has been modified to set StackReg to the bottom
+                of the stack, as the position of the first stack relative to
+                address 0 has changed from the provided code.
 
             int InitStack()
 
@@ -234,6 +256,28 @@ III. Design:
                 Deallocates the memory associated with the passed stack id.
                 The stack is marked as cleared so the virtual address can be
                 reused for a new stack of a new thread.
+
+            string readCString(char*);
+
+                readCString is a convenience function for the benefit of system
+                calls that allows a null-terminated character string to be
+                passed without also specifying the length.  readCString takes
+                the virtual addresss of the string and returns the string as a
+                string object in kernel space.  This function takes care of the
+                messiness of making sure a virtual address is valid and that it
+                stays valid until the string terminates.
+
+            void addChildThread(PID);           
+
+                TODO
+
+            void removeChildThread(PID);        
+
+                TODO
+
+            void killAllThreads();
+
+                TODO
 
     Part 3:
         
@@ -296,6 +340,11 @@ IV. Implementation:
                     void addChildThread(PID);           
                     void removeChildThread(PID);        
                     void killAllThreads();
+
+                Methods modified:
+                    constructor
+                    destructor
+                    InitRegisters
             }
 
         threads/thread.h
