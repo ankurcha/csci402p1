@@ -8,7 +8,6 @@
  */
 
 #include "syscall.h"
-#include "list.c"
 #include "itoa.c"
 #include "print.c"
 /*using namespace std;*/
@@ -37,7 +36,6 @@
 
 #define totalHospMan 1
 
-typedef void (*VoidFunctionPtr)(int arg); 
 int numDoctors = 0;
 int numCashiers = 0;
 int numClerks = 0;
@@ -50,66 +48,54 @@ char test4active = 0;
 char test7active = 0;
 char test5active = 0;
 int feesPaid = 0;
-typedef struct node{
-    int key, value;
-    struct node* next;
-};
-typedef struct node node;
-struct linkedlist_ { 
-    /*Used for storing the <token,fees> pairs */
-    node* head;
-    int length;
-}linkedlist;
 
-typedef struct linkedlist_ linkedlist;
-void linkedlist_append(linkedlist* this, int key, int val){
-    if (this->head == 0) {
-        this->head = (node*) malloc(sizeof(node));
-        this->head->key = key;
-        this->head->value = val;
-        this->head->next = 0;
-        this->length++;
-    }else {
-        node *p = (node*) malloc(sizeof(node));
-        p->key = key;
-        p->value = val;
-        p->next = this->head;
-        this->head = p;
-        this->length++;
-    }
-}
-void append(linkedlist *ll,int key, int val){
-    if (ll->head == 0) {
-        ll->head = (node*) malloc(sizeof(node));
-        ll-> head->key = key;
-        ll-> head->value = val;
-        ll-> head->next = 0;
-        ll->length++;
-    }else {
-        node *p = (node*) malloc(sizeof(node));
-        p->key = key;
-        p->value = val;
-        p->next = ll->head;
-        ll->head = p;
-        ll->length++;
-    }
-}
-int getValue(linkedlist *ll,int key){
-    node *p = ll->head;
-    if(ll->head!=0){
-        while (p!=0) {
-            if (p->key == key) {
-                return p->value;
-            }else {
-                p = p->next;
-            }
-        }/*End of While */
-    }else{
-        /*empty list */
+struct linkedlist_element { 
+    /*Used for storing the <token,fees> pairs */
+    int key, value;
+};
+
+
+struct list {
+    struct linkedlist_element listArray[MAX_PATIENTS];
+    int head;
+};
+typedef struct list List;
+
+int List_Append(List* l, int key, int val){
+    if (l == 0) {
         return -1;
+
     }
+    if(l->head == MAX_PATIENTS + 1){
+        print("List is full\n");
+        return 0;
+    }else {
+        l->listArray[l->head].key = key;
+        l->listArray[l->head].value = val;
+        l->head++;
+        return 1;
+    }
+
+}
+
+
+int List_getValue(List *l,int key){
+    int temp = 0;
+    if(l != 0 || l->head == 0){
+        print("Empty or invalid list\n");
+        return 0;
+    } 
+    while (temp <= l->head) {
+        if (l->listArray[temp].key == key) {
+            return l->listArray[temp].value;
+        }
+        temp++;
+    }
+    printf("Key now found in list");
     return -1;
 }
+
+
 LockId testlock;
 /* tokenCounter for assigning tokens to patients */
 LockId TokenCounterLock;
@@ -131,7 +117,7 @@ struct Receptionists_ {
     CVId ReceptionistBreakCV;
     
 };
-typdef struct Receptionists_ Receptionists;
+typedef struct Receptionists_ Receptionists;
 void __Receptionists(Receptionists *recep ){
     recep->peopleInLine = 0;
     recep->receptionCV = CreateCondition("receptionCV");
@@ -142,7 +128,7 @@ void __Receptionists(Receptionists *recep ){
 }
 /* list mapping patient tokens to consultFees */
 LockId feeListLock;
-linkedlist* feeList;
+List feeList;
 /* global for all cashiers */
 LockId cashierLineLock ;
 LockId feesPaidLock;
@@ -205,7 +191,7 @@ struct PharmacyClerks_ {
     int sales;
 };
 typedef struct PharmacyClerks_ PharmacyClerks;
-void _PharmacyClerks(PharmacyClerks *pcl){
+void __PharmacyClerks(PharmacyClerks *pcl){
     pcl-> patientsInLine= 0;
     pcl->state=FREE;
     pcl->payment=0;
@@ -259,7 +245,8 @@ int doorboyLineLength = 0;
 /*int wakingDoctorID = 0; */
 List* wakingDoctorList;
 struct DoorBoy_ { };
-typedef struct Doorboy_ Doorboy;
+typedef struct Doorboy_ DoorBoy;
+
 Receptionists receptionists[RECP_MAX];
 DoorBoy doorboys[MAX_DOCTORS];
 Doctor doctors[MAX_DOCTORS];
