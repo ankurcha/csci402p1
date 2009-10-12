@@ -1005,7 +1005,7 @@ void hospitalManager(int ID) {
                print("'s line -> Signal Doorboy\n");
                 
                 Acquire(doctors[i].LineLock);
-                doctors[i].doorboyBreakCV->Broadcast(doctors[i].LineLock);
+                Broadcast(doctors[i].doorboyBreakCV, doctors[i].LineLock);
                 Release(doctors[i].LineLock);
 
             }
