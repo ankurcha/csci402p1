@@ -11,9 +11,20 @@
 char test_code2=0;
 void patients(int ID){
     
+    /* declare variables */
     int myToken;
     int myDoctor;
     int myPrescription;
+
+    int shortestline = 0;
+    int len = 0;
+    int i = 0;
+    int myCashier = 0;
+    int sLen = 0;
+    int shortestclerkline = 0;
+    int length = 0;
+
+    len = receptionists[0].peopleInLine;
 
     /*//////////////////////////////////////////////// */
     /*//// Begin interaction with Receptionist /////// */
@@ -23,10 +34,6 @@ void patients(int ID){
     Acquire(recpLineLock);
     print("P:success\n");
 
-    /* Find the shortest line */
-    int shortestline = 0;
-    int len = receptionists[0].peopleInLine;
-
     /*Find shortest Line */
     if (test4active == 1) {
         print("P:TEST4: Searching for the receptionist with the shortest line\n");
@@ -35,7 +42,7 @@ void patients(int ID){
         
     }
     
-    for (int i=0; i<numRecp; i++) {
+    for (i=0; i<numRecp; i++) {
         
         if (test4active == 1) {
                 /*Print the length of each line */
@@ -205,9 +212,9 @@ void patients(int ID){
     print("P_");
     print(itoa(ID));
     print(": Acquiring cashierLineLock\n");
+
     /* find the shortest line */
-    int myCashier = 0;
-    int sLen = cashiers[0].lineLength;
+    sLen = cashiers[0].lineLength;
     if (test4active == 1) {
         print("P_");
         print(itoa(ID));
@@ -218,7 +225,7 @@ void patients(int ID){
         print(": Finding shortest Line of cashiers\n");
     }
 
-    for(int i=1; i < numCashiers; ++i) {
+    for(i=1; i < numCashiers; ++i) {
         if (test4active == 1) {
                 /*Print the length of each line */
             print("P_");
@@ -303,10 +310,11 @@ void patients(int ID){
     print("P_");
     print(itoa(ID));
     print(":Attempt to acquire ClerkLinesLock...\n");
-    Acquire(ClerkLinesLock)
+    Acquire(ClerkLinesLock);
     print("success\n");
-    int shortestclerkline = 0;
-    int length = clerks[0].patientsInLine;
+
+    shortestclerkline = 0;
+    length = clerks[0].patientsInLine;
     if (test4active == 1) {
         print("P_");
         print(itoa(ID));
@@ -318,7 +326,7 @@ void patients(int ID){
     }
     
     /*Find shortest Line */
-    for (int i=0; i<numClerks; i++) {
+    for (i=0; i<numClerks; i++) {
         if (test4active == 1) {
                 /*Print the length of each line */
             print("P_");
