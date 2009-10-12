@@ -23,16 +23,16 @@ using namespace std;
 typedef int PID;
 
 struct ProcessTable {
-private:
-    map<PID, Thread*> table;
 public:
+    int processCounter;
     ProcessTable();
     ~ProcessTable();
-    PID addProcess(Thread*);
-    int killProcess(PID);
-    int getProcessCount(){
-        return this->table.size();
-    }
+    //PID addProcess(Thread*);
+//    void viewProcessTable();
+//    int killProcess(PID);
+//    int getProcessCount(){
+//        return this->table.size();
+//    }
 };
 
 #endif

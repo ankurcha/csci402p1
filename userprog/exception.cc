@@ -31,6 +31,8 @@
 
 using namespace std;
 
+Lock *processTableLock = new Lock("processTableLock");
+
 struct ConditionWrapper {
     Condition* cv;
     int counter;
@@ -266,29 +268,30 @@ void kernel_thread(int virtAddr){
         // Allocate Stack space for the new Thread and write the stackstart
         // address to the stack register.
     int stackId = currentThread->space->InitStack();
-    if(stackId < 0){
-        DEBUG('a', "%s: Unable to allocate stack for the new process\n",currentThread->getName());
-            // Kill Process and all its children
-        currentThread->space->killAllThreads();
-        return;
-    }
+    //if(stackId < 0){
+//        DEBUG('a', "%s: Unable to allocate stack for the new process\n",currentThread->getName());
+//            // Kill Process and all its children
+//        currentThread->space->killAllThreads();
+//        return;
+//    }
     machine->Run();
 }
 
 void Fork_Syscall(int funcAddr){
+    processTableLock->Acquire();
     DEBUG('a', "%s: Called Fork_Syscall.\n",currentThread->getName());
         // Create new thread.kernel_thread()
     Thread *t = new Thread(currentThread->getName());
     // Stack was successfully created.
     // Add Process to the system's process table.
-    t->setPID(processTable->addProcess(t));
-    currentThread->space->addChildThread(t->getPID());
+    currentThread->space->childThreads++;
+    t->setPID(currentThread->space->childThreads);
         // Address space for new Thread and the spawning thread is the same.
     t->space = currentThread->space;
-        // Fork to get the new thread.
     t->Fork((VoidFunctionPtr) kernel_thread, funcAddr);
         // Restore state.
     currentThread->space->RestoreState();
+    processTableLock->Release();
 }
 
 void exec_thread(int arg){
@@ -299,6 +302,7 @@ void exec_thread(int arg){
 }
 
 spaceId Exec_Syscall(char *filename){
+    processTableLock->Acquire();
     DEBUG('a', "%s: Called Exec_Syscall\n",currentThread->getName());
         // Get filename to kernel space
     std::string cname = currentThread->space->readCString(filename);
@@ -316,27 +320,33 @@ spaceId Exec_Syscall(char *filename){
         // Create new Address space and allocate it to the thread.
     t->space = new AddrSpace(executable);
         // Add process to process table.
-    t->setPID(processTable->addProcess(t));
-    currentThread->space->addChildThread(t->getPID());
+    printf("EXECED\n");
+    processTable->processCounter++;
+    t->setPID(processTable->processCounter);
     DEBUG('a', "%s: New thread created with PID: %d.\n",currentThread->getName(), t->getPID());
-    
+    processTableLock->Release();
     t->Fork((VoidFunctionPtr) exec_thread, 0);
     return (spaceId) t->space;
 }
 
 void Exit_Syscall(int status){
     cout <<currentThread->getName()<<": Exit status: "<<status<<endl;
-    if (processTable->getProcessCount() == 1 && currentThread->space->childThreads.size() == 0) {
-        DEBUG('a', "Exit_Syscall:End of all processes across NACHOS\n");
+    processTableLock->Acquire();
+    cout << "processTable->processCounter"<<processTable->processCounter<<endl;
+    cout << "currentThread->space->childThreads: "<<currentThread->space->childThreads<<endl;
+    if (processTable->processCounter == 0 && currentThread->space->childThreads == 1) {
+        DEBUG('a', "Exit_Syscall:End of NACHOS\n");
         interrupt->Halt();
-    }else if (currentThread->space->childThreads.size() == 0 && processTable->getProcessCount()>1) {
+    }else if (currentThread->space->childThreads == 1) {
+        processTable->processCounter--;
         DEBUG('a', "Exit_Syscall:End of Process PID: %d\n", currentThread->getPID());
-        currentThread->space->removeChildThread(currentThread->getPID());
+        processTableLock->Release();
         currentThread->Finish();
     }else {
             //Neither the end of process nor the end of Nachos
         DEBUG('a',"Exit_Syscall:End of Thread PID: %d\n", currentThread->getPID());
-        currentThread->space->removeChildThread(currentThread->getPID());
+        currentThread->space->childThreads--;
+        processTableLock->Release();
         currentThread->Finish();
     }
 }
@@ -348,10 +358,13 @@ void Yield_Syscall(){
 
 LockId CreateLock_Syscall(char* name){
     DEBUG('a',"%s: CreateLock_Syscall initiated.\n", currentThread->getName());
+    currentThread->space->locksTableLock->Acquire();
+
     std::string cname = currentThread->space->readCString(name);
     cout<<"Lock Name: "<<cname;
     char *c_name = new char[cname.size()+1];
     strcpy(c_name, cname.c_str());
+    
     LockWrapper *newLock = new LockWrapper(new Lock(c_name), 0, false);
         //    Lock *newLock = new Lock(c_name);    
     int retval;
@@ -359,15 +372,17 @@ LockId CreateLock_Syscall(char* name){
         if ((retval = currentThread->space->locksTable.Put(newLock)) == -1) {
                 //unable to put the lock into the locktable
             delete newLock;
+            retval = -1;
         }else {
-            return retval;
+                //All OK
         }
     }
-        //Error!!!
-    return -1;
+    currentThread->space->locksTableLock->Release();
+    return retval;
 }
 
 void DestroyLock_Syscall(LockId id){
+    currentThread->space->locksTableLock->Acquire();
     LockWrapper *targetLock = (LockWrapper*) currentThread->space->locksTable.Get(id);
     if (targetLock) {
         if (targetLock->mark && targetLock->counter == 0) {
@@ -389,33 +404,35 @@ void DestroyLock_Syscall(LockId id){
               currentThread->getName(), id);
     }
     currentThread->space->locksTable.Remove(id);
+    currentThread->space->locksTableLock->Release();
 }
 
 void AcquireLock_Syscall(LockId lockId){
+    currentThread->space->locksTableLock->Acquire();
     LockWrapper *targetLock = (LockWrapper*) currentThread->space->locksTable.Get(lockId);
     if(targetLock == NULL){
         DEBUG('a',"%s: AcquireLock_Syscall: Unable to find lock %d for acquire.\n",
               currentThread->getName(), lockId);
-        return;
     }else{
         DEBUG('a',"%s: Lock %d: AcquireLock_Syscall.\n",currentThread->getName(),lockId);
-        targetLock->lock->Acquire();
         targetLock->counter++;
-        return;
+        currentThread->space->locksTableLock->Release();
+        targetLock->lock->Acquire();
+        currentThread->space->locksTableLock->Acquire();
+        targetLock->counter--;
     }
+    currentThread->space->locksTableLock->Release();
 }
 
 void ReleaseLock_Syscall(LockId lockId){
+    currentThread->space->locksTableLock->Acquire();
     LockWrapper *targetLock = (LockWrapper*) currentThread->space->locksTable.Get(lockId);
     if(targetLock == NULL){
         DEBUG('a',"%s: AcquireLock_Syscall: Unable to find lock %d for acquire.\n",
               currentThread->getName(), lockId);
-        return;
     }else{
         DEBUG('a',"%s: Lock %d: ReleaseLock_Syscall.\n",currentThread->getName(),lockId);
         targetLock->lock->Release();
-        targetLock->counter--;
-        
         if(targetLock->mark && targetLock->counter == 0){
                 //Check for deletion
             delete targetLock->lock;
@@ -424,32 +441,41 @@ void ReleaseLock_Syscall(LockId lockId){
                   currentThread->getName(), lockId);
         } 
     }
+    currentThread->space->locksTableLock->Release();
 }
 
 
 CVId CreateCondition_Syscall(char* name){
     DEBUG('a',"%s : CreateCondition_Syscall initialized.\n",currentThread->getName());
     std::string cname = currentThread->space->readCString(name);
-    cout<<"Condition Name: "<<cname;
+    cout<<"Condition Name: "<<cname<<endl;
     char *c_name = new char[cname.size()+1];
     strcpy(c_name, cname.c_str());    
-    
-	ConditionWrapper *newCV = new ConditionWrapper(new Condition(c_name), 0, false);
+    Condition *newcon = new Condition(c_name);
+    if(newcon == NULL){
+        return -1;
+    }
+        
+	ConditionWrapper *newCV = new ConditionWrapper(newcon, 0, false);
 	
     int retval;
 	if(newCV){
+        currentThread->space->CVTableLock->Acquire();
 		if((retval = currentThread->space->CVTable.Put(newCV)) == -1){
 			delete newCV;
 		}else{
+            currentThread->space->CVTableLock->Release();
+                //printf("CREA\n");
 			return retval;
 		}
 	}
-    
+    currentThread->space->CVTableLock->Release();
 	return -1;
 }
 
 void DestroyCondition_Syscall(CVId id){
     DEBUG('a', "DestroyCondition syscall.\n");
+    currentThread->space->CVTableLock->Acquire();
 	ConditionWrapper *target = (ConditionWrapper*) currentThread->space->CVTable.Get(id);
     if(target){
         if (target->counter == 0) {
@@ -469,27 +495,46 @@ void DestroyCondition_Syscall(CVId id){
         DEBUG('a',"%s: DestroyCondition_Syscall: Unable to find CV %d for deletion.\n",
                currentThread->getName(), id);
     }
+    currentThread->space->CVTableLock->Release();
 }
 
 void WaitCV_Syscall(CVId cvId, LockId lockId){
+    currentThread->space->CVTableLock->Acquire();
+    currentThread->space->locksTableLock->Acquire();
     LockWrapper *ConditionLockWrapper = (LockWrapper*) currentThread->space->locksTable.Get(lockId);
     ConditionWrapper *CV = (ConditionWrapper*) currentThread->space->CVTable.Get(cvId);
     
-    if (ConditionLockWrapper == NULL || CV == NULL) {
+    if (ConditionLockWrapper == NULL || 
+        CV == NULL || 
+        ConditionLockWrapper->lock == NULL || 
+        CV->cv == NULL) {
+        currentThread->space->CVTableLock->Release();
+        currentThread->space->locksTableLock->Release();
         return;
     }
         //Set wait on this condition variable
     DEBUG('a',"%s: WaitCV_Syscall: Called for CVId: %d lockId %d .\n", 
           currentThread->getName(), cvId, lockId);
     CV->counter++;
+    currentThread->space->CVTableLock->Release();
+    currentThread->space->locksTableLock->Release();
     (void) CV->cv->Wait(ConditionLockWrapper->lock);
+
+    currentThread->space->CVTableLock->Acquire();
+    CV->counter--;
+    currentThread->space->locksTableLock->Release();
 }
 
 void SignalCV_Syscall(CVId cvId, LockId lockId){
     LockWrapper *ConditionLockWrapper = (LockWrapper*) currentThread->space->locksTable.Get(lockId);
     ConditionWrapper *CV = (ConditionWrapper*) currentThread->space->CVTable.Get(cvId);
     
-    if (ConditionLockWrapper == NULL || CV == NULL) {
+    if (ConditionLockWrapper == NULL || 
+        CV == NULL || 
+        ConditionLockWrapper->lock == NULL || 
+        CV->cv == NULL) {
+        currentThread->space->CVTableLock->Release();
+        currentThread->space->locksTableLock->Release();
         return;
     }
     
@@ -497,7 +542,6 @@ void SignalCV_Syscall(CVId cvId, LockId lockId){
     DEBUG('a',"%s: SignalCV_Syscall: Called for CVId: %d lockId %d .\n", 
           currentThread->getName(), cvId, lockId);
     (void) CV->cv->Signal(ConditionLockWrapper->lock);
-    CV->counter--;
     if (CV->mark && CV->counter == 0) {
             //We can delete
         delete CV->cv;
@@ -510,20 +554,33 @@ void SignalCV_Syscall(CVId cvId, LockId lockId){
         DEBUG('a',"%s: DestroyCondition_Syscall: marked CV %d for deletion.\n",
               currentThread->getName(), cvId);
     }
+    currentThread->space->CVTableLock->Release();
+    currentThread->space->locksTableLock->Release();
 }
 
 void BroadcastCV_Syscall(CVId cvId, LockId lockId){
+    currentThread->space->CVTableLock->Acquire();
+    currentThread->space->locksTableLock->Acquire();
+    
     LockWrapper *ConditionLockWrapper = (LockWrapper*) currentThread->space->locksTable.Get(lockId);
     ConditionWrapper *CV = (ConditionWrapper*) currentThread->space->CVTable.Get(cvId);
     
-    if (ConditionLockWrapper == NULL || CV == NULL) {
+    if (ConditionLockWrapper == NULL || 
+        CV == NULL || 
+        ConditionLockWrapper->lock == NULL || 
+        CV->cv == NULL) {
+        printf("HELP %d %d",cvId,lockId);
+        currentThread->space->CVTableLock->Release();
+        currentThread->space->locksTableLock->Release();
         return;
     }
     
         //Set wait on this condition variable
-    DEBUG('a',"%s: WaitCV_Syscall: Called for CVId: %d lockId %d .\n",
+    DEBUG('a',"%s: BroadcastCV_Syscall: Called for CVId: %d lockId %d .\n",
           currentThread->getName(), cvId, lockId);
     (void) CV->cv->Broadcast(ConditionLockWrapper->lock);
+    currentThread->space->CVTableLock->Acquire();
+    currentThread->space->locksTableLock->Acquire();
 }
 
 void ExceptionHandler(ExceptionType which) {

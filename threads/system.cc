@@ -21,39 +21,47 @@ Timer *timer;				// the hardware timer device,
 ProcessTable *processTable; // Process Table
 
 ProcessTable::ProcessTable(){
+    processCounter = 0;
 }
 
 ProcessTable::~ProcessTable(){
 }
-
-PID ProcessTable::addProcess(Thread *newthread){
-    if (newthread) {
-        IntStatus oldLevel = interrupt->SetLevel(IntOff);
-        this->table.insert(pair<int, Thread*>(table.size()+1, newthread));
-        int PID =  this->table.size();
-        (void) interrupt->SetLevel(oldLevel);
-        return PID;
-    }
-    return -1;
-}
-
-int ProcessTable::killProcess(PID pid){
-    map<char,int>::iterator it;
-    IntStatus oldLevel = interrupt->SetLevel(IntOff);
-    Thread *t = (Thread*) this->table.find(pid)->second;
-    if (t) {
-            //Some thread being pointed to by the pid
-        this->table.erase(this->table.find(pid)); //Delete entry form table
-        (void) interrupt->SetLevel(oldLevel);
-        return 0;
-    }else {
-            //Entry doesn't correspond to a valid thread
-        this->table.erase(this->table.find(pid));
-        (void) interrupt->SetLevel(oldLevel);
-    }
-    return -1; //return error condition
-}
-
+//
+//PID ProcessTable::addProcess(Thread *newthread){
+//    if (newthread) {
+//        IntStatus oldLevel = interrupt->SetLevel(IntOff);
+//        processCounter++;
+//        this->table.insert(pair<int, Thread*>(processCounter, newthread));
+//        int PID =  this->table.size();
+//        (void) interrupt->SetLevel(oldLevel);
+//        return PID;
+//    }
+//    return -1;
+//}
+//
+//int ProcessTable::killProcess(PID pid){
+//    map<char,int>::iterator it;
+//    IntStatus oldLevel = interrupt->SetLevel(IntOff);
+//    Thread *t = (Thread*) this->table.find(pid)->second;
+//    if (t) {
+//            //Some thread being pointed to by the pid
+//        this->table.erase(this->table.find(pid)); //Delete entry form table
+//        (void) interrupt->SetLevel(oldLevel);
+//        return 0;
+//    }else {
+//            //Entry doesn't correspond to a valid thread
+//        this->table.erase(this->table.find(pid));
+//        (void) interrupt->SetLevel(oldLevel);
+//    }
+//    return -1; //return error condition
+//}
+//
+//void ProcessTable::viewProcessTable(){
+//    map<PID,Thread*>::iterator it;
+//    IntStatus oldLevel = interrupt->SetLevel(IntOff);
+//    for ( it=this->table.begin() ; it != this->table.end(); it++ )
+//        cout << (*it).first << " => " << endl;
+//}
 #ifdef FILESYS_NEEDED
 FileSystem  *fileSystem;
 #endif

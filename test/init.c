@@ -63,7 +63,7 @@ char test7active = 0;
 char test5active = 0;
 int feesPaid = 0;
 
-struct node {
+typedef struct {
     int key, value;
     struct node* next;
 };
@@ -72,8 +72,24 @@ struct linkedlist {
         /*Used for storing the <token,fees> pairs */
     node* head;
     int length;
- 
-};
+}linkedlist;
+
+void linkedlist_append(linkedlist* this, int key, int val){
+    if (this->head == 0) {
+        this->head = (node*) malloc(sizeof(node));
+        this->head->key = key;
+        this->head->value = val;
+        this->head->next = 0;
+        this->length++;
+    }else {
+        node *p = (node*) malloc(sizeof(node));
+        p->key = key;
+        p->value = val;
+        p->next = head;
+        this->head = p;
+        this->length++;
+    }
+}
   typedef struct linkedlist linkedlist;
   
     void append(linkedlist *ll,int key, int val){
@@ -109,8 +125,6 @@ struct linkedlist {
         }
         return -1;
     }
-
-
 
 
 
@@ -303,7 +317,83 @@ PharmacyClerks clerks[MAX_CLERKS];
 
 int test_state = 0;
 
+LockId creationLock = CreateLock("creationLock");
+int patientCount = 0;
+int recptionistCount = 0;
+int doorboyCount = 0;
+int doctorCount = 0;
+int cashierCount = 0;
+int pharmacyCount = 0;
+int hospitalmanagerCount = 0;
+
 #include "patient.c"
+
+void createPatient(){
+    int temp;
+    Acquire(creationLock);
+    temp = patientCount;
+    patientCount++;
+    Release(creationLock);
+    patients(temp);
+    Exit(0);
+}
+
+void createReceptionist(){
+    int temp;
+    Acquire(creationLock);
+    temp = recptionistCount;
+    recptionistCount++;
+    Release(creationLock);
+    receptionist(temp);
+    Exit(0);
+}
+void createDoorBoy(){
+    int temp;
+    Acquire(creationLock);
+    temp = doorboyCount;
+    doorboyCount++;
+    Release(creationLock);
+    doorboy(temp);
+    Exit(0);
+}
+void createDoctor(){
+    int temp;
+    Acquire(creationLock);
+    temp = doctorCount;
+    doctorCount++;
+    Release(creationLock);
+    doctor(temp);
+    Exit(0);
+    
+}
+void createCashier(){
+    int temp;
+    Acquire(creationLock);
+    temp = cashierCount;
+    cashierCount++;
+    Release(creationLock);
+    cashier(temp);
+    Exit(0);
+}
+void createPharmacyClerk(){
+    int temp;
+    Acquire(creationLock);
+    temp = pharmacyCount;
+    pharmacyCount++;
+    Release(creationLock);
+    clerk(temp);
+    Exit(0);
+}
+void createhospitalManager(){
+    int temp;
+    Acquire(creationLock);
+    temp = hospitalmanagerCount;
+    hospitalmanagerCount++;
+    Release(creationLock);
+    hospitalManager(temp);
+    Exit(0);
+}
+
 
 void doorboy(int ID){
     int myDoctor = 0;
