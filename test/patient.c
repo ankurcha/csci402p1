@@ -223,7 +223,7 @@ void patients(int ID){
         print(": Finding shortest Line of cashiers\n");
     }
 
-    for(int i=1; i < numCashiers; ++i) {
+    for(i=1; i < numCashiers; ++i) {
         if (test4active == 1) {
                 /*Print the length of each line */
             print("P_");
