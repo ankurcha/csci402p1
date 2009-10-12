@@ -189,7 +189,7 @@ struct PharmacyClerks_ {
     int sales;
 };
 typedef struct PharmacyClerks_ PharmacyClerks;
-void _PharmacyClerks(PharmacyClerks *pcl){
+void __PharmacyClerks(PharmacyClerks *pcl){
     pcl-> patientsInLine= 0;
     pcl->state=FREE;
     pcl->payment=0;

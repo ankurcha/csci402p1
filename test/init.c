@@ -740,7 +740,6 @@ void HospINIT(int testmode = 0) {
         print("Cashiers\n");
         for(i=0;i<numCashiers;i++)
         {
-            
             Fork(createCashier);
         }
         
@@ -770,7 +769,6 @@ void HospINIT(int testmode = 0) {
         
         for(i=0;i<numClerks;i++)
         {
-            
             Fork(createClerk);
         }
         
@@ -781,8 +779,7 @@ void HospINIT(int testmode = 0) {
         print(itoa(numDoctors));
         print(" Doctors\n");
         for(i=0;i<numDoctors;i++)
-        {
-            
+        {   
             Fork(createDoctor);
         }
         
@@ -808,9 +805,7 @@ void HospINIT(int testmode = 0) {
         /*6. HospitalManager */
         
         print("Creating 1 Hospital Manager \n");
-        t= (Thread*)malloc(sizeof(Thread));
-        
-        t->Fork(createHospitalManager);   
+        Fork(createHospitalManager);   
         
         
         
@@ -913,9 +908,7 @@ void HospINIT(int testmode = 0) {
         
         
         print("Creating 1 Hospital Manager \n");
-        t= (Thread*)malloc(sizeof(Thread));
-        
-        t->Fork(createHospitalManager);   
+        Fork(createHospitalManager);   
         
         
         
@@ -1000,8 +993,7 @@ void HospINIT(int testmode = 0) {
         
         
         print("Creating 1 Hospital Manager \n");
-        t = new Thread("HospitalManager_0");
-        t->Fork(createHospitalManager);   
+        Fork(createHospitalManager);   
         
         
         
@@ -1097,8 +1089,7 @@ void HospINIT(int testmode = 0) {
         
         
         print("Creating 1 Hospital Manager \n");      
-        t = new Thread("HospitalManager_0");
-        t->Fork(createHospitalManager);   
+        Fork(createHospitalManager);   
         
         
         
@@ -1219,6 +1210,7 @@ void createhospitalManager(){
 
 int main(){
     int i=0;
+    int testmode = 0;
     testlock = CreateLock("TestLock");
     TokenCounterLock = CreateLock("TokenCounterLock");
     recpLineLock = CreateLock("recpLineLock");
@@ -1233,8 +1225,6 @@ int main(){
     doorboyLineCV = CreateCondition("doorboyLineCV");
     wakingDoctorList.head = 0;
     creationLock = CreateLock("creationLock");
-<<<<<<< HEAD
-    
         /*Initialize datastructures for all the threads
         //1. Patients don't need initialization
         //2. Receptionists
@@ -1253,9 +1243,12 @@ int main(){
     }
         /*6. Clerks */
     for (i=0; i<MAX_CLERKS; i++) {
-        __Clerk
+        __PharmacyClerks(clerks[i]);
     }
+        /* 7. Hospital Manager */
+    for (i=0; i<totalHospMan; i++) {
+            //Nothing to do
+    }
+    
+    HospINIT(testmode);
 }
-=======
-}
->>>>>>> 57602f809b1665366d7a1cef1cda32596242d815
