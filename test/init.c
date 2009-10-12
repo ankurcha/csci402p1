@@ -306,6 +306,7 @@ int test_state = 0;
 
 void doorboy(int ID){
     int myDoctor = 0;
+    char doorboyBreak = 0;
     
     while (1) {
         print("DB_");
@@ -334,19 +335,19 @@ void doorboy(int ID){
             continue;
         }
         myDoctor = (int) wakingDoctorList->Remove();
-        if(test2active==1)
-        print("DB_");
-        print(itoa(ID));
-        print(":TEST2: Servicing D_");
-        print(itoa(myDoctor));
-        print("\n");
-        else
-
-       	print("DB_");
-        print(itoa(ID));
-        print(":Servicing D_");
-        print(itoa(myDoctor));
-        print("\n");
+        if(test2active==1) {
+            print("DB_");
+            print(itoa(ID));
+            print(":TEST2: Servicing D_");
+            print(itoa(myDoctor));
+            print("\n");
+        } else {
+            print("DB_");
+            print(itoa(ID));
+            print(":Servicing D_");
+            print(itoa(myDoctor));
+            print("\n");
+        }
            
         doorboyLineLock->Release();
 
@@ -366,7 +367,7 @@ void doorboy(int ID){
         print(": Checking for Patients\n");
         
             /*while there is noone in line */
-        char doorboyBreak = 0;
+        doorboyBreak = 0;
         while(doctors[myDoctor].peopleInLine <= 0) { 
             doorboyBreak = 1;
                 /*I will be woken up by the manager only!! */
@@ -440,6 +441,7 @@ void doctor(int ID){
     /* declare variables */
     int waitingtime = 10000;
     int i, numYields, consultFee;
+    char doctorBreak = 0;
 
     while(1) {
             /* acquire a doorboy */
@@ -488,7 +490,7 @@ void doctor(int ID){
             /*////  DOORBOY INTERACTION  ////// */
         Wait(doctors[ID].transCV, doctors[ID].transLock);
         
-        char doctorBreak = 0;
+        doctorBreak = 0;
             /* go on break if so inclined */
         
         if(test7active==1)
@@ -1018,7 +1020,6 @@ void HospINIT(int testmode = 0) {
     
     if(testmode != 1 && testmode != 51 && testmode != 52 && testmode != 53 ){
         i = 0;
-        char temp[] = "NACHOS_THREAD";
         
             /*cout << "Simulation startup\n\n"; */
         
@@ -1124,7 +1125,6 @@ void HospINIT(int testmode = 0) {
     else if (testmode == 51) {
         
         i = 0;
-        char temp[] = "NACHOS_THREAD";
         
         
         
@@ -1218,7 +1218,6 @@ void HospINIT(int testmode = 0) {
         
     }else if (testmode == 52) {
         i = 0;
-        char temp[] = "NACHOS_THREAD";
         Thread *t;   
         
         
@@ -1283,9 +1282,7 @@ void HospINIT(int testmode = 0) {
         
         for(i=0;i<numPatients;i++)
         {
-            t= (Thread*)malloc(sizeof(Thread));
-            t=new Thread(temp);
-            t->Fork((VoidFunctionPtr) patients, i);
+            createPatient();
         }
         
         
@@ -1317,7 +1314,6 @@ void HospINIT(int testmode = 0) {
         
     }else if (testmode == 53) {
         i = 0;
-        char temp[] = "NACHOS_THREAD";
         
             /*3. Cashiers */
         numCashiers = (Random() % (MAX_CASHIER - MIN_CASHIER +1) + MIN_CASHIER) ;
