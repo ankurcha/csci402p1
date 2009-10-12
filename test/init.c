@@ -819,9 +819,9 @@ void HospINIT(testmode) {
             /*6. HospitalManager */
 
         print("Creating 1 Hospital Manager \n");
-        t= (Thread*)malloc(sizeof(Thread));
         
-        t->Fork(createHospitalManager);   
+        
+        Fork(createHospitalManager);   
    
         
         
@@ -924,9 +924,9 @@ void HospINIT(testmode) {
 
             
         print("Creating 1 Hospital Manager \n");
-        t= (Thread*)malloc(sizeof(Thread));
+       
         
-        t->Fork(createHospitalManager);   
+        Fork(createHospitalManager);   
 
         
         
@@ -1011,8 +1011,8 @@ void HospINIT(testmode) {
             
             
         print("Creating 1 Hospital Manager \n");
-        t = new Thread("HospitalManager_0");
-        t->Fork(createHospitalManager);   
+        
+        Fork(createHospitalManager);   
 
         
         
@@ -1108,8 +1108,8 @@ void HospINIT(testmode) {
 
             
         print("Creating 1 Hospital Manager \n");      
-        t = new Thread("HospitalManager_0");
-        t->Fork(createHospitalManager);   
+        
+        Fork(createHospitalManager);   
 
         
         
