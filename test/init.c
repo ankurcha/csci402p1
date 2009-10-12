@@ -313,7 +313,7 @@ void doorboy(int ID){
         print(": Alive ");
         
             /*Get into the doorboyLine till some doctor asks for me */
-        Acquire(doorboyLineLock)
+        Acquire(doorboyLineLock);
         
         doorboyLineLength++;
 
@@ -437,7 +437,10 @@ void doorboy(int ID){
 }
 
 void doctor(int ID){
+    /* declare variables */
     int waitingtime = 10000;
+    int i, numYields, consultFee;
+
     while(1) {
             /* acquire a doorboy */
 
@@ -490,13 +493,13 @@ void doctor(int ID){
         
         if(test7active==1)
        	{
-       		int numYields = 35;
+                numYields = 35;
        		print("D_");
           print(itoa(ID));
           print(" :TEST7: Going on break for ");
           print(itoa(numYields));
           print(" cycles!\n");
-            for(int i=0; i < numYields; ++i) {
+            for(i=0; i < numYields; ++i) {
                 currentThread->Yield();
             }
        		
@@ -505,7 +508,7 @@ void doctor(int ID){
             if(Random() % 100 > 49) { /* go on break */
                 doctorBreak = 1;
                     /* 5-15 yields */
-                int numYields = 5 + (Random() % 11);
+                numYields = 5 + (Random() % 11);
                 
                     /* provide a handle for test 8, only uses doctor 0 */
                 if(ID == 0 && test_state == 8 ) { 
@@ -519,7 +522,7 @@ void doctor(int ID){
                 print(itoa(numYields));
                 print(" cycles!\n");
                 
-                for(int i=0; i < numYields; ++i) {
+                for(i=0; i < numYields; ++i) {
                     currentThread->Yield();
                 }
             }
@@ -568,8 +571,8 @@ void doctor(int ID){
         print("D_");
         print(itoa(ID));
         print(": Now Consulting patient\n");
-        int numYields = 10 + (Random() % 11);
-        for(int i=0; i < numYields; ++i) {
+        numYields = 10 + (Random() % 11);
+        for(i=0; i < numYields; ++i) {
             currentThread->Yield();  /* I see ... mm hmm ... does it hurt here? ... */
         }
         
@@ -581,7 +584,7 @@ void doctor(int ID){
         print(itoa(ID));
         print(": Telling fee to cashiers\n");
         
-        int consultFee = 50 + (Random() % 201);
+        consultFee = 50 + (Random() % 201);
         Acquire(feeListLock-);
         feeList->append(doctors[ID].patientToken, consultFee);
         Release(feeListLock);
@@ -799,13 +802,17 @@ void clerk(int ID){
 }
 
 
-void hospitalManager(int ID){
-	  print("H_");
-	  print(itoa(ID));
-	  print(": Alive\n");
-    
-    int sleeptime = Random() % 30000;
+void hospitalManager(int ID) {
+    int sleeptime = 0;
     int test5cycles = 1;
+    int patientsWaiting=0;
+    int i, j, sum;
+
+    print("H_");
+    print(itoa(ID));
+    print(": Alive\n");
+    
+    sleeptime = Random() % 30000;
     while (1) {
         if (test_state == 51 || test_state == 52 || test_state == 53) {
                 /*The patients will always be there in the system. */
@@ -852,13 +859,13 @@ void hospitalManager(int ID){
 	      print(itoa(ID));
 	      print(": Checking receptionists\n");
         
-        int patientsWaiting=0;
-        for (int j=0; j<numRecp; j++) {
+        patientsWaiting=0;
+        for (j=0; j<numRecp; j++) {
             patientsWaiting += receptionists[j].peopleInLine;
         }
         
         if (patientsWaiting > 1) {
-            for (int j=0; j<numRecp; j++) {
+            for (j=0; j<numRecp; j++) {
                 recpLineLock->Acquire();
                 Signal(receptionists[j].ReceptionistBreakCV, recpLineLock);
                 Release(recpLineLock);
@@ -869,7 +876,7 @@ void hospitalManager(int ID){
         print("H_");
 	      print(itoa(ID));
 	      print(": Checking cashiers\n");
-        for (int i=0; i<numCashiers; i++) {/*Check for waiting patients */
+        for (i=0; i<numCashiers; i++) {/*Check for waiting patients */
             if (cashiers[i].lineLength > 0 ) {
         
         print("H_");
@@ -897,8 +904,8 @@ void hospitalManager(int ID){
         if( test_state == 10 ) {
                 /* this is a test for race conditions, so we can't have any: */
             IntStatus oldLevel = interrupt->SetLevel(IntOff);
-            int sum = 0;
-            for (int i=0; i<numCashiers; i++) {
+            sum = 0;
+            for (i=0; i<numCashiers; i++) {
             	print(" T10: cashier");
             	print(itoa(i));
             	print(" :");
@@ -924,7 +931,7 @@ void hospitalManager(int ID){
         print(":Checking clerks\n");
         
         
-        for (int i=0; i<numClerks; i++) {/*Check for waiting patients */
+        for (i=0; i<numClerks; i++) {/*Check for waiting patients */
             if (clerks[i].patientsInLine > 0 ) {
 
             	 print("H_");
@@ -956,8 +963,8 @@ void hospitalManager(int ID){
         if( test_state == 10 ) {
                 /* this is a test for race conditions, so we can't have any: */
             IntStatus oldLevel = interrupt->SetLevel(IntOff);
-            int sum = 0;
-            for (int i=0; i<numClerks; i++) {
+            sum = 0;
+            for (i=0; i<numClerks; i++) {
             	
             	 print("T10: clerk ");
             	 print(itoa(i));
@@ -982,7 +989,7 @@ void hospitalManager(int ID){
             	 print(itoa(ID));
             	 print(": Checking doorboys\n");
         
-        for (int i=0; i<numDoctors; i++) {/*Check for waiting patients */
+        for (i=0; i<numDoctors; i++) {/*Check for waiting patients */
             if (doctors[i].peopleInLine > 0 ) {
 
             	  
@@ -1004,12 +1011,13 @@ void hospitalManager(int ID){
 }
 
 void HospINIT(int testmode = 0) {
+    int i;
     
         /* set a global so everyone will know the test mode */
     test_state = testmode;
     
     if(testmode != 1 && testmode != 51 && testmode != 52 && testmode != 53 ){
-        int i = 0;
+        i = 0;
         char temp[] = "NACHOS_THREAD";
         
             /*cout << "Simulation startup\n\n"; */
@@ -1115,7 +1123,7 @@ void HospINIT(int testmode = 0) {
     
     else if (testmode == 51) {
         
-        int i = 0;
+        i = 0;
         char temp[] = "NACHOS_THREAD";
         
         
@@ -1209,7 +1217,7 @@ void HospINIT(int testmode = 0) {
         numRecp = (Random() % (RECP_MAX - RECP_MIN +1) + RECP_MIN) ;
         
     }else if (testmode == 52) {
-        int i = 0;
+        i = 0;
         char temp[] = "NACHOS_THREAD";
         Thread *t;   
         
@@ -1308,7 +1316,7 @@ void HospINIT(int testmode = 0) {
         
         
     }else if (testmode == 53) {
-        int i = 0;
+        i = 0;
         char temp[] = "NACHOS_THREAD";
         
             /*3. Cashiers */
