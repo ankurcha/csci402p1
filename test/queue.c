@@ -39,7 +39,6 @@ void Queue_Push(Queue* q, int value) {
     return;
 }
 
-int Queue_Pop(queue_element* queue, int length, int* head, int* tail);
 int Queue_Pop(Queue* q) {
     int temp;
     
