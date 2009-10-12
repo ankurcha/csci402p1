@@ -252,11 +252,11 @@ CVId doorboyLineCV;
 int doorboyLineLength = 0;
 /*int wakingDoctorID = 0; */
 List wakingDoctorList;
-struct DoorBoy_ { };
+struct DoorBoy_ { int dummy = 0};
 typedef struct Doorboy_ DoorBoy;
 
 Receptionists receptionists[RECP_MAX];
-DoorBoy doorboys[MAX_DOCTORS];
+DoorBoy doorboys[MAX_DOORB];
 Doctor doctors[MAX_DOCTORS];
 Cashier cashiers[MAX_CASHIER];
 PharmacyClerks clerks[MAX_CLERKS];
