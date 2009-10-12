@@ -54,6 +54,7 @@ struct linkedlist_element {
     int key, value;
 };
 
+
 struct list {
     struct linkedlist_element listArray[MAX_PATIENTS];
     int head;
@@ -63,6 +64,7 @@ typedef struct list List;
 int List_Append(List* l, int key, int val){
     if (l == 0) {
         return -1;
+
     }
     if(l->head == MAX_PATIENTS + 1){
         print("List is full\n");
@@ -93,6 +95,14 @@ int List_getValue(List *l,int key){
     return -1;
 }
 
+int List_IsEmpty(List *l){
+    if (l->head == 0) {
+        return 1;
+    }else {
+        return 0;
+    }
+
+}
 
 LockId testlock;
 /* tokenCounter for assigning tokens to patients */
@@ -241,12 +251,12 @@ LockId doorboyLineLock;
 CVId doorboyLineCV;
 int doorboyLineLength = 0;
 /*int wakingDoctorID = 0; */
-List* wakingDoctorList;
-struct DoorBoy_ { };
+List wakingDoctorList;
+struct DoorBoy_ { int dummy = 0};
 typedef struct Doorboy_ DoorBoy;
 
 Receptionists receptionists[RECP_MAX];
-DoorBoy doorboys[MAX_DOCTORS];
+DoorBoy doorboys[MAX_DOORB];
 Doctor doctors[MAX_DOCTORS];
 Cashier cashiers[MAX_CASHIER];
 PharmacyClerks clerks[MAX_CLERKS];
