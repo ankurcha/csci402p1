@@ -64,7 +64,7 @@ void doorboy(int ID){
             print("\n");
         }
            
-        doorboyLineLock->Release();
+        Release(doorboyLineLock);
 
         
             /* Inform the doctor that I have arrived, and wait for him to take  */
@@ -76,7 +76,7 @@ void doorboy(int ID){
             /*/// PATIENT LINE ///// */
             /*Acquire the lock to get the state of the line and take decision */
 
-        doctors[myDoctor].LineLock->Acquire();
+        Acquire(doctors[myDoctor].LineLock);
         print("DB_");
         print(itoa(ID));
         print(": Checking for Patients\n");
@@ -136,7 +136,7 @@ void doorboy(int ID){
         print(itoa(myDoctor));
         print("\n");
         
-        doctors[myDoctor].LineCV->Signal(doctors[myDoctor].LineLock);
+        Signal(doctors[myDoctor].LineCV, doctors[myDoctor].LineLock);
 
         
             /*My job with the patients and the doctor is done */
@@ -164,7 +164,7 @@ void doctor(int ID){
         print("D_");
         print(itoa(ID));
         print(": Alive!!\n");
-        doorboyLineLock->Acquire();
+        Acquire(doorboyLineLock);
 
         
             /* assure that there is a doorboy in line */
@@ -274,7 +274,7 @@ void doctor(int ID){
             
         
 
-        doctors[ID].transCV->Signal(doctors[ID].transLock);
+        Signal(doctors[ID].transCV, doctors[ID].transLock);
         print("D_");
         print(itoa(ID));
         print(": Waiting for patient....\n");
@@ -312,11 +312,11 @@ void doctor(int ID){
         print(itoa(ID));
         print(": Waiting for the patient to leave\n");
         
-        doctors[ID].transCV->Signal(doctors[ID].transLock);
-        doctors[ID].transCV->Wait(doctors[ID].transLock);
+        Signal(doctors[ID].transCV, doctors[ID].transLock);
+        Wait(doctors[ID].transCV, doctors[ID].transLock);
         
             /* done, the patient has left */
-        doctors[ID].transLock->Release();
+        Release(doctors[ID].transLock);
         print("D_");
         print(itoa(ID));
         print(": I'm ready for another one\n");
@@ -331,7 +331,7 @@ void receptionist(int ID){
     	print("R_");
       print(itoa(ID));
       print(": Alive!\n");
-        recpLineLock->Acquire();
+        Acquire(recpLineLock);
 
         if (receptionists[ID].peopleInLine > 0) {
                 /*Wake one waiting patient up */
@@ -347,8 +347,8 @@ void receptionist(int ID){
             print("R_");
             print(itoa(ID));
             print(":Going to sleep\n");
-            receptionists[ID].ReceptionistBreakCV->Wait(recpLineLock);
-            recpLineLock->Release();
+            Wait(receptionists[ID].ReceptionistBreakCV, recpLineLock);
+            Release(recpLineLock);
 
                 /*HospitalManager kicked my ass for sleeping on the job!! */
                 /*Loop back!! */
@@ -360,7 +360,7 @@ void receptionist(int ID){
         
             /*Genetate token for the patient */
 
-        TokenCounterLock->Acquire();
+        Acquire(TokenCounterLock);
         print("R_");
         print(itoa(ID));
         print(": Generating Token...\n");
@@ -375,13 +375,13 @@ void receptionist(int ID){
         print("R_");
         print(itoa(ID));
         print(":  Waiting for Patient to pick up token...\n");
-        receptionists[ID].receptionistWaitCV->Wait(receptionists[ID].transLock);
+        Wait(receptionists[ID].receptionistWaitCV, receptionists[ID].transLock);
         
             /*Patient successfully got the token, go back to work: Loop again */
         print("R_");
         print(itoa(ID));
         print(": Patient got token, Continue to next Patient\n");
-        receptionists[ID].transLock->Release();
+        Release(receptionists[ID].transLock);
 
     }
     
@@ -394,7 +394,7 @@ void cashier(int ID) {
         print(itoa(ID));
         print(":  Alive!!\n");
         while(1) {
-        cashierLineLock->Acquire();
+        Acquire(cashierLineLock);
         
         if(cashiers[ID].lineLength > 0) { /* someone in line */
                                           /*signal person on top */
@@ -402,7 +402,7 @@ void cashier(int ID) {
         print(itoa(ID));
         print(":  someone in my line...\n");                                 
             
-            cashiers[ID].lineCV->Signal(cashierLineLock);
+            Signal(cashiers[ID].lineCV, cashierLineLock);
 
         } else { /* noone in line */
                  /* go on break */
@@ -415,8 +415,8 @@ void cashier(int ID) {
         print(itoa(ID));
         print(":  No one in line... going on break\n");
             
-            cashiers[ID].breakCV->Wait(cashierLineLock);
-            cashierLineLock->Release();
+            Wait(cashiers[ID].breakCV, cashierLineLock);
+            Release(cashierLineLock);
 
             continue;
         }
@@ -583,7 +583,7 @@ void hospitalManager(int ID) {
         
         if (patientsWaiting > 1) {
             for (j=0; j<numRecp; j++) {
-                recpLineLock->Acquire();
+                Acquire(recpLineLock);
                 Signal(receptionists[j].ReceptionistBreakCV, recpLineLock);
                 Release(recpLineLock);
             }
@@ -613,7 +613,7 @@ void hospitalManager(int ID) {
         
             /*Query cashiers for total sales */
 
-        feesPaidLock->Acquire();
+        Acquire(feesPaidLock);
         print(" T10: Total fees collected by cashiers:");
         print(itoa(feesPaid));
         
@@ -659,16 +659,16 @@ void hospitalManager(int ID) {
                print(itoa(clerks[i].patientsInLine));
                print("waiting -> Signaling Clerk\n");
                 /*Wake up this clerk up */
-                ClerkLinesLock->Acquire();
-                clerks[i].ClerkBreakCV->Signal(ClerkLinesLock);
-                ClerkLinesLock->Release();
+                Acquire(ClerkLinesLock);
+                Signal(clerks[i].ClerkBreakCV, ClerkLinesLock);
+                Release(ClerkLinesLock);
 
             }
         }
         
             /*Query clerks for total sales */
 
-        PaymentLock->Acquire();
+        Acquire(PaymentLock);
                print("H_");
             	 print(itoa(ID));
                print("T10: Total amount collected by clerks: ");
@@ -718,9 +718,9 @@ void hospitalManager(int ID) {
                print(itoa(i));
                print("'s line -> Signal Doorboy\n");
                 
-                doctors[i].LineLock->Acquire();
-                doctors[i].doorboyBreakCV->Broadcast(doctors[i].LineLock);
-                doctors[i].LineLock->Release();
+                Acquire(doctors[i].LineLock);
+                Broadcast(doctors[i].doorboyBreakCV, doctors[i].LineLock);
+                Release(doctors[i].LineLock);
 
             }
         }        
