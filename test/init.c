@@ -1233,6 +1233,7 @@ int main(){
     doorboyLineCV = CreateCondition("doorboyLineCV");
     wakingDoctorList.head = 0;
     creationLock = CreateLock("creationLock");
+<<<<<<< HEAD
     
         /*Initialize datastructures for all the threads
         //1. Patients don't need initialization
@@ -1255,3 +1256,6 @@ int main(){
         __Clerk
     }
 }
+=======
+}
+>>>>>>> 57602f809b1665366d7a1cef1cda32596242d815

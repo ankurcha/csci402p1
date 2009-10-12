@@ -36,7 +36,6 @@
 
 #define totalHospMan 1
 
-typedef void (*VoidFunctionPtr)(int arg); 
 int numDoctors = 0;
 int numCashiers = 0;
 int numClerks = 0;
