@@ -60,6 +60,7 @@ struct linkedlist_ {
     node* head;
     int length;
 }linkedlist;
+
 typedef struct linkedlist_ linkedlist;
 void linkedlist_append(linkedlist* this, int key, int val){
     if (this->head == 0) {
@@ -72,7 +73,7 @@ void linkedlist_append(linkedlist* this, int key, int val){
         node *p = (node*) malloc(sizeof(node));
         p->key = key;
         p->value = val;
-        p->next = head;
+        p->next = this->head;
         this->head = p;
         this->length++;
     }

@@ -18,7 +18,7 @@
 /* Internal data structures kept public so that List operations can */
 /* access them directly. */
 
-typedef void (*VoidFunctionPtr)(int arg); 
+
 struct _ListElement{
     struct _ListElement *next;		/* next element on list,  */
                             /* 0 if this is the last */
