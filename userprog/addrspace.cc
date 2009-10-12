@@ -132,13 +132,15 @@ SwapHeader (NoffHeader *noffH)
 AddrSpace::AddrSpace(OpenFile *executable) : fileTable(MaxOpenFiles), 
                                              locksTable(MaxLock), 
                                              CVTable(MaxCV) {
+    locksTableLock = new Lock("LocksTableLock");
+    CVTableLock = new Lock("CVTableLock");
     NoffHeader noffH;
     unsigned int i, size, neededPages;
 
     // Don't allocate the input or output to disk files
     fileTable.Put(0);
     fileTable.Put(0);
-
+                                                 
     // read the header into noffH
     executable->ReadAt((char *)&noffH, sizeof(noffH), 0);
 
@@ -175,8 +177,8 @@ AddrSpace::AddrSpace(OpenFile *executable) : fileTable(MaxOpenFiles),
             NumPhysPages - divRoundUp(UserStackSize, PageSize);
     
         //Take care of the number of child processes
-    childLock = new Lock("childLock");
-    this->childThreads.clear();
+    //childLock = new Lock("childLock");
+    this->childThreads = 0;
     
     // first, set up the translation
     numPages = NumPhysPages;
@@ -285,7 +287,7 @@ AddrSpace::AddrSpace(OpenFile *executable) : fileTable(MaxOpenFiles),
             page++;
         }
     }
-
+                                                 
 }
 #endif
 
@@ -307,7 +309,7 @@ AddrSpace::~AddrSpace()
     }
 
     delete pageTable;
-    delete childLock;
+        //delete childLock;
     delete stackTableLock;
     delete stackTable;
 
@@ -526,27 +528,43 @@ std::string AddrSpace::readCString(char* s) {
     return ret;
 }
 
-void AddrSpace::addChildThread(PID pid){
-    this->childLock->Acquire();
-    this->childThreads.insert(pid);
-    this->childLock->Release();
-}
-
-void AddrSpace::removeChildThread(PID pid){
-    this->childLock->Acquire();
-    processTable->killProcess(pid); 
-    this->childThreads.erase(pid);
-    this->childLock->Release();
-}
-
-void AddrSpace::killAllThreads(){
-    // kill all child processes
-    set<PID>::iterator childItr;
-    while(childThreads.size()>0){
-        childItr = childThreads.begin();
-        this->removeChildThread((PID) *childItr);
-    }
-}
+//void AddrSpace::addChildThread(PID pid){
+//    pair<set<int>::iterator,bool> ret;
+//    this->childLock->Acquire();
+//    ret = this->childThreads.insert(pid);
+//    if( ret.second == true)
+//    {
+//            cout << "added pid: "<<pid<<" to addrspace of size: "<<this->childThreads.size()<<endl;        
+//    }else {
+//        cout<< "addchild failed: "<<pid<<endl;
+//    }
+//
+//
+//    this->childLock->Release();
+//}
+//
+//void AddrSpace::removeChildThread(PID pid){
+//    this->childLock->Acquire();
+//    processTable->killProcess(pid); 
+//    this->childThreads.erase(pid);
+//    this->childLock->Release();
+//}
+//
+//void AddrSpace::killAllThreads(){
+//    // kill all child processes
+//    set<PID>::iterator childItr;
+//    while(childThreads.size()>0){
+//        childItr = childThreads.begin();
+//        this->removeChildThread((PID) *childItr);
+//    }
+//}
+//
+//void AddrSpace::viewChildren(){
+//    set<PID>::iterator childItr;
+//    for ( childItr=this->childThreads.begin() ; childItr != this->childThreads.end(); childItr++ )
+//        cout  << *childItr<<endl;
+//
+//}
 
 #endif
 

@@ -58,13 +58,19 @@ class AddrSpace {
     // read a string at the virtual address s
     std::string readCString(char* s);
     
+    Table fileTable;            // Table of openfiles
+
+#ifdef CHANGED
+    Lock *locksTableLock;
     Table locksTable;           //Table of Locks
     Table CVTable;              //Table of CVs
-    set<PID> childThreads;        // PID of Children Threads
-    Lock *childLock;
-    void addChildThread(PID);
-    void removeChildThread(PID);
-    void killAllThreads();
+    Lock *CVTableLock;
+    int childThreads;        // PID of Children Threads
+                             // Lock *childLock;
+    //void addChildThread(PID);
+//    void removeChildThread(PID);
+//    void viewChildren();
+//    void killAllThreads();
 #endif
     
  private:
