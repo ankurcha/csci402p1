@@ -1034,7 +1034,7 @@ void HospINIT(int testmode = 0) {
         for(i=0;i<numCashiers;i++)
         {
             
-            Fork((VoidFunctionPtr) cashier, i);
+            Fork(createCashier);
         }
         
             /*4. DoorBoys */
@@ -1047,7 +1047,7 @@ void HospINIT(int testmode = 0) {
             for(i=0;i<numDoorboys;i++)
             {
                 
-                Fork((VoidFunctionPtr) doorboy, i);
+                Fork(createDoorboy);
             }            
         }else{
             numDoorboys = 0;
@@ -1064,7 +1064,7 @@ void HospINIT(int testmode = 0) {
         for(i=0;i<numClerks;i++)
         {
             
-            Fork((VoidFunctionPtr) clerk, i);
+            Fork(createClerk);
         }
         
         
@@ -1076,7 +1076,7 @@ void HospINIT(int testmode = 0) {
         for(i=0;i<numDoctors;i++)
         {
             
-            Fork((VoidFunctionPtr) doctor, i);
+            Fork(createDoctor);
         }
         
         
@@ -1093,7 +1093,7 @@ void HospINIT(int testmode = 0) {
         for(i=0;i<numPatients;i++)
         {
             
-            Fork((VoidFunctionPtr) patients, i);
+            Fork(createPatients);
         }
         
         
@@ -1103,7 +1103,7 @@ void HospINIT(int testmode = 0) {
         print("Creating 1 Hospital Manager \n");
         t= (Thread*)malloc(sizeof(Thread));
         
-        t->Fork((VoidFunctionPtr) hospitalManager, 0);   
+        t->Fork(createHospitalManager);   
    
         
         
@@ -1116,7 +1116,7 @@ void HospINIT(int testmode = 0) {
         
         for(i=0; i<numRecp; i++)
         {
-            Fork((VoidFunctionPtr) receptionist, i);
+            Fork(createReceptionist);
         }
         
         
@@ -1138,7 +1138,7 @@ void HospINIT(int testmode = 0) {
         for(i=0;i<numCashiers;i++)
         {
             
-            Fork((VoidFunctionPtr) cashier, i);
+            Fork(createCashier);
         }
         
             /*4. DoorBoys */
@@ -1152,7 +1152,7 @@ void HospINIT(int testmode = 0) {
             for(i=0;i<numDoorboys;i++)
             {
                 
-                Fork((VoidFunctionPtr) doorboy, i);
+                Fork(createDoorboy);
             }            
         }else{
             numDoorboys = 0;
@@ -1170,7 +1170,7 @@ void HospINIT(int testmode = 0) {
         for(i=0;i<numClerks;i++)
         {
             
-            Fork((VoidFunctionPtr) clerk, i);
+            Fork(createClerk);
         }
         
         
@@ -1181,7 +1181,7 @@ void HospINIT(int testmode = 0) {
         for(i=0;i<numDoctors;i++)
         {
             
-            Fork((VoidFunctionPtr) doctor, i);
+            Fork(createDoctor);
         }
         
         
@@ -1197,7 +1197,7 @@ void HospINIT(int testmode = 0) {
         for(i=0;i<numPatients;i++)
         {
             
-            Fork((VoidFunctionPtr) patients, i);
+            Fork(createPatients);
         }
         
         
@@ -1208,7 +1208,7 @@ void HospINIT(int testmode = 0) {
         print("Creating 1 Hospital Manager \n");
         t= (Thread*)malloc(sizeof(Thread));
         
-        t->Fork((VoidFunctionPtr) hospitalManager, 0);   
+        t->Fork(createHospitalManager);   
 
         
         
@@ -1239,7 +1239,7 @@ void HospINIT(int testmode = 0) {
             for(i=0;i<numDoorboys;i++)
             {
                 
-                Fork((VoidFunctionPtr) doorboy, i);
+                Fork(createDoorboy);
             }            
         }else{
             numDoorboys = 0;
@@ -1255,7 +1255,7 @@ void HospINIT(int testmode = 0) {
         for(i=0;i<numClerks;i++)
         {
             
-            Fork((VoidFunctionPtr) clerk, i);
+            Fork(createClerk);
         }
         
         
@@ -1267,7 +1267,7 @@ void HospINIT(int testmode = 0) {
         for(i=0;i<numDoctors;i++)
         {
             
-            Fork((VoidFunctionPtr) doctor, i);
+            Fork(createDoctor);
         }
         
         
@@ -1283,7 +1283,7 @@ void HospINIT(int testmode = 0) {
         
         for(i=0;i<numPatients;i++)
         {
-            createPatient();
+            Fork(createPatient);
         }
         
         
@@ -1294,7 +1294,7 @@ void HospINIT(int testmode = 0) {
             
         print("Creating 1 Hospital Manager \n");
         t = new Thread("HospitalManager_0");
-        t->Fork((VoidFunctionPtr) hospitalManager, 0);   
+        t->Fork(createHospitalManager);   
 
         
         
@@ -1309,7 +1309,7 @@ void HospINIT(int testmode = 0) {
         
         for(i=0; i<numRecp; i++)
         {
-            Fork((VoidFunctionPtr) receptionist, i);
+            Fork(createReceptionist);
         }
         
         
@@ -1326,7 +1326,7 @@ void HospINIT(int testmode = 0) {
         for(i=0;i<numCashiers;i++)
         {
             
-            Fork((VoidFunctionPtr) cashier, i);
+            Fork(createCashier);
         }
         
             /*4. DoorBoys */
@@ -1341,7 +1341,7 @@ void HospINIT(int testmode = 0) {
             for(i=0;i<numDoorboys;i++)
             {
                 
-                Fork((VoidFunctionPtr) doorboy, i);
+                Fork(createDoorboy);
             }            
         }else{
             numDoorboys = 0;
@@ -1363,7 +1363,7 @@ void HospINIT(int testmode = 0) {
         for(i=0;i<numDoctors;i++)
         {
             
-            Fork((VoidFunctionPtr) doctor, i);
+            Fork(createDoctor);
         }
         
         
@@ -1381,7 +1381,7 @@ void HospINIT(int testmode = 0) {
         for(i=0;i<numPatients;i++)
         {
             
-            Fork((VoidFunctionPtr) patients, i);
+            Fork(createPatients);
         }
         
         
@@ -1391,7 +1391,7 @@ void HospINIT(int testmode = 0) {
             
         print("Creating 1 Hospital Manager \n");      
         t = new Thread("HospitalManager_0");
-        t->Fork((VoidFunctionPtr) hospitalManager, 0);   
+        t->Fork(createHospitalManager);   
 
         
         
@@ -1405,7 +1405,7 @@ void HospINIT(int testmode = 0) {
         
         for(i=0; i<numRecp; i++)
         {
-            Fork((VoidFunctionPtr) receptionist, i);
+            Fork(createReceptionist);
         }
     }else if (testmode == 2) {
     }
