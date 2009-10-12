@@ -310,7 +310,7 @@ void patients(int ID){
     print("P_");
     print(itoa(ID));
     print(":Attempt to acquire ClerkLinesLock...\n");
-    Acquire(ClerkLinesLock)
+    Acquire(ClerkLinesLock);
     print("success\n");
 
     shortestclerkline = 0;
