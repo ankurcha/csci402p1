@@ -21,6 +21,8 @@ void patients(int ID){
     int i = 0;
     int myCashier = 0;
     int sLen = 0;
+    int shortestclerkline = 0;
+    int length = 0;
 
     len = receptionists[0].peopleInLine;
 
@@ -310,8 +312,9 @@ void patients(int ID){
     print(":Attempt to acquire ClerkLinesLock...\n");
     Acquire(ClerkLinesLock)
     print("success\n");
-    int shortestclerkline = 0;
-    int length = clerks[0].patientsInLine;
+
+    shortestclerkline = 0;
+    length = clerks[0].patientsInLine;
     if (test4active == 1) {
         print("P_");
         print(itoa(ID));
@@ -323,7 +326,7 @@ void patients(int ID){
     }
     
     /*Find shortest Line */
-    for (int i=0; i<numClerks; i++) {
+    for (i=0; i<numClerks; i++) {
         if (test4active == 1) {
                 /*Print the length of each line */
             print("P_");
