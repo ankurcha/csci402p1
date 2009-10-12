@@ -46,6 +46,15 @@ I. Requirements:
 II. Assumptions:
 
     We assume:
+        -Functions provided by NACHOS are generally bug free and perform as
+         specified.
+        -File system system calls are correct as provided.
+        -Condition variable and Lock implementations will be identical to
+         project 1.
+        -Programs are provided with adequate stack space to avoid overflow
+        -Physical memory is sufficiently large to accomidate all processes.
+         (i.e. simulated physical memory size can be increased until it is 
+         sufficient for all processes)
 
 III. Design:
 
@@ -177,36 +186,42 @@ III. Design:
 
     Part 2:
         
-        The AddrSpace class has been redesigned to accomidate multiple
-        processes and multiple threads within a process.  We allow for multiple
-        processes by decoupling a page's virtual address from its physical
-        address.  We maintain a global BitMap corresponding to all physical
-        pages of memory and associate them with virtual pages as they are
-        needed.  To create multiple threads the AddrSpace must allocate stack
-        space for each thread.  We do this through the InitStack and ClearStack
-        methods. AddrSpace doles out stack space starting at the largest
-        address, so the virtual address space will look like this:
+        AddrSpace class:
 
-          Virtual Address Space
-                  +-------------------+ 0
-                  | code              |
-                  +-------------------+
-                  | init data         |
-                  +-------------------+
-                  | uninit data       |
-                  +-------------------+
-                  |                   |
-                  | ... unused ...    |
-                  |                   |
-                  +-------------------+
-                  | stack 2           |
-                  +-------------------+
-                  | stack 1           |
-                  +-------------------+
-                  | stack 0           |
-                  +-------------------+ 0xffff...
+            The AddrSpace class has been redesigned to accomidate multiple
+            processes and multiple threads within a process.  We allow for
+            multiple processes by decoupling a page's virtual address from its
+            physical address.  We maintain a global BitMap corresponding to all
+            physical pages of memory and associate them with virtual pages as
+            they are needed.  To create multiple threads the AddrSpace must
+            allocate stack space for each thread.  We do this through the
+            InitStack and ClearStack methods. AddrSpace doles out stack space
+            starting at the largest address, so the virtual address space will
+            look like this:
 
-        AddrSpace {
+              Virtual Address Space
+                      +-------------------+ 0
+                      | code              |
+                      +-------------------+
+                      | init data         |
+                      +-------------------+
+                      | uninit data       |
+                      +-------------------+
+                      |                   |
+                      | ... unused ...    |
+                      |                   |
+                      +-------------------+
+                      | stack 2           |
+                      +-------------------+
+                      | stack 1           |
+                      +-------------------+
+                      | stack 0           |
+                      +-------------------+ max Phys address
+
+            Constructor
+
+                This is where AddrSpace does most of the work.
+
             int InitStack()
 
                 Allocates memory for a new stack in this address space, sets
@@ -220,8 +235,6 @@ III. Design:
                 The stack is marked as cleared so the virtual address can be
                 reused for a new stack of a new thread.
 
-        }
-
     Part 3:
         
 
@@ -232,6 +245,7 @@ IV. Implementation:
         userprog/addrspace.h
         userprog/syscall.h
         userprog/exception.cc
+        test/Makefile
         threads/thread.h
         threads/thread.cc
         threads/system.h
@@ -252,6 +266,10 @@ IV. Implementation:
         test/printtest.c
 
     + Data Structures added, and the file they were added to.
+        userprog/addrspace.cc
+            Lock* physMemMapLock
+            BitMap physMemMap
+            Lock* childLock
         userprog/system.h
             struct ProcessTable
         userprog/exception.cc
@@ -259,15 +277,26 @@ IV. Implementation:
             struct ConditionWrapper
             
     + Data Structures modified, and the file they were added to.
-        class AddrSpace{
-            Data Added:
-                Table locksTable;
-                Table CVTable;   
-                set<PID> childThreads;
-                Lock *childLock;
-                Lock* stackTableLock;
-                BitMap* stackTable;
-        }
+        userprog/addrspace.cc/h: 
+            class AddrSpace{
+                Data Added:
+                    Table locksTable;
+                    Table CVTable;   
+                    set<PID> childThreads;
+                    Lock *childLock;
+                    Lock* stackTableLock;
+                    BitMap* stackTable;
+                    unsigned int dataSize;
+                    unsigned int dataPages;
+
+                Methods Added:
+                    int InitStack();
+                    void ClearStack(int);
+                    string readCString(char*);
+                    void addChildThread(PID);           
+                    void removeChildThread(PID);        
+                    void killAllThreads();
+            }
 
         threads/thread.h
             class Thread{
@@ -390,3 +419,16 @@ VI. Discussion:
     + Explanation
 
 VII. Miscellaneous:
+    It was not clear to us the options available for the architecture of the
+    virtual address space (even after multiple questions and answers).  I have
+    implemented it the way I think makes most sense, and the way most
+    consistent with information I have seen about modern operating systems
+    (code and data at low end, stacks at high end), even though this differs
+    from a diagram I saw in class (stacks immediately follow code and data).  I
+    think that this design is superior because under most conditions (< max
+    stacks allocated) if a stack overflows, it overflows into unallocated area,
+    which will cause a segfault, rather than overwriting the data area,
+    followed by the code area, which could result in some very difficutl to
+    explain bugs, if you were not looking for a stack overflow.
+
+
