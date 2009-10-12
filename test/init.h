@@ -93,6 +93,14 @@ int List_getValue(List *l,int key){
     return -1;
 }
 
+int List_IsEmpty(List *l){
+    if (l->head == 0) {
+        return 1;
+    }else {
+        return 0;
+    }
+
+}
 
 LockId testlock;
 /* tokenCounter for assigning tokens to patients */
@@ -241,7 +249,7 @@ LockId doorboyLineLock;
 CVId doorboyLineCV;
 int doorboyLineLength = 0;
 /*int wakingDoctorID = 0; */
-List* wakingDoctorList;
+List wakingDoctorList;
 struct DoorBoy_ { };
 typedef struct Doorboy_ DoorBoy;
 
