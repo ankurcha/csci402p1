@@ -350,7 +350,7 @@ void doorboy(int ID){
             print("\n");
         }
            
-        doorboyLineLock->Release();
+        Release(doorboyLineLock);
 
         
             /* Inform the doctor that I have arrived, and wait for him to take  */
@@ -422,7 +422,7 @@ void doorboy(int ID){
         print(itoa(myDoctor));
         print("\n");
         
-        doctors[myDoctor].LineCV->Signal(doctors[myDoctor].LineLock);
+        Signal(doctors[myDoctor].LineCV, doctors[myDoctor].LineLock);
 
         
             /*My job with the patients and the doctor is done */
@@ -560,7 +560,7 @@ void doctor(int ID){
             
         
 
-        doctors[ID].transCV->Signal(doctors[ID].transLock);
+        Signal(doctors[ID].transCV, doctors[ID].transLock);
         print("D_");
         print(itoa(ID));
         print(": Waiting for patient....\n");
@@ -598,11 +598,11 @@ void doctor(int ID){
         print(itoa(ID));
         print(": Waiting for the patient to leave\n");
         
-        doctors[ID].transCV->Signal(doctors[ID].transLock);
-        doctors[ID].transCV->Wait(doctors[ID].transLock);
+        Signal(doctors[ID].transCV, doctors[ID].transLock);
+        Wait(doctors[ID].transCV, doctors[ID].transLock);
         
             /* done, the patient has left */
-        doctors[ID].transLock->Release();
+        Release(doctors[ID].transLock);
         print("D_");
         print(itoa(ID));
         print(": I'm ready for another one\n");
@@ -688,7 +688,7 @@ void cashier(int ID) {
         print(itoa(ID));
         print(":  someone in my line...\n");                                 
             
-            cashiers[ID].lineCV->Signal(cashierLineLock);
+            Signal(cashiers[ID].lineCV, cashierLineLock);
 
         } else { /* noone in line */
                  /* go on break */
@@ -946,7 +946,7 @@ void hospitalManager(int ID) {
                print("waiting -> Signaling Clerk\n");
                 /*Wake up this clerk up */
                 ClerkLinesLock->Acquire();
-                clerks[i].ClerkBreakCV->Signal(ClerkLinesLock);
+                Signal(clerks[i].ClerkBreakCV, ClerkLinesLock);
                 ClerkLinesLock->Release();
 
             }
