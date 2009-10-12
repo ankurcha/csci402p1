@@ -43,21 +43,21 @@ class AddrSpace {
     void InitRegisters();        // Initialize user-level CPU registers,
                     // before jumping to user code
 
+    void SaveState();            // Save/restore address space-specific
+    void RestoreState();        // info on a context switch
+
+    Table fileTable;            // Table of openfiles
+
+#ifdef CHANGED
     // create a new stack for a thread and set StackReg there
     int InitStack();
 
     // clear the stack of an exiting thread
     void ClearStack(int id);
 
-    void SaveState();            // Save/restore address space-specific
-    void RestoreState();        // info on a context switch
-
     // read a string at the virtual address s
     std::string readCString(char* s);
     
-    Table fileTable;            // Table of openfiles
-
-#ifdef CHANGED
     Table locksTable;           //Table of Locks
     Table CVTable;              //Table of CVs
     set<PID> childThreads;        // PID of Children Threads
@@ -75,13 +75,13 @@ class AddrSpace {
     // Number of pages in the virtual address space
     unsigned int numPages;
 
+#ifdef CHANGED
     // number of bytes and pages used by code and data
     unsigned int dataSize;
     unsigned int dataPages;
 
     // keep track of the stacks in this process
     //std::vector<char> stackTable;
-#ifdef CHANGED
     Lock* stackTableLock;
     BitMap* stackTable;
 #endif
