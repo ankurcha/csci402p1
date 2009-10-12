@@ -27,11 +27,40 @@
 #define FREE 1
 #define SLEEPING 2
 
+#define MAX_DOCTORS 10
+#define MIN_DOCTORS 4
+
+#define MAX_DOORB 10
+#define MIN_DOORB 4
+
+#define MAX_PATIENTS 100
+#define MIN_PATIENTS 20
+
+#define RECP_MAX 5
+#define RECP_MIN 3
+
+#define MAX_CLERKS 5
+#define MIN_CLERKS 3
+
+#define MAX_CASHIER 5
+#define MIN_CASHIER 3
+
+#define totalHospMan 1
+
+
+int numDoctors = 0;
+int numCashiers = 0;
+int numClerks = 0;
+int numDoorboys = 0;
+int numRecp = 0;
+int numPatients = 0;
+
 char test1active = 0;
 char test2active = 0;
 char test4active = 0;
 char test7active = 0;
 char test5active = 0;
+int feesPaid = 0;
 
 typedef struct {
     int key, value;
@@ -122,8 +151,8 @@ LockId recpLineLock = CreateLock("recpLineLock");
     CVId ReceptionistBreakCV;
     
     };
-    
-    typdef struct Receptionists_ Receptionists;
+        typdef struct Receptionists_ Receptionists;
+        
        void __Receptionists(Receptionists *recep ){
        recep->peopleInLine = 0;
         
@@ -143,7 +172,7 @@ linkedlist* feeList = (linkedlist*) malloc(sizeof(linkedlist));
     /* global for all cashiers */
 LockId cashierLineLock = CreateLock("cashierLineLock");
 LockId feesPaidLock = CreateLock("feesPaidLock");
-int feesPaid = 0;
+
 
     /* shared data struct related to a Cashier */
  struct Cashier_ {
@@ -277,33 +306,7 @@ struct DoorBoy_ {
 };
 typedef struct Doorboy_ Doorboy;
 
-#define MAX_DOCTORS 10
-#define MIN_DOCTORS 4
 
-#define MAX_DOORB 10
-#define MIN_DOORB 4
-
-#define MAX_PATIENTS 100
-#define MIN_PATIENTS 20
-
-#define RECP_MAX 5
-#define RECP_MIN 3
-
-#define MAX_CLERKS 5
-#define MIN_CLERKS 3
-
-#define MAX_CASHIER 5
-#define MIN_CASHIER 3
-
-#define totalHospMan 1
-
-
-int numDoctors = 0;
-int numCashiers = 0;
-int numClerks = 0;
-int numDoorboys = 0;
-int numRecp = 0;
-int numPatients = 0;
 
 Receptionists receptionists[RECP_MAX];
 DoorBoy doorboys[MAX_DOCTORS];
@@ -330,7 +333,7 @@ void doorboy(int ID){
 
         print("DB_");
         print(itoa(ID));
-        print(": Waiting for some doctor to wake me up.") ;
+        print(": Waiting for some doctor to wake me up.");
         print("\n");
         Wait(doorboyLineCV,doorboyLineLock);
 
@@ -1101,7 +1104,8 @@ void HospINIT(int testmode = 0) {
             /*6. HospitalManager */
 
         print("Creating 1 Hospital Manager \n");
-        t = new Thread("HospitalManager_0");
+        t= (Thread*)malloc(sizeof(Thread));
+        
         t->Fork((VoidFunctionPtr) hospitalManager, 0);   
    
         
@@ -1119,7 +1123,10 @@ void HospINIT(int testmode = 0) {
         }
         
         
-    }else if (testmode == 51) {
+    }
+    
+    
+    else if (testmode == 51) {
         
         int i = 0;
         char temp[] = "NACHOS_THREAD";
@@ -1203,7 +1210,8 @@ void HospINIT(int testmode = 0) {
 
             
         print("Creating 1 Hospital Manager \n");
-        t = new Thread("HospitalManager_0");
+        t= (Thread*)malloc(sizeof(Thread));
+        
         t->Fork((VoidFunctionPtr) hospitalManager, 0);   
 
         
@@ -1280,7 +1288,7 @@ void HospINIT(int testmode = 0) {
         
         for(i=0;i<numPatients;i++)
         {
-            
+            t= (Thread*)malloc(sizeof(Thread));
             t=new Thread(temp);
             t->Fork((VoidFunctionPtr) patients, i);
         }
