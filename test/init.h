@@ -8,9 +8,9 @@
  */
 
 #include "syscall.h"
+#include "queue.h"
 #include "itoa.c"
 #include "print.c"
-/*using namespace std;*/
 
 #define BUSY 0
 #define FREE 1
@@ -103,6 +103,8 @@ int List_IsEmpty(List *l){
     }
 
 }
+/*queue elements for the waking doctors list*/
+queue_element wakingdoctor[MAX_PATIENTS];
 
 LockId testlock;
 /* tokenCounter for assigning tokens to patients */
@@ -251,7 +253,7 @@ LockId doorboyLineLock;
 CVId doorboyLineCV;
 int doorboyLineLength = 0;
 /*int wakingDoctorID = 0; */
-List wakingDoctorList;
+Queue wakingDoctorList;
 struct DoorBoy_ { int dummy = 0};
 typedef struct Doorboy_ DoorBoy;
 
