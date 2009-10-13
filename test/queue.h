@@ -9,17 +9,17 @@
 
 struct queue_element{
     int value;
-    int next = -1;
-    char valid = 0;
+    int next ;
+    char valid ;
 };
 
 typedef struct queue_element queue_element;
 
 struct Queue{
     queue_element* queue;
-    int length = -1;
-    int head = -1;
-    int tail = -1;
+    int length;
+    int head;
+    int tail;
 };
 
 typedef struct Queue Queue;

@@ -254,7 +254,9 @@ CVId doorboyLineCV;
 int doorboyLineLength = 0;
 /*int wakingDoctorID = 0; */
 Queue wakingDoctorList;
-struct DoorBoy_ { int dummy = 0};
+struct Doorboy_ { 
+    int doorboyid; 
+};
 typedef struct Doorboy_ DoorBoy;
 
 Receptionists receptionists[RECP_MAX];
