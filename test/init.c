@@ -1201,6 +1201,7 @@ int test7(){
 
 int main(){
     int i;
+    print("Hello World\n");    
     testlock = CreateLock("TestLock");
     TokenCounterLock = CreateLock("TokenCounterLock");
     recpLineLock = CreateLock("recpLineLock");
@@ -1222,23 +1223,28 @@ int main(){
         //1. Patients don't need initialization
         //2. Receptionists
          */
+    Write("Initializing Recptionists\n",25,1);
     for (i=0; i<RECP_MAX; i++) {
         __Receptionists(&receptionists[i]);
     }
         /*3. DoorBoy doesn't need anything
-        //4. Doctors*/
+        4. Doctors*/
+    print("Initializing Doctors\n");
     for (i=0; i<MAX_DOCTORS; i++) {
         __Doctor(&doctors[i]);
     }
+    print("Initializing Cashiers\n");
         /*5. Cashiers*/
     for (i=0; i<MAX_CASHIER; i++) {
         __Cashier(&cashiers[i]);
     }
+    print("Initializing Clerks\n");
         /*6. Clerks */
     for (i=0; i<MAX_CLERKS; i++) {
         __PharmacyClerks(&clerks[i]);
     }
         /* 7. Hospital Manager */
+    print("Initializing Hospital Manager\n");
     for (i=0; i<totalHospMan; i++) {
     }
     

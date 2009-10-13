@@ -268,17 +268,19 @@ void kernel_thread(int virtAddr){
         // Allocate Stack space for the new Thread and write the stackstart
         // address to the stack register.
     int stackId = currentThread->space->InitStack();
-    //if(stackId < 0){
-//        DEBUG('a', "%s: Unable to allocate stack for the new process\n",currentThread->getName());
-//            // Kill Process and all its children
-//        currentThread->space->killAllThreads();
-//        return;
-//    }
+    if(stackId < 0){
+        DEBUG('a', "%s: Unable to allocate stack for the new process\n",currentThread->getName());
+            // Kill Process and all its children
+    //    currentThread->space->killAllThreads();
+        cout<<"killed\n";
+        return;
+    }
     machine->Run();
 }
 
 void Fork_Syscall(int funcAddr){
     processTableLock->Acquire();
+    cout<<"Forking thread"<<endl;
     DEBUG('a', "%s: Called Fork_Syscall.\n",currentThread->getName());
         // Create new thread.kernel_thread()
     Thread *t = new Thread(currentThread->getName());
@@ -356,7 +358,7 @@ void Yield_Syscall(){
 LockId CreateLock_Syscall(char* name){
     DEBUG('a',"%s: CreateLock_Syscall initiated.\n", currentThread->getName());
     currentThread->space->locksTableLock->Acquire();
-
+cout<<"Create Lock\n";
     std::string cname = currentThread->space->readCString(name);
     char *c_name = new char[cname.size()+1];
     strcpy(c_name, cname.c_str());
