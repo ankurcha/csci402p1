@@ -115,12 +115,15 @@ printtest: printtest.o start.o
 	$(LD) $(LDFLAGS) start.o printtest.o -o printtest.coff
 	../bin/coff2noff printtest.coff printtest
 
-queue.o: queue.c queue.h print.c
+print.o: print.c print.h
+	$(CC) $(CFLAGS) -c print.c
+print: print.o
+
+queue.o: queue.c queue.h print
 	$(CC) $(CFLAGS) -c queue.c
 queue: queue.o
 
-
-init.o: init.c print.c queue
+init.o: init.c print queue
 	$(CC) $(CFLAGS) -c init.c
 init: init.o start.o
 	$(LD) $(LDFLAGS) start.o init.o -o init.coff

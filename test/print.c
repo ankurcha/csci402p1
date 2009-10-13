@@ -1,7 +1,11 @@
-#include "syscall.h"
+/* library to wrap our syscall Write
+ *
+ * CS 402 Fall 2009
+ * Group 11
+ */
 
-#ifndef PRINT_C
-#define PRINT_C
+#include "syscall.h"
+#include "print.h"
 
 void print(char* str) {
     int i = 0;
@@ -13,5 +17,3 @@ void print(char* str) {
     return;
 }
 
-
-#endif /* PRINT_C */
