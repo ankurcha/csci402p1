@@ -517,7 +517,7 @@ void clerk(int ID){
             print(" Dollars\n");
         
         if(clerks[ID].payment != clerks[ID].fee) {
-            print("ERROR: patient did not pay for medicine\n";
+            print("ERROR: patient did not pay for medicine\n");
         }
         
             /* add this payment to our total collected */
