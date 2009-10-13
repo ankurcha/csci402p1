@@ -32,7 +32,7 @@ INCDIR =-I../userprog -I../threads
 CFLAGS = -G 0 -c $(INCDIR)
 
 
-all: halt matmult sort testfiles lockcreate destroylock createcv destroycv fork exec exectest printtest queue init test_code
+all: halt matmult sort testfiles lockcreate destroylock createcv destroycv fork exec exectest printtest queue init test_code multih
 
 
 start.o: start.s ../userprog/syscall.h
@@ -136,6 +136,11 @@ test_code: test_code.o start.o
 	$(LD) $(LDFLAGS) start.o test_code.o -o test_code.coff
 	../bin/coff2noff test_code.coff test_code
 
+multih.o: multih.c
+	$(CC) $(CFLAGS) -c multih.c
+multih: multih.o start.o
+	$(LD) $(LDFLAGS) start.o multih.o -o multih.coff
+	../bin/coff2noff multih.coff multih
 
 clean:
 	rm -f *.o *.coff

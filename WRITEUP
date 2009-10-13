@@ -648,11 +648,16 @@ V. Testing: (For each test case, you must show)
      How to run in nachos:
      %userprog/nachos -x ../test/fork
 
-    *Test cases form Project 1 are also carried to this Project and are invoked
-    via a command line argument to nachos
-        ./nachos -rs <seed> -x ../test/init <test case number>
-    valid test case number values:
-            1, 2, 3, 4, 51, 52, 53, 6, 7, 8, 9, 10, 11
+    -Test Case 8: Multiple concurrent hospital simulations and exec
+        We test that the Exec system call and also test that concurrent instances
+        of the hospital simulation can be started using exec() and will continue
+        to work without any problems
+
+        *Test cases form Project 1 are also carried to this Project and are invoked
+        via a command line argument to nachos
+                ./nachos -rs <seed> -x ../test/init <test case number>
+        valid test case number values:
+                    1, 2, 3, 4, 51, 52, 53, 6, 7, 8, 9, 10, 11
 
     + Test Output
       
@@ -733,6 +738,11 @@ V. Testing: (For each test case, you must show)
        Paging: faults 0
        Network I/O: packets received 0, sent 0
        Cleaning up...
+
+     -Test Case 8: Multiple Hospital Instances
+        We get the entry points for the 3 hospitals one by one ( as we exec the processes)
+        When we are done selecting the simultion test option each of the processes give
+        output concurrently as they are running concurrently in NACHOS.
 
         *Output for the other 11 test cases from project 1. Please refer Writeup
         of the project 1 for output details. 
