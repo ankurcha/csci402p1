@@ -1269,10 +1269,6 @@ int main(int argc, char** argv){
             HospINIT(0);
             
             break;
-        case '1':
-            test1();
-            
-            break;
         case '2':
             test2();
             
@@ -1286,14 +1282,14 @@ int main(int argc, char** argv){
             
             break;
         case '5':
-            if(*(*(argv+1)+1) == '1'){
+            if(*(inp+2) == '1'){
                 HospINIT(51);
                 break;    
-            } if(*(*(argv+1)+1) == '2'){ 
+            } if(*(inp+2) == '2'){ 
                 HospINIT(52);
             
                 break;
-            }if(*(*(argv+1)+1) == '3'){
+            }if(*(inp+2) == '3'){
                 HospINIT(53);
                 break;
             }
@@ -1315,14 +1311,16 @@ int main(int argc, char** argv){
             
             break;
         case 10:
-            if(*(*(argv+1)+1) == '0'){
+            if(*(inp+2) == '0'){
                 HospINIT(10);
                 break;    
-            } if(*(*(argv+1)+1) == '1'){ 
+            } if(*(inp+2) == '1'){ 
                 HospINIT(11);
-            
                 break;
             }
+            break;
+        case '1':
+            test1();            
             break;
         default:
             HospINIT(0);
