@@ -524,6 +524,8 @@ void WaitCV_Syscall(CVId cvId, LockId lockId){
 }
 
 void SignalCV_Syscall(CVId cvId, LockId lockId){
+    CVTableLock->Acquire();
+    locksTableLock->Acquire();
     LockWrapper *ConditionLockWrapper = (LockWrapper*) currentThread->space->locksTable.Get(lockId);
     ConditionWrapper *CV = (ConditionWrapper*) currentThread->space->CVTable.Get(cvId);
     

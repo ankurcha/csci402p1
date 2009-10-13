@@ -367,7 +367,7 @@ void receptionist(int ID){
 
         Acquire(TokenCounterLock);
         print("R_");
-        itoa(ID, str)
+        itoa(ID, str);
         print(str);
         print(": Generating Token...\n");
         
