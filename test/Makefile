@@ -126,7 +126,7 @@ queue: queue.o
 init.o: init.c print queue
 	$(CC) $(CFLAGS) -c init.c
 init: init.o start.o
-	$(LD) $(LDFLAGS) start.o init.o -o init.coff
+	$(LD) $(LDFLAGS) start.o init.o queue.o print.o -o init.coff
 	../bin/coff2noff init.coff init
 	
 

@@ -108,7 +108,7 @@ void patients(int ID){
 
     /*Calculate which doctor I want to see */
 
-    myDoctor = (int)(Random()) % numDoctors;
+    myDoctor = (int)(3217) % numDoctors;
     if(test2active==1)
 	{
 	    print("P_");

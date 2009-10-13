@@ -6,6 +6,7 @@
 
 #ifndef QUEUE_H
 #define QUEUE_H
+#include "print.h"
 
 struct queue_element{
     int value;
