@@ -22,12 +22,13 @@
 int testmode=0;
 
 void doorboy(ID){
+    char str[50];
     int myDoctor = 0;
     char doorboyBreak = 0;
     
     while (1) {
         print("DB_");
-        print(itoa(ID));
+        print(itoa(ID, str));
         print(": Alive ");
         
             /*Get into the doorboyLine till some doctor asks for me */
@@ -36,7 +37,7 @@ void doorboy(ID){
         doorboyLineLength++;
 
         print("DB_");
-        print(itoa(ID));
+        print(itoa(ID, str));
         print(": Waiting for some doctor to wake me up.");
         print("\n");
         Wait(doorboyLineCV,doorboyLineLock);
@@ -47,22 +48,22 @@ void doorboy(ID){
             /*myDoctor =  wakingDoctorID; */
         if(Queue_IsEmpty(&wakingDoctorList) == 1) {
         print("DB_");
-        print(itoa(ID));
+        print(itoa(ID, str));
         print(": ERROR: Waking doctor list is empty!\n");
             continue;
         }
         myDoctor = Queue_Pop(&wakingDoctorList);
         if(test2active==1) {
             print("DB_");
-            print(itoa(ID));
+            print(itoa(ID, str));
             print(":TEST2: Servicing D_");
-            print(itoa(myDoctor));
+            print(itoa(myDoctor,str));
             print("\n");
         } else {
             print("DB_");
-            print(itoa(ID));
+            print(itoa(ID, str));
             print(":Servicing D_");
-            print(itoa(myDoctor));
+            print(itoa(myDoctor,str));
             print("\n");
         }
            
@@ -80,7 +81,7 @@ void doorboy(ID){
 
         Acquire(doctors[myDoctor].LineLock);
         print("DB_");
-        print(itoa(ID));
+        print(itoa(ID, str));
         print(": Checking for Patients\n");
         
             /*while there is noone in line */
@@ -97,11 +98,11 @@ void doorboy(ID){
             	print("T11: ");
               if(test2active==1) {
             	print("DB_");
-              print(itoa(ID));
+              print(itoa(ID, str));
                print(":TEST2: Yawn!!...ZZZZzzzzz....\n");
             } else {
             	print("DB_");
-              print(itoa(ID));
+              print(itoa(ID, str));
                print(": Yawn!!...ZZZZzzzzz....\n");
                 
             }
@@ -117,25 +118,25 @@ void doorboy(ID){
             
             }
             print("DB_");
-            print(itoa(ID));
+            print(itoa(ID, str));
             print(": Woken up!\n");
         }
         
         print("DB_");
-        print(itoa(ID));
+        print(itoa(ID, str));
         print(": Found ");
-        print(itoa(doctors[myDoctor].peopleInLine));
+        print(itoa(doctors[myDoctor].peopleInLine,str));
        print(" patients waiting in line for D_ ");
-        print(itoa(myDoctor));
+        print(itoa(myDoctor,str));
         print("\n");
              
         
             /*Now wake the patient up to go to the doctor */
 
         print("DB_");
-        print(itoa(ID));
+        print(itoa(ID, str));
         print(":Tell patient to go to doctor D_");
-        print(itoa(myDoctor));
+        print(itoa(myDoctor,str));
         print("\n");
         
         Signal(doctors[myDoctor].LineCV, doctors[myDoctor].LineLock);
@@ -148,13 +149,14 @@ void doorboy(ID){
         
     }/*End of while */
     print("DB_");
-    print(itoa(ID));
+    print(itoa(ID, str));
     print(":Dying...AAAaaaahhhhhhhhh!!\n");
    
     
 }
 
 void doctor(ID){
+    char str[50];
     /* declare variables */
     int waitingtime = 10000;
     int i, numYields, consultFee;
@@ -165,7 +167,7 @@ void doctor(ID){
             /* acquire a doorboy */
 
         print("D_");
-        print(itoa(ID));
+        print(itoa(ID, str));
         print(": Alive!!\n");
         Acquire(doorboyLineLock);
 
@@ -174,9 +176,9 @@ void doctor(ID){
         while(doorboyLineLength <= 0) {
             if(waitingtime % 100 == 0){
             	print("D_");
-              print(itoa(ID));
+              print(itoa(ID, str));
               print(": Doctor could not find a doorboy waittime: ");
-              print(itoa(waitingtime));
+              print(itoa(waitingtime,str));
               print("\n");
            
             }
@@ -193,7 +195,7 @@ void doctor(ID){
         
             /* pull the next doorboy off the line */
             print("D_");
-            print(itoa(ID));
+            print(itoa(ID, str));
             print(":Signaling doorboy!\n");
             
         
@@ -215,9 +217,9 @@ void doctor(ID){
        	{
                 numYields = 35;
        		print("D_");
-          print(itoa(ID));
+          print(itoa(ID, str));
           print(" :TEST7: Going on break for ");
-          print(itoa(numYields));
+          print(itoa(numYields,str));
           print(" cycles!\n");
             for(i=0; i < numYields; ++i) {
                 Yield();
@@ -237,9 +239,9 @@ void doctor(ID){
                 }
                 
                 print("D_");
-                print(itoa(ID));
+                print(itoa(ID, str));
                 print(": Going on break for ");
-                print(itoa(numYields));
+                print(itoa(numYields,str));
                 print(" cycles!\n");
                 
                 for(i=0; i < numYields; ++i) {
@@ -256,7 +258,7 @@ void doctor(ID){
         }
         if(doctorBreak) 
         	print("D_");
-        	 print(itoa(ID));
+        	 print(itoa(ID, str));
         	 
            print(": Back from Break\n");
         
@@ -265,13 +267,13 @@ void doctor(ID){
         if(test7active==1)
        	{
        		print("D_");
-        	print(itoa(ID));
+        	print(itoa(ID, str));
        		print(":TEST7: Back from Break,Signalling patient to come in.\n");
        		
        	}
        	else
        		print("D_");
-        	 print(itoa(ID));
+        	 print(itoa(ID, str));
        		print(": Back from Break,Signalling patient to come in.\n");
        		
             
@@ -279,7 +281,7 @@ void doctor(ID){
 
         Signal(doctors[ID].transCV, doctors[ID].transLock);
         print("D_");
-        print(itoa(ID));
+        print(itoa(ID, str));
         print(": Waiting for patient....\n");
         
 
@@ -289,7 +291,7 @@ void doctor(ID){
         
             /* consult: 10-20 yields */
         print("D_");
-        print(itoa(ID));
+        print(itoa(ID, str));
         print(": Now Consulting patient\n");
         numYields = 10 + (1267 % 11);
         for(i=0; i < numYields; ++i) {
@@ -301,7 +303,7 @@ void doctor(ID){
         
             /* put consultation fees into the data structure for the cashier ($50-$250) */
         print("D_");
-        print(itoa(ID));
+        print(itoa(ID, str));
         print(": Telling fee to cashiers\n");
         
         consultFee = (50 + (1267 % 201));
@@ -312,7 +314,7 @@ void doctor(ID){
             /* pass the prescription to the patient and wait for them to leave */
 
         print("D_");
-        print(itoa(ID));
+        print(itoa(ID, str));
         print(": Waiting for the patient to leave\n");
         
         Signal(doctors[ID].transCV, doctors[ID].transLock);
@@ -321,7 +323,7 @@ void doctor(ID){
             /* done, the patient has left */
         Release(doctors[ID].transLock);
         print("D_");
-        print(itoa(ID));
+        print(itoa(ID, str));
         print(": I'm ready for another one\n");
 
         
@@ -329,10 +331,11 @@ void doctor(ID){
 }
 
 void receptionist(int ID){
+    char str[50];
     while (1) {
 
     	print("R_");
-      print(itoa(ID));
+      print(itoa(ID, str));
       print(": Alive!\n");
         Acquire(recpLineLock);
 
@@ -346,7 +349,7 @@ void receptionist(int ID){
 
             print( "T11: ");
             print("R_");
-            print(itoa(ID));
+            print(itoa(ID, str));
             print(":Going to sleep\n");
             Wait(receptionists[ID].ReceptionistBreakCV, recpLineLock);
             Release(recpLineLock);
@@ -363,7 +366,7 @@ void receptionist(int ID){
 
         Acquire(TokenCounterLock);
         print("R_");
-        print(itoa(ID));
+        print(itoa(ID, str));
         print(": Generating Token...\n");
         
         
@@ -374,13 +377,13 @@ void receptionist(int ID){
             /*Sleep till you get Acknowledgement */
 
         print("R_");
-        print(itoa(ID));
+        print(itoa(ID, str));
         print(":  Waiting for Patient to pick up token...\n");
         Wait(receptionists[ID].receptionistWaitCV, receptionists[ID].transLock);
         
             /*Patient successfully got the token, go back to work: Loop again */
         print("R_");
-        print(itoa(ID));
+        print(itoa(ID, str));
         print(": Patient got token, Continue to next Patient\n");
         Release(receptionists[ID].transLock);
 
@@ -390,9 +393,9 @@ void receptionist(int ID){
 
 void cashier(int ID) {
 
-	
+	char str[50];
 	  print("Cash_");
-        print(itoa(ID));
+        print(itoa(ID, str));
         print(":  Alive!!\n");
         while(1) {
         Acquire(cashierLineLock);
@@ -400,7 +403,7 @@ void cashier(int ID) {
         if(cashiers[ID].lineLength > 0) { /* someone in line */
                                           /*signal person on top */
         print("Cash_");
-        print(itoa(ID));
+        print(itoa(ID, str));
         print(":  someone in my line...\n");                                 
             
             Signal(cashiers[ID].lineCV, cashierLineLock);
@@ -413,7 +416,7 @@ void cashier(int ID) {
 
         print("T11: ");
         print("Cash_");
-        print(itoa(ID));
+        print(itoa(ID, str));
         print(":  No one in line... going on break\n");
             
             Wait(cashiers[ID].breakCV, cashierLineLock);
@@ -457,6 +460,7 @@ void cashier(int ID) {
 
 
 void clerk(int ID){
+    char str[50];
     while(1){
         Acquire(ClerkLinesLock);
         
@@ -471,7 +475,7 @@ void clerk(int ID){
             	print("T11: ");
                 
             print("CL_");
-            print(itoa(ID));
+            print(itoa(ID, str));
             print(": Going on break\n");
             
             
@@ -492,7 +496,7 @@ void clerk(int ID){
             /* patient gives prescription: */
         
             print("CL_");
-            print(itoa(ID));
+            print(itoa(ID, str));
             print(": gave Medicines!\n");
         
         
@@ -502,9 +506,9 @@ void clerk(int ID){
             /*Collect payment */
             
             print("CL_");
-            print(itoa(ID));
+            print(itoa(ID, str));
             print(": The cost for the medicines are:");
-            print(itoa(clerks[ID].fee));
+            print(itoa(clerks[ID].fee,str));
             print(" Dollars\n");
         
         
@@ -521,13 +525,14 @@ void clerk(int ID){
 
 
 void hospitalManager(int ID) {
+    char str[50];
     int sleeptime = 0;
     int test5cycles = 1;
     int patientsWaiting=0;
     int i, j, sum;
 
     print("H_");
-    print(itoa(ID));
+    print(itoa(ID, str));
     print(": Alive\n");
     
     sleeptime = 1267 % 30000;
@@ -545,7 +550,7 @@ void hospitalManager(int ID) {
         Acquire(hospitalLock);
         if (peopleInHospital <= 0) {
         	print("H_");
-	  print(itoa(ID));
+	  print(itoa(ID, str));
 	  print(":  No one to service, Killing myself!!!\n");
            
             return;
@@ -555,9 +560,9 @@ void hospitalManager(int ID) {
         sleeptime = 1267 % 30000;
             /*Sleep for some random amount of time */
        print("H_");
-	  print(itoa(ID));
+	  print(itoa(ID, str));
 	  print(":  Sleeping for");
-	  print(itoa(sleeptime));
+	  print(itoa(sleeptime,str));
 	  print(" cycles\n");
             
        
@@ -567,14 +572,14 @@ void hospitalManager(int ID) {
         }while (sleeptime > 0);
             /*I am on rounds now, Time to kick some ass */
         print("H_");
-	      print(itoa(ID));
+	      print(itoa(ID, str));
 	      print(": Going on rounds\n");
         
         
         
             /*1. Check on the Receptionists */
         print("H_");
-	      print(itoa(ID));
+	      print(itoa(ID, str));
 	      print(": Checking receptionists\n");
         
         patientsWaiting=0;
@@ -592,17 +597,17 @@ void hospitalManager(int ID) {
             /*2. Query Cashiers */
             
         print("H_");
-	      print(itoa(ID));
+	      print(itoa(ID, str));
 	      print(": Checking cashiers\n");
         for (i=0; i<numCashiers; i++) {/*Check for waiting patients */
             if (cashiers[i].lineLength > 0 ) {
         
         print("H_");
-	      print(itoa(ID));
+	      print(itoa(ID, str));
 	      print(": Found");
-	      print(itoa(cashiers[i].lineLength));
+	      print(itoa(cashiers[i].lineLength, str));
 	      print(" patients waiting for C_");
-        print(itoa(i));
+        print(itoa(i,str));
         print("  -> Signal Cashier\n");
                     /*Wake up this receptionist up */
                 Acquire(cashierLineLock);
@@ -616,7 +621,7 @@ void hospitalManager(int ID) {
 
         Acquire(feesPaidLock);
         print(" T10: Total fees collected by cashiers:");
-        print(itoa(feesPaid));
+        print(itoa(feesPaid,str));
         
 
         if( test_state == 10 ) {
@@ -625,15 +630,15 @@ void hospitalManager(int ID) {
             sum = 0;
             for (i=0; i<numCashiers; i++) {
             	print(" T10: cashier");
-            	print(itoa(i));
+            	print(itoa(i,str));
             	print(" :");
-            	print(itoa(cashiers[i].sales));
+            	print(itoa(cashiers[i].sales,str));
               print("\n");  
               
                 sum += cashiers[i].sales;
             }
             print("T10: TOTAL:");
-            print(itoa(sum));
+            print(itoa(sum,str));
             
             
             
@@ -645,7 +650,7 @@ void hospitalManager(int ID) {
         
             /*3. Query pharmacy */
         print("H_");
-        print(itoa(ID));
+        print(itoa(ID, str));
         print(":Checking clerks\n");
         
         
@@ -653,11 +658,11 @@ void hospitalManager(int ID) {
             if (clerks[i].patientsInLine > 0 ) {
 
             	 print("H_");
-            	 print(itoa(ID));
+            	 print(itoa(ID, str));
                print(": found CL_");
-               print(itoa(i));
+               print(itoa(i,str));
                print(": sleeping and ");
-               print(itoa(clerks[i].patientsInLine));
+               print(itoa(clerks[i].patientsInLine,str));
                print("waiting -> Signaling Clerk\n");
                 /*Wake up this clerk up */
                 Acquire(ClerkLinesLock);
@@ -671,9 +676,9 @@ void hospitalManager(int ID) {
 
         Acquire(PaymentLock);
                print("H_");
-            	 print(itoa(ID));
+            	 print(itoa(ID, str));
                print("T10: Total amount collected by clerks: ");
-               print(itoa(totalsales));
+               print(itoa(totalsales,str));
                print("\n");
         
 
@@ -685,15 +690,15 @@ void hospitalManager(int ID) {
             for (i=0; i<numClerks; i++) {
             	
             	 print("T10: clerk ");
-            	 print(itoa(i));
+            	 print(itoa(i,str));
                print(" : ");
-               print(itoa(clerks[i].sales));
+               print(itoa(clerks[i].sales,str));
                print("\n");
                
                 sum += clerks[i].sales;
             }
             print("T10: TOTAL: ");
-            print(itoa(sum));
+            print(itoa(sum,str));
             
                 /* sum just printed should match feesPaid, printed earlier */
            /* (void) interrupt->SetLevel(oldLevel);*/
@@ -704,7 +709,7 @@ void hospitalManager(int ID) {
         
             /*Check on the doorboys */
                print("H_");
-            	 print(itoa(ID));
+            	 print(itoa(ID, str));
             	 print(": Checking doorboys\n");
         
         for (i=0; i<numDoctors; i++) {/*Check for waiting patients */
@@ -712,11 +717,11 @@ void hospitalManager(int ID) {
 
             	  
             	 print("H_");
-            	 print(itoa(ID));
+            	 print(itoa(ID, str));
                print(": found ");
-               print(itoa(doctors[i].peopleInLine));
+               print(itoa(doctors[i].peopleInLine,str));
                print(": people in doctor ");
-               print(itoa(i));
+               print(itoa(i,str));
                print("'s line -> Signal Doorboy\n");
                 
                 Acquire(doctors[i].LineLock);
@@ -801,6 +806,7 @@ void createHospitalManager(){
 
 
 void HospINIT(int testmode) {
+    char str[50];
     int i;
     
         /* set a global so everyone will know the test mode */
@@ -814,7 +820,7 @@ void HospINIT(int testmode) {
             /*3. Cashiers */
         numCashiers = (1267 % (MAX_CASHIER - MIN_CASHIER +1) + MIN_CASHIER) ;
                print("Creating ");
-            	 print(itoa(numCashiers));
+            	 print(itoa(numCashiers,str));
                print("Cashiers\n");
         
         
@@ -829,7 +835,7 @@ void HospINIT(int testmode) {
         if(test1active == 0){
             numDoorboys = numDoctors;
             print("Creating ");
-            print(itoa(numDoorboys));
+            print(itoa(numDoorboys,str));
             print(" Doorboys\n");
             for(i=0;i<numDoorboys;i++)
             {
@@ -842,7 +848,7 @@ void HospINIT(int testmode) {
         /*5. Pharmacys */
         numClerks= (1267 % (MAX_CLERKS - MIN_CLERKS +1) + MIN_CLERKS) ;
             print("Creating ");
-            print(itoa(numClerks));
+            print(itoa(numClerks,str));
             print(" Clerks\n");
         
         for(i=0;i<numClerks;i++)
@@ -851,7 +857,7 @@ void HospINIT(int testmode) {
         }
         /*1. Doctors */
         print("Creating ");
-        print(itoa(numDoctors));
+        print(itoa(numDoctors,str));
         print(" Doctors\n");
         for(i=0;i<numDoctors;i++)
         {
@@ -867,7 +873,7 @@ void HospINIT(int testmode) {
         Release(hospitalLock);    
         
         print("Creating ");
-            print(itoa(numPatients));
+            print(itoa(numPatients,str));
             print(" Patients\n");
         
         for(i=0;i<numPatients;i++)
@@ -891,7 +897,7 @@ void HospINIT(int testmode) {
             /*2. Receptionists */
         numRecp = (1267 % (RECP_MAX - RECP_MIN +1) + RECP_MIN) ;
             print("Creating ");
-            print(itoa(numRecp));
+            print(itoa(numRecp,str));
             print(" Receptionists\n");
         
         for(i=0; i<numRecp; i++)
@@ -912,7 +918,7 @@ void HospINIT(int testmode) {
             /*3. Cashiers */
         numCashiers = (1267 % (MAX_CASHIER - MIN_CASHIER +1) + MIN_CASHIER) ;
             print("Creating ");
-            print(itoa(numCashiers));
+            print(itoa(numCashiers,str));
             print(" Cashiers\n");
         
         for(i=0;i<numCashiers;i++)
@@ -926,7 +932,7 @@ void HospINIT(int testmode) {
         if(test1active == 0){
             numDoorboys = numDoctors;
             print("Creating ");
-            print(itoa(numDoorboys));
+            print(itoa(numDoorboys,str));
             print(" Doorboys\n");
             
             for(i=0;i<numDoorboys;i++)
@@ -944,7 +950,7 @@ void HospINIT(int testmode) {
         numClerks= (1267 % (MAX_CLERKS - MIN_CLERKS +1) + MIN_CLERKS) ;
         
             print("Creating ");
-            print(itoa(numClerks));
+            print(itoa(numClerks,str));
             print(" Clerks\n");
        
         for(i=0;i<numClerks;i++)
@@ -956,7 +962,7 @@ void HospINIT(int testmode) {
         
             /*1. Doctors */
             print("Creating ");
-            print(itoa(numDoctors));
+            print(itoa(numDoctors,str));
             print(" Doctors\n");
         for(i=0;i<numDoctors;i++)
         {
@@ -972,7 +978,7 @@ void HospINIT(int testmode) {
         Release(hospitalLock);    
         
         print("Creating ");
-            print(itoa(numPatients));
+            print(itoa(numPatients,str));
             print(" Patients\n");
         for(i=0;i<numPatients;i++)
         {
@@ -1008,7 +1014,7 @@ void HospINIT(int testmode) {
             numDoorboys = numDoctors;
             
             print("Creating ");
-            print(itoa(numDoorboys));
+            print(itoa(numDoorboys,str));
             print(" Doorboys\n");
             
             for(i=0;i<numDoorboys;i++)
@@ -1025,7 +1031,7 @@ void HospINIT(int testmode) {
             /*5. Pharmacys */
         numClerks= (1267 % (MAX_CLERKS - MIN_CLERKS +1) + MIN_CLERKS) ;
             print("Creating ");
-            print(itoa(numClerks));
+            print(itoa(numClerks,str));
             print(" Clerks\n");
         for(i=0;i<numClerks;i++)
         {
@@ -1036,7 +1042,7 @@ void HospINIT(int testmode) {
         
         /*1. Doctors */
         print("Creating ");
-        print(itoa(numDoctors));
+        print(itoa(numDoctors,str));
         print(" Doctors\n");
         for(i=0;i<numDoctors;i++)
         {   
@@ -1049,7 +1055,7 @@ void HospINIT(int testmode) {
         Release(hospitalLock);    
         
             print("Creating ");
-            print(itoa(numPatients));
+            print(itoa(numPatients,str));
             print(" Patients\n");
         
         for(i=0;i<numPatients;i++)
@@ -1070,7 +1076,7 @@ void HospINIT(int testmode) {
 
         numRecp = (1267 % (RECP_MAX - RECP_MIN +1) + RECP_MIN) ;
         print("Creating ");
-        print(itoa(numRecp));
+        print(itoa(numRecp,str));
         print(" Receptionists\n");
         for(i=0; i<numRecp; i++)
         {
@@ -1082,7 +1088,7 @@ void HospINIT(int testmode) {
         numCashiers = (1267 % (MAX_CASHIER - MIN_CASHIER +1) + MIN_CASHIER) ;
             
             print("Creating ");
-            print(itoa(numCashiers));
+            print(itoa(numCashiers,str));
             print(" Cashiers\n");
         
         for(i=0;i<numCashiers;i++)
@@ -1097,7 +1103,7 @@ void HospINIT(int testmode) {
             numDoorboys = numDoctors;
             
             print("Creating ");
-            print(itoa(numDoorboys));
+            print(itoa(numDoorboys,str));
             print(" Doorboys\n");
             
             for(i=0;i<numDoorboys;i++)
@@ -1118,7 +1124,7 @@ void HospINIT(int testmode) {
         
             /*1. Doctors */
             print("Creating ");
-            print(itoa(numDoctors));
+            print(itoa(numDoctors,str));
             print(" Doctors\n");
            
        
@@ -1137,7 +1143,7 @@ void HospINIT(int testmode) {
         
         
             print("Creating ");
-            print(itoa(numPatients));
+            print(itoa(numPatients,str));
             print(" Patients\n");
         
         for(i=0;i<numPatients;i++)
@@ -1159,7 +1165,7 @@ void HospINIT(int testmode) {
         numRecp = (1267 % (RECP_MAX - RECP_MIN +1) + RECP_MIN) ;
         
         print("Creating ");
-        print(itoa(numRecp));
+        print(itoa(numRecp,str));
         print(" Receptionists\n");
         
         for(i=0; i<numRecp; i++)

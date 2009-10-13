@@ -7,8 +7,7 @@
  *
  */
 
-char* itoa(int a){
-    static char str[50];
+char* itoa(int a, char *str){
     int i = 49;
     do{
         str[i] = '0'+ a%10;
