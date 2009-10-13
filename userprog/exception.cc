@@ -511,13 +511,16 @@ void WaitCV_Syscall(CVId cvId, LockId lockId){
         //Set wait on this condition variable
     DEBUG('a',"%s: WaitCV_Syscall: Called for CVId: %d lockId %d .\n", 
           currentThread->getName(), cvId, lockId);
+    printf("%s: WaitCV_Syscall: Called for CVId: %d lockId %d .\n", 
+           currentThread->getName(), cvId, lockId);
     CV->counter++;
     locksTableLock->Release();
     CVTableLock->Release();
     (void) CV->cv->Wait(ConditionLockWrapper->lock);
 
     CVTableLock->Acquire();
-    CV->counter--;
+    
+    printf("current counter: %d",CV->counter--);
     CVTableLock->Release();
 }
 
@@ -540,18 +543,6 @@ void SignalCV_Syscall(CVId cvId, LockId lockId){
     DEBUG('a',"%s: SignalCV_Syscall: Called for CVId: %d lockId %d .\n", 
           currentThread->getName(), cvId, lockId);
     (void) CV->cv->Signal(ConditionLockWrapper->lock);
-    if (CV->mark && CV->counter == 0) {
-            //We can delete
-        delete CV->cv;
-        delete CV;
-        DEBUG('a',"%s : DestroyCondition_Syscall: Successfully deleted CV %d .\n",
-              currentThread->getName(), cvId);
-    }else {
-            //Cannot delete need to persist just mark for deletion
-        CV->mark = true;
-        DEBUG('a',"%s: DestroyCondition_Syscall: marked CV %d for deletion.\n",
-              currentThread->getName(), cvId);
-    }
     CVTableLock->Release();
     locksTableLock->Release();
 }

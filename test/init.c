@@ -227,10 +227,10 @@ void doctor(ID){
        		
        	}
         else
-            if(1267 % 100 > 49) { /* go on break */
+            if(15 % 100 > 49) { /* go on break */
                 doctorBreak = 1;
                     /* 5-15 yields */
-                numYields = 5 + (1267 % 11);
+                numYields = 5 + (15 % 11);
                 
                     /* provide a handle for test 8, only uses doctor 0 */
                 if(ID == 0 && test_state == 8 ) { 
@@ -293,20 +293,20 @@ void doctor(ID){
         print("D_");
         print(itoa(ID, str));
         print(": Now Consulting patient\n");
-        numYields = 10 + (1267 % 11);
+        numYields = 10 + (15 % 11);
         for(i=0; i < numYields; ++i) {
             Yield();  /* I see ... mm hmm ... does it hurt here? ... */
         }
         
             /* give prescription to patient */
-        doctors[ID].prescription = 1267 % 100;
+        doctors[ID].prescription = 15 % 100;
         
             /* put consultation fees into the data structure for the cashier ($50-$250) */
         print("D_");
         print(itoa(ID, str));
         print(": Telling fee to cashiers\n");
         
-        consultFee = (50 + (1267 % 201));
+        consultFee = (50 + (15 % 201));
         Acquire(feeListLock);
         List_Append(&feeList,doctors[ID].patientToken, consultFee);
         Release(feeListLock);
@@ -541,7 +541,7 @@ void hospitalManager(int ID) {
     print(itoa(ID, str));
     print(": Alive\n");
     
-    sleeptime = 1267 % 30000;
+    sleeptime = 15 % 30000;
     while (1) {
         if (test_state == 51 || test_state == 52 || test_state == 53) {
                 /*The patients will always be there in the system. */
@@ -563,7 +563,7 @@ void hospitalManager(int ID) {
         }
         Release(hospitalLock);
         
-        sleeptime = 1267 % 30000;
+        sleeptime = 15 % 30000;
             /*Sleep for some random amount of time */
        print("H_");
 	  print(itoa(ID, str));
@@ -825,7 +825,7 @@ void HospINIT(int testmode) {
             /*cout << "Simulation startup\n\n"; */
         
             /*3. Cashiers */
-        numCashiers = (1267 % (MAX_CASHIER - MIN_CASHIER +1) + MIN_CASHIER) ;
+        numCashiers = (15 % (MAX_CASHIER - MIN_CASHIER +1) + MIN_CASHIER) ;
                print("Creating ");
             	 print(itoa(numCashiers,str));
                print("Cashiers\n");
@@ -838,7 +838,7 @@ void HospINIT(int testmode) {
         }
         
             /*4. DoorBoys */
-        numDoctors = (1267 % (MAX_DOCTORS - MIN_DOCTORS + 1) + MIN_DOCTORS);
+        numDoctors = (15 % (MAX_DOCTORS - MIN_DOCTORS + 1) + MIN_DOCTORS);
         if(test1active == 0){
             numDoorboys = numDoctors;
             print("Creating ");
@@ -853,7 +853,7 @@ void HospINIT(int testmode) {
             print("Bypassing Doorboy Creation\n");
         }
         /*5. Pharmacys */
-        numClerks= (1267 % (MAX_CLERKS - MIN_CLERKS +1) + MIN_CLERKS) ;
+        numClerks= (15 % (MAX_CLERKS - MIN_CLERKS +1) + MIN_CLERKS) ;
             print("Creating ");
             print(itoa(numClerks,str));
             print(" Clerks\n");
@@ -874,7 +874,7 @@ void HospINIT(int testmode) {
         
         
             /*7. Patients */
-        numPatients = 1267 % (MAX_PATIENTS - MIN_PATIENTS +1) + MIN_PATIENTS; 
+        numPatients = 15 % (MAX_PATIENTS - MIN_PATIENTS +1) + MIN_PATIENTS; 
         Acquire(hospitalLock);
         peopleInHospital = numPatients;
         Release(hospitalLock);    
@@ -902,7 +902,7 @@ void HospINIT(int testmode) {
         
         
             /*2. Receptionists */
-        numRecp = (1267 % (RECP_MAX - RECP_MIN +1) + RECP_MIN) ;
+        numRecp = (15 % (RECP_MAX - RECP_MIN +1) + RECP_MIN) ;
             print("Creating ");
             print(itoa(numRecp,str));
             print(" Receptionists\n");
@@ -923,7 +923,7 @@ void HospINIT(int testmode) {
         
         
             /*3. Cashiers */
-        numCashiers = (1267 % (MAX_CASHIER - MIN_CASHIER +1) + MIN_CASHIER) ;
+        numCashiers = (15 % (MAX_CASHIER - MIN_CASHIER +1) + MIN_CASHIER) ;
             print("Creating ");
             print(itoa(numCashiers,str));
             print(" Cashiers\n");
@@ -935,7 +935,7 @@ void HospINIT(int testmode) {
         }
         
             /*4. DoorBoys */
-        numDoctors = (1267 % (MAX_DOCTORS - MIN_DOCTORS + 1) + MIN_DOCTORS);
+        numDoctors = (15 % (MAX_DOCTORS - MIN_DOCTORS + 1) + MIN_DOCTORS);
         if(test1active == 0){
             numDoorboys = numDoctors;
             print("Creating ");
@@ -954,7 +954,7 @@ void HospINIT(int testmode) {
         
         
             /*5. Pharmacys */
-        numClerks= (1267 % (MAX_CLERKS - MIN_CLERKS +1) + MIN_CLERKS) ;
+        numClerks= (15 % (MAX_CLERKS - MIN_CLERKS +1) + MIN_CLERKS) ;
         
             print("Creating ");
             print(itoa(numClerks,str));
@@ -979,7 +979,7 @@ void HospINIT(int testmode) {
         
         
             /*7. Patients */
-        numPatients = 1267 % (MAX_PATIENTS - MIN_PATIENTS +1) + MIN_PATIENTS; 
+        numPatients = 15 % (MAX_PATIENTS - MIN_PATIENTS +1) + MIN_PATIENTS; 
         Acquire(hospitalLock);
         peopleInHospital = numPatients;
         Release(hospitalLock);    
@@ -1006,17 +1006,17 @@ void HospINIT(int testmode) {
             /*2. No Receptionists */
        
 
-        numRecp = (1267 % (RECP_MAX - RECP_MIN +1) + RECP_MIN) ;
+        numRecp = (15 % (RECP_MAX - RECP_MIN +1) + RECP_MIN) ;
         
     }else if (testmode == 52) {
         i = 0;
               
                     /*3. No Cashiers */
-        numCashiers = (1267 % (MAX_CASHIER - MIN_CASHIER +1) + MIN_CASHIER) ;
+        numCashiers = (15 % (MAX_CASHIER - MIN_CASHIER +1) + MIN_CASHIER) ;
         
         
             /*4. DoorBoys */
-        numDoctors = (1267 % (MAX_DOCTORS - MIN_DOCTORS + 1) + MIN_DOCTORS);
+        numDoctors = (15 % (MAX_DOCTORS - MIN_DOCTORS + 1) + MIN_DOCTORS);
         if(test1active == 0){
             numDoorboys = numDoctors;
             
@@ -1036,7 +1036,7 @@ void HospINIT(int testmode) {
         
         
             /*5. Pharmacys */
-        numClerks= (1267 % (MAX_CLERKS - MIN_CLERKS +1) + MIN_CLERKS) ;
+        numClerks= (15 % (MAX_CLERKS - MIN_CLERKS +1) + MIN_CLERKS) ;
             print("Creating ");
             print(itoa(numClerks,str));
             print(" Clerks\n");
@@ -1056,7 +1056,7 @@ void HospINIT(int testmode) {
             Fork(createDoctor);
         }
         /*7. Patients */
-        numPatients = 1267 % (MAX_PATIENTS - MIN_PATIENTS +1) + MIN_PATIENTS; 
+        numPatients = 15 % (MAX_PATIENTS - MIN_PATIENTS +1) + MIN_PATIENTS; 
         Acquire(hospitalLock);
         peopleInHospital = numPatients;
         Release(hospitalLock);    
@@ -1081,7 +1081,7 @@ void HospINIT(int testmode) {
         
             /*2. Receptionists */
 
-        numRecp = (1267 % (RECP_MAX - RECP_MIN +1) + RECP_MIN) ;
+        numRecp = (15 % (RECP_MAX - RECP_MIN +1) + RECP_MIN) ;
         print("Creating ");
         print(itoa(numRecp,str));
         print(" Receptionists\n");
@@ -1092,7 +1092,7 @@ void HospINIT(int testmode) {
     }else if (testmode == 53) {
         i = 0;
         /*3. Cashiers */
-        numCashiers = (1267 % (MAX_CASHIER - MIN_CASHIER +1) + MIN_CASHIER) ;
+        numCashiers = (15 % (MAX_CASHIER - MIN_CASHIER +1) + MIN_CASHIER) ;
             
             print("Creating ");
             print(itoa(numCashiers,str));
@@ -1105,7 +1105,7 @@ void HospINIT(int testmode) {
         }
         
             /*4. DoorBoys */
-        numDoctors = (1267 % (MAX_DOCTORS - MIN_DOCTORS + 1) + MIN_DOCTORS);
+        numDoctors = (15 % (MAX_DOCTORS - MIN_DOCTORS + 1) + MIN_DOCTORS);
         if(test1active == 0){
             numDoorboys = numDoctors;
             
@@ -1127,7 +1127,7 @@ void HospINIT(int testmode) {
         
         
             /*5. No Pharmacy clerks */
-        numClerks = (1267 % (MAX_CLERKS - MIN_CLERKS +1) + MIN_CLERKS) ;        
+        numClerks = (15 % (MAX_CLERKS - MIN_CLERKS +1) + MIN_CLERKS) ;        
         
             /*1. Doctors */
             print("Creating ");
@@ -1143,7 +1143,7 @@ void HospINIT(int testmode) {
         
         
             /*7. Patients */
-        numPatients = 1267 % (MAX_PATIENTS - MIN_PATIENTS +1) + MIN_PATIENTS; 
+        numPatients = 15 % (MAX_PATIENTS - MIN_PATIENTS +1) + MIN_PATIENTS; 
         Acquire(hospitalLock);
         peopleInHospital = numPatients;
         Release(hospitalLock);    
@@ -1169,7 +1169,7 @@ void HospINIT(int testmode) {
         Fork(createHospitalManager);   
         /*2. Receptionists */
 
-        numRecp = (1267 % (RECP_MAX - RECP_MIN +1) + RECP_MIN) ;
+        numRecp = (15 % (RECP_MAX - RECP_MIN +1) + RECP_MIN) ;
         
         print("Creating ");
         print(itoa(numRecp,str));
@@ -1212,8 +1212,9 @@ int test7(){
 }
 
 
-int main(){
+int main(int argc, char** argv){
     int i;
+    char inp[20];
     print("Hello World\n");    
     testlock = CreateLock("TestLock");
     TokenCounterLock = CreateLock("TokenCounterLock");
@@ -1261,7 +1262,74 @@ int main(){
     for (i=0; i<totalHospMan; i++) {
     }
     
-    HospINIT(testmode);
+    Read(inp, 20, ConsoleInput);
+    print(inp);
+    switch (*(inp) ) {
+        case '0':
+            HospINIT(0);
+            
+            break;
+        case '1':
+            test1();
+            
+            break;
+        case '2':
+            test2();
+            
+            break;    
+        case '3':
+            HospINIT(3);
+            
+            break;
+        case '4':
+            test4();
+            
+            break;
+        case '5':
+            if(*(*(argv+1)+1) == '1'){
+                HospINIT(51);
+                break;    
+            } if(*(*(argv+1)+1) == '2'){ 
+                HospINIT(52);
+            
+                break;
+            }if(*(*(argv+1)+1) == '3'){
+                HospINIT(53);
+                break;
+            }
+            break;
+        case '6':
+            HospINIT(6);
+            
+            break;
+        case '7':
+            test7();
+            
+            break;
+        case '8':
+            HospINIT(8);
+            
+            break;
+        case '9':
+            HospINIT(9);
+            
+            break;
+        case 10:
+            if(*(*(argv+1)+1) == '0'){
+                HospINIT(10);
+                break;    
+            } if(*(*(argv+1)+1) == '1'){ 
+                HospINIT(11);
+            
+                break;
+            }
+            break;
+        default:
+            HospINIT(0);
+            break;
+    }
+    
+       /*HospINIT(testmode);*/
     
     for(i=0;i<100;i++)
         Yield();
