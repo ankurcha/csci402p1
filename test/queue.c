@@ -7,6 +7,20 @@
 #include "print.c"
 #include "queue.h"
 
+void Init_Queue(Queue* q) {
+    int i = 0;
+
+    q->head = -1;
+    q->tail = -1;
+    
+    while(i < q->length) {
+        q->queue[i].next = -1
+        q->queue[i].valid = 0;
+    }
+
+    return;
+}
+
 void Queue_Push(Queue* q, int value) {
     int i = 0;
 
@@ -66,6 +80,17 @@ int Queue_Pop(Queue* q) {
     q->queue[temp].next = -1;
 
     return q->queue[temp].value;
+}
+
+char Queue_IsEmpty(Queue* q) {
+    if(q->head == -1) {
+        if(q->tail != -1) {
+            print("ERROR: queue is headless! run for your lives!\n");
+        }
+        return 1;
+    } else {
+        return 0;
+    }
 }
 
 
