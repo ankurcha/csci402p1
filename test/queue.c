@@ -14,7 +14,7 @@ void Init_Queue(Queue* q) {
     q->tail = -1;
     
     while(i < q->length) {
-        q->queue[i].next = -1
+        q->queue[i].next = -1;
         q->queue[i].valid = 0;
     }
 
