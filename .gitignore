@@ -1,5 +1,1 @@
-*.o
-nachos
-*.*~
-*.s
-nbproject
+.o
