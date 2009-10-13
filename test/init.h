@@ -92,7 +92,7 @@ int List_getValue(List *l,int key){
         }
         temp++;
     }
-    print("Key now found in list");
+    print("Key not found in list");
     return -1;
 }
 

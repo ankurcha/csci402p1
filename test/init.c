@@ -308,7 +308,7 @@ void doctor(ID){
         
         consultFee = (50 + (15 % 201));
         Acquire(feeListLock);
-        List_Append(&feeList,doctors[ID].patientToken, consultFee);
+        List_Append(&feeList, doctors[ID].patientToken, consultFee);
         Release(feeListLock);
         
             /* pass the prescription to the patient and wait for them to leave */
@@ -1233,6 +1233,7 @@ int main(int argc, char** argv){
     wakingDoctorList.tail = -1; 
     Init_Queue(&wakingDoctorList);
     creationLock = CreateLock("creationLock");
+    feeList.head = 0;
         /*Initialize datastructures for all the threads
         //1. Patients don't need initialization
         //2. Receptionists
@@ -1261,7 +1262,7 @@ int main(int argc, char** argv){
     print("Initializing Hospital Manager\n");
     for (i=0; i<totalHospMan; i++) {
     }
-    
+    print("Enter Testcase option: ");
     Read(inp, 20, ConsoleInput);
     switch (*(inp) ) {
         case '0':
