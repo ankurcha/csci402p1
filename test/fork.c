@@ -1,5 +1,5 @@
 #include "syscall.h"
-#include "print.h"
+#include "print.c"
 void func1( ){
     print("Forked func1, yielding for 1 cycle");
   Yield();
