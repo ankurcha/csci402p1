@@ -1266,7 +1266,6 @@ int main(int argc, char** argv){
     }
     
     Read(inp, 20, ConsoleInput);
-    print(inp);
     switch (*(inp) ) {
         case '0':
             HospINIT(0);
@@ -1285,14 +1284,14 @@ int main(int argc, char** argv){
             
             break;
         case '5':
-            if(*(inp+2) == '1'){
+            if(*(inp+1) == '1'){
                 HospINIT(51);
                 break;    
-            } if(*(inp+2) == '2'){ 
+            } if(*(inp+1) == '2'){ 
                 HospINIT(52);
             
                 break;
-            }if(*(inp+2) == '3'){
+            }if(*(inp+1) == '3'){
                 HospINIT(53);
                 break;
             }
@@ -1313,18 +1312,17 @@ int main(int argc, char** argv){
             HospINIT(9);
             
             break;
-        case 10:
-            if(*(inp+2) == '0'){
+        case '1':
+            if(*(inp+1) == '0'){
                 HospINIT(10);
                 break;    
-            } if(*(inp+2) == '1'){ 
+            } if(*(inp+1) == '1'){ 
                 HospINIT(11);
                 break;
+            }else {
+                test1();
+                break;
             }
-            break;
-        case '1':
-            test1();            
-            break;
         default:
             HospINIT(0);
             break;

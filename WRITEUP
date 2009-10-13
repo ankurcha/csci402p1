@@ -573,7 +573,19 @@ IV. Implementation:
             int test2()
             int test4()
             int test7()
-         test/
+         test/acquire.c
+         test/createcv.c
+         test/destroycv.c
+         test/destroylock.c
+         test/exec.c
+         test/exectest.c
+         test/fork.c
+         test/itoa.c
+            itoa()
+         test/lockcreate.c
+         test/print.c
+            print()
+         test/printtest.c
 
     + Functions modified and in which file.
         
@@ -752,7 +764,7 @@ VII. Miscellaneous:
     think that this design is superior because under most conditions (< max
     stacks allocated) if a stack overflows, it overflows into unallocated area,
     which will cause a segfault, rather than overwriting the data area,
-    followed by the code area, which could result in some very difficutl to
+    followed by the code area, which could result in some very difficult to
     explain bugs, if you were not looking for a stack overflow.
 
 
