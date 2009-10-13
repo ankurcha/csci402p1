@@ -1203,12 +1203,12 @@ int test7(){
 
 
 int main(){
-	  int i=0;
+    int i;
     testlock = CreateLock("TestLock");
     TokenCounterLock = CreateLock("TokenCounterLock");
     recpLineLock = CreateLock("recpLineLock");
-    feeListLock = CreateLock("feeListLock")
-    feeList = (linkedlist*) malloc(sizeof(linkedlist));
+    feeListLock = CreateLock("feeListLock");
+    feeList /*= (linkedlist*) malloc(sizeof(linkedlist))*/;
     cashierLineLock = CreateLock("cashierLineLock");
     feesPaidLock = CreateLock("feesPaidLock");
     ClerkLinesLock= CreateLock("ClerkLineLock");
@@ -1216,7 +1216,8 @@ int main(){
     hospitalLock = CreateLock("HospitalLock");
     doorboyLineLock = CreateLock("doorboyLineLock");
     doorboyLineCV = CreateCondition("doorboyLineCV");
-    wakingDoctorList = (List*) malloc(sizeof(List));
+    wakingDoctorList = {&wakingdoctor_element, MAX_PATIENTS,-1,-1}; 
+    Init_Queue(&wakingDoctorList);
     creationLock = CreateLock("creationLock");
         /*Initialize datastructures for all the threads
         //1. Patients don't need initialization
