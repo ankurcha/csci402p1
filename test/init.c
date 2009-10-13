@@ -294,7 +294,7 @@ void doctor(ID){
         print(": Now Consulting patient\n");
         numYields = 10 + (Random() % 11);
         for(i=0; i < numYields; ++i) {
-            currentThread->Yield();  /* I see ... mm hmm ... does it hurt here? ... */
+            Yield();  /* I see ... mm hmm ... does it hurt here? ... */
         }
         
             /* give prescription to patient */
@@ -1000,11 +1000,8 @@ void HospINIT(int testmode = 0) {
         
     }else if (testmode == 52) {
         i = 0;
-        Thread *t;   
-        
-        
-        
-            /*3. No Cashiers */
+              
+                    /*3. No Cashiers */
         numCashiers = (Random() % (MAX_CASHIER - MIN_CASHIER +1) + MIN_CASHIER) ;
         
         
@@ -1206,6 +1203,7 @@ int test7(){
 
 
 int main(){
+	  int i=0;
     testlock = CreateLock("TestLock");
     TokenCounterLock = CreateLock("TokenCounterLock");
     recpLineLock = CreateLock("recpLineLock");
