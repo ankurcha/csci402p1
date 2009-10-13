@@ -293,9 +293,13 @@ IV. Implementation:
         test/fork.c
         test/halt.c
         test/itoa.c
+        test/init.c
+        test/init.h
         test/lockcreate.c
         test/print.c
         test/printtest.c
+        test/queue.c
+        test/queue.h
 
     + Data Structures added, and the file they were added to.
         userprog/addrspace.cc
@@ -307,6 +311,9 @@ IV. Implementation:
         userprog/exception.cc
             struct LockWrapper
             struct ConditionWrapper
+        test/queue.h
+            struct queue_element
+            struct Queue
             
     + Data Structures modified, and the file they were added to.
         userprog/addrspace.cc/h: 
@@ -342,7 +349,11 @@ IV. Implementation:
                 
             
     + Functions added and in which file.
-        
+        test/print.c
+            print
+        test/queue.h/c
+            Queue_Push
+            Queue_Pop
 
     + Functions modified and in which file.
         
