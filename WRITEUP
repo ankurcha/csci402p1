@@ -652,6 +652,7 @@ V. Testing: (For each test case, you must show)
         We test that the Exec system call and also test that concurrent instances
         of the hospital simulation can be started using exec() and will continue
         to work without any problems
+                %userprog/nachos -x ../test/multih
 
         *Test cases form Project 1 are also carried to this Project and are invoked
         via a command line argument to nachos

@@ -1218,7 +1218,6 @@ int test7(){
 int main(int argc, char** argv){
     int i;
     char inp[20];
-    print("Hello World\n");    
     testlock = CreateLock("TestLock");
     TokenCounterLock = CreateLock("TokenCounterLock");
     recpLineLock = CreateLock("recpLineLock");

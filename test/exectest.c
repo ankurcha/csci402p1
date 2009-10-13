@@ -2,6 +2,6 @@
 #include "print.c"
 
 main(){
-  print("Hello World");
+  print("Hello World\n");
   Exit(-1);
 }
