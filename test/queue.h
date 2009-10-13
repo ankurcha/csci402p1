@@ -20,7 +20,7 @@ struct Queue{
     int length = -1;
     int head = -1;
     int tail = -1;
-}
+};
 
 typedef struct Queue Queue;
 
