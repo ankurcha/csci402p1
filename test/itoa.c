@@ -1,6 +1,7 @@
 /*
- *  itoa.cc
+ *  itoa.c
  *  
+ *  Provide conversions between strings and ints
  *
  *  Created by Ankur Chauhan on 10/10/09.
  *
@@ -28,3 +29,21 @@ char* itoa(int a, char *str){
 
     return str;
 }
+
+int atoi(char* str) {
+    int sum = 0;
+    char neg = 0;
+    int i = 0;
+
+    /* clear out the non-int stuff */
+    while(str[i] != 0) {
+        if(str[i] == '-' || (str[i] >= '0' && str[i] <= '9')) {
+            break;
+        }
+        i++
+    }
+
+    while(str[i] != 0) {
+    }
+}
+
