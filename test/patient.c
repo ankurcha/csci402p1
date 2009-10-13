@@ -60,8 +60,7 @@ void patients(int ID){
     }
     
     if (test4active == 1) {
-        print("P_");
-        print(itoa(ID));
+        print("P_");print(itoa(ID));
         print(":TEST4: Found shortest line with R_");
         print(itoa(shortestline));print(" len: ");print(itoa(len));
         print("\n");
