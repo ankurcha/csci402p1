@@ -151,7 +151,7 @@ void doorboy(ID){
     print("DB_");
     print(itoa(ID, str));
     print(":Dying...AAAaaaahhhhhhhhh!!\n");
-   
+    Exit(0);
     
 }
 
@@ -328,6 +328,7 @@ void doctor(ID){
 
         
     } /*end while */
+    Yield();
 }
 
 void receptionist(int ID){
@@ -366,7 +367,8 @@ void receptionist(int ID){
 
         Acquire(TokenCounterLock);
         print("R_");
-        print(itoa(ID, str));
+        itoa(ID, str)
+        print(str);
         print(": Generating Token...\n");
         
         
@@ -388,6 +390,8 @@ void receptionist(int ID){
         Release(receptionists[ID].transLock);
 
     }
+    
+    Yield();
     
 }
 
@@ -456,6 +460,7 @@ void cashier(int ID) {
         
         Release(cashiers[ID].transLock);
     }
+    Exit(0);
 }
 
 
@@ -521,6 +526,7 @@ void clerk(int ID){
         
         Release(clerks[ID].ClerkTransLock);
     }
+    Exit(0);
 }
 
 
@@ -731,6 +737,7 @@ void hospitalManager(int ID) {
             }
         }        
     }
+    Exit(0);
 }
 
 void createPatient(){
@@ -1255,4 +1262,7 @@ int main(){
     }
     
     HospINIT(testmode);
+    
+    for(i=0;i<100;i++)
+        Yield();
 }
