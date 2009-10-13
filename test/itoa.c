@@ -40,10 +40,24 @@ int atoi(char* str) {
         if(str[i] == '-' || (str[i] >= '0' && str[i] <= '9')) {
             break;
         }
-        i++
+        i++;
     }
 
-    while(str[i] != 0) {
+    /* read the int */
+    if(str[i] == '-') {
+        neg = 1;
+        i++;
     }
+    while(str[i] >= '0' && str[i] <= '9') {
+        sum *= 10;
+        sum += str[i] - '0';
+        i++;
+    }
+
+    if(neg) {
+        sum *= -1;
+    }
+
+    return sum;
 }
 
