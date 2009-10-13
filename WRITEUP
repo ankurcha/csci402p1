@@ -269,6 +269,15 @@ III. Design:
 
     Part 3:
         
+The hospital simulation of the project is composed of 3 main files namely
+init.h, init.c and patient.c As this is a direct port of the the project 1 part
+3, It behaves in exactly the same way.
+
+The init.h file contains the different header file declaration, declaration of all the data structures and the variables that would be used throughout the program.
+The important parts of the simulation consist of the 7 functions that define the threads corresponding to the actors present in the hospital, as well as the HospINIT function which brings all the threads to life. These functions are stored in the init.c file and provides the functionality to the different entities in the simulation.
+
+
+
 
 IV. Implementation:
 
