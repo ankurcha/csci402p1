@@ -11,14 +11,14 @@ char* itoa(int a, char *str){
     int j = 0;
     char rts[50];
 
-    // print the string in reverse
+    /* print the string in reverse */
     do{
         rts[i] = '0'+ a%10;
         i++;
     }while((a=a/10) && i < 49);
     i--;
 
-    // reverse it into the output, now it is forward
+    /* reverse it into the output, now it is forward */
     while(i >= 0 && j < 32) {
         str[j] = rts[i];
         i--;
