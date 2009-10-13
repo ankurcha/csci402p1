@@ -516,6 +516,9 @@ void clerk(int ID){
             print(itoa(clerks[ID].fee,str));
             print(" Dollars\n");
         
+        if(clearks[ID].payment != clerks[ID].fee) {
+            print("ERROR: patient did not pay for medicine\n";
+        }
         
             /* add this payment to our total collected */
         Acquire(PaymentLock);
