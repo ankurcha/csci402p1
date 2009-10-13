@@ -10,6 +10,7 @@
 #include "syscall.h"
 #include "queue.h"
 #include "itoa.c"
+#include "print.c"
 
 #define BUSY 0
 #define FREE 1
@@ -90,7 +91,7 @@ int List_getValue(List *l,int key){
         }
         temp++;
     }
-    print("Key now found in list");
+    printf("Key now found in list");
     return -1;
 }
 
@@ -173,10 +174,10 @@ void __Cashier(Cashier *cash) {
     cash->breakCV = CreateCondition("Cashier.breakCV");
 }
 void _Cashier(Cashier *cash) {
-    DestroyCondition( cash->lineCV );
-    DestroyLock( cash->transLock );
-    DestroyCondition( cash->transCV );
-    DestroyCondition( cash->breakCV );
+    destroyCondition( cash->lineCV );
+    destroyLock( cash->transLock );
+    destroyCondition( cash->transCV );
+    destroyCondition( cash->breakCV );
 }
 LockId ClerkLinesLock;
 LockId PaymentLock;
@@ -204,7 +205,7 @@ void __PharmacyClerks(PharmacyClerks *pcl){
     pcl-> patientsInLine= 0;
     pcl->state=FREE;
     pcl->payment=0;
-    pcl->fee = 3;/* Randomly generated using a die*/
+    pcl->fee=(int)(Random())%100;
     pcl->patPrescription=0;
     
     pcl->ClerkCV = CreateCondition("ClerkCV");
@@ -241,11 +242,11 @@ void __Doctor(Doctor *doc) {
     doc->transCV = CreateCondition("Doctor.transCV");
 }
 void _Doctor(Doctor *doc) {
-    DestroyLock(doc->LineLock);
-    DestroyCondition(doc->LineCV);
-    DestroyCondition(doc->doorboyBreakCV);
-    DestroyLock(doc->transLock);
-    DestroyLock(doc->transCV);
+    destroyLock(doc->LineLock);
+    destroyCondition(doc->LineCV);
+    destroyCondition(doc->doorboyBreakCV);
+    destroyLock(doc->transLock);
+    destroyLock(doc->transCV);
 }
 /* globals to track the queue of doorboys waiting to service doctors */
 LockId doorboyLineLock;
