@@ -273,7 +273,6 @@ void kernel_thread(int virtAddr){
         DEBUG('a', "%s: Unable to allocate stack for the new process\n",currentThread->getName());
             // Kill Process and all its children
     //    currentThread->space->killAllThreads();
-        cout<<"killed\n";
         return;
     }
     machine->Run();
@@ -311,7 +310,6 @@ spaceId Exec_Syscall(char *filename){
     std::string cname = currentThread->space->readCString(filename);
     char *c_name = new char[cname.size()+1];
     strcpy(c_name, cname.c_str());
-    cout << "Exec_Syscall: Arg: " <<c_name<<endl;
     OpenFile *executable = fileSystem->Open(c_name);
     if(!executable){
         DEBUG('a',"%s: Unable to open file %s .\n", currentThread->getName(),c_name);
@@ -359,7 +357,6 @@ void Yield_Syscall(){
 LockId CreateLock_Syscall(char* name){
     DEBUG('a',"%s: CreateLock_Syscall initiated.\n", currentThread->getName());
     locksTableLock->Acquire();
-    cout<<"Create Lock\n";
     std::string cname = currentThread->space->readCString(name);
     char *c_name = new char[cname.size()+1];
     strcpy(c_name, cname.c_str());
@@ -416,6 +413,7 @@ void AcquireLock_Syscall(LockId lockId){
         DEBUG('a',"%s: Lock %d: AcquireLock_Syscall.\n",currentThread->getName(),lockId);
         targetLock->counter++;
         locksTableLock->Release();
+        
         targetLock->lock->Acquire();
         locksTableLock->Acquire();
         targetLock->counter--;
@@ -432,13 +430,6 @@ void ReleaseLock_Syscall(LockId lockId){
     }else{
         DEBUG('a',"%s: Lock %d: ReleaseLock_Syscall.\n",currentThread->getName(),lockId);
         targetLock->lock->Release();
-        //if(targetLock->mark && targetLock->counter == 0){
-//                //Check for deletion
-//            delete targetLock->lock;
-//            delete targetLock;
-//            DEBUG('a',"%s: ReleaseLock_Syscall: Successfully deleted lock %d .\n",
-//                  currentThread->getName(), lockId);
-//        } 
     }
     locksTableLock->Release();
 }
@@ -506,20 +497,21 @@ void WaitCV_Syscall(CVId cvId, LockId lockId){
         CV->cv == NULL) {
         CVTableLock->Release();
         locksTableLock->Release();
+        DEBUG('a',"%s: WaitCV_Syscall: Failed for CVId: %d lockId %d .\n", 
+              currentThread->getName(), cvId, lockId);
+        printf("%s: WaitCV_Syscall: Failed for CVId: %d lockId %d .\n", 
+               currentThread->getName(), cvId, lockId);
         return;
     }
         //Set wait on this condition variable
     DEBUG('a',"%s: WaitCV_Syscall: Called for CVId: %d lockId %d .\n", 
           currentThread->getName(), cvId, lockId);
-    printf("%s: WaitCV_Syscall: Called for CVId: %d lockId %d .\n", 
-           currentThread->getName(), cvId, lockId);
     CV->counter++;
     locksTableLock->Release();
     CVTableLock->Release();
     (void) CV->cv->Wait(ConditionLockWrapper->lock);
 
     CVTableLock->Acquire();
-    
     printf("current counter: %d",CV->counter--);
     CVTableLock->Release();
 }
@@ -536,6 +528,10 @@ void SignalCV_Syscall(CVId cvId, LockId lockId){
         CV->cv == NULL) {
         CVTableLock->Release();
         locksTableLock->Release();
+        DEBUG('a',"%s: WaitCV_Syscall: Failed for CVId: %d lockId %d .\n", 
+              currentThread->getName(), cvId, lockId);
+        printf("%s: WaitCV_Syscall: Failed for CVId: %d lockId %d .\n", 
+               currentThread->getName(), cvId, lockId);
         return;
     }
     
@@ -558,7 +554,10 @@ void BroadcastCV_Syscall(CVId cvId, LockId lockId){
         CV == NULL || 
         ConditionLockWrapper->lock == NULL || 
         CV->cv == NULL) {
-        printf("HELP %d %d",cvId,lockId);
+        DEBUG('a',"%s: WaitCV_Syscall: Failed for CVId: %d lockId %d .\n", 
+              currentThread->getName(), cvId, lockId);
+        printf("%s: WaitCV_Syscall: Failed for CVId: %d lockId %d .\n", 
+               currentThread->getName(), cvId, lockId);
         CVTableLock->Release();
         locksTableLock->Release();
         return;
