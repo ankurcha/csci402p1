@@ -1,11 +1,13 @@
 #include "syscall.h"
 #include "print.c"
+
 void func1(){
-    print("fork");
-  Exit(0);
+    print("func1 forked and running\n");
+    Exit(0);
 }
 
 void main(){
-  Fork(func1);
-  Exit(0);
+    Fork(func1);
+    Yield();
+    Exit(0);
 }
