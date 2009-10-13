@@ -16,6 +16,7 @@ void Init_Queue(Queue* q) {
     while(i < q->length) {
         q->queue[i].next = -1;
         q->queue[i].valid = 0;
+        i++;
     }
 
     return;
@@ -29,6 +30,7 @@ void Queue_Push(Queue* q, int value) {
         if(!q->queue[i].valid) {
             break;
         }
+        i++;
     }
     
     /* verify an open slot was found */
