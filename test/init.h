@@ -104,7 +104,7 @@ int List_IsEmpty(List *l){
 
 }
 /*queue elements for the waking doctors list*/
-queue_element wakingdoctor[MAX_PATIENTS];
+queue_element wakingdoctor_element[MAX_PATIENTS];
 
 LockId testlock;
 /* tokenCounter for assigning tokens to patients */

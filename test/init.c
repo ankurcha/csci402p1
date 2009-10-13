@@ -1219,7 +1219,7 @@ int main(){
     hospitalLock = CreateLock("HospitalLock");
     doorboyLineLock = CreateLock("doorboyLineLock");
     doorboyLineCV = CreateCondition("doorboyLineCV");
-    wakingDoctorList; 
+    wakingDoctorList = {&wakingdoctor_element, MAX_PATIENTS,-1,-1}; 
     creationLock = CreateLock("creationLock");
         /*Initialize datastructures for all the threads
         //1. Patients don't need initialization
