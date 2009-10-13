@@ -1,5 +1,5 @@
 #include "syscall.h"
-#include "print.c"
+#include "print.h"
 
 main() {
     print("LINE 1 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n");
