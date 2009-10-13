@@ -608,13 +608,26 @@ V. Testing: (For each test case, you must show)
       How to run in nachos:
       %userprog/nachos -d + -x ../test/destroycv | grep CV
 
+    -Test Case 6:Testing Exec
+      We test the exec Syscall by write a test file called
+      exec.c which uses the System Call Exec to execute a file
+      called exectest. Exectest is a simple Hello World Program.
+      
+      How to run in nachos:
+      %userprog/nachos -x ../test/exec
 
+    -Test Case 7:Testing Fork
+     We test the Fork System Call by writing a test file called fork.c
+     fork.c Forks a function in the same address space as the current thread.
 
+     How to run in nachos:
+     %userprog/nachos -x ../test/fork
 
-
-
-
-
+    *Test cases form Project 1 are also carried to this Project and are invoked
+    via a command line argument to nachos
+        ./nachos -rs <seed> -x ../test/init <test case number>
+    valid test case number values:
+            1, 2, 3, 4, 51, 52, 53, 6, 7, 8, 9, 10, 11
 
     + Test Output
       
@@ -661,14 +674,60 @@ V. Testing: (For each test case, you must show)
        Here we observe that after the deletion of the CV when
        another Destroy is called it states it is unable to
        find the CV.
+       
+    -Test Case 6:Testing Exec
+      OUTPUT:
+       Exec_Syscall: Arg: ../test/exectest
+       EXECED
+       main: Exit status: 0
+       processTable->processCounter1
+       currentThread->space->childThreads: 0
+       Hello World../test/exectest: Exit status: -1
+       processTable->processCounter1
+       currentThread->space->childThreads: 0
+       No threads ready or runnable, and no pending interrupts.
+       Assuming the program completed.
+       Machine halting!
+      
+      Thus Hello World is printed and the program is exited.
+      
+     -Test Case 7:Testing Fork
+      OUTPUT:
+       Create Lock
+       Forking thread
+       main forked func1
+       main: WaitCV_Syscall: Called for CVId: 0 lockId 0 .
+       func1 forked and running
+       func1 acquired lock
+       func1 Exiting with exit status 0
+       main: Exit status: 0
+       Machine halting!
+       Ticks: total 2474, idle 0, system 900, user 1574
+       Disk I/O: reads 0, writes 0
+       Console I/O: reads 0, writes 0
+       Paging: faults 0
+       Network I/O: packets received 0, sent 0
+       Cleaning up...
 
-
+        *Output for the other 11 test cases from project 1. Please refer Writeup
+        of the project 1 for output details. 
+      
 VI. Discussion:
-    + Experiment expectation.  
+    + Experiment expectation. 
+        The hospital simulation should behave exactly as it it did as in Project
+        Also, As we have completly ported the existing project 1, and as all the
+        test cases that we had made for the previous project have successfulluy
             
     + Experiment result.
-        
+        All the test cases were appropriately implemented and the
+        simulation performed as expected for any given value of -rs. In
+        addition, in order to enable easy tracability of the interactions
+        the verbosity of the threads has been kept high, with almost all
+        interactions being logged to standard output.
+    
     + Explanation
+        As the the expectation and the results match, we conclude that both 
+        the parts have been properly implemented.
 
 VII. Miscellaneous:
     It was not clear to us the options available for the architecture of the
