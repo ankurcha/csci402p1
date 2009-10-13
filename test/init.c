@@ -516,7 +516,7 @@ void clerk(int ID){
             print(itoa(clerks[ID].fee,str));
             print(" Dollars\n");
         
-        if(clearks[ID].payment != clerks[ID].fee) {
+        if(clerks[ID].payment != clerks[ID].fee) {
             print("ERROR: patient did not pay for medicine\n";
         }
         
