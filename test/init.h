@@ -65,7 +65,7 @@ typedef struct list List;
 int List_Append(List* l, int key, int val){
     if (l == 0) {
         return -1;
-
+        
     }
     if(l->head == MAX_PATIENTS + 1){
         print("List is full\n");
@@ -76,7 +76,7 @@ int List_Append(List* l, int key, int val){
         l->head++;
         return 1;
     }
-
+    
 }
 
 
@@ -102,7 +102,7 @@ int List_IsEmpty(List *l){
     }else {
         return 0;
     }
-
+    
 }
 /*queue elements for the waking doctors list*/
 queue_element wakingdoctor_element[MAX_PATIENTS];
@@ -276,4 +276,5 @@ int doctorCount = 0;
 int cashierCount = 0;
 int pharmacyCount = 0;
 int hospitalmanagerCount = 0;
+
 

@@ -184,6 +184,8 @@ III. Design:
         Yield()
             Yield causes the current thread to give up the CPU.
 
+        Random()
+            Generates a random number as per the -rs argument
     Part 2:
         
         AddrSpace class:

@@ -571,6 +571,10 @@ void BroadcastCV_Syscall(CVId cvId, LockId lockId){
     locksTableLock->Release();
 }
 
+int Random_Syscall(){
+    return Random();
+}
+
 void ExceptionHandler(ExceptionType which) {
     int type = machine->ReadRegister(2); // Which syscall?
     int rv=0; 	// the return value from a syscall
@@ -653,6 +657,10 @@ void ExceptionHandler(ExceptionType which) {
             case SC_Broadcast:
                 BroadcastCV_Syscall((CVId) machine->ReadRegister(4),
                                     (LockId) machine->ReadRegister(5));
+                break;
+            case SC_Random:
+                DEBUG('a', "Random syscall.\n");
+                rv = Random_Syscall();
                 break;
 #endif
         }

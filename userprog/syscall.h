@@ -39,6 +39,7 @@
 #define SC_Wait     17
 #define SC_Signal	18
 #define SC_Broadcast 19
+#define SC_Random 20
 
 #define MAXFILENAME 256
 
@@ -187,6 +188,9 @@ void Broadcast(CVId,LockId);
 /* Destroys a Condition Variable already created in the kernel structure.
  */
 void DestroyCondition(CVId id);
+
+/* Generates a random number */
+int Random();
 
 #endif /* IN_ASM */
 
