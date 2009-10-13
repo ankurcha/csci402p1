@@ -320,7 +320,6 @@ spaceId Exec_Syscall(char *filename){
         // Create new Address space and allocate it to the thread.
     t->space = new AddrSpace(executable);
         // Add process to process table.
-    printf("EXECED\n");
     processTable->processCounter++;
     t->setPID(processTable->processCounter);
     DEBUG('a', "%s: New thread created with PID: %d.\n",currentThread->getName(), t->getPID());
@@ -332,8 +331,6 @@ spaceId Exec_Syscall(char *filename){
 void Exit_Syscall(int status){
     cout <<currentThread->getName()<<": Exit status: "<<status<<endl;
     processTableLock->Acquire();
-    cout << "processTable->processCounter"<<processTable->processCounter<<endl;
-    cout << "currentThread->space->childThreads: "<<currentThread->space->childThreads<<endl;
     if (processTable->processCounter == 0 && currentThread->space->childThreads == 1) {
         DEBUG('a', "Exit_Syscall:End of NACHOS\n");
         interrupt->Halt();
@@ -361,7 +358,6 @@ LockId CreateLock_Syscall(char* name){
     currentThread->space->locksTableLock->Acquire();
 
     std::string cname = currentThread->space->readCString(name);
-    cout<<"Lock Name: "<<cname;
     char *c_name = new char[cname.size()+1];
     strcpy(c_name, cname.c_str());
     
@@ -448,7 +444,6 @@ void ReleaseLock_Syscall(LockId lockId){
 CVId CreateCondition_Syscall(char* name){
     DEBUG('a',"%s : CreateCondition_Syscall initialized.\n",currentThread->getName());
     std::string cname = currentThread->space->readCString(name);
-    cout<<"Condition Name: "<<cname<<endl;
     char *c_name = new char[cname.size()+1];
     strcpy(c_name, cname.c_str());    
     Condition *newcon = new Condition(c_name);
