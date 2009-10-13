@@ -13,12 +13,16 @@ struct queue_element{
     char valid = 0;
 };
 
+typedef struct queue_element queue_element;
+
 struct Queue{
     queue_element* queue;
     int length = -1;
     int head = -1;
     int tail = -1;
 }
+
+typedef struct Queue Queue;
 
 /* methods for a FIFO queue */
 
