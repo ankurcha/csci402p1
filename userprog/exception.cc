@@ -499,12 +499,10 @@ void DestroyCondition_Syscall(CVId id){
 void WaitCV_Syscall(CVId cvId, LockId lockId){
     CVTableLock->Acquire();
     locksTableLock->Acquire();
+    
     LockWrapper *ConditionLockWrapper = (LockWrapper*) currentThread->space->locksTable.Get(lockId);
     ConditionWrapper *CV = (ConditionWrapper*) currentThread->space->CVTable.Get(cvId);
-    
-    if (ConditionLockWrapper == NULL || 
-        CV == NULL || 
-        ConditionLockWrapper->lock == NULL || 
+    if (ConditionLockWrapper == NULL || CV == NULL || ConditionLockWrapper->lock == NULL || 
         CV->cv == NULL) {
         CVTableLock->Release();
         locksTableLock->Release();
@@ -520,7 +518,7 @@ void WaitCV_Syscall(CVId cvId, LockId lockId){
 
     CVTableLock->Acquire();
     CV->counter--;
-    locksTableLock->Release();
+    CVTableLock->Release();
 }
 
 void SignalCV_Syscall(CVId cvId, LockId lockId){
@@ -579,8 +577,8 @@ void BroadcastCV_Syscall(CVId cvId, LockId lockId){
     DEBUG('a',"%s: BroadcastCV_Syscall: Called for CVId: %d lockId %d .\n",
           currentThread->getName(), cvId, lockId);
     (void) CV->cv->Broadcast(ConditionLockWrapper->lock);
-    CVTableLock->Acquire();
-    locksTableLock->Acquire();
+    CVTableLock->Release();
+    locksTableLock->Release();
 }
 
 void ExceptionHandler(ExceptionType which) {
