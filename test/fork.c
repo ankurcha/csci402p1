@@ -17,6 +17,7 @@ void func1(){
     print("func1 Exiting with exit status 0\n");
 
     Release(lock);
+    Yield();
     Exit(0);
 }
 

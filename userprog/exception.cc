@@ -432,13 +432,13 @@ void ReleaseLock_Syscall(LockId lockId){
     }else{
         DEBUG('a',"%s: Lock %d: ReleaseLock_Syscall.\n",currentThread->getName(),lockId);
         targetLock->lock->Release();
-        if(targetLock->mark && targetLock->counter == 0){
-                //Check for deletion
-            delete targetLock->lock;
-            delete targetLock;
-            DEBUG('a',"%s: ReleaseLock_Syscall: Successfully deleted lock %d .\n",
-                  currentThread->getName(), lockId);
-        } 
+        //if(targetLock->mark && targetLock->counter == 0){
+//                //Check for deletion
+//            delete targetLock->lock;
+//            delete targetLock;
+//            DEBUG('a',"%s: ReleaseLock_Syscall: Successfully deleted lock %d .\n",
+//                  currentThread->getName(), lockId);
+//        } 
     }
     locksTableLock->Release();
 }
