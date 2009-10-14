@@ -27,12 +27,13 @@ public:
     int processCounter;
     ProcessTable();
     ~ProcessTable();
-    //PID addProcess(Thread*);
-//    void viewProcessTable();
-//    int killProcess(PID);
-//    int getProcessCount(){
-//        return this->table.size();
-//    }
+};
+
+class InvertedPageTable : public TranslationEntry{
+    public:
+        PID pId;    // TO find out who is the owner
+        int age;    // Used for FIFO replacement
+
 };
 
 #endif
@@ -51,6 +52,7 @@ extern Timer *timer;				// the hardware alarm clock
 
 #ifdef CHANGED
 extern ProcessTable *processTable;  // Process Table for Nachos
+extern InvertedPageTable IPT[NumPhysPages];
 #endif
 
 #ifdef USER_PROGRAM

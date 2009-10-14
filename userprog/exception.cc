@@ -58,6 +58,63 @@ struct LockWrapper {
     }
 };
 
+void handlePageFaultException(int badVAddr){
+    IntStatus oldStatus = interrupt->SetLevel(IntOff);
+    stats->numPageFaults++;
+    TranslationEntry Page;
+    int pageIndex = badVAddr / PageSize;
+
+    if(badVAddr < 0){
+        DEBUG('a',"Illegal virtual address in page fault: %d\n",badVAddr);
+        currentThread->Finish();
+    }
+
+    //Search Page table for page entry
+    bool found = false;
+
+    for(int i=0; i<NumPhysPages; i++){
+        TranslationEntry IPTEntry = IPT[i].page;
+        if(IPTEntry.virtualPage == pageIndex && IPTEntry.valid == 1){
+            DEBUG('a', "Found page in IPT\n");
+            Page = IPTEntry;
+            found = true;
+            break;
+        }
+    }
+
+    int targetPage = -1;
+    if(found){
+        for(int i = 0;i<NumPhysPages; i++){
+            if(!IPT[i].valid){
+                targetPage = i;
+                break;
+            }
+        }
+
+        if(targetPage <0){
+            // IPT is full new to swap
+            // Select a page to swap out - FIFO
+            // get the page which is the oldest and swap it out
+            targetPage = 0;
+            for( int = 0; i<NumPhysPages; i++){
+                if(IPT[i].age > IPT[targetPage].age){
+                    // Get the oldest page
+                    targetPage = i;
+                }
+            }
+            DEBUG('a', "Swapping out page# %d for vaddr: %d\n", newPage, badVAddr);
+            // Do the actual swapping out of the page
+
+            IPT[targetPage].valid = false;
+        }else{
+            // Found an empty space in the IPT, no need to swap out
+        }
+    }
+
+
+
+    (void) interrupt->SetLevel(oldLevel);   
+}
 
 int copyin(unsigned int vaddr, int len, char *buf) {
         // Copy len bytes from the current thread's virtual address vaddr.
@@ -663,6 +720,9 @@ void ExceptionHandler(ExceptionType which) {
                 rv = Random_Syscall();
                 break;
 #endif
+        }else if(which == PageFaultException){
+            DEBUG('s',"PageFaultException!\n"); 
+            (void) handlePageFaultException(machine->ReadRegister(39));
         }
         
             // Put in the return value and increment the PC
