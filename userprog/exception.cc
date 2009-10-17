@@ -72,6 +72,8 @@ void handlePageFaultException(int badVAddr){
     //Search Page table for page entry
     bool found = false;
 
+    //TODO: IPT needs to be indexed by a hash table so it is 
+    // fast, should not do a search of all pages
     for(int i=0; i<NumPhysPages; i++){
         TranslationEntry IPTEntry = IPT[i].page;
         if(IPTEntry.virtualPage == pageIndex && IPTEntry.valid == 1){
@@ -84,6 +86,7 @@ void handlePageFaultException(int badVAddr){
 
     int targetPage = -1;
     if(found){
+        //TODO: we have a bitmap to do this
         for(int i = 0;i<NumPhysPages; i++){
             if(!IPT[i].valid){
                 targetPage = i;
@@ -95,6 +98,9 @@ void handlePageFaultException(int badVAddr){
             // IPT is full new to swap
             // Select a page to swap out - FIFO
             // get the page which is the oldest and swap it out
+
+            //TODO: random must be default, multiple methods must be
+            // supported by command line option
             targetPage = 0;
             for( int = 0; i<NumPhysPages; i++){
                 if(IPT[i].age > IPT[targetPage].age){
@@ -103,11 +109,11 @@ void handlePageFaultException(int badVAddr){
                 }
             }
             DEBUG('a', "Swapping out page# %d for vaddr: %d\n", newPage, badVAddr);
-            // Do the actual swapping out of the page
+            //TODO Do the actual swapping out of the page
 
             IPT[targetPage].valid = false;
         }else{
-            // Found an empty space in the IPT, no need to swap out
+            //TODO Found an empty space in the IPT, no need to swap out
         }
     }
 
