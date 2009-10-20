@@ -61,27 +61,26 @@ struct LockWrapper {
 void handlePageFaultException(int badVAddr){
     IntStatus oldStatus = interrupt->SetLevel(IntOff);
     stats->numPageFaults++;
-    TranslationEntry Page;
+    InvertedPageTable Page;
     int pageIndex = badVAddr / PageSize;
-
+    
     if(badVAddr < 0){
         DEBUG('a',"Illegal virtual address in page fault: %d\n",badVAddr);
         currentThread->Finish();
     }
-
-    //Search Page table for page entry
+    
+        //Search Page table for page entry
     bool found = false;
-
+    
     for(int i=0; i<NumPhysPages; i++){
-        TranslationEntry IPTEntry = IPT[i].page;
-        if(IPTEntry.virtualPage == pageIndex && IPTEntry.valid == 1){
+        if(IPT[i].virtualPage == pageIndex && IPT[i].valid == 1){
             DEBUG('a', "Found page in IPT\n");
-            Page = IPTEntry;
+            Page = IPT[i];
             found = true;
             break;
         }
     }
-
+    
     int targetPage = -1;
     if(found){
         for(int i = 0;i<NumPhysPages; i++){
@@ -90,30 +89,30 @@ void handlePageFaultException(int badVAddr){
                 break;
             }
         }
-
+        
         if(targetPage <0){
-            // IPT is full new to swap
-            // Select a page to swap out - FIFO
-            // get the page which is the oldest and swap it out
+                // IPT is full new to swap
+                // Select a page to swap out - FIFO
+                // get the page which is the oldest and swap it out
             targetPage = 0;
-            for( int = 0; i<NumPhysPages; i++){
+            for( int i = 0; i<NumPhysPages; i++){
                 if(IPT[i].age > IPT[targetPage].age){
-                    // Get the oldest page
+                        // Get the oldest page
                     targetPage = i;
                 }
             }
-            DEBUG('a', "Swapping out page# %d for vaddr: %d\n", newPage, badVAddr);
-            // Do the actual swapping out of the page
-
+            DEBUG('a', "Swapping out page# %d for vaddr: %d\n", targetPage, badVAddr);
+                // Do the actual swapping out of the page
+            
             IPT[targetPage].valid = false;
         }else{
-            // Found an empty space in the IPT, no need to swap out
+                // Found an empty space in the IPT, no need to swap out
         }
     }
-
-
-
-    (void) interrupt->SetLevel(oldLevel);   
+    
+    
+    
+    (void) interrupt->SetLevel(oldStatus);   
 }
 
 int copyin(unsigned int vaddr, int len, char *buf) {
@@ -128,19 +127,16 @@ int copyin(unsigned int vaddr, int len, char *buf) {
         result = machine->ReadMem( vaddr, 1, paddr );
         while(!result) // FALL 09 CHANGES
         {
-   			result = machine->ReadMem( vaddr, 1, paddr ); // FALL 09 CHANGES: TO HANDLE PAGE FAULT IN THE ReadMem SYS CALL
+            result = machine->ReadMem( vaddr, 1, paddr ); 
+                // FALL 09 CHANGES: TO HANDLE PAGE FAULT IN THE ReadMem SYS CALL
         }	
-        
         buf[n++] = *paddr;
-        
         if ( !result ) {
                 //translation failed
             return -1;
         }
-        
         vaddr++;
     }
-    
     delete paddr;
     return len;
 }
@@ -329,7 +325,7 @@ void kernel_thread(int virtAddr){
     if(stackId < 0){
         DEBUG('a', "%s: Unable to allocate stack for the new process\n",currentThread->getName());
             // Kill Process and all its children
-    //    currentThread->space->killAllThreads();
+            //    currentThread->space->killAllThreads();
         return;
     }
     machine->Run();
@@ -341,8 +337,8 @@ void Fork_Syscall(int funcAddr){
     DEBUG('a', "%s: Called Fork_Syscall.\n",currentThread->getName());
         // Create new thread.kernel_thread()
     Thread *t = new Thread(currentThread->getName());
-    // Stack was successfully created.
-    // Add Process to the system's process table.
+        // Stack was successfully created.
+        // Add Process to the system's process table.
     currentThread->space->childThreads++;
     t->setPID(currentThread->space->childThreads);
         // Address space for new Thread and the spawning thread is the same.
@@ -501,7 +497,7 @@ CVId CreateCondition_Syscall(char* name){
     if(newcon == NULL){
         return -1;
     }
-        
+    
 	ConditionWrapper *newCV = new ConditionWrapper(newcon, 0, false);
 	
     int retval;
@@ -539,7 +535,7 @@ void DestroyCondition_Syscall(CVId id){
         }        
     }else{
         DEBUG('a',"%s: DestroyCondition_Syscall: Unable to find CV %d for deletion.\n",
-               currentThread->getName(), id);
+              currentThread->getName(), id);
     }
     CVTableLock->Release();
 }
@@ -567,7 +563,7 @@ void WaitCV_Syscall(CVId cvId, LockId lockId){
     locksTableLock->Release();
     CVTableLock->Release();
     (void) CV->cv->Wait(ConditionLockWrapper->lock);
-
+    
     CVTableLock->Acquire();
     printf("current counter: %d",CV->counter--);
     CVTableLock->Release();
@@ -630,6 +626,16 @@ void BroadcastCV_Syscall(CVId cvId, LockId lockId){
 
 int Random_Syscall(){
     return Random();
+}
+
+int Send_Syscall(int arg){
+        // TODO: Syscall functionality Project 3 Part 3
+    return 0;
+}
+
+int Receive_Syscall(int arg){
+        //TODO: Syscall functionality Project 3 Part 3
+    return 0;
 }
 
 void ExceptionHandler(ExceptionType which) {
@@ -719,20 +725,28 @@ void ExceptionHandler(ExceptionType which) {
                 DEBUG('a', "Random syscall.\n");
                 rv = Random_Syscall();
                 break;
-#endif
-        }else if(which == PageFaultException){
-            DEBUG('s',"PageFaultException!\n"); 
-            (void) handlePageFaultException(machine->ReadRegister(39));
+            case SC_Send:
+                DEBUG('a', "Receive syscall.\n");
+                rv = Send_Syscall(machine->ReadRegister(4));
+                break;
+            case SC_Receive:
+                DEBUG('a', "Send syscall.\n");
+                rv = Receive_Syscall(machine->ReadRegister(4));
+                break;
         }
-        
-            // Put in the return value and increment the PC
-        machine->WriteRegister(2,rv);
-        machine->WriteRegister(PrevPCReg,machine->ReadRegister(PCReg));
-        machine->WriteRegister(PCReg,machine->ReadRegister(NextPCReg));
-        machine->WriteRegister(NextPCReg,machine->ReadRegister(PCReg)+4);
-        return;
+    }else if(which == PageFaultException){
+        DEBUG('s',"PageFaultException!\n"); 
+        (void) handlePageFaultException(machine->ReadRegister(39));
     } else {
         cout<<"Unexpected user mode exception - which:"<<which<<"  type:"<< type<<endl;
         interrupt->Halt();
     }
+    
+#endif
+        // Put in the return value and increment the PC
+    machine->WriteRegister(2,rv);
+    machine->WriteRegister(PrevPCReg,machine->ReadRegister(PCReg));
+    machine->WriteRegister(PCReg,machine->ReadRegister(NextPCReg));
+    machine->WriteRegister(NextPCReg,machine->ReadRegister(PCReg)+4);
+    return;
 }

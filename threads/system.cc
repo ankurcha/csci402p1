@@ -19,6 +19,7 @@ Statistics *stats;			// performance metrics
 Timer *timer;				// the hardware timer device,
                             // for invoking context switches
 ProcessTable *processTable; // Process Table
+InvertedPageTable IPT[NumPhysPages];
 
 ProcessTable::ProcessTable(){
     processCounter = 0;
