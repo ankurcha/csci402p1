@@ -71,7 +71,9 @@ void handlePageFaultException(int badVAddr){
     
         //Search Page table for page entry
     bool found = false;
-    
+
+    //TODO: IPT needs to be indexed by a hash table so it is 
+    // fast, should not do a search of all pages
     for(int i=0; i<NumPhysPages; i++){
         if(IPT[i].virtualPage == pageIndex && IPT[i].valid == 1){
             DEBUG('a', "Found page in IPT\n");
@@ -83,6 +85,7 @@ void handlePageFaultException(int badVAddr){
     
     int targetPage = -1;
     if(found){
+        //TODO: we have a bitmap to do this
         for(int i = 0;i<NumPhysPages; i++){
             if(!IPT[i].valid){
                 targetPage = i;
@@ -91,9 +94,12 @@ void handlePageFaultException(int badVAddr){
         }
         
         if(targetPage <0){
-                // IPT is full new to swap
-                // Select a page to swap out - FIFO
-                // get the page which is the oldest and swap it out
+            // IPT is full new to swap
+            // Select a page to swap out - FIFO
+            // get the page which is the oldest and swap it out
+
+            //TODO: random must be default, multiple methods must be
+            // supported by command line option
             targetPage = 0;
             for( int i = 0; i<NumPhysPages; i++){
                 if(IPT[i].age > IPT[targetPage].age){
