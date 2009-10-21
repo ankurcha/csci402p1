@@ -183,6 +183,7 @@ AddrSpace::AddrSpace(OpenFile *executable) : fileTable(MaxOpenFiles),
     // first, set up the translation
     numPages = NumPhysPages;
     size = numPages * PageSize;
+    /* TURN OFF ALL PRELOADING
     DEBUG('a', "Initializing page table, num pages %d, size %d\n", 
                                         numPages, size);
     pageTable = new TranslationEntry[numPages];
@@ -287,7 +288,7 @@ AddrSpace::AddrSpace(OpenFile *executable) : fileTable(MaxOpenFiles),
             page++;
         }
     }
-                                                 
+   */                                              
 }
 #endif
 

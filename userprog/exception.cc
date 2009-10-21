@@ -34,6 +34,8 @@ using namespace std;
 Lock *processTableLock = new Lock("processTableLock");
 Lock* locksTableLock = new Lock("locksTableLock");
 Lock* CVTableLock = new Lock("CVTableLock");
+int TLBIndex = 0;
+
 struct ConditionWrapper {
     Condition* cv;
     int counter;
@@ -72,45 +74,44 @@ void handlePageFaultException(int badVAddr){
         //Search Page table for page entry
     bool found = false;
 
-    //TODO: IPT needs to be indexed by a hash table so it is 
+    // TODO: IPT needs to be indexed by a hash table so it is 
     // fast, should not do a search of all pages
-    for(int i=0; i<NumPhysPages; i++){
-        if(IPT[i].virtualPage == pageIndex && IPT[i].valid == 1){
-            DEBUG('a', "Found page in IPT\n");
-            Page = IPT[i];
-            found = true;
-            break;
-        }
+    //
+    // Now using a bitmap
+    int targetPage = IPTFreePageBitmap.Find(); // Find and set the bitmap of this page.
+    found = false;
+    if( targetPage != -1 ){
+        DEBUG('a',"Found a page in IPT@%d",targetPage);
+        Page = IPT[targetPage];
+        found = true;
     }
     
-    int targetPage = -1;
-    if(found){
-        //TODO: we have a bitmap to do this
-        for(int i = 0;i<NumPhysPages; i++){
-            if(!IPT[i].valid){
-                targetPage = i;
-                break;
-            }
-        }
-        
+    if(!found){ 
+        // Replacement needs to be done
+        // Find an Invalid Page for replacement
+        targetPage = IPTvalidPageBitmap.Find();
         if(targetPage <0){
             // IPT is full new to swap
             // Select a page to swap out - FIFO
             // get the page which is the oldest and swap it out
 
-            //TODO: random must be default, multiple methods must be
-            // supported by command line option
-            targetPage = 0;
-            for( int i = 0; i<NumPhysPages; i++){
-                if(IPT[i].age > IPT[targetPage].age){
+            if(!FIFOreplacementPolicy){
+                //Default: Random Replacement
+                targetPage = Random() % NumPhysPages;
+            }else{ 
+                targetPage = 0;
+                for( int i = 0; i<NumPhysPages; i++){
+                    if(IPT[i].age > IPT[targetPage].age){
                         // Get the oldest page
-                    targetPage = i;
+                        targetPage = i;
+                    }
                 }
             }
+
             DEBUG('a', "Swapping out page# %d for vaddr: %d\n", targetPage, badVAddr);
                 // Do the actual swapping out of the page
-            
-            IPT[targetPage].valid = false;
+                // We know which page to swap out
+
         }else{
                 // Found an empty space in the IPT, no need to swap out
         }
@@ -120,6 +121,31 @@ void handlePageFaultException(int badVAddr){
     
     (void) interrupt->SetLevel(oldStatus);   
 }
+
+int loadPage(int VADDR){
+
+    int VirtualPageNum = VADDR / PageSize;
+    DEBUG('a',"Loading VADDR %d from PAGE# %d\n",VADDR,VirtualPageNum);
+    // Find the corresponding page in the IPT corresponding to the VPN
+    for(int i=0; i<NumPhysPages; i++){
+        if(IPT[i].virtualPage == VirtualPageNum){
+            return i;
+        }
+    }
+    // Page wasn't in memory, handle Page fault
+    handlePageFaultException(VirtualPageNum * PageSize);
+    for(int i=0; i<NumPhysPages; i++){
+        if(IPT[i].virtualPage == VirtualPageNum){
+            return i;
+        }
+    }
+
+    // We should not reach here!!
+    DEBUG('a', "BIG PROBLEM PAGE WAS NOWHERE TO BE SEEN\n");
+    interrupt->Halt();
+    return -1;
+}
+
 
 int copyin(unsigned int vaddr, int len, char *buf) {
         // Copy len bytes from the current thread's virtual address vaddr.
@@ -133,16 +159,19 @@ int copyin(unsigned int vaddr, int len, char *buf) {
         result = machine->ReadMem( vaddr, 1, paddr );
         while(!result) // FALL 09 CHANGES
         {
-            result = machine->ReadMem( vaddr, 1, paddr ); 
-                // FALL 09 CHANGES: TO HANDLE PAGE FAULT IN THE ReadMem SYS CALL
+   			result = machine->ReadMem( vaddr, 1, paddr ); // FALL 09 CHANGES: TO HANDLE PAGE FAULT IN THE ReadMem SYS CALL
         }	
+        
         buf[n++] = *paddr;
+        
         if ( !result ) {
                 //translation failed
             return -1;
         }
+        
         vaddr++;
     }
+    
     delete paddr;
     return len;
 }
@@ -634,16 +663,6 @@ int Random_Syscall(){
     return Random();
 }
 
-int Send_Syscall(int arg){
-        // TODO: Syscall functionality Project 3 Part 3
-    return 0;
-}
-
-int Receive_Syscall(int arg){
-        //TODO: Syscall functionality Project 3 Part 3
-    return 0;
-}
-
 void ExceptionHandler(ExceptionType which) {
     int type = machine->ReadRegister(2); // Which syscall?
     int rv=0; 	// the return value from a syscall
@@ -731,28 +750,17 @@ void ExceptionHandler(ExceptionType which) {
                 DEBUG('a', "Random syscall.\n");
                 rv = Random_Syscall();
                 break;
-            case SC_Send:
-                DEBUG('a', "Receive syscall.\n");
-                rv = Send_Syscall(machine->ReadRegister(4));
-                break;
-            case SC_Receive:
-                DEBUG('a', "Send syscall.\n");
-                rv = Receive_Syscall(machine->ReadRegister(4));
-                break;
+#endif
         }
-    }else if(which == PageFaultException){
-        DEBUG('s',"PageFaultException!\n"); 
-        (void) handlePageFaultException(machine->ReadRegister(39));
+        
+            // Put in the return value and increment the PC
+        machine->WriteRegister(2,rv);
+        machine->WriteRegister(PrevPCReg,machine->ReadRegister(PCReg));
+        machine->WriteRegister(PCReg,machine->ReadRegister(NextPCReg));
+        machine->WriteRegister(NextPCReg,machine->ReadRegister(PCReg)+4);
+        return;
     } else {
         cout<<"Unexpected user mode exception - which:"<<which<<"  type:"<< type<<endl;
         interrupt->Halt();
     }
-    
-#endif
-        // Put in the return value and increment the PC
-    machine->WriteRegister(2,rv);
-    machine->WriteRegister(PrevPCReg,machine->ReadRegister(PCReg));
-    machine->WriteRegister(PCReg,machine->ReadRegister(NextPCReg));
-    machine->WriteRegister(NextPCReg,machine->ReadRegister(PCReg)+4);
-    return;
 }

@@ -19,7 +19,12 @@ Statistics *stats;			// performance metrics
 Timer *timer;				// the hardware timer device,
                             // for invoking context switches
 ProcessTable *processTable; // Process Table
-InvertedPageTable IPT[NumPhysPages];
+InvertedPageTable IPT[NumPhysPages]; // IPT for nachos
+InvertedPageTable Swap[NumPhysPages]; // Swap file structure for nachos
+BitMap IPTBitmap(NumPhysPages); // Bit map for the IPT
+BitMap IPTvalidPageBitmap(NumPhysPages);
+BitMap IPTFreePageBitmap(NumPhysPages);
+bool FIFOreplacementPolicy = false;
 
 ProcessTable::ProcessTable(){
     processCounter = 0;

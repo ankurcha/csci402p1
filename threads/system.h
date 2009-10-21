@@ -53,6 +53,10 @@ extern Timer *timer;				// the hardware alarm clock
 #ifdef CHANGED
 extern ProcessTable *processTable;  // Process Table for Nachos
 extern InvertedPageTable IPT[NumPhysPages];
+extern InvertedPageTable Swap[NumPhysPages];
+extern BitMap IPTFreePageBitmap;
+extern BitMap IPTvalidPageBitmap;
+extern bool FIFOreplacementPolicy;
 #endif
 
 #ifdef USER_PROGRAM
