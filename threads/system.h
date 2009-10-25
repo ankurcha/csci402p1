@@ -31,16 +31,27 @@ public:
 
 class InvertedPageTableEntry : public TranslationEntry{
     public:
+        InvertedPageTableEntry(){
+            virtualPage = -1;
+            physicalPage = -1;
+        }
+
+        enum {
+            CODE,
+            DATA,
+            OTHER
+        } ContentType;
+        
+        enum {
+            MEMORY,
+            EXEC,
+            SWAP,
+        }Location;
         int PID;    // TO find out who is the owner
         int age;    // Used for FIFO replacement
-
-};
-
-struct eqIPTEntry
-{
-    bool operator()(int vaddr1, int vaddr2) const{
-        return vaddr1 == vaddr2;
-    }
+        AddrSpace *space; // To keep track of which pages we are refering to.
+        status PageStatus;
+        int swapLocation;
 };
 
 #endif
@@ -61,13 +72,10 @@ extern Timer *timer;				// the hardware alarm clock
 
 extern ProcessTable *processTable;  // Process Table for Nachos
 #ifdef USE_TLB
-//extern hash_map<int, InvertedPageTableEntry, eqIPTEntry> IPT;
-extern InvertedPageTableEntry IPT[NumPhysPages];
-extern InvertedPageTableEntry Swap[NumPhysPages];
-extern BitMap IPTFreePageBitmap;
-extern BitMap IPTvalidPageBitmap;
-extern bool FIFOreplacementPolicy = false;
+extern InvertedPageTableEntry *IPT;
+extern bool FIFOreplacementPolicy;
 extern OpenFile *swapFile;
+extern int swapLocation;
 extern BitMap *swapBitMap;
 #endif
 

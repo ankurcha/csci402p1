@@ -23,7 +23,6 @@
 #include "copyright.h"
 #include "system.h"
 #include "addrspace.h"
-#include "noff.h"
 #include "table.h"
 #include "synch.h"
 
@@ -134,7 +133,7 @@ AddrSpace::AddrSpace(OpenFile *exec) : fileTable(MaxOpenFiles),
                                              CVTable(MaxCV) {
     locksTableLock = new Lock("LocksTableLock");
     CVTableLock = new Lock("CVTableLock");
-    NoffHeader noffH;
+    //NoffHeader noffH;
     unsigned int i, size, neededPages;
     executable = exec;
     // Don't allocate the input or output to disk files
@@ -155,11 +154,12 @@ AddrSpace::AddrSpace(OpenFile *exec) : fileTable(MaxOpenFiles),
     neededPages = dataPages + divRoundUp(UserStackSize,PageSize);
                                                 // we need to increase the size
                                                 // to leave room for the stack
-
+#ifndef USE_TLB
     ASSERT(neededPages <= NumPhysPages);           // check we're not trying
                                                 // to run anything too big --
                                                 // at least until we have
                                                 // virtual memory
+#endif    
     DEBUG('a', "Initializing address space with %d valid pages, size %d\n",
           neededPages, neededPages*PageSize);
     
@@ -196,7 +196,7 @@ AddrSpace::AddrSpace(OpenFile *exec) : fileTable(MaxOpenFiles),
         int physPage = physMemMap.Find();
         ASSERT(physPage != -1); // make sure a page was found
         physMemMapLock->Release();
-
+#ifndef USE_TLB
         pageTable[i].virtualPage = i;
         pageTable[i].physicalPage = physPage;
         pageTable[i].valid = TRUE;
@@ -208,15 +208,18 @@ AddrSpace::AddrSpace(OpenFile *exec) : fileTable(MaxOpenFiles),
 
         // zero out the physical memory associated with this page
         bzero(&(machine->mainMemory[PageSize * physPage]), PageSize);
+#endif
     }
     // set all the unused pages to invalid
     for(;i < stackStart; i++) {
+#ifndef USE_TLB
         pageTable[i].virtualPage = i;
         pageTable[i].physicalPage = 0;
         pageTable[i].valid = FALSE;  // no physical memory for this page
         pageTable[i].use = FALSE;
         pageTable[i].dirty = FALSE;
         pageTable[i].readOnly = FALSE;
+#endif
     }
     // allocate pages for the stack
     for (; i < NumPhysPages; i++) {
@@ -225,7 +228,7 @@ AddrSpace::AddrSpace(OpenFile *exec) : fileTable(MaxOpenFiles),
         int physPage = physMemMap.Find();
         ASSERT(physPage != -1); // make sure a page was found
         physMemMapLock->Release();
-
+#ifndef USE_TLB
         pageTable[i].virtualPage = i;
         pageTable[i].physicalPage = physPage;
         pageTable[i].valid = TRUE;
@@ -237,9 +240,11 @@ AddrSpace::AddrSpace(OpenFile *exec) : fileTable(MaxOpenFiles),
 
         // zero out the physical memory associated with this page
         bzero(&(machine->mainMemory[PageSize * physPage]), PageSize);
+#endif
     }
     
     // then, copy in the code and data segments into memory
+#ifndef USE_TLB
     if (noffH.code.size > 0) {
         DEBUG('a', "Initializing code segment, at vaddr 0x%x, size %d\n", 
                         noffH.code.virtualAddr, noffH.code.size);
@@ -288,15 +293,12 @@ AddrSpace::AddrSpace(OpenFile *exec) : fileTable(MaxOpenFiles),
             page++;
         }
     }
-                                         
+#endif                                         
 }
 #endif
 
-#ifdef CHANGED
-
-#ifdef USE_TLB
-
 // Load the Virtual Page at virtAddr to PageNumber in memory
+/*
 int AddrSpace::loadVirtualPage( unsigned int virtAddr, int PageNumber){
     
     if(!executable){
@@ -349,9 +351,7 @@ int AddrSpace::loadVirtualPage( unsigned int virtAddr, int PageNumber){
     
     return PageNumber;
 }
-
-#endif
-#endif
+*/
 //----------------------------------------------------------------------
 // AddrSpace::~AddrSpace
 //
@@ -363,12 +363,13 @@ AddrSpace::~AddrSpace()
 {
 #ifdef CHANGED
     // free the physical memory being used by this page table
+#ifndef USE_TLB
     for(unsigned int i=0; i < numPages; i++) {
         physMemMapLock->Acquire();
         physMemMap.Clear(pageTable[i].physicalPage);
         physMemMapLock->Release();
     }
-
+#endif
     delete pageTable;
         //delete childLock;
     delete stackTableLock;
@@ -544,6 +545,12 @@ void AddrSpace::RestoreState()
     machine->pageTable = pageTable;
     machine->pageTableSize = numPages;
 #endif
+    // All the pages in the machine->TLB must be invalidated now
+#ifdef USE_TLB
+    for(int i=0; i < TLBSize; i++){
+        machine->tlb[i].valid = FALSE;
+    }
+#endif
 }
 
 #ifdef CHANGED
@@ -590,44 +597,5 @@ std::string AddrSpace::readCString(char* s) {
 
     return ret;
 }
-
-//void AddrSpace::addChildThread(PID pid){
-//    pair<set<int>::iterator,bool> ret;
-//    this->childLock->Acquire();
-//    ret = this->childThreads.insert(pid);
-//    if( ret.second == true)
-//    {
-//            cout << "added pid: "<<pid<<" to addrspace of size: "<<this->childThreads.size()<<endl;        
-//    }else {
-//        cout<< "addchild failed: "<<pid<<endl;
-//    }
-//
-//
-//    this->childLock->Release();
-//}
-//
-//void AddrSpace::removeChildThread(PID pid){
-//    this->childLock->Acquire();
-//    processTable->killProcess(pid); 
-//    this->childThreads.erase(pid);
-//    this->childLock->Release();
-//}
-//
-//void AddrSpace::killAllThreads(){
-//    // kill all child processes
-//    set<PID>::iterator childItr;
-//    while(childThreads.size()>0){
-//        childItr = childThreads.begin();
-//        this->removeChildThread((PID) *childItr);
-//    }
-//}
-//
-//void AddrSpace::viewChildren(){
-//    set<PID>::iterator childItr;
-//    for ( childItr=this->childThreads.begin() ; childItr != this->childThreads.end(); childItr++ )
-//        cout  << *childItr<<endl;
-//
-//}
-
 #endif
 

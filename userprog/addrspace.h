@@ -17,6 +17,7 @@
 
 #include "copyright.h"
 #include "filesys.h"
+#include "noff.h"
 #include "table.h"
 #include <set>
 
@@ -31,7 +32,21 @@ typedef int PID;
 #define MaxLock 1024
 
 // global map of available physical memory
-
+enum status{
+    MEMORY,
+    DATA,
+    EXEC,
+    SWAP,
+    INITDATA,
+    UNINITDATA
+    };
+class PageTableEntry: public TranslationEntry{
+    public:
+    // Add new Filds to the page table such that it can take care of
+    // status and the location of the page.
+    status PageStatus;
+    int swapLocation;
+};
 
 class AddrSpace {
   public:
@@ -52,9 +67,6 @@ class AddrSpace {
     // clear the stack of an exiting thread
     void ClearStack(int id);
     
-    // Read into the vAddress from file f.  Reads it one page at a time.
-    bool Read(OpenFile *f,unsigned int vAddress, int length,unsigned int foff, int pAddress,int off);
-
     // read a string at the virtual address s
     std::string readCString(char* s);
     
@@ -74,7 +86,7 @@ class AddrSpace {
         // Assume linear page table translation
         // for now! 
     TranslationEntry *pageTable;
- private:
+ public:
             
 
     // Number of pages in the virtual address space
@@ -85,10 +97,12 @@ class AddrSpace {
     unsigned int dataSize;
     unsigned int dataPages;
     OpenFile *executable;
+    NoffHeader noffH;
     // keep track of the stacks in this process
-    //std::vector<char> stackTable;
     Lock* stackTableLock;
     BitMap* stackTable;
+    PageTableEntry *PageTableInfo;
+
 #endif
 };
 

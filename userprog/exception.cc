@@ -25,18 +25,21 @@
 #include "system.h"
 #include "syscall.h"
 #include "synch.h"
+#include "addrspace.h"
 #include <cstdio>
+#include <ctime>
 #include <cstring>
 #include <iostream>
 
 using namespace std;
-
+extern "C" { int bzero(char *, int); };
 Lock *processTableLock = new Lock("processTableLock");
 Lock* locksTableLock = new Lock("locksTableLock");
 Lock* CVTableLock = new Lock("CVTableLock");
 int TLBIndex = 0;
 int curAge=0;
 int faults=0;
+
 struct ConditionWrapper {
     Condition* cv;
     int counter;
@@ -60,7 +63,7 @@ struct LockWrapper {
         mark = m;
     }
 };
-
+/*
 bool ReplaceSwapFilePage(int pageframe){
     char *buf; // Buffer
     int pos; // Offset into the swap file.
@@ -358,7 +361,7 @@ int loadPage(int VADDR){
     interrupt->Halt();
     return -1;
 }
-
+*/
 
 int copyin(unsigned int vaddr, int len, char *buf) {
         // Copy len bytes from the current thread's virtual address vaddr.
@@ -399,13 +402,18 @@ int copyout(unsigned int vaddr, int len, char *buf) {
     
     while ( n >= 0 && n < len) {
             // Note that we check every byte's address
+#ifndef USE_TLB
         result = machine->WriteMem( vaddr, 1, (int)(buf[n++]) );
         
         if ( !result ) {
                 //translation failed
             return -1;
         }
-        
+#endif
+#ifdef USE_TLB
+        while(!machine->WriteMem( vaddr, 1, (int)(buf[n++]) ));
+        n++;
+#endif
         vaddr++;
     }
     
@@ -874,6 +882,139 @@ void BroadcastCV_Syscall(CVId cvId, LockId lockId){
 
 int Random_Syscall(){
     return Random();
+}
+
+int getTimestamp(){
+    return (int) time(0);
+}
+
+void handlePageFaultException(int vAddr){
+    int virtualpage = vAddr / PageSize;
+    int physicalPage;
+    DEBUG('a', "Handling PageFault for VADDR: %d\n", vAddr);
+    TLBIndex = (TLBIndex+1) % TLBSize;
+    
+    // Copy out all pages from the TLB - update the IPT
+    for (int i=0; i<TLBSize; i++){
+        if(machine->tlb[i].valid){
+            IPT[machine->tlb[i].physicalPage].virtualPage = machine->tlb[i].virtualPage;
+            IPT[machine->tlb[i].physicalPage].physicalPage = machine->tlb[i].physicalPage;
+            IPT[machine->tlb[i].physicalPage].valid = machine->tlb[i].valid;
+            IPT[machine->tlb[i].physicalPage].use = machine->tlb[i].use;
+            IPT[machine->tlb[i].physicalPage].dirty = machine->tlb[i].dirty;
+            IPT[machine->tlb[i].physicalPage].readOnly = machine->tlb[i].readOnly;
+        }
+    }
+
+    // Now we check if the currentThread->space pageTable is in memory
+    // If yes, load from IPT
+
+    if(currentThread->space->PageTableInfo[virtualpage].PageStatus == MEMORY){
+        // Copy page table to TLB from IPT
+        for(int i=0; i< NumPhysPages; i++){
+            if(IPT[i].virtualPage == vAddr && IPT[i].PID == currentThread->PID){
+                physicalPage = i;
+                break;
+            }
+        }
+        DEBUG('a',"Physical Page: %d\n",physicalPage);
+        // Copy IPT -> TLB
+        machine->tlb[TLBIndex].virtualPage = IPT[physicalPage].virtualPage;
+        machine->tlb[TLBIndex].physicalPage = IPT[physicalPage].physicalPage;
+        machine->tlb[TLBIndex].valid = IPT[physicalPage].valid;
+        machine->tlb[TLBIndex].use = IPT[physicalPage].use;
+        machine->tlb[TLBIndex].dirty = IPT[physicalPage].dirty;
+        machine->tlb[TLBIndex].readOnly = IPT[physicalPage].readOnly;
+        return;
+    }
+
+    // Find a free page in memory to get th page in - FindOpenPhysicalPage
+    physicalPage = -1;
+    for(int i=0;i<NumPhysPages;i++){
+        if(IPT[i].physicalPage == -1){
+            // This page is free!!!
+            DEBUG('a', "Found a free page at %d\n", i);
+            physicalPage = i;
+            break;
+        }
+    }
+
+    if(physicalPage == -1){
+        // All pages are full - time to swap pages
+        if(!FIFOreplacementPolicy){
+            physicalPage = Random() % NumPhysPages;
+        }else{
+            for(int i=0; i<NumPhysPages; i++){
+                if(IPT[i].age < IPT[physicalPage].age){
+                    physicalPage = i;
+                }
+            }
+        }
+
+        virtualpage = IPT[physicalPage].virtualPage;
+        if(IPT[physicalPage].dirty){
+            // Page modified but not committed.
+            if(IPT[physicalPage].space->PageTableInfo[virtualpage].swapLocation == -1){
+                IPT[physicalPage].space->PageTableInfo[virtualpage].swapLocation = swapLocation++;
+            }
+            // Write the page to swapLocation.
+            swapFile->WriteAt(&(machine->mainMemory[PageSize * physicalPage]),PageSize,
+                    (PageSize * IPT[physicalPage].space->PageTableInfo[virtualpage].swapLocation));
+            IPT[physicalPage].space->PageTableInfo[virtualpage].PageStatus = SWAP;
+        }else if(IPT[physicalPage].space->PageTableInfo[virtualpage].swapLocation == -1){
+            // Okay!! page is not dirty and was never written to swap file...
+            IPT[physicalPage].space->PageTableInfo[virtualpage].swapLocation = swapLocation++;
+            swapFile->WriteAt(&(machine->mainMemory[PageSize * physicalPage]),PageSize,
+                    (PageSize * IPT[physicalPage].space->PageTableInfo[virtualpage].swapLocation));
+            IPT[physicalPage].space->PageTableInfo[virtualpage].PageStatus = SWAP;
+        }else{
+            // Not dirty and already in the swap file. Don't touch it!!
+            // Just update the PageStatus
+            IPT[physicalPage].space->PageTableInfo[virtualpage].PageStatus = SWAP;
+        }
+
+        //If currentThread, invalidate all entries in TLB
+        if(IPT[physicalPage].space == currentThread->space){
+            for(int i=0; i< TLBSize; i++){
+                if(machine->tlb[i].virtualPage == virtualpage){
+                    machine->tlb[i].valid = false;
+                }
+            }
+        }
+    }
+    // So by now we have the physical page which we want to screw with.
+    // so, zero it out!!
+    bzero(&(machine->mainMemory[PageSize * physicalPage]), PageSize);
+
+    if(currentThread->space->PageTableInfo[virtualpage].PageStatus == EXEC){
+        // Load from file!
+        DEBUG('a', "Loading page from file: %d, virtualPage: %d\n", currentThread->space->noffH.code.inFileAddr, virtualpage);
+        currentThread->space->executable->ReadAt(&(machine->mainMemory[physicalPage * PageSize]), PageSize, currentThread->space->noffH.code.inFileAddr + virtualpage * PageSize);
+    }
+
+    DEBUG('a', "Page loading complete\n");
+    // The page is now in memory - mark this state change!
+    currentThread->space->PageTableInfo[virtualpage].PageStatus = MEMORY;
+    // Now setup the IPT page with these values.
+    IPT[physicalPage].virtualPage = virtualpage;
+    IPT[physicalPage].physicalPage = physicalPage;
+    IPT[physicalPage].valid = true;
+    IPT[physicalPage].use = false;
+    IPT[physicalPage].dirty = false;
+    IPT[physicalPage].readOnly = false;
+    IPT[physicalPage].PID = currentThread->PID;
+    IPT[physicalPage].PageStatus = currentThread->space->PageTableInfo[virtualpage].PageStatus;
+    IPT[physicalPage].swapLocation = currentThread->space->PageTableInfo[virtualpage].swapLocation;
+    IPT[physicalPage].space = currentThread->space;
+    // Now copy the IPT[physicalPage] to TLB[TLBIndex]
+    machine->tlb[TLBIndex].virtualPage = IPT[physicalPage].virtualPage;
+    machine->tlb[TLBIndex].physicalPage = IPT[physicalPage].physicalPage;
+    machine->tlb[TLBIndex].valid = IPT[physicalPage].valid;
+    machine->tlb[TLBIndex].use = IPT[physicalPage].use;
+    machine->tlb[TLBIndex].dirty = IPT[physicalPage].dirty;
+    machine->tlb[TLBIndex].readOnly = IPT[physicalPage].readOnly;
+    // Everything is done!!
+    return;
 }
 
 void ExceptionHandler(ExceptionType which) {

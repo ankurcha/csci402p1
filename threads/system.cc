@@ -20,12 +20,10 @@ Timer *timer;				// the hardware timer device,
                             // for invoking context switches
 ProcessTable *processTable; // Process Table
 #ifdef USE_TLB
-InvertedPageTableEntry IPT[NumPhysPages]; // IPT for nachos
-bool FIFOreplacementPolicy = false;
+InvertedPageTableEntry *IPT; // IPT for nachos
+bool FIFOreplacementPolicy = false; // Default: Random replacement
 OpenFile *swapFile;
-BitMap *swapBitMap;
-InvertedPageTableEntry Swap[NumPhysPages];
-bool randReplacement;
+int swapLocation = 0;
 #endif
 ProcessTable::ProcessTable(){
     processCounter = 0;
@@ -200,6 +198,10 @@ Initialize(int argc, char **argv)
     
 #ifdef USER_PROGRAM
     machine = new Machine(debugUserProg);	// this must come first
+    IPT = new InvertedPageTableEntry[NumPhysPages];
+    fileSystem->Create("SWAPFILE", 1);
+    swapFile = fileSystem->Open("SWAPFILE");
+    swapLocation = 0;
 #endif
     
 #ifdef FILESYS
