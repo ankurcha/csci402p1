@@ -29,11 +29,18 @@ public:
     ~ProcessTable();
 };
 
-class InvertedPageTable : public TranslationEntry{
+class InvertedPageTableEntry : public TranslationEntry{
     public:
-        PID pId;    // TO find out who is the owner
+        int PID;    // TO find out who is the owner
         int age;    // Used for FIFO replacement
 
+};
+
+struct eqIPTEntry
+{
+    bool operator()(int vaddr1, int vaddr2) const{
+        return vaddr1 == vaddr2;
+    }
 };
 
 #endif
@@ -51,12 +58,19 @@ extern Statistics *stats;			// performance metrics
 extern Timer *timer;				// the hardware alarm clock
 
 #ifdef CHANGED
+
 extern ProcessTable *processTable;  // Process Table for Nachos
-extern InvertedPageTable IPT[NumPhysPages];
-extern InvertedPageTable Swap[NumPhysPages];
+#ifdef USE_TLB
+//extern hash_map<int, InvertedPageTableEntry, eqIPTEntry> IPT;
+extern InvertedPageTableEntry IPT[NumPhysPages];
+extern InvertedPageTableEntry Swap[NumPhysPages];
 extern BitMap IPTFreePageBitmap;
 extern BitMap IPTvalidPageBitmap;
-extern bool FIFOreplacementPolicy;
+extern bool FIFOreplacementPolicy = false;
+extern OpenFile *swapFile;
+extern BitMap *swapBitMap;
+#endif
+
 #endif
 
 #ifdef USER_PROGRAM

@@ -100,7 +100,7 @@ class Thread {
     void setStatus(ThreadStatus st) { status = st; }
     char* getName() { return (name); }
     void Print() { printf("%s, ", name); }
-    
+    int PID; 
     int getPID(){
         return PID;
     }
@@ -119,7 +119,6 @@ private:
 					// (If NULL, don't deallocate stack)
     ThreadStatus status;		// ready, running or blocked
     char* name;                         // debug name of the thread
-    int PID;                            // PID of the thread
     int stackID;                        // Stack ID of the thread
     void StackAllocate(VoidFunctionPtr func, int arg);
     					// Allocate a stack for thread.

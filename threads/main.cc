@@ -110,6 +110,19 @@ main(int argc, char **argv)
             }
         }
 #endif
+#ifdef USE_TLB
+        FIFOreplacementPolicy = false; // Make Random replacement policy as the default.
+        if(!strcmp(*argv, "-P")){
+            if(!strcmp(*(argv+1),"RAND")){
+                DEBUG('f',"Using random replacement policy\n");
+                FIFOreplacementPolicy=false;
+            }
+            else{
+                DEBUG('f',"Using FIFO replacement policy\n");
+                FIFOreplacementPolicy=true;
+            }
+        }
+#endif
 #ifdef USER_PROGRAM
         if (!strcmp(*argv, "-x")) {        	// run a user program
 	    ASSERT(argc > 1);

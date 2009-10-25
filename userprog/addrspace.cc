@@ -129,14 +129,14 @@ SwapHeader (NoffHeader *noffH)
 //----------------------------------------------------------------------
 
 #ifdef CHANGED
-AddrSpace::AddrSpace(OpenFile *executable) : fileTable(MaxOpenFiles), 
+AddrSpace::AddrSpace(OpenFile *exec) : fileTable(MaxOpenFiles), 
                                              locksTable(MaxLock), 
                                              CVTable(MaxCV) {
     locksTableLock = new Lock("LocksTableLock");
     CVTableLock = new Lock("CVTableLock");
     NoffHeader noffH;
     unsigned int i, size, neededPages;
-
+    executable = exec;
     // Don't allocate the input or output to disk files
     fileTable.Put(0);
     fileTable.Put(0);
@@ -183,7 +183,7 @@ AddrSpace::AddrSpace(OpenFile *executable) : fileTable(MaxOpenFiles),
     // first, set up the translation
     numPages = NumPhysPages;
     size = numPages * PageSize;
-    /* TURN OFF ALL PRELOADING
+                                                     // TURN OFF ALL PRELOADING
     DEBUG('a', "Initializing page table, num pages %d, size %d\n", 
                                         numPages, size);
     pageTable = new TranslationEntry[numPages];
@@ -288,10 +288,70 @@ AddrSpace::AddrSpace(OpenFile *executable) : fileTable(MaxOpenFiles),
             page++;
         }
     }
-   */                                              
+                                         
 }
 #endif
 
+#ifdef CHANGED
+
+#ifdef USE_TLB
+
+// Load the Virtual Page at virtAddr to PageNumber in memory
+int AddrSpace::loadVirtualPage( unsigned int virtAddr, int PageNumber){
+    
+    if(!executable){
+        DEBUG('a', "Invalid Executable\n");
+    }
+    
+    if(pageTable == 0){
+        // Construct the page table
+        pageTable = new TranslationEntry[numPages];
+    }
+
+    InvertedPageTableEntry page;
+
+    int virtPage = virtAddr / PageSize;
+    
+    // Copying from the Addrspace constructor
+    NoffHeader noffH;
+    unsigned int size, stackPageNumber, neededPages;
+
+    // Don't allocate the input or output to disk files
+    fileTable.Put(0);
+    fileTable.Put(0);
+    
+        // read the header into noffH
+    executable->ReadAt((char *)&noffH, sizeof(noffH), 0);
+    
+        // switch to big endian if it is not already
+    if ((noffH.noffMagic != NOFFMAGIC) && (WordToHost(noffH.noffMagic) == NOFFMAGIC)){
+        SwapHeader(&noffH);
+    }
+        // Check magic number
+    ASSERT(noffH.noffMagic == NOFFMAGIC);
+    
+    // Calculate sizes and the pages required.
+    dataSize = noffH.code.size + noffH.initData.size + noffH.uninitData.size ;
+    dataPages = divRoundUp(dataSize, PageSize);
+    neededPages = dataPages + divRoundUp(UserStackSize,PageSize);
+    
+    DEBUG('a', "Initializing address space with %d valid pages, size %d\n",
+                      neededPages, neededPages*PageSize);
+        // and its stack sits in the last pages of the address space
+    unsigned int stackStart = 
+                    NumPhysPages - divRoundUp(UserStackSize, PageSize);
+    numPages = neededPages;
+    size = numPages * PageSize;
+    
+    // Read the executable into memory with all the segments and stuff
+    // Max, you may want to do this. I couldn't understand the reading and
+    // memory things.
+    
+    return PageNumber;
+}
+
+#endif
+#endif
 //----------------------------------------------------------------------
 // AddrSpace::~AddrSpace
 //
@@ -480,8 +540,10 @@ void AddrSpace::SaveState()
 
 void AddrSpace::RestoreState() 
 {
+#ifndef USE_TLB
     machine->pageTable = pageTable;
     machine->pageTableSize = numPages;
+#endif
 }
 
 #ifdef CHANGED

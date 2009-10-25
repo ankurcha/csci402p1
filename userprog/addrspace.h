@@ -51,6 +51,9 @@ class AddrSpace {
 
     // clear the stack of an exiting thread
     void ClearStack(int id);
+    
+    // Read into the vAddress from file f.  Reads it one page at a time.
+    bool Read(OpenFile *f,unsigned int vAddress, int length,unsigned int foff, int pAddress,int off);
 
     // read a string at the virtual address s
     std::string readCString(char* s);
@@ -63,16 +66,16 @@ class AddrSpace {
     Lock *CVTableLock;
     int childThreads;        // PID of Children Threads
                              // Lock *childLock;
-    //void addChildThread(PID);
-//    void removeChildThread(PID);
-//    void viewChildren();
-//    void killAllThreads();
+#ifdef USE_TLB
+        int loadVirtualPage(unsigned int, int);
 #endif
     
+#endif
+        // Assume linear page table translation
+        // for now! 
+    TranslationEntry *pageTable;
  private:
-    // Assume linear page table translation
-    // for now!
-    TranslationEntry *pageTable;    
+            
 
     // Number of pages in the virtual address space
     unsigned int numPages;
@@ -81,7 +84,7 @@ class AddrSpace {
     // number of bytes and pages used by code and data
     unsigned int dataSize;
     unsigned int dataPages;
-
+    OpenFile *executable;
     // keep track of the stacks in this process
     //std::vector<char> stackTable;
     Lock* stackTableLock;

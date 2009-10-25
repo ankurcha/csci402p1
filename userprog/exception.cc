@@ -35,7 +35,8 @@ Lock *processTableLock = new Lock("processTableLock");
 Lock* locksTableLock = new Lock("locksTableLock");
 Lock* CVTableLock = new Lock("CVTableLock");
 int TLBIndex = 0;
-
+int curAge=0;
+int faults=0;
 struct ConditionWrapper {
     Condition* cv;
     int counter;
@@ -60,64 +61,276 @@ struct LockWrapper {
     }
 };
 
+bool ReplaceSwapFilePage(int pageframe){
+    char *buf; // Buffer
+    int pos; // Offset into the swap file.
+    int SwapPage = -1; // Location of the first open swap page
+    int bytesRead; // Number of bytes read
+    int IPTnum;
+    int virtualAddr, physAddr;
+    unsigned int pageoffset; // page offset
+    unsigned int swapOffset; // swap offset
+
+    virtualAddr = IPT[pageframe].virtualPage * PageSize;
+    pageoffset = virtualAddr % PageSize;
+
+    physAddr = IPT[pageframe].physicalPage * PageSize + pageoffset;
+
+    swapOffset = currentThread->PID * UserStackSize;
+    // Find the corresponding page in the swap file data structure
+    for(unsigned int i=0; i<(swapOffset+UserStackSize); i++){
+        if(Swap[i].virtualPage == IPT[pageframe].virtualPage &&
+                Swap[i].PID == currentThread->PID){
+            SwapPage = i;
+            break;
+        }
+    }
+
+    if(SwapPage == -1){
+        DEBUG('a', "Error: Swap full!\n");
+        return false;
+    }
+
+    // Calculate Virtual Address and Position
+
+    pos = SwapPage * PageSize;
+    buf = (char*) (machine->mainMemory + physAddr);
+
+    for(int i=0;i<PageSize; i++){
+        bytesRead = swapFile->WriteAt(buf+i, 1, pos+i);
+
+        if(bytesRead == -1){
+            DEBUG('a', "Cannot write to Physical Address: %d into swap file.\n", pos+i);
+            return false;
+        }
+    }
+
+    Swap[SwapPage].physicalPage = SwapPage;
+    Swap[SwapPage].virtualPage = IPT[pageframe].virtualPage;
+    Swap[SwapPage].PID = currentThread->PID;
+    swapBitMap->Mark(SwapPage);
+    return true;
+}
+
+bool ReadSwap(int virtPage, char *buf){
+    TranslationEntry page;
+    int pos;
+    bool found = false;
+    int bytesRead;
+    int offset = currentThread->PID * UserStackSize;
+    for(int i = offset; i<(offset+UserStackSize); i++){
+        if(Swap[i].virtualPage == virtPage &&
+                currentThread->PID == Swap[i].PID){
+            page.virtualPage  = Swap[i].virtualPage;
+            page.physicalPage = Swap[i].physicalPage;
+            page.valid = Swap[i].valid;
+            page.readOnly = Swap[i].readOnly;
+            page.use = Swap[i].use;
+            page.dirty = Swap[i].dirty;
+            
+            found = true;
+            DEBUG('a', "Found page in IPT\n");
+            break;
+        }
+    }
+
+    if(found){
+            // Check if it is in the swap file.
+        if(swapBitMap->Test(page.physicalPage)){
+            // Bitmap is set.
+            pos = page.physicalPage * PageSize;
+            for( int i=0; i< PageSize; i++){
+                bytesRead = swapFile->ReadAt(buf+i, 1, pos+i);
+                if(bytesRead == -1){
+                    return false;
+                }
+            }
+        }else{
+            return false;
+        }
+    }else{
+        return false;
+    }
+    return true;
+}
+
+bool WriteTWriteToSwapoSwap(int physPageNum) {
+    char* buf; //Final buffer containing page to write to swap
+    int pos; //Byte offset in swapfile
+    int openSwapPage = -1; //location of the first open swap page number
+    int bytesRead; //Number of bytes successfully read
+    int virtualAddr, physicalAddr;
+    unsigned int pageOffset;// page offset
+    int swapOffset;
+    
+    virtualAddr = IPT[physPageNum]virtualPage * PageSize;
+    pageOffset = virtualAddr % PageSize;
+    
+    physicalAddr = IPT[physPageNum].physicalPage * PageSize + pageOffset;
+    
+    swapOffset = currentThread->space->PID * UserStackSize;
+    // Find next available slot in swap and set it
+    for(int i=swapOffset; i<(swapOffset+UserStackSize); i++) {
+        if(!swapBitMap->Test(i)) {
+            // Found an unused swap page
+            openSwapPage = i;
+            break;
+        }
+    }
+    
+    if(openSwapPage == -1) { // Out of swap space!!
+        DEBUG('a', "Error: SWAP is full!\n");
+        return false;
+    }
+    
+    //Calculate Virtual Address and Position
+    pos = openSwapPage * PageSize;
+    // Point to the memory location to be sent to swap
+    buf = (char *)(machine->mainMemory+physicalAddr);
+    
+    // Write things to swap actually!!
+    for(int i=0; i<PageSize; i++) {
+        bytesRead = swapFile->WriteAt(buf+i, 1, pos+i);
+        if(bytesRead == -1) {
+            DEBUG('a', "Error: Could not write to pAddr: %d into swap file\n", pos+i);
+            return false;
+        }
+    }
+    
+    //Update the Swap Data Structure
+    Swap[openSwapPage].physicalPage = openSwapPage;
+    Swap[openSwapPage].virtualPage = IPT[physPageNum].virtualPage;
+    Swap[openSwapPage].PID = currentThread->PID;
+    // Mark up this swap space as 'taken'
+    swapBitMap->Mark(openSwapPage);
+    return true;
+}
+
+
 void handlePageFaultException(int badVAddr){
     IntStatus oldStatus = interrupt->SetLevel(IntOff);
     stats->numPageFaults++;
-    InvertedPageTable Page;
-    int pageIndex = badVAddr / PageSize;
+    InvertedPageTableEntry Page;
+    
+    int virtPageIndex = badVAddr / PageSize;
     
     if(badVAddr < 0){
         DEBUG('a',"Illegal virtual address in page fault: %d\n",badVAddr);
         currentThread->Finish();
     }
-    
-        //Search Page table for page entry
     bool found = false;
-
-    // TODO: IPT needs to be indexed by a hash table so it is 
-    // fast, should not do a search of all pages
-    //
-    // Now using a bitmap
-    int targetPage = IPTFreePageBitmap.Find(); // Find and set the bitmap of this page.
-    found = false;
-    if( targetPage != -1 ){
-        DEBUG('a',"Found a page in IPT@%d",targetPage);
-        Page = IPT[targetPage];
-        found = true;
+        //Search for the corresponding IPT entry
+    for (int i=0; i<NumPhysPages; i++) {
+        if (IPT[i].virtualPage == virtPageIndex && IPT[i].valid == TRUE) {
+            Page = IPT[i];
+            found = true;
+            DEBUG('a', "Found in IPT!\n");
+            break;
+        }
     }
-    
-    if(!found){ 
-        // Replacement needs to be done
-        // Find an Invalid Page for replacement
-        targetPage = IPTvalidPageBitmap.Find();
-        if(targetPage <0){
-            // IPT is full new to swap
-            // Select a page to swap out - FIFO
-            // get the page which is the oldest and swap it out
-
-            if(!FIFOreplacementPolicy){
-                //Default: Random Replacement
-                targetPage = Random() % NumPhysPages;
-            }else{ 
-                targetPage = 0;
-                for( int i = 0; i<NumPhysPages; i++){
-                    if(IPT[i].age > IPT[targetPage].age){
-                        // Get the oldest page
-                        targetPage = i;
+    int newPage = -1;
+    if (!found) {
+            //Choose a new page
+        for (int i=0; i<NumPhysPages; i++) {
+            if (!IPT[i].valid) {
+                newPage = i;
+                break;
+            }
+        }
+        if (newPage<0) {
+                //Full!
+            if (!FIFOreplacementPolicy) {
+                    //Do Random Replacement
+                newPage = Random() % NumPhysPages;
+            }else {
+                    //FIFO replacement
+                newPage = 0;
+                for (int i=0; i<NumPhysPages; i++) {
+                    if (IPT[i].age < IPT[newPage].age) {
+                        newPage = i;
                     }
                 }
             }
-
-            DEBUG('a', "Swapping out page# %d for vaddr: %d\n", targetPage, badVAddr);
-                // Do the actual swapping out of the page
-                // We know which page to swap out
-
-        }else{
-                // Found an empty space in the IPT, no need to swap out
+            DEBUG('a', "No empty pages in IPT replacing page %d for VADDR %d\n", newPage, badVAddr);
+            bool inSwapFile = false;
+            for (int i=0; i<NumPhysPages; i++) {
+                if (Swap[i].virtualPage == IPT[newPage].virtualPage && swapBitMap->Test(i)) {
+                    inSwapFile = true;
+                    break;
+                }
+            }
+            
+            if(inSwapFile){
+                DEBUG('a', "Replacing page %d in swap file\n", newPage);
+                ReplaceSwapFilePage(newPage);
+            }else{
+                DEBUG( 'a', "Writing page %d into swap file\n", newPage);
+                WriteToSwap(newPage);
+            }
+        IPT[newPage].valid = false; //Invalidate a swapped page
+        }else {
+                // found an empty slot put the page there.
+            DEBUG('a', "Place page in slot %d", newPage);
         }
     }
+    char buf[PageSize];
+    if (!found && ReadSwap(virtPageIndex, buf)) {
+        found = true;
+        DEBUG('S', "Load page from swap into main memory\n");
+        for (int i=0; i<PageSize; i++) {
+            machine->mainMemory[newPage * PageSize +i] = buf[i];
+        }
+        IPT[newPage].virtualPage = virtPageIndex;
+        IPT[newPage].physicalPage = newPage;
+        IPT[newPage].valid = TRUE;
+        IPT[newPage].use = FALSE;
+        IPT[newPage].dirty = FALSE;
+        IPT[newPage].readOnly = FALSE;
+        IPT[newPage].age = curAge++;
+        Page = IPT[newPage];
+        DEBUG('S', "DONE!\n");
+    }
     
+    if (!found) {
+            //Load From executable
+        DEBUG('a', "Not in swap, load page from executable\n");
+        int num = currentThread->space->loadVirtualPage(badVAddr, newPage);
+        if (num > -1) {
+            DEBUG('a', "Loaded physical page %d from executable\n",num);
+            Page = IPT[num];
+            found = true;
+        }
+        WriteToSwap(num);
+        IPT[num].age = curAge++;
+    }
     
+    if(!found){
+        DEBUG('a', "Cannot find virtual page %d in IPT\n", virtPageIndex);
+        if(++faults >13){
+            DEBUG('a', "Killing Thread to avoid INF loop\n");
+            for (int i = 0; i<NumPhysPages; i++) {
+                if (IPT[i].virtualPage > 0) {
+                    DEBUG('a', "IPT: %d virtual: %d Physical: %d\n",i, IPT[i].virtualPage, IPT[i].physicalPage);
+                }
+            }
+            faults = 0;
+            currentThread->Finish();
+        }
+        return;
+    }
+        //Convert Page to Translation Entry page
+    
+    TranslationEntry page;
+    page.virtualPage = Page.virtualPage;
+    page.physicalPage = Page.physicalPage;
+    page.valid = Page.valid;
+    page.use = Page.use;
+    page.dirty = Page.dirty;
+    page.readOnly = Page.readOnly;
+    
+    machine->tlb[TLBIndex] = page;
+    TLBIndex++;
+    TLBIndex = TLBIndex % 4;
     
     (void) interrupt->SetLevel(oldStatus);   
 }
@@ -759,7 +972,14 @@ void ExceptionHandler(ExceptionType which) {
         machine->WriteRegister(PCReg,machine->ReadRegister(NextPCReg));
         machine->WriteRegister(NextPCReg,machine->ReadRegister(PCReg)+4);
         return;
-    } else {
+    }
+#ifdef USE_TLB
+    else if(which == PageFaultException){
+        DEBUG('s',"Caught PageFaultException!\n");
+        handlePageFaultException(machine->ReadRegister(BadVAddrReg));
+    }
+#endif 
+    else {
         cout<<"Unexpected user mode exception - which:"<<which<<"  type:"<< type<<endl;
         interrupt->Halt();
     }
