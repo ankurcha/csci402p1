@@ -36,7 +36,7 @@ extern "C" { int bzero(char *, int); };
 Lock *processTableLock = new Lock("processTableLock");
 Lock* locksTableLock = new Lock("locksTableLock");
 Lock* CVTableLock = new Lock("CVTableLock");
-int TLBIndex = 0;
+static int TLBIndex = 0;
 int curAge=0;
 int faults=0;
 
@@ -592,9 +592,12 @@ int getTimestamp(){
 void handlePageFaultException(int vAddr){
     int virtualpage = vAddr / PageSize;
     int physicalPage;
+    int tlbpos;
     DEBUG('a', "Handling PageFault for VADDR: %d\n", vAddr);
+    tlbpos = TLBIndex;
     TLBIndex = (TLBIndex+1) % TLBSize;
-    
+    DEBUG('a', "TLBIndex: %d tlbpos: %d\n",TLBIndex, tlbpos);
+
     // Copy out all pages from the TLB - update the IPT
     for (int i=0; i<TLBSize; i++){
         if(machine->tlb[i].valid){
@@ -620,12 +623,12 @@ void handlePageFaultException(int vAddr){
         }
         DEBUG('a',"Physical Page: %d\n",physicalPage);
         // Copy IPT -> TLB
-        machine->tlb[TLBIndex].virtualPage = IPT[physicalPage].virtualPage;
-        machine->tlb[TLBIndex].physicalPage = IPT[physicalPage].physicalPage;
-        machine->tlb[TLBIndex].valid = IPT[physicalPage].valid;
-        machine->tlb[TLBIndex].use = IPT[physicalPage].use;
-        machine->tlb[TLBIndex].dirty = IPT[physicalPage].dirty;
-        machine->tlb[TLBIndex].readOnly = IPT[physicalPage].readOnly;
+        machine->tlb[tlbpos].virtualPage = IPT[physicalPage].virtualPage;
+        machine->tlb[tlbpos].physicalPage = IPT[physicalPage].physicalPage;
+        machine->tlb[tlbpos].valid = IPT[physicalPage].valid;
+        machine->tlb[tlbpos].use = IPT[physicalPage].use;
+        machine->tlb[tlbpos].dirty = IPT[physicalPage].dirty;
+        machine->tlb[tlbpos].readOnly = IPT[physicalPage].readOnly;
         return;
     }
 
@@ -708,12 +711,12 @@ void handlePageFaultException(int vAddr){
     IPT[physicalPage].swapLocation = currentThread->space->PageTableInfo[virtualpage].swapLocation;
     IPT[physicalPage].space = currentThread->space;
     // Now copy the IPT[physicalPage] to TLB[TLBIndex]
-    machine->tlb[TLBIndex].virtualPage = IPT[physicalPage].virtualPage;
-    machine->tlb[TLBIndex].physicalPage = IPT[physicalPage].physicalPage;
-    machine->tlb[TLBIndex].valid = IPT[physicalPage].valid;
-    machine->tlb[TLBIndex].use = IPT[physicalPage].use;
-    machine->tlb[TLBIndex].dirty = IPT[physicalPage].dirty;
-    machine->tlb[TLBIndex].readOnly = IPT[physicalPage].readOnly;
+    machine->tlb[tlbpos].virtualPage = IPT[physicalPage].virtualPage;
+    machine->tlb[tlbpos].physicalPage = IPT[physicalPage].physicalPage;
+    machine->tlb[tlbpos].valid = IPT[physicalPage].valid;
+    machine->tlb[tlbpos].use = IPT[physicalPage].use;
+    machine->tlb[tlbpos].dirty = IPT[physicalPage].dirty;
+    machine->tlb[tlbpos].readOnly = IPT[physicalPage].readOnly;
     // Everything is done!!
     return;
 }

@@ -187,6 +187,7 @@ AddrSpace::AddrSpace(OpenFile *exec) : fileTable(MaxOpenFiles),
     DEBUG('a', "Initializing page table, num pages %d, size %d\n", 
                                         numPages, size);
     pageTable = new TranslationEntry[numPages];
+    PageTableInfo = new PageTableEntry[numPages]; 
 
     // allocate physical memory for the pages we are using,
     //  mark the others invalid
