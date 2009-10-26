@@ -81,6 +81,7 @@ Machine *machine;	// user program memory and registers
 
 #ifdef NETWORK
 PostOffice *postOffice;
+int netname;
 #endif
 
 
@@ -138,7 +139,7 @@ Initialize(int argc, char **argv)
 #endif
 #ifdef NETWORK
     double rely = 1;		// network reliability
-    int netname = 0;		// UNIX socket name
+    netname = 0;		// UNIX socket name
 #endif
     
     for (argc--, argv++; argc > 0; argc -= argCount, argv += argCount) {
@@ -198,10 +199,12 @@ Initialize(int argc, char **argv)
     
 #ifdef USER_PROGRAM
     machine = new Machine(debugUserProg);	// this must come first
+#ifdef USE_TLB
     IPT = new InvertedPageTableEntry[NumPhysPages];
     fileSystem->Create("SWAPFILE", 1);
     swapFile = fileSystem->Open("SWAPFILE");
     swapLocation = 0;
+#endif
 #endif
     
 #ifdef FILESYS

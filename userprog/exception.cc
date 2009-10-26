@@ -31,6 +31,11 @@
 #include <cstring>
 #include <iostream>
 
+#ifdef NETWORK
+#define MaxDataSize (MaxMailSize - sizeof(unsigned) -sizeof(int))
+
+int sequenceNumber = 0;
+#endif
 using namespace std;
 extern "C" { int bzero(char *, int); };
 Lock *processTableLock = new Lock("processTableLock");
@@ -588,8 +593,9 @@ int Random_Syscall(){
 int getTimestamp(){
     return (int) time(0);
 }
-
+#ifdef USE_TLB
 void handlePageFaultException(int vAddr){
+    IntStatus oldLevel = interrupt->SetLevel(IntOff);
     int virtualpage = vAddr / PageSize;
     int physicalPage;
     int tlbpos;
@@ -629,6 +635,7 @@ void handlePageFaultException(int vAddr){
         machine->tlb[tlbpos].use = IPT[physicalPage].use;
         machine->tlb[tlbpos].dirty = IPT[physicalPage].dirty;
         machine->tlb[tlbpos].readOnly = IPT[physicalPage].readOnly;
+        (void) interrupt->SetLevel(oldLevel);
         return;
     }
 
@@ -718,22 +725,73 @@ void handlePageFaultException(int vAddr){
     machine->tlb[tlbpos].dirty = IPT[physicalPage].dirty;
     machine->tlb[tlbpos].readOnly = IPT[physicalPage].readOnly;
     // Everything is done!!
+    (void) interrupt->SetLevel(oldLevel);
     return;
 }
-
+#endif
 /* 
  * Receives the  message sent to mbox. 
+ * Returns the number of bytes received
  */
 int Receive_Syscall(int senderID, int mbox,int vaddr){
 #ifdef NETWORK
-    // TODO: Emulate UDP over NACHOS-IP
+    DEBUG('a', "Receive_Syscall\n");
+    char *message = new char[MaxMailSize];
+    bzero(message, MaxMailSize);
+    
+    PacketHeader pktHead;
+    MailHeader mailHead;
+    
+    postOffice->Receive(senderID, &pktHead, &mailHead, message);
+    // Copy message to vaddr
+    return copyout(vaddr, sizeof(message), message);
 #endif
-    return 0;
 }
 
 void Send_Syscall(int receiverID,int mbox,int vaddr){
 #ifdef NETWORK
-    // TODO: Emulate UDP over NACHOS-IP
+    DEBUG('a', "Send_syscall initialized\n");
+    char *message = new char[MaxMailSize];
+    bzero(message, MaxMailSize);
+    
+    int senderID = netname;
+    // Message Format[sequenceNumber, senderId, DATA]
+    // get and increment sequence number
+    unsigned curSequenceNumber = sequenceNumber++;
+    // Add sequenceNo to the message
+    memcpy( message, &curSequenceNumber, sizeof(unsigned) );
+    // Add sender Id to message
+    memcpy( message+sizeof(unsigned), &senderID, sizeof(int) );
+    
+    char *payload = new char[MaxDataSize];
+    // read the payload to be sent
+    int bytesRead = copyin(vaddr, MaxDataSize, payload);
+    
+    memcpy(message+sizeof(unsigned)+sizeof(int), payload, sizeof(payload) );
+    
+    if (bytesRead != -1) {
+        // Payload successfully acquired
+        DEBUG('a', "Payload: %s, Receiver: %d, Receiver Mailbox: %d\n", payload, receiverID, mbox);
+        
+        // Send packet
+        PacketHeader pktHead;
+        pktHead.to = receiverID;
+        
+        MailHeader mailHead;
+        mailHead.to = mbox;
+        mailHead.from = senderID;
+        mailHead.length = strlen(message) + 1;
+        // Send the message to other client
+        bool retVal = postOffice->Send(pktHead, mailHead, message);
+        if (!retVal) {
+            DEBUG('a', "Cannot Send\n");
+            interrupt->Halt();
+        }else {
+            DEBUG('a', "Message sent: %s\n", message);
+        }
+    }else {
+        DEBUG('a', "Failed to read Payload\n");
+    }
 #endif
 }
 

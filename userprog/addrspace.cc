@@ -161,7 +161,7 @@ AddrSpace::AddrSpace(OpenFile *exec) : fileTable(MaxOpenFiles),
                                                 // virtual memory
 #endif    
     DEBUG('a', "Initializing address space with %d valid pages, size %d\n",
-          neededPages, neededPages*PageSize);
+          neededPages, neededPages * PageSize);
     
     // set the stackTable to hold the number of stacks that may exist
     stackTableLock = new Lock("StackTableLock");
