@@ -36,8 +36,10 @@ StartProcess(char *filename)
     space = new AddrSpace(executable);
 
     currentThread->space = space;
+    currentThread->setPID(processTable->addProcess(-1));
+    cout <<"CurrentThread->getPID() = "<<currentThread->getPID()<<endl;
 
-    delete executable;			// close file
+//    delete executable;			// close file
 
     space->InitRegisters();		// set the initial register values
     space->RestoreState();		// load page table register

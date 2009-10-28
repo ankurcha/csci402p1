@@ -108,7 +108,6 @@ class Thread {
     void setPID(int pid){
         this->PID = pid;
     }
-
     int getStackID(){return stackID;}
     void setStackID(int sid){ stackID = sid ;}
 private:

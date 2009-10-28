@@ -77,11 +77,7 @@ class AddrSpace {
     Table CVTable;              //Table of CVs
     Lock *CVTableLock;
     int childThreads;        // PID of Children Threads
-                             // Lock *childLock;
-#ifdef USE_TLB
-        int loadVirtualPage(unsigned int, int);
-#endif
-    
+                             // Lock *childLock;    
 #endif
         // Assume linear page table translation
         // for now! 

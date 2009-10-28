@@ -15,43 +15,34 @@
 #include "interrupt.h"
 #include "stats.h"
 #include "timer.h"
+#include "processTable.h"
 
 #ifdef CHANGED
-#include <map>
-
 using namespace std;
 typedef int PID;
 
-struct ProcessTable {
-public:
-    int processCounter;
-    ProcessTable();
-    ~ProcessTable();
-};
-
 class InvertedPageTableEntry : public TranslationEntry{
-    public:
-        InvertedPageTableEntry(){
+public:
+    InvertedPageTableEntry(){
             virtualPage = -1;
             physicalPage = -1;
         }
-
-        enum {
+    enum {
             CODE,
             DATA,
             OTHER
         } ContentType;
-        
-        enum {
+    enum {
             MEMORY,
             EXEC,
             SWAP,
         }Location;
-        int PID;    // TO find out who is the owner
-        int age;    // Used for FIFO replacement
-        AddrSpace *space; // To keep track of which pages we are refering to.
-        status PageStatus;
-        int swapLocation;
+
+    int PID;    // TO find out who is the owner
+    int age;    // Used for FIFO replacement
+    AddrSpace *space; // To keep track of which pages we are refering to.
+    status PageStatus;
+    int swapLocation;
 };
 
 #endif
@@ -70,7 +61,6 @@ extern Timer *timer;				// the hardware alarm clock
 
 #ifdef CHANGED
 
-extern ProcessTable *processTable;  // Process Table for Nachos
 #ifdef USE_TLB
 extern InvertedPageTableEntry *IPT;
 extern bool FIFOreplacementPolicy;
@@ -84,6 +74,7 @@ extern BitMap *swapBitMap;
 #ifdef USER_PROGRAM
 #include "machine.h"
 extern Machine* machine;	// user program memory and registers
+extern ProcessTable *processTable;  // Process Table for Nachos
 #endif
 
 #ifdef FILESYS_NEEDED 		// FILESYS or FILESYS_STUB 

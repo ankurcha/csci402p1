@@ -151,7 +151,7 @@ AddrSpace::AddrSpace(OpenFile *exec) : fileTable(MaxOpenFiles),
 
     dataSize = noffH.code.size + noffH.initData.size + noffH.uninitData.size ;
     dataPages = divRoundUp(dataSize, PageSize);
-    neededPages = dataPages + divRoundUp(UserStackSize,PageSize);
+    neededPages = dataPages + divRoundUp(UserStackSize, PageSize);
                                                 // we need to increase the size
                                                 // to leave room for the stack
 #ifndef USE_TLB
@@ -165,11 +165,9 @@ AddrSpace::AddrSpace(OpenFile *exec) : fileTable(MaxOpenFiles),
     
     // set the stackTable to hold the number of stacks that may exist
     stackTableLock = new Lock("StackTableLock");
-    stackTable = new BitMap((NumPhysPages - dataPages) 
-                            / divRoundUp(UserStackSize, PageSize));
-
+    stackTable = new BitMap(/*(NumPhysPages - dataPages) 
+                            / divRoundUp(UserStackSize, PageSize)*/ neededPages );
     // the first stack is in position 0
-    //stackTable.push_back((char) true);
     stackTable->Mark(0);
 
     // and its stack sits in the last pages of the address space
@@ -181,7 +179,7 @@ AddrSpace::AddrSpace(OpenFile *exec) : fileTable(MaxOpenFiles),
     this->childThreads = 0;
     
     // first, set up the translation
-    numPages = NumPhysPages;
+    numPages = neededPages; //______ANKUR CHANGE______ NumPhysPages;
     size = numPages * PageSize;
                                                      // TURN OFF ALL PRELOADING
     DEBUG('a', "Initializing page table, num pages %d, size %d\n", 
@@ -193,11 +191,11 @@ AddrSpace::AddrSpace(OpenFile *exec) : fileTable(MaxOpenFiles),
     //  mark the others invalid
     for (i = 0; i < dataPages; i++) {
         // find a free page in physical memory
+#ifndef USE_TLB
         physMemMapLock->Acquire();
         int physPage = physMemMap.Find();
         ASSERT(physPage != -1); // make sure a page was found
         physMemMapLock->Release();
-#ifndef USE_TLB
         pageTable[i].virtualPage = i;
         pageTable[i].physicalPage = physPage;
         pageTable[i].valid = TRUE;
@@ -210,6 +208,13 @@ AddrSpace::AddrSpace(OpenFile *exec) : fileTable(MaxOpenFiles),
         // zero out the physical memory associated with this page
         bzero(&(machine->mainMemory[PageSize * physPage]), PageSize);
 #endif
+        if(i< numPages){
+            PageTableInfo[i].PageStatus = EXEC;
+        }else {
+            PageTableInfo[i].PageStatus = UNINITDATA;
+            PageTableInfo[i].swapLocation = -1;
+        }
+
     }
     // set all the unused pages to invalid
     for(;i < stackStart; i++) {
@@ -221,15 +226,21 @@ AddrSpace::AddrSpace(OpenFile *exec) : fileTable(MaxOpenFiles),
         pageTable[i].dirty = FALSE;
         pageTable[i].readOnly = FALSE;
 #endif
+        if(i< numPages){
+            PageTableInfo[i].PageStatus = EXEC;
+        }else {
+            PageTableInfo[i].PageStatus = UNINITDATA;
+            PageTableInfo[i].swapLocation = -1;
+        }
     }
     // allocate pages for the stack
     for (; i < NumPhysPages; i++) {
         // find a free page in physical memory
+#ifndef USE_TLB
         physMemMapLock->Acquire();
         int physPage = physMemMap.Find();
         ASSERT(physPage != -1); // make sure a page was found
         physMemMapLock->Release();
-#ifndef USE_TLB
         pageTable[i].virtualPage = i;
         pageTable[i].physicalPage = physPage;
         pageTable[i].valid = TRUE;
@@ -242,6 +253,12 @@ AddrSpace::AddrSpace(OpenFile *exec) : fileTable(MaxOpenFiles),
         // zero out the physical memory associated with this page
         bzero(&(machine->mainMemory[PageSize * physPage]), PageSize);
 #endif
+        if(i< numPages){
+            PageTableInfo[i].PageStatus = EXEC;
+        }else {
+            PageTableInfo[i].PageStatus = UNINITDATA;
+            PageTableInfo[i].swapLocation = -1;
+        }
     }
     
     // then, copy in the code and data segments into memory
@@ -298,61 +315,7 @@ AddrSpace::AddrSpace(OpenFile *exec) : fileTable(MaxOpenFiles),
 }
 #endif
 
-// Load the Virtual Page at virtAddr to PageNumber in memory
-/*
-int AddrSpace::loadVirtualPage( unsigned int virtAddr, int PageNumber){
-    
-    if(!executable){
-        DEBUG('a', "Invalid Executable\n");
-    }
-    
-    if(pageTable == 0){
-        // Construct the page table
-        pageTable = new TranslationEntry[numPages];
-    }
 
-    InvertedPageTableEntry page;
-
-    int virtPage = virtAddr / PageSize;
-    
-    // Copying from the Addrspace constructor
-    NoffHeader noffH;
-    unsigned int size, stackPageNumber, neededPages;
-
-    // Don't allocate the input or output to disk files
-    fileTable.Put(0);
-    fileTable.Put(0);
-    
-        // read the header into noffH
-    executable->ReadAt((char *)&noffH, sizeof(noffH), 0);
-    
-        // switch to big endian if it is not already
-    if ((noffH.noffMagic != NOFFMAGIC) && (WordToHost(noffH.noffMagic) == NOFFMAGIC)){
-        SwapHeader(&noffH);
-    }
-        // Check magic number
-    ASSERT(noffH.noffMagic == NOFFMAGIC);
-    
-    // Calculate sizes and the pages required.
-    dataSize = noffH.code.size + noffH.initData.size + noffH.uninitData.size ;
-    dataPages = divRoundUp(dataSize, PageSize);
-    neededPages = dataPages + divRoundUp(UserStackSize,PageSize);
-    
-    DEBUG('a', "Initializing address space with %d valid pages, size %d\n",
-                      neededPages, neededPages*PageSize);
-        // and its stack sits in the last pages of the address space
-    unsigned int stackStart = 
-                    NumPhysPages - divRoundUp(UserStackSize, PageSize);
-    numPages = neededPages;
-    size = numPages * PageSize;
-    
-    // Read the executable into memory with all the segments and stuff
-    // Max, you may want to do this. I couldn't understand the reading and
-    // memory things.
-    
-    return PageNumber;
-}
-*/
 //----------------------------------------------------------------------
 // AddrSpace::~AddrSpace
 //
@@ -457,6 +420,7 @@ int AddrSpace::InitStack() {
     // allocate the memory for this stack
     for(int i=start; i < stackPages + start; i++) {
         // find a free page in physical memory
+#ifndef USE_TLB
         physMemMapLock->Acquire();
         int physPage = physMemMap.Find();
         ASSERT(physPage != -1); // make sure a page was found
@@ -471,6 +435,7 @@ int AddrSpace::InitStack() {
 
         // zero out the physical memory associated with this page
         bzero(&(machine->mainMemory[PageSize * physPage]), PageSize);
+#endif
     }
 
     // Set the stack register to the end of the address space for this stack;
@@ -506,12 +471,14 @@ void AddrSpace::ClearStack(int id) {
 
     // free the physical memory associated with this stack
     for(int i = start; i < start + stackPages; i++) {
+#ifndef USE_TLB
         physMemMapLock->Acquire();
         physMemMap.Clear(pageTable[i].physicalPage);
         physMemMapLock->Release();
 
         pageTable[i].physicalPage = 0;
         pageTable[i].valid = FALSE;
+#endif
     }
 
     stackTable->Clear(id);
@@ -530,7 +497,16 @@ void AddrSpace::ClearStack(int id) {
 //----------------------------------------------------------------------
 
 void AddrSpace::SaveState() 
-{}
+{
+#ifdef USE_TLB
+    // Save state infor from the tlb
+    for(int i=0;i<TLBSize;i++)
+        if(machine->tlb[i].valid){
+            IPT[machine->tlb[i].physicalPage].use = machine->tlb[i].use;
+            IPT[machine->tlb[i].physicalPage].dirty = machine->tlb[i].dirty;
+        }
+#endif
+}
 
 //----------------------------------------------------------------------
 // AddrSpace::RestoreState
