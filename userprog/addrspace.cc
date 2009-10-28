@@ -154,12 +154,12 @@ AddrSpace::AddrSpace(OpenFile *exec) : fileTable(MaxOpenFiles),
     neededPages = dataPages + divRoundUp(UserStackSize, PageSize);
                                                 // we need to increase the size
                                                 // to leave room for the stack
-#ifndef USE_TLB
-    ASSERT(neededPages <= NumPhysPages);           // check we're not trying
-                                                // to run anything too big --
-                                                // at least until we have
-                                                // virtual memory
-#endif    
+//#ifndef USE_TLB
+//    ASSERT(neededPages <= NumPhysPages);           // check we're not trying
+//                                                // to run anything too big --
+//                                                // at least until we have
+//                                                // virtual memory
+//#endif    
     DEBUG('a', "Initializing address space with %d valid pages, size %d\n",
           neededPages, neededPages * PageSize);
     
@@ -191,23 +191,23 @@ AddrSpace::AddrSpace(OpenFile *exec) : fileTable(MaxOpenFiles),
     //  mark the others invalid
     for (i = 0; i < dataPages; i++) {
         // find a free page in physical memory
-#ifndef USE_TLB
-        physMemMapLock->Acquire();
-        int physPage = physMemMap.Find();
-        ASSERT(physPage != -1); // make sure a page was found
-        physMemMapLock->Release();
-        pageTable[i].virtualPage = i;
-        pageTable[i].physicalPage = physPage;
-        pageTable[i].valid = TRUE;
-        pageTable[i].use = FALSE;
-        pageTable[i].dirty = FALSE;
-        pageTable[i].readOnly = FALSE;  // if the code segment was entirely on 
-                                        // a separate page, we could set its 
-                                        // pages to be read-only
-
-        // zero out the physical memory associated with this page
-        bzero(&(machine->mainMemory[PageSize * physPage]), PageSize);
-#endif
+//#ifndef USE_TLB
+//        physMemMapLock->Acquire();
+//        int physPage = physMemMap.Find();
+//        ASSERT(physPage != -1); // make sure a page was found
+//        physMemMapLock->Release();
+//        pageTable[i].virtualPage = i;
+//        pageTable[i].physicalPage = physPage;
+//        pageTable[i].valid = TRUE;
+//        pageTable[i].use = FALSE;
+//        pageTable[i].dirty = FALSE;
+//        pageTable[i].readOnly = FALSE;  // if the code segment was entirely on 
+//                                        // a separate page, we could set its 
+//                                        // pages to be read-only
+//
+//        // zero out the physical memory associated with this page
+//        bzero(&(machine->mainMemory[PageSize * physPage]), PageSize);
+//#endif
         if(i< numPages){
             PageTableInfo[i].PageStatus = EXEC;
         }else {
@@ -218,14 +218,14 @@ AddrSpace::AddrSpace(OpenFile *exec) : fileTable(MaxOpenFiles),
     }
     // set all the unused pages to invalid
     for(;i < stackStart; i++) {
-#ifndef USE_TLB
-        pageTable[i].virtualPage = i;
-        pageTable[i].physicalPage = 0;
-        pageTable[i].valid = FALSE;  // no physical memory for this page
-        pageTable[i].use = FALSE;
-        pageTable[i].dirty = FALSE;
-        pageTable[i].readOnly = FALSE;
-#endif
+//#ifndef USE_TLB
+//        pageTable[i].virtualPage = i;
+//        pageTable[i].physicalPage = 0;
+//        pageTable[i].valid = FALSE;  // no physical memory for this page
+//        pageTable[i].use = FALSE;
+//        pageTable[i].dirty = FALSE;
+//        pageTable[i].readOnly = FALSE;
+//#endif
         if(i< numPages){
             PageTableInfo[i].PageStatus = EXEC;
         }else {
@@ -236,23 +236,23 @@ AddrSpace::AddrSpace(OpenFile *exec) : fileTable(MaxOpenFiles),
     // allocate pages for the stack
     for (; i < NumPhysPages; i++) {
         // find a free page in physical memory
-#ifndef USE_TLB
-        physMemMapLock->Acquire();
-        int physPage = physMemMap.Find();
-        ASSERT(physPage != -1); // make sure a page was found
-        physMemMapLock->Release();
-        pageTable[i].virtualPage = i;
-        pageTable[i].physicalPage = physPage;
-        pageTable[i].valid = TRUE;
-        pageTable[i].use = FALSE;
-        pageTable[i].dirty = FALSE;
-        pageTable[i].readOnly = FALSE;  // if the code segment was entirely on 
-                                        // a separate page, we could set its 
-                                        // pages to be read-only
-
-        // zero out the physical memory associated with this page
-        bzero(&(machine->mainMemory[PageSize * physPage]), PageSize);
-#endif
+//#ifndef USE_TLB
+//        physMemMapLock->Acquire();
+//        int physPage = physMemMap.Find();
+//        ASSERT(physPage != -1); // make sure a page was found
+//        physMemMapLock->Release();
+//        pageTable[i].virtualPage = i;
+//        pageTable[i].physicalPage = physPage;
+//        pageTable[i].valid = TRUE;
+//        pageTable[i].use = FALSE;
+//        pageTable[i].dirty = FALSE;
+//        pageTable[i].readOnly = FALSE;  // if the code segment was entirely on 
+//                                        // a separate page, we could set its 
+//                                        // pages to be read-only
+//
+//        // zero out the physical memory associated with this page
+//        bzero(&(machine->mainMemory[PageSize * physPage]), PageSize);
+//#endif
         if(i< numPages){
             PageTableInfo[i].PageStatus = EXEC;
         }else {
@@ -262,56 +262,56 @@ AddrSpace::AddrSpace(OpenFile *exec) : fileTable(MaxOpenFiles),
     }
     
     // then, copy in the code and data segments into memory
-#ifndef USE_TLB
-    if (noffH.code.size > 0) {
-        DEBUG('a', "Initializing code segment, at vaddr 0x%x, size %d\n", 
-                        noffH.code.virtualAddr, noffH.code.size);
-
-        // initialize the code segment one page at a time
-        int page = noffH.code.virtualAddr / PageSize;
-        int offset = noffH.code.virtualAddr % PageSize; // only !=0 for page 1
-        int fileAddr = noffH.code.inFileAddr;
-        int _size = -1;
-        for( int code = noffH.code.size; code > 0; code -= _size) {
-            ASSERT(pageTable[page].valid);
-            int paddr = (pageTable[page].physicalPage * PageSize) + offset;
-            _size = min(code, PageSize - offset);
-            DEBUG('a', "Initializing code segment, at paddr 0x%x, size %d\n", 
-                            paddr, _size);
-
-            executable->ReadAt(&(machine->mainMemory[paddr]), _size, fileAddr);
-
-            fileAddr += _size;
-            offset = 0;
-            page++;
-        }
-    }
-    if (noffH.initData.size > 0) {
-        DEBUG('a', "Initializing initData segment, at vaddr 0x%x, size %d\n", 
-                        noffH.initData.virtualAddr, noffH.initData.size);
-
-        // initialize the initData segment one page at a time
-        int page = noffH.initData.virtualAddr / PageSize;
-        int offset = noffH.initData.virtualAddr % PageSize; // only !=0 for page 1
-        DEBUG('a', "Offset is %d\n", offset);
-        int fileAddr = noffH.initData.inFileAddr;
-        int _size = -1;
-        for( int data = noffH.initData.size; data > 0; data -= _size) {
-            DEBUG('a', "  %d bytes remain\n", data);
-            ASSERT(pageTable[page].valid);
-            int paddr = (pageTable[page].physicalPage * PageSize) + offset;
-            _size = min(data, PageSize - offset);
-            DEBUG('a', "Initializing initData segment, at paddr 0x%x, size %d\n", 
-                            paddr, _size);
-
-            executable->ReadAt(&(machine->mainMemory[paddr]), _size, fileAddr);
-
-            fileAddr += _size;
-            offset = 0;
-            page++;
-        }
-    }
-#endif                                         
+//#ifndef USE_TLB
+//    if (noffH.code.size > 0) {
+//        DEBUG('a', "Initializing code segment, at vaddr 0x%x, size %d\n", 
+//                        noffH.code.virtualAddr, noffH.code.size);
+//
+//        // initialize the code segment one page at a time
+//        int page = noffH.code.virtualAddr / PageSize;
+//        int offset = noffH.code.virtualAddr % PageSize; // only !=0 for page 1
+//        int fileAddr = noffH.code.inFileAddr;
+//        int _size = -1;
+//        for( int code = noffH.code.size; code > 0; code -= _size) {
+//            ASSERT(pageTable[page].valid);
+//            int paddr = (pageTable[page].physicalPage * PageSize) + offset;
+//            _size = min(code, PageSize - offset);
+//            DEBUG('a', "Initializing code segment, at paddr 0x%x, size %d\n", 
+//                            paddr, _size);
+//
+//            executable->ReadAt(&(machine->mainMemory[paddr]), _size, fileAddr);
+//
+//            fileAddr += _size;
+//            offset = 0;
+//            page++;
+//        }
+//    }
+//    if (noffH.initData.size > 0) {
+//        DEBUG('a', "Initializing initData segment, at vaddr 0x%x, size %d\n", 
+//                        noffH.initData.virtualAddr, noffH.initData.size);
+//
+//        // initialize the initData segment one page at a time
+//        int page = noffH.initData.virtualAddr / PageSize;
+//        int offset = noffH.initData.virtualAddr % PageSize; // only !=0 for page 1
+//        DEBUG('a', "Offset is %d\n", offset);
+//        int fileAddr = noffH.initData.inFileAddr;
+//        int _size = -1;
+//        for( int data = noffH.initData.size; data > 0; data -= _size) {
+//            DEBUG('a', "  %d bytes remain\n", data);
+//            ASSERT(pageTable[page].valid);
+//            int paddr = (pageTable[page].physicalPage * PageSize) + offset;
+//            _size = min(data, PageSize - offset);
+//            DEBUG('a', "Initializing initData segment, at paddr 0x%x, size %d\n", 
+//                            paddr, _size);
+//
+//            executable->ReadAt(&(machine->mainMemory[paddr]), _size, fileAddr);
+//
+//            fileAddr += _size;
+//            offset = 0;
+//            page++;
+//        }
+//    }
+//#endif                                         
 }
 #endif
 
@@ -327,13 +327,13 @@ AddrSpace::~AddrSpace()
 {
 #ifdef CHANGED
     // free the physical memory being used by this page table
-#ifndef USE_TLB
-    for(unsigned int i=0; i < numPages; i++) {
-        physMemMapLock->Acquire();
-        physMemMap.Clear(pageTable[i].physicalPage);
-        physMemMapLock->Release();
-    }
-#endif
+//#ifndef USE_TLB
+//    for(unsigned int i=0; i < numPages; i++) {
+//        physMemMapLock->Acquire();
+//        physMemMap.Clear(pageTable[i].physicalPage);
+//        physMemMapLock->Release();
+//    }
+//#endif
     delete pageTable;
         //delete childLock;
     delete stackTableLock;
@@ -420,22 +420,22 @@ int AddrSpace::InitStack() {
     // allocate the memory for this stack
     for(int i=start; i < stackPages + start; i++) {
         // find a free page in physical memory
-#ifndef USE_TLB
-        physMemMapLock->Acquire();
-        int physPage = physMemMap.Find();
-        ASSERT(physPage != -1); // make sure a page was found
-        physMemMapLock->Release();
-
-        pageTable[i].virtualPage = i;
-        pageTable[i].physicalPage = physPage;
-        pageTable[i].valid = TRUE;
-        pageTable[i].use = FALSE;
-        pageTable[i].dirty = FALSE;
-        pageTable[i].readOnly = FALSE;
-
-        // zero out the physical memory associated with this page
-        bzero(&(machine->mainMemory[PageSize * physPage]), PageSize);
-#endif
+//#ifndef USE_TLB
+//        physMemMapLock->Acquire();
+//        int physPage = physMemMap.Find();
+//        ASSERT(physPage != -1); // make sure a page was found
+//        physMemMapLock->Release();
+//
+//        pageTable[i].virtualPage = i;
+//        pageTable[i].physicalPage = physPage;
+//        pageTable[i].valid = TRUE;
+//        pageTable[i].use = FALSE;
+//        pageTable[i].dirty = FALSE;
+//        pageTable[i].readOnly = FALSE;
+//
+//        // zero out the physical memory associated with this page
+//        bzero(&(machine->mainMemory[PageSize * physPage]), PageSize);
+//#endif
     }
 
     // Set the stack register to the end of the address space for this stack;
@@ -471,14 +471,14 @@ void AddrSpace::ClearStack(int id) {
 
     // free the physical memory associated with this stack
     for(int i = start; i < start + stackPages; i++) {
-#ifndef USE_TLB
-        physMemMapLock->Acquire();
-        physMemMap.Clear(pageTable[i].physicalPage);
-        physMemMapLock->Release();
-
-        pageTable[i].physicalPage = 0;
-        pageTable[i].valid = FALSE;
-#endif
+//#ifndef USE_TLB
+//        physMemMapLock->Acquire();
+//        physMemMap.Clear(pageTable[i].physicalPage);
+//        physMemMapLock->Release();
+//
+//        pageTable[i].physicalPage = 0;
+//        pageTable[i].valid = FALSE;
+//#endif
     }
 
     stackTable->Clear(id);
@@ -518,13 +518,14 @@ void AddrSpace::SaveState()
 
 void AddrSpace::RestoreState() 
 {
-#ifndef USE_TLB
-    machine->pageTable = pageTable;
-    machine->pageTableSize = numPages;
-#endif
+//#ifndef USE_TLB
+//    machine->pageTable = pageTable;
+//    machine->pageTableSize = numPages;
+//#endif
     // All the pages in the machine->TLB must be invalidated now
 #ifdef USE_TLB
     for(int i=0; i < TLBSize; i++){
+        //TODO: am I mistaken or do we need to disable ints to do this? -max
         machine->tlb[i].valid = FALSE;
     }
 #endif
