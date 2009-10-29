@@ -500,11 +500,13 @@ void AddrSpace::SaveState()
 {
 #ifdef USE_TLB
     // Save state infor from the tlb
+    IntStatus oldLevel = interrupt->SetLevel(IntOff);
     for(int i=0;i<TLBSize;i++)
         if(machine->tlb[i].valid){
             IPT[machine->tlb[i].physicalPage].use = machine->tlb[i].use;
             IPT[machine->tlb[i].physicalPage].dirty = machine->tlb[i].dirty;
         }
+    (void) interrupt->SetLevel(oldLevel);
 #endif
 }
 
@@ -524,10 +526,11 @@ void AddrSpace::RestoreState()
 //#endif
     // All the pages in the machine->TLB must be invalidated now
 #ifdef USE_TLB
+    IntStatus oldLevel = interrupt->SetLevel(IntOff);
     for(int i=0; i < TLBSize; i++){
-        //TODO: am I mistaken or do we need to disable ints to do this? -max
         machine->tlb[i].valid = FALSE;
     }
+    (void) interrupt->SetLevel(oldLevel);
 #endif
 }
 
