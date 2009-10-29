@@ -184,7 +184,9 @@ AddrSpace::AddrSpace(OpenFile *exec) : fileTable(MaxOpenFiles),
                                                      // TURN OFF ALL PRELOADING
     DEBUG('a', "Initializing page table, num pages %d, size %d\n", 
                                         numPages, size);
-    pageTable = new TranslationEntry[numPages];
+//#ifndef USE_TLB
+    //pageTable = new TranslationEntry[numPages];
+//#endif
     PageTableInfo = new PageTableEntry[numPages]; 
 
     // allocate physical memory for the pages we are using,
@@ -539,6 +541,7 @@ void AddrSpace::RestoreState()
 //
 //----------------------------------------------------------------------
 
+//TODO: modify this method to not use pageTable
 std::string AddrSpace::readCString(char* s) {
     std::string ret = "";
 
