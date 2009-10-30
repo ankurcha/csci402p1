@@ -17,12 +17,12 @@ Interrupt *interrupt;			// interrupt status
 Statistics *stats;			// performance metrics
 Timer *timer;				// the hardware timer device,
                             // for invoking context switches
-#ifdef USE_TLB
+//#ifdef USE_TLB
 InvertedPageTableEntry *IPT; // IPT for nachos
 bool FIFOreplacementPolicy = false; // Default: Random replacement
 OpenFile *swapFile;
 int swapLocation = 0;
-#endif
+//#endif
 
 
 #ifdef FILESYS_NEEDED

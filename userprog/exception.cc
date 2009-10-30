@@ -604,6 +604,7 @@ int getTimestamp(){
 
 void CopyTranslationEntry(TranslationEntry* sourceTE,TranslationEntry* destTE){
     // Perform deep copy the source to the destination
+    
     destTE->virtualPage = sourceTE->virtualPage;
     destTE->physicalPage = sourceTE->physicalPage;
     destTE->valid = sourceTE->valid;
@@ -692,7 +693,7 @@ int findAvailablePage(){
 }
 
 void handlePageFaultException(int vAddr){
-    cout << "entered handlePageFaultException: vAddr= "<<vAddr<<endl;
+    cout << "handlePageFaultException: vAddr= "<<vAddr<<endl;
     IntStatus oldLevel = interrupt->SetLevel(IntOff);
     int virtualpage = vAddr / PageSize;
     int physicalPage = -1;
@@ -808,7 +809,7 @@ void Send_Syscall(int receiverID,int mbox,int vaddr){
     int bytesRead = copyin(vaddr, MaxDataSize, payload);
     
     memcpy(message+sizeof(unsigned)+sizeof(int), payload, sizeof(payload) );
-    
+    cout << "MESSAGE: "<<message;
     if (bytesRead != -1) {
         // Payload successfully acquired
         DEBUG('a', "Payload: %s, Receiver: %d, Receiver Mailbox: %d\n", payload, receiverID, mbox);
