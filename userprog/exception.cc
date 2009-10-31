@@ -31,6 +31,7 @@
 #include <cstring>
 #include <iostream>
 #include <sstream>
+#include <vector>
 
 #ifdef NETWORK
 #define MaxDataSize (MaxMailSize - sizeof(int) -sizeof(int))
@@ -46,6 +47,8 @@ class Packet {
     char data[MaxDataSize];
 
     char* Serialize(){
+
+        cout << to_network_order();
         char *message = new char[MaxMailSize];
         message[0] = senderId;
         message[1] = sequenceNumber;
