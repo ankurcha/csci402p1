@@ -34,10 +34,10 @@ typedef int PID;
 
 // global map of available physical memory
 enum status{
+    NOWHERE,  // page is not allocated anywhere (can still be valid)
     MEMORY, // in physical memory
     EXEC,  // in the executabe file
-    SWAP, // in the swap file
-    NONE  // page is not allocated anywhere (can still be valid)
+    SWAP // in the swap file
 };
 
 class PageTableEntry: public TranslationEntry{

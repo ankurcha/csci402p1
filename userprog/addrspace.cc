@@ -224,6 +224,7 @@ AddrSpace::AddrSpace(OpenFile *exec) : fileTable(MaxOpenFiles),
         pageTableInfo[i].dirty = false;
         pageTableInfo[i].readOnly = false;
         pageTableInfo[i].PageStatus = EXEC;
+        pageTableInfo[i].swapLocation = -1;
 #endif
     }
     // set all the unused pages to invalid
@@ -243,7 +244,8 @@ AddrSpace::AddrSpace(OpenFile *exec) : fileTable(MaxOpenFiles),
         pageTableInfo[i].use = false;
         pageTableInfo[i].dirty = false;
         pageTableInfo[i].readOnly = false;
-        pageTableInfo[i].PageStatus = NONE;
+        pageTableInfo[i].PageStatus = NOWHERE;
+        pageTableInfo[i].swapLocation = -1;
 #endif
     }
     // allocate pages for the stack
@@ -273,7 +275,8 @@ AddrSpace::AddrSpace(OpenFile *exec) : fileTable(MaxOpenFiles),
         pageTableInfo[i].use = false;
         pageTableInfo[i].dirty = false;
         pageTableInfo[i].readOnly = false;
-        pageTableInfo[i].PageStatus = NONE;
+        pageTableInfo[i].PageStatus = NOWHERE;
+        pageTableInfo[i].swapLocation = -1;
 #endif
     }
     
@@ -460,7 +463,8 @@ int AddrSpace::InitStack() {
         pageTableInfo[i].use = false;
         pageTableInfo[i].dirty = false;
         pageTableInfo[i].readOnly = false;
-        pageTableInfo[i].PageStatus = NONE;
+        pageTableInfo[i].PageStatus = NOWHERE;
+        pageTableInfo[i].swapLocation = -1;
 #endif
     }
 
@@ -507,7 +511,8 @@ void AddrSpace::ClearStack(int id) {
 //#endif
 #ifdef USE_TLB
         pageTableInfo[i].valid = false;
-        pageTableInfo[i].PageStatus = NONE;
+        pageTableInfo[i].PageStatus = NOWHERE;
+        pageTableInfo[i].swapLocation = -1;
 #endif
     }
 
