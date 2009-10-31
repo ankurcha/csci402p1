@@ -47,8 +47,6 @@ class Packet {
     char data[MaxDataSize];
 
     char* Serialize(){
-
-        cout << to_network_order();
         char *message = new char[MaxMailSize];
         message[0] = senderId;
         message[1] = sequenceNumber;
