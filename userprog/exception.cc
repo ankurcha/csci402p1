@@ -766,9 +766,8 @@ void handlePageFaultException(int vAddr){
                          &(machine->mainMemory[physicalPage * PageSize]), 
                          PageSize,
                          (PageSize * currentThread->space->pageTableInfo[virtualpage].swapLocation));
-    }else if (currentThread->space->pageTableInfo[virtualpage].PageStatus == UNINITDATA) {
-        DEBUG('a',"Uninitialized Data\n");
     }
+
     DEBUG('a', "Page loading complete\n");
     // The page is now in memory - mark this state change!
     currentThread->space->pageTableInfo[virtualpage].PageStatus = MEMORY;
