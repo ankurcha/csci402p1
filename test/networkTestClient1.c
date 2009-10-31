@@ -19,5 +19,13 @@ int main(){
     print("Client 1: ");
     print(receivedMessage);
     print("\n");
+    print("Trying to send to a bad receiver = -1\n");
+    Send(-1,0, message);
+    print("\n Trying to receive from bad receiver = -1\n");
+    response = Receive(-1, 0, receivedMessage);
+    print("Client 1: ");
+    print(receivedMessage);
+    print("\n");
+
     Exit(0);
 }

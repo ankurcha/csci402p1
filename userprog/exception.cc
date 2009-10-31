@@ -793,7 +793,12 @@ int Receive_Syscall(int senderID, int mbox,int vaddr){
     bzero(message, MaxMailSize);
     PacketHeader pktHead;
     MailHeader mailHead;
-    postOffice->Receive(senderID, &pktHead, &mailHead, message);
+    
+    if(senderID >= 0 && mbox >= 0)
+        postOffice->Receive(senderID, &pktHead, &mailHead, message);
+    else
+        cout << "Error: bad receiver/mailbox";
+
     // Copy message to vaddr
     Packet pkt;
     pkt.Deserialize(message);
