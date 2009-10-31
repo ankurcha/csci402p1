@@ -685,21 +685,21 @@ int findAvailablePage(){
     
     if(IPT[physicalPage].dirty){
         // Page modified but not committed.
-        if(IPT[physicalPage].space->PageTableInfo[virtualPage].swapLocation == -1){
-            IPT[physicalPage].space->PageTableInfo[virtualPage].swapLocation = swapLocation++;
+        if(IPT[physicalPage].space->pageTableInfo[virtualPage].swapLocation == -1){
+            IPT[physicalPage].space->pageTableInfo[virtualPage].swapLocation = swapLocation++;
         }
         // Write the page to swapLocation.
         swapFile->WriteAt(&(machine->mainMemory[PageSize * physicalPage]),PageSize,
-                          (PageSize * IPT[physicalPage].space->PageTableInfo[virtualPage].swapLocation));
-        IPT[physicalPage].space->PageTableInfo[virtualPage].PageStatus = SWAP;
-    }else if(IPT[physicalPage].space->PageTableInfo[virtualPage].swapLocation == -1){
+                          (PageSize * IPT[physicalPage].space->pageTableInfo[virtualPage].swapLocation));
+        IPT[physicalPage].space->pageTableInfo[virtualPage].PageStatus = SWAP;
+    }else if(IPT[physicalPage].space->pageTableInfo[virtualPage].swapLocation == -1){
         // Okay!! page is not dirty and was never written to swap file...
-        IPT[physicalPage].space->PageTableInfo[virtualPage].swapLocation = swapLocation++;
+        IPT[physicalPage].space->pageTableInfo[virtualPage].swapLocation = swapLocation++;
         swapFile->WriteAt(&(machine->mainMemory[PageSize * physicalPage]),PageSize,
-                          (PageSize * IPT[physicalPage].space->PageTableInfo[virtualPage].swapLocation));
-        IPT[physicalPage].space->PageTableInfo[virtualPage].PageStatus = SWAP;
+                          (PageSize * IPT[physicalPage].space->pageTableInfo[virtualPage].swapLocation));
+        IPT[physicalPage].space->pageTableInfo[virtualPage].PageStatus = SWAP;
     }else {
-        IPT[physicalPage].space->PageTableInfo[virtualPage].PageStatus = SWAP;
+        IPT[physicalPage].space->pageTableInfo[virtualPage].PageStatus = SWAP;
     }
     
     //If currentThread, invalidate all entries in TLB
@@ -731,7 +731,7 @@ void handlePageFaultException(int vAddr){
     // Now we check if the currentThread->space pageTable is in memory
     // If yes, load from IPT
     
-    if(currentThread->space->PageTableInfo[virtualpage].PageStatus == MEMORY){
+    if(currentThread->space->pageTableInfo[virtualpage].PageStatus == MEMORY){
         // Find page in IPT
         physicalPage = findInIPT(virtualpage, currentThread->PID);
         // make sure the page was actually found where it is supposed to be
@@ -750,7 +750,7 @@ void handlePageFaultException(int vAddr){
     // so, zero it out!!
     bzero(&(machine->mainMemory[PageSize * physicalPage]), PageSize);
 
-    if(currentThread->space->PageTableInfo[virtualpage].PageStatus == EXEC){
+    if(currentThread->space->pageTableInfo[virtualpage].PageStatus == EXEC){
         // Load from file!
         DEBUG('a', "Loading page from file: %d, virtualPage: %d\n", 
               currentThread->space->noffH.code.inFileAddr, 
@@ -760,18 +760,18 @@ void handlePageFaultException(int vAddr){
                             PageSize, // size
                             currentThread->space->noffH.code.inFileAddr + virtualpage * PageSize // length
                             );
-    }else if(currentThread->space->PageTableInfo[virtualpage].PageStatus == SWAP){
+    }else if(currentThread->space->pageTableInfo[virtualpage].PageStatus == SWAP){
         DEBUG('a',"Load SwapFile\n");
         swapFile->ReadAt(
                          &(machine->mainMemory[physicalPage * PageSize]), 
                          PageSize,
-                         (PageSize * currentThread->space->PageTableInfo[virtualpage].swapLocation));
-    }else if (currentThread->space->PageTableInfo[virtualpage].PageStatus == UNINITDATA) {
+                         (PageSize * currentThread->space->pageTableInfo[virtualpage].swapLocation));
+    }else if (currentThread->space->pageTableInfo[virtualpage].PageStatus == UNINITDATA) {
         DEBUG('a',"Uninitialized Data\n");
     }
     DEBUG('a', "Page loading complete\n");
     // The page is now in memory - mark this state change!
-    currentThread->space->PageTableInfo[virtualpage].PageStatus = MEMORY;
+    currentThread->space->pageTableInfo[virtualpage].PageStatus = MEMORY;
     // Now setup the IPT page with these values.
     IPT[physicalPage].virtualPage = virtualpage;
     IPT[physicalPage].physicalPage = physicalPage;
@@ -780,8 +780,8 @@ void handlePageFaultException(int vAddr){
     IPT[physicalPage].dirty = false;
     IPT[physicalPage].readOnly = false;
     IPT[physicalPage].PID = currentThread->PID;
-    IPT[physicalPage].PageStatus = currentThread->space->PageTableInfo[virtualpage].PageStatus;
-    IPT[physicalPage].swapLocation = currentThread->space->PageTableInfo[virtualpage].swapLocation;
+    IPT[physicalPage].PageStatus = currentThread->space->pageTableInfo[virtualpage].PageStatus;
+    IPT[physicalPage].swapLocation = currentThread->space->pageTableInfo[virtualpage].swapLocation;
     IPT[physicalPage].space = currentThread->space;
     
     // Now copy the IPT[physicalPage] to TLB[TLBIndex]
