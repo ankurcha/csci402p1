@@ -28,11 +28,11 @@
 
 extern "C" { int bzero(char *, int); };
 
-#ifdef CHANGED
-Lock* physMemMapLock = new Lock("physMemMapLock");
-BitMap physMemMap(NumPhysPages);
-Lock* childLock;
-#endif
+//#ifdef CHANGED
+//Lock* physMemMapLock = new Lock("physMemMapLock");
+//BitMap physMemMap(NumPhysPages);
+//Lock* childLock;
+//#endif
 
 Table::Table(int s) : map(s), table(0), lock(0), size(s) {
     table = new void *[size];
@@ -129,13 +129,23 @@ SwapHeader (NoffHeader *noffH)
 
 #ifdef CHANGED
 AddrSpace::AddrSpace(OpenFile *exec) : fileTable(MaxOpenFiles), 
-                                             locksTable(MaxLock), 
-                                             CVTable(MaxCV) {
+                                       locksTable(MaxLock), 
+                                       CVTable(MaxCV) 
+{
+#ifdef USE_TLB
+    numPages = NumVirtPages;
+#endif
+#ifndef USE_TLB
+    numPages = NumPhysPages;
+#endif
+    size = numPages * PageSize;
+
     locksTableLock = new Lock("LocksTableLock");
     CVTableLock = new Lock("CVTableLock");
     //NoffHeader noffH;
     unsigned int i, size, neededPages;
     executable = exec;
+
     // Don't allocate the input or output to disk files
     fileTable.Put(0);
     fileTable.Put(0);
@@ -149,48 +159,44 @@ AddrSpace::AddrSpace(OpenFile *exec) : fileTable(MaxOpenFiles),
             SwapHeader(&noffH);
     ASSERT(noffH.noffMagic == NOFFMAGIC);
 
+    // calculate the size of this process
     dataSize = noffH.code.size + noffH.initData.size + noffH.uninitData.size ;
     dataPages = divRoundUp(dataSize, PageSize);
+
+    // necessary pages to run the process with one thread
     neededPages = dataPages + divRoundUp(UserStackSize, PageSize);
-                                                // we need to increase the size
-                                                // to leave room for the stack
-//#ifndef USE_TLB
-//    ASSERT(neededPages <= NumPhysPages);           // check we're not trying
-//                                                // to run anything too big --
-//                                                // at least until we have
-//                                                // virtual memory
-//#endif    
+
+    // check that the address space is large enough
+    ASSERT(neededPages <= numPages);
+
     DEBUG('a', "Initializing address space with %d valid pages, size %d\n",
           neededPages, neededPages * PageSize);
     
     // set the stackTable to hold the number of stacks that may exist
     stackTableLock = new Lock("StackTableLock");
-    stackTable = new BitMap(/*(NumPhysPages - dataPages) 
-                            / divRoundUp(UserStackSize, PageSize)*/ neededPages );
+    stackTable = new BitMap((numPages - dataPages) 
+                            / divRoundUp(UserStackSize, PageSize) );
     // the first stack is in position 0
     stackTable->Mark(0);
 
     // and its stack sits in the last pages of the address space
     unsigned int stackStart = 
-            NumPhysPages - divRoundUp(UserStackSize, PageSize);
+            numPages - divRoundUp(UserStackSize, PageSize);
     
-        //Take care of the number of child processes
+    //Take care of the number of child processes
     //childLock = new Lock("childLock");
     this->childThreads = 0;
     
     // first, set up the translation
-    numPages = neededPages; //______ANKUR CHANGE______ NumPhysPages;
-    size = numPages * PageSize;
                                                      // TURN OFF ALL PRELOADING
     DEBUG('a', "Initializing page table, num pages %d, size %d\n", 
                                         numPages, size);
 //#ifndef USE_TLB
     //pageTable = new TranslationEntry[numPages];
 //#endif
-    PageTableInfo = new PageTableEntry[numPages]; 
 
-    // allocate physical memory for the pages we are using,
-    //  mark the others invalid
+    //*** CREATE THE PAGE TABLE ***
+    pageTableInfo = new PageTableEntry[numPages]; 
     for (i = 0; i < dataPages; i++) {
         // find a free page in physical memory
 //#ifndef USE_TLB
@@ -210,16 +216,18 @@ AddrSpace::AddrSpace(OpenFile *exec) : fileTable(MaxOpenFiles),
 //        // zero out the physical memory associated with this page
 //        bzero(&(machine->mainMemory[PageSize * physPage]), PageSize);
 //#endif
-        if(i< numPages){
-            PageTableInfo[i].PageStatus = EXEC;
-        }else {
-            PageTableInfo[i].PageStatus = UNINITDATA;
-            PageTableInfo[i].swapLocation = -1;
-        }
-
+#ifdef USE_TLB
+        pageTableInfo[i].virtualPage = i;
+        pageTableInfo[i].physicalPage = 0;
+        pageTableInfo[i].valid = true; // this page is not initialized
+        pageTableInfo[i].use = false;
+        pageTableInfo[i].dirty = false;
+        pageTableInfo[i].readOnly = false;
+        pageTableInfo[i].PageStatus = EXEC;
+#endif
     }
     // set all the unused pages to invalid
-    for(;i < stackStart; i++) {
+    for(; i < stackStart; i++) {
 //#ifndef USE_TLB
 //        pageTable[i].virtualPage = i;
 //        pageTable[i].physicalPage = 0;
@@ -228,15 +236,18 @@ AddrSpace::AddrSpace(OpenFile *exec) : fileTable(MaxOpenFiles),
 //        pageTable[i].dirty = FALSE;
 //        pageTable[i].readOnly = FALSE;
 //#endif
-        if(i< numPages){
-            PageTableInfo[i].PageStatus = EXEC;
-        }else {
-            PageTableInfo[i].PageStatus = UNINITDATA;
-            PageTableInfo[i].swapLocation = -1;
-        }
+#ifdef USE_TLB
+        pageTableInfo[i].virtualPage = i;
+        pageTableInfo[i].physicalPage = 0;
+        pageTableInfo[i].valid = false; // this page is not initialized
+        pageTableInfo[i].use = false;
+        pageTableInfo[i].dirty = false;
+        pageTableInfo[i].readOnly = false;
+        pageTableInfo[i].PageStatus = NONE;
+#endif
     }
     // allocate pages for the stack
-    for (; i < NumPhysPages; i++) {
+    for (; i < numPages; i++) {
         // find a free page in physical memory
 //#ifndef USE_TLB
 //        physMemMapLock->Acquire();
@@ -255,12 +266,15 @@ AddrSpace::AddrSpace(OpenFile *exec) : fileTable(MaxOpenFiles),
 //        // zero out the physical memory associated with this page
 //        bzero(&(machine->mainMemory[PageSize * physPage]), PageSize);
 //#endif
-        if(i< numPages){
-            PageTableInfo[i].PageStatus = EXEC;
-        }else {
-            PageTableInfo[i].PageStatus = UNINITDATA;
-            PageTableInfo[i].swapLocation = -1;
-        }
+#ifdef USE_TLB
+        pageTableInfo[i].virtualPage = i;
+        pageTableInfo[i].physicalPage = 0;
+        pageTableInfo[i].valid = true; // this page is not initialized
+        pageTableInfo[i].use = false;
+        pageTableInfo[i].dirty = false;
+        pageTableInfo[i].readOnly = false;
+        pageTableInfo[i].PageStatus = NONE;
+#endif
     }
     
     // then, copy in the code and data segments into memory
@@ -337,9 +351,10 @@ AddrSpace::~AddrSpace()
 //    }
 //#endif
     delete pageTable;
-        //delete childLock;
+    delete pageTableInfo;
     delete stackTableLock;
     delete stackTable;
+    delete executable;
 
     // close any remaining files
     for(int i=0; i < MaxOpenFiles; i++) {
@@ -386,7 +401,7 @@ void AddrSpace::InitRegisters()
     // allocated the stack; but subtract off a bit, to make sure we don't
     // accidentally reference off the end!
 #ifdef CHANGED
-    unsigned int stackRegister = NumPhysPages * PageSize - 16;
+    unsigned int stackRegister = numPages * PageSize - 16;
     machine->WriteRegister(StackReg, stackRegister);
     DEBUG('a', "Initializing stack register to %x for stack 0\n", 
           stackRegister);
@@ -438,6 +453,15 @@ int AddrSpace::InitStack() {
 //        // zero out the physical memory associated with this page
 //        bzero(&(machine->mainMemory[PageSize * physPage]), PageSize);
 //#endif
+#ifdef USE_TLB
+        pageTableInfo[i].virtualPage = i;
+        pageTableInfo[i].physicalPage = 0;
+        pageTableInfo[i].valid = true;
+        pageTableInfo[i].use = false;
+        pageTableInfo[i].dirty = false;
+        pageTableInfo[i].readOnly = false;
+        pageTableInfo[i].status = NONE;
+#endif
     }
 
     // Set the stack register to the end of the address space for this stack;
@@ -481,6 +505,10 @@ void AddrSpace::ClearStack(int id) {
 //        pageTable[i].physicalPage = 0;
 //        pageTable[i].valid = FALSE;
 //#endif
+#ifdef USE_TLB
+        pageTableInfo[i].valid = false;
+        pageTableInfo[i].status = NONE;
+#endif
     }
 
     stackTable->Clear(id);
@@ -495,7 +523,6 @@ void AddrSpace::ClearStack(int id) {
 // 	On a context switch, save any machine state, specific
 //	to this address space, that needs saving.
 //
-//	For now, nothing!
 //----------------------------------------------------------------------
 
 void AddrSpace::SaveState() 
@@ -503,11 +530,12 @@ void AddrSpace::SaveState()
 #ifdef USE_TLB
     // Save state infor from the tlb
     IntStatus oldLevel = interrupt->SetLevel(IntOff);
-    for(int i=0;i<TLBSize;i++)
+    for(int i=0; i<TLBSize; i++) {
         if(machine->tlb[i].valid){
             IPT[machine->tlb[i].physicalPage].use = machine->tlb[i].use;
             IPT[machine->tlb[i].physicalPage].dirty = machine->tlb[i].dirty;
         }
+    }
     (void) interrupt->SetLevel(oldLevel);
 #endif
 }
@@ -516,8 +544,6 @@ void AddrSpace::SaveState()
 // AddrSpace::RestoreState
 // 	On a context switch, restore the machine state so that
 //	this address space can run.
-//
-//      For now, tell the machine where to find the page table.
 //----------------------------------------------------------------------
 
 void AddrSpace::RestoreState() 
@@ -526,6 +552,7 @@ void AddrSpace::RestoreState()
 //    machine->pageTable = pageTable;
 //    machine->pageTableSize = numPages;
 //#endif
+
     // All the pages in the machine->TLB must be invalidated now
 #ifdef USE_TLB
     IntStatus oldLevel = interrupt->SetLevel(IntOff);
@@ -541,7 +568,6 @@ void AddrSpace::RestoreState()
 // AddrSpace::readCString
 //      Read a c-style string stored at the virtual address s
 //      into a string object (so the kernel can use it)
-//
 //----------------------------------------------------------------------
 
 // modify this method to not use pageTable

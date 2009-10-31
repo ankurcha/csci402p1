@@ -23,7 +23,8 @@
 
 using namespace std; // this is bad practice in .h files -max
 typedef int PID;
-#define UserStackSize   1024     // increase this as necessary!
+#define UserStackSize   1024  // increase this as necessary!
+#define NumVirtPages    8192  // size of the address space
 
 #define MaxOpenFiles 256
 #define MaxChildSpaces 256
@@ -69,17 +70,9 @@ class AddrSpace {
     // read a string at the virtual address s
     std::string readCString(char* s);
     
-    Table fileTable;            // Table of openfiles
-
-    Lock *locksTableLock;
-    Table locksTable;           //Table of Locks
-    Table CVTable;              //Table of CVs
-    Lock *CVTableLock;
-    int childThreads;        // PID of Children Threads
-                             // Lock *childLock;    
 #endif
-        // Assume linear page table translation
-        // for now! 
+    // Assume linear page table translation
+    // for now! 
     TranslationEntry *pageTable;
  public:
             
@@ -96,8 +89,15 @@ class AddrSpace {
     // keep track of the stacks in this process
     Lock* stackTableLock;
     BitMap* stackTable;
-    PageTableEntry *PageTableInfo;
+    PageTableEntry *pageTableInfo;
 
+    Table fileTable;            // Table of openfiles
+
+    Lock *locksTableLock;
+    Table locksTable;           //Table of Locks
+    Table CVTable;              //Table of CVs
+    Lock *CVTableLock;
+    int childThreads;        // PID of Children Threads
 #endif
 };
 
