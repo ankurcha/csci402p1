@@ -37,7 +37,6 @@ StartProcess(char *filename)
 
     currentThread->space = space;
     currentThread->setPID(processTable->addProcess(-1));
-    cout <<"CurrentThread->getPID() = "<<currentThread->getPID()<<endl;
 
 //    delete executable;			// close file
 

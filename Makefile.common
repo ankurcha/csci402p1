@@ -79,6 +79,7 @@ USERPROG_H = ../userprog/addrspace.h\
 	../machine/console.h\
 	../machine/machine.h\
 	../machine/mipssim.h\
+	../machine/tpl.h\
 	../machine/translate.h
 
 USERPROG_C = ../userprog/addrspace.cc\
@@ -87,6 +88,7 @@ USERPROG_C = ../userprog/addrspace.cc\
 	../userprog/progtest.cc\
 	../machine/console.cc\
 	../machine/machine.cc\
+	../machine/tpl.c\
 	../machine/mipssim.cc\
 	../machine/translate.cc
 
