@@ -1,6 +1,6 @@
 Title: Writeup for Project 3, Fall 2009
 
-Date: xx/xx/2009
+Date: 11/01/2009
 
 Group Num 11: Name              Email               Student ID
               Ankur Chauhan     ankurcha@usc.edu    8478-1604-85
@@ -11,50 +11,169 @@ Group Num 11: Name              Email               Student ID
 
 I. Requirements:
     Part 1:
-        
+        Implement software-management of the TLB.invalidate all the TLB entries on a context switch; the entries get reloaded as the pages are referenced.The translation scheme should keep track of the dirty and use flags for each page set by hardware in the TLB entry.
 
     Part 2:
-        
+        Implement virtual memory. Implement routines to move pages from disk to memory and vice versa. Use the Nachos file system to contain our swap file. We are required to have a single swap file for all Nachos processes and threads. Nothing is to be preloaded from the executable when a process starts up. When memory is filled, the system must select a page to remove from memory to make room for it. Implement Random page replacement policy and FIFO page replacement ONLY. This is specified using the command line arguments RAND or FIFO ( RAND is default ).
 
     Part 3:
-        
+         Implement remote procedure calls for the Send and Receive system calls. You are to prove that a single-threaded nachos user program can communicate with multiple other nachos user programs.
 
 II. Assumptions:
-
-    We assume:
+        - Functions provided by NACHOS are generally bug free and perform as
+          specified.
+        - File system system calls are correct as provided.
+        - Condition variable and Lock implementations will be identical to
+          project 1.
+        - Programs are provided with adequate stack space to avoid overflow.
+        - Nachos would not run more than 6 processes at the same time (known bug).
 
 III. Design:
 
     Part 1:
-        
+        If a page cannot be located in the TLB, the HandlePageFault function is
+        called.  It posesses all the logic for determining the location of the needed
+        page. Possible locations are for pages are  memory, swapfile, or executable
+        file. Once the page has been located, it is loaded into memory.  The
+        The functionig  of handlePageFault() is as follows:
+            1. If page in IPT. (in Memory)
+                a. Load memory into TLB.
+            2. If page not IPT, page not in memory.
+            3. Call findAvailablePage() to locate a position in memory to store, either
+               we find an empty page or select one of the pages for deletion.
+            4. Use page table to determine the location of the needed page.
+            5. Load page into memory from executable or swapfile.
+            6. Update the TLB, IPT, and the pageTable to reflect the changes in the memory.
+
     Part 2:
+        - The findaAvailablePage() function is used to find the location where the page is supposed to be loaded. In case all the pages in the memory are full we can use the Random or the FIFO page replacement algorithms to select a page for replacement. Once the page has been selected, the contents of this page is swapped to disk(stored in the SWAPFILE). 
 
     Part 3:
+        We have implemented two system calls that the user can use to send a message via the nachos network to the other process(runnning as different instance of nachos).
+        Send(receiverID, receiverMailBox, message) - This system call is used to send messages to the other client which is identified to be running on machine with receiverID as its machine ID and is listening on receiverMailBox. Each message is accompanied with the senderID and a sequence number.
+
+        Receiver(senderID, mailboxId, message) - This system call is used to get a message from a mailbox, given by the mailboxId, the message is expected from the sender identified by senderID. The data received from the mailbox has a header of the senderID and the sequence number but this is removed before the actual message is passed to the user via the message argument.
 
 IV. Implementation:
 
     + Files Modified
+            userprog/exception.cc
+            userprog/addrspace.h
+            userprog/addrspace.cc
+            thread/system.h
+            thread/system.cc
+            thread/thread.h
+            thread/thread.cc
+            network/Makefile
 
     + Files added
+            thread/processTable.h
+            test/networkTestClient1.c
+            test/networkTestClient2.c
 
     + Data Structures added, and the file they were added to.
+            struct Process {
+                Lock *childLock;
+                Condition *childCV;
+                int childCount;
+
+                PID pid;
+                PID ppid;
+            }
+            class InvertedPageTableEntry : public TranslationEntry{
+            public:
+                InvertedPageTableEntry();
+                enum {
+                    CODE,
+                    DATA,
+                    OTHER
+                } ContentType;
+                enum {
+                    MEMORY,
+                    EXEC,
+                    SWAP,
+                }Location;
+
+                int PID;    // TO find out who is the owner
+                int age;    // Used for FIFO replacement
+                AddrSpace *space; // To keep track of which pages we are refering to.
+                status PageStatus;
+                int swapLocation;
+            };
             
+            enum status{
+                MEMORY, // in physical memory
+                EXEC,  // in the executabe file
+                SWAP, // in the swap file
+                NONE  // page is not allocated anywhere (can still be valid)
+            };
+
+            class PageTableEntry: public TranslationEntry{
+                 public:
+                    // Add new Filds to the page table such that it can take care of
+                    // status and the location of the page.
+                    status PageStatus;
+                    int swapLocation;
+            };
+            
+            struct Packet{
+                int senderID;
+                int sequenceNumber;
+                char *data;
+            };
+
     + Data Structures modified, and the file they were added to.
-            
+            userspace/addrspace.h,.cc
+                struct AddrSpace{
+                    public:
+                        + OpenFile *executable;
+                        + PageTableEntry *PageTableInfo;
+                };
+
     + Functions added and in which file.
+            userspace/exception.cc
+            void CopyTranslationEntry(TranslationEntry* sourceTE,TranslationEntry* destTE)
+            void CopyTLB2IPT()
+            int findInIPT(int vAddr,int PID)
+            int SelectPageToBeSwapped()
+            int findAvailablePage()
+            void handlePageFaultException(int vAddr)
+            int Receive_Syscall(int senderID, int mbox,int vaddr)
+            void Send_Syscall(int receiverID,int mbox,int vaddr)        
 
     + Functions modified and in which file.
-        
+            userspace/exception.cc
+                int copyout(unsigned int vaddr, int len, char *buf)
+                void ExceptionHandler(ExceptionType which)
+
 V. Testing: (For each test case, you must show)
     + How to test
-
+        - To test the network system calls, send() and receive(), in the network directory, execute
+                $./nachos -m 0 -x ../test/networkTestClient1 > 1.txt &; ./nachos -m 1 -x ../test/networkTestClient2 > 2.txt &
+          To check the robustness of the system we do a send() to a receiverID -1 and this fails as shown in the output
+          Also, if we only execute the second part of the command(after the semicolon) we can confirm the robustness of the receive system call, ie a case when the receiverID is not a valid machine. In such a case the machine keeps waiting(expected). 
 
     + Test Output
-      
-      
+        - Test for send and receive calls
+            networkTestClient1/2 sends a message to the other and waits for a message from them.
+            networkTestClient1 sends foo and networkTestClient2 sends bar these transactions are in files 1.txt and 2.txt
+                cat 1.txt
+                Client 1: Sending foo
+                Client 1: bar
+                Trying to send to a bad receiver = -1
+                Cannot Send
+
+                cat 2.txt
+                Client 2: foo
+                Client 2: Sending bar
+                
+        - matmult test
+             The exit status should be: 7220
+        - sort test
+             The exit status should be: 1023
 VI. Discussion:
     + Experiment expectation. 
-            
+                            
     + Experiment result.
     
     + Explanation

@@ -39,7 +39,7 @@ int sequenceNumber = 0;
 #endif
 
 using namespace std;
-
+#ifdef NETWORK
 class Packet {
     public:
     unsigned char senderId;
@@ -62,7 +62,7 @@ class Packet {
             data[i] = message[i+2];
     }
 }; 
-    
+#endif
 extern "C" { int bzero(char *, int); };
 Lock *processTableLock = new Lock("processTableLock");
 Lock* locksTableLock = new Lock("locksTableLock");
