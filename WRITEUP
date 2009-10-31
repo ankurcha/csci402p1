@@ -152,6 +152,14 @@ V. Testing: (For each test case, you must show)
                 $./nachos -m 0 -x ../test/networkTestClient1 > 1.txt &; ./nachos -m 1 -x ../test/networkTestClient2 > 2.txt &
           To check the robustness of the system we do a send() to a receiverID -1 and this fails as shown in the output
           Also, if we only execute the second part of the command(after the semicolon) we can confirm the robustness of the receive system call, ie a case when the receiverID is not a valid machine. In such a case the machine keeps waiting(expected). 
+        
+        - To test for multiple process co-existing in Virtual memory
+            For this test we will exec the matmult program twice and see the output.
+                $./nachos -x ../test/multiExecmatmult
+        
+        - To test for multiple thread co-existing in the virtual memory
+            For this test we for a process which does the exact same thing as that by the matmult program
+                $./nachos -x ../test/multiForkmatmult
 
     + Test Output
         - Test for send and receive calls
@@ -171,12 +179,23 @@ V. Testing: (For each test case, you must show)
              The exit status should be: 7220
         - sort test
              The exit status should be: 1023
+        - multiExecmatmult test
+             The exit status of both processes should be 7220
+        - multiForkmatmult test
+             The exit status of the forked thread should be 7220 and that of main program should be 0
 VI. Discussion:
-    + Experiment expectation. 
+    + Experiment expectation.
+        The process should be able to run properly and simultaneously(in case of multiprogramming) when we implement the virtual memory. The TLB should be populated with the correct page whenever a pagefault exception is caught by the system. In addition to all this, the user programs should be able to use the Send and Receive system calls to enable him/her to send/receive messages to other instances of nachos running user programs.
                             
     + Experiment result.
-    
+            All the test cases were appropriately implemented and the
+            simulation performed as expected for any given value of -rs. In
+            addition, in order to enable easy tracability of the interactions
+            the verbosity of the threads has been kept high, with almost all
+            interactions being logged to standard output.
     + Explanation
+            As the the expectation and the results match, we conclude that both 
+            the parts have been properly implemented.
 
 VII. Miscellaneous:
 
