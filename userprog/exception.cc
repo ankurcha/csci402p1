@@ -756,6 +756,9 @@ void handlePageFaultException(int vAddr){
         // RESTORE INTERRUPTS
         (void) interrupt->SetLevel(oldLevel);
 
+        cout << "ERROR: Virtual Page " << virtualpage << " is not valid\n"
+             << " SEGFAULT!\n";
+
         // die die die
         Exit_Syscall(1);
         return;
