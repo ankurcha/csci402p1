@@ -33,13 +33,12 @@ typedef int PID;
 
 // global map of available physical memory
 enum status{
-    MEMORY,
-    DATA,
-    EXEC,
-    SWAP,
-    INITDATA,
-    UNINITDATA
-    };
+    MEMORY, // in physical memory
+    EXEC,  // in the executabe file
+    SWAP, // in the swap file
+    NONE  // page is not allocated anywhere (can still be valid)
+};
+
 class PageTableEntry: public TranslationEntry{
     public:
     // Add new Filds to the page table such that it can take care of
