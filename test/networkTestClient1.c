@@ -9,15 +9,15 @@ int main(){
     */
 
     int response;
-    char message[16] = "Hello Client 2!";
-    char receivedMessage[16];
-
+    char *message = "foo";
+    char *receivedMessage;
+    print("Client 1: Sending foo\n");
     Send(1, 0, message); 
 
     response = Receive(0, 0, receivedMessage);
 
-    print("Client 1: Message Received: ");
+    print("Client 1: ");
     print(receivedMessage);
-
+    print("\n");
     Exit(0);
 }

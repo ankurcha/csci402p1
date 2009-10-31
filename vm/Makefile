@@ -30,6 +30,7 @@ include ../Makefile.dep
 #-----------------------------------------------------------------
 # DO NOT DELETE THIS LINE -- make depend uses it
 # DEPENDENCIES MUST END AT END OF FILE
+tpl.o: gcc -c ../userprog/tpl.h ../userprog/tpl.c
 main.o: ../threads/main.cc ../threads/copyright.h ../threads/utility.h \
   ../threads/bool.h ../machine/sysdep.h ../threads/copyright.h \
   /usr/sfw/lib/gcc/sparc-sun-solaris2.10/3.4.3/include/stdio.h \
@@ -1919,7 +1920,7 @@ bitmap.o: ../userprog/bitmap.cc ../threads/copyright.h \
   /usr/include/sys/regset.h /usr/include/v7/sys/privregs.h \
   /usr/include/v7/sys/psr.h /usr/include/sys/fsr.h ../filesys/openfile.h \
   ../threads/copyright.h ../threads/utility.h
-exception.o: ../userprog/exception.cc ../threads/copyright.h \
+exception.o: ../userprog/exception.cc ../threads/copyright.h ../userprog/tpl.h \
   ../threads/system.h ../threads/copyright.h ../threads/utility.h \
   ../threads/bool.h ../machine/sysdep.h ../threads/copyright.h \
   /usr/sfw/lib/gcc/sparc-sun-solaris2.10/3.4.3/include/stdio.h \

@@ -9,12 +9,13 @@ int main(){
     */
 
     int response;
-    char message[16] = "Hello Client 2!";
-    char receivedMessage[16];
+    char *message = "bar";
+    char *receivedMessage;
 
-    response = Receive(1, 0, receivedMessage);
-    print("Client 2: Message Received: ");
+    response = Receive(0, 0, receivedMessage);
+    print("Client 2: ");
     print(receivedMessage);
+    print("\nClient 2: Sending bar\n");
     Send(0, 0, message);
     Exit(0);
 }

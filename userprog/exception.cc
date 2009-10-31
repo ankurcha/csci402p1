@@ -30,13 +30,38 @@
 #include <ctime>
 #include <cstring>
 #include <iostream>
+#include <sstream>
 
 #ifdef NETWORK
-#define MaxDataSize (MaxMailSize - sizeof(unsigned) -sizeof(int))
+#define MaxDataSize (MaxMailSize - sizeof(int) -sizeof(int))
 int sequenceNumber = 0;
 #endif
 
 using namespace std;
+
+class Packet {
+    public:
+    unsigned char senderId;
+    unsigned char sequenceNumber;
+    char data[MaxDataSize];
+
+    char* Serialize(){
+        char *message = new char[MaxMailSize];
+        message[0] = senderId;
+        message[1] = sequenceNumber;
+        for(unsigned i=0;i<MaxDataSize;i++)
+            message[i+2] = data[i];
+        return message;
+    }
+
+    void Deserialize(char *message){
+        senderId = message[0];
+        sequenceNumber = message[1];
+        for(unsigned i=0;i<MaxDataSize;i++)
+            data[i] = message[i+2];
+    }
+}; 
+    
 extern "C" { int bzero(char *, int); };
 Lock *processTableLock = new Lock("processTableLock");
 Lock* locksTableLock = new Lock("locksTableLock");
@@ -106,23 +131,15 @@ int copyout(unsigned int vaddr, int len, char *buf) {
     bool result;
     int n=0;			// The number of bytes copied in
     
-    while ( n >= 0 && n < len) {
+    while ( n >= 0 && n <= len) {
             // Note that we check every byte's address
-#ifndef USE_TLB
-        result = machine->WriteMem( vaddr, 1, (int)(buf[n++]) );
-        
-        if ( !result ) {
-                //translation failed
-            return -1;
+        result = machine->WriteMem( vaddr, 1, (buf[n]));
+        while(!result){
+            result = machine->WriteMem(vaddr, 1, buf[n]);
         }
-#endif
-#ifdef USE_TLB
-        while(!machine->WriteMem( vaddr, 1, (int)(buf[n++]) ));
         n++;
-#endif
         vaddr++;
     }
-    
     return n;
 }
 
@@ -295,7 +312,6 @@ void kernel_thread(int virtAddr){
 
 void Fork_Syscall(int funcAddr){
     processTableLock->Acquire();
-    cout<<"Forking thread"<<endl;
     DEBUG('a', "%s: Called Fork_Syscall.\n",currentThread->getName());
         // Create new thread.kernel_thread()
     Thread *t = new Thread(currentThread->getName());
@@ -330,7 +346,6 @@ spaceId Exec_Syscall(char *filename){
     OpenFile *executable = fileSystem->Open(c_name);
     if(!executable){
         DEBUG('a',"%s: Unable to open file %s .\n", currentThread->getName(),c_name);
-        cout<<"Exec_syscall: Unable to open file "<<c_name<<endl;
         return -1;
     }
         // Create new thread.
@@ -352,19 +367,20 @@ spaceId Exec_Syscall(char *filename){
 }
 
 void Exit_Syscall(int status){
-    cout <<currentThread->getName()<<": Exit status: "<<status<<endl;
+    //cout<<"Exit Status: "<<status<<endl;
     processTableLock->Acquire();
-    if (processTable->processCounter == 0 && currentThread->space->childThreads == 1) {
-        DEBUG('a', "Exit_Syscall:End of NACHOS\n");
+    //cout << "Process Count: "<<processTable->processCounter<<"currentThread->space->childThreads "<<currentThread->space->childThreads<<endl;
+    if (processTable->processCounter == 1 && currentThread->space->childThreads == 0) {
+        //printf("Exit_Syscall: End of NACHOS\n");
         interrupt->Halt();
-    }else if (currentThread->space->childThreads == 1) {
+    }else if (currentThread->space->childThreads == 0) {
         processTable->processCounter--;
-        DEBUG('a', "Exit_Syscall:End of Process PID: %d\n", currentThread->getPID());
+        //printf( "Exit_Syscall: End of Process PID: %d\n", currentThread->getPID());
         processTableLock->Release();
         currentThread->Finish();
     }else {
             //Neither the end of process nor the end of Nachos
-        DEBUG('a',"Exit_Syscall:End of Thread PID: %d\n", currentThread->getPID());
+        //printf("Exit_Syscall: End of Thread PID: %d\n", currentThread->getPID());
         currentThread->space->childThreads--;
         processTableLock->Release();
         currentThread->Finish();
@@ -693,7 +709,6 @@ int findAvailablePage(){
 }
 
 void handlePageFaultException(int vAddr){
-    cout << "handlePageFaultException: vAddr= "<<vAddr<<endl;
     IntStatus oldLevel = interrupt->SetLevel(IntOff);
     int virtualpage = vAddr / PageSize;
     int physicalPage = -1;
@@ -706,9 +721,6 @@ void handlePageFaultException(int vAddr){
     CopyTLB2IPT();
     // Now we check if the currentThread->space pageTable is in memory
     // If yes, load from IPT
-    cout << "currentThread->space->PageTableInfo[virtualpage].PageStatus = "
-         << currentThread->space->PageTableInfo[virtualpage].PageStatus
-         <<endl;
     
     if(currentThread->space->PageTableInfo[virtualpage].PageStatus == MEMORY){
         // Find page in IPT
@@ -770,65 +782,55 @@ void handlePageFaultException(int vAddr){
     return;
 }
 #endif
+
 /* 
  * Receives the  message sent to mbox. 
  * Returns the number of bytes received
  */
 int Receive_Syscall(int senderID, int mbox,int vaddr){
 #ifdef NETWORK
-    DEBUG('a', "Receive_Syscall\n");
     char *message = new char[MaxMailSize];
     bzero(message, MaxMailSize);
-    
     PacketHeader pktHead;
     MailHeader mailHead;
-    
     postOffice->Receive(senderID, &pktHead, &mailHead, message);
     // Copy message to vaddr
-    return copyout(vaddr, sizeof(message), message);
+    Packet pkt;
+    pkt.Deserialize(message);
+    return copyout(vaddr, sizeof(pkt.data), pkt.data);
 #endif
 }
 
 void Send_Syscall(int receiverID,int mbox,int vaddr){
 #ifdef NETWORK
-    DEBUG('a', "Send_syscall initialized\n");
-    char *message = new char[MaxMailSize];
-    bzero(message, MaxMailSize);
-    
-    int senderID = netname;
-    // Message Format[sequenceNumber, senderId, DATA]
-    // get and increment sequence number
-    unsigned curSequenceNumber = sequenceNumber++;
-    // Add sequenceNo to the message
-    memcpy( message, &curSequenceNumber, sizeof(unsigned) );
-    // Add sender Id to message
-    memcpy( message+sizeof(unsigned), &senderID, sizeof(int) );
-    
+    Packet pkt;
+    pkt.senderId = (char) netname;
+    pkt.sequenceNumber = (char) sequenceNumber++;
     char *payload = new char[MaxDataSize];
-    // read the payload to be sent
-    int bytesRead = copyin(vaddr, MaxDataSize, payload);
+    int bytesRead = copyin(vaddr, 32 , pkt.data);
+    payload = pkt.data;
     
-    memcpy(message+sizeof(unsigned)+sizeof(int), payload, sizeof(payload) );
-    cout << "MESSAGE: "<<message;
+    // Serialize everything to be sent
+   char *message;
+   message = pkt.Serialize();
     if (bytesRead != -1) {
         // Payload successfully acquired
-        DEBUG('a', "Payload: %s, Receiver: %d, Receiver Mailbox: %d\n", payload, receiverID, mbox);
-        
         // Send packet
         PacketHeader pktHead;
         pktHead.to = receiverID;
         
         MailHeader mailHead;
         mailHead.to = mbox;
-        mailHead.from = senderID;
-        mailHead.length = strlen(message) + 1;
+        mailHead.from = pkt.senderId;
+        mailHead.length = sizeof(message) + 1;
         // Send the message to other client
         bool retVal = postOffice->Send(pktHead, mailHead, message);
         if (!retVal) {
-            DEBUG('a', "Cannot Send\n");
+            printf("Cannot Send\n");
             interrupt->Halt();
         }else {
-            DEBUG('a', "Message sent: %s\n", message);
+            //printf("Message sent: %s\n", message);
+            fflush(stdout);
         }
     }else {
         DEBUG('a', "Failed to read Payload\n");
