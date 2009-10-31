@@ -704,6 +704,10 @@ void handlePageFaultException(int vAddr){
     DEBUG('a', "TLBIndex: %d tlbpos: %d\n",TLBIndex, tlbpos);
     // Copy out all pages from the TLB - update the IPT
     CopyTLB2IPT();
+
+    //TODO: must check if this page is valid first, kill currentThread with
+    //  a segfault if it is not
+
     // Now we check if the currentThread->space pageTable is in memory
     // If yes, load from IPT
     cout << "currentThread->space->PageTableInfo[virtualpage].PageStatus = "

@@ -544,39 +544,64 @@ void AddrSpace::RestoreState()
 //
 //----------------------------------------------------------------------
 
-//TODO: modify this method to not use pageTable
+// modify this method to not use pageTable
+//std::string AddrSpace::readCString(char* s) {
+//    std::string ret = "";
+//
+//    unsigned int page = (unsigned int) s / PageSize;
+//    if(page >= numPages || !pageTable[page].valid) {
+//        cerr << "ERROR: virtual address [" << (unsigned int) s 
+//             << "] passed to readCString is invalid\n"
+//             << " segmentation fault?\n";
+//        return ret;
+//    }
+//    unsigned int offset = (unsigned int) s % PageSize;
+//    unsigned int paddr = (pageTable[page].physicalPage * PageSize) + offset;
+//
+//    // read the string till we hit null
+//    while(machine->mainMemory[paddr] != 0) {
+//        // append this char
+//        ret += machine->mainMemory[paddr];
+//
+//        // update the physical address
+//        offset++;
+//        if(offset >= PageSize) {
+//            offset = 0;
+//            page++;
+//            if(page >= numPages || !pageTable[page].valid) {
+//                cerr << "ERROR: virtual address [" << (unsigned int) s 
+//                     << "] passed to readCString is invalid\n"
+//                     << " string prematurely truncated to " << ret << endl
+//                     << " segmentation fault?\n";
+//                return ret;
+//            }
+//        }
+//        paddr = (pageTable[page].physicalPage * PageSize) + offset;
+//    }
+//
+//    return ret;
+//}
 std::string AddrSpace::readCString(char* s) {
     std::string ret = "";
+    int val = 0;
+    bool result = false;
 
-    unsigned int page = (unsigned int) s / PageSize;
-    if(page >= numPages || !pageTable[page].valid) {
-        cerr << "ERROR: virtual address [" << (unsigned int) s 
-             << "] passed to readCString is invalid\n"
-             << " segmentation fault?\n";
-        return ret;
-    }
-    unsigned int offset = (unsigned int) s % PageSize;
-    unsigned int paddr = (pageTable[page].physicalPage * PageSize) + offset;
-
-    // read the string till we hit null
-    while(machine->mainMemory[paddr] != 0) {
-        // append this char
-        ret += machine->mainMemory[paddr];
-
-        // update the physical address
-        offset++;
-        if(offset >= PageSize) {
-            offset = 0;
-            page++;
-            if(page >= numPages || !pageTable[page].valid) {
-                cerr << "ERROR: virtual address [" << (unsigned int) s 
-                     << "] passed to readCString is invalid\n"
-                     << " string prematurely truncated to " << ret << endl
-                     << " segmentation fault?\n";
-                return ret;
-            }
+    while(true) {
+        // read a byte, retry for a PageFaultException
+        result = machine->ReadMem(s, 1, &val);
+        while(!result) {
+            result = machine->ReadMem(s, 1, &val);
         }
-        paddr = (pageTable[page].physicalPage * PageSize) + offset;
+
+        // break if we hit the null terminator
+        if((char) val == 0) {
+            break;
+        }
+
+        // append this char
+        ret += (char) val;
+
+        s++;
     }
 
     return ret;
