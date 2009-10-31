@@ -697,7 +697,7 @@ int findAvailablePage(){
         //IPT[physicalPage].space->pageTableInfo[virtualPage].swapLocation = swapLocation++;
         //swapFile->WriteAt(&(machine->mainMemory[PageSize * physicalPage]),PageSize,
         //                  (PageSize * IPT[physicalPage].space->pageTableInfo[virtualPage].swapLocation));
-        IPT[physicalPage].space->pageTableInfo[virtualPage].PageStatus = NONE;
+        IPT[physicalPage].space->pageTableInfo[virtualPage].PageStatus = NOWHERE;
     }else {
         IPT[physicalPage].space->pageTableInfo[virtualPage].PageStatus = SWAP;
     }
@@ -785,7 +785,7 @@ void handlePageFaultException(int vAddr){
                          &(machine->mainMemory[physicalPage * PageSize]), 
                          PageSize,
                          (PageSize * currentThread->space->pageTableInfo[virtualpage].swapLocation));
-    }else if (currentThread->space->pageTableInfo[virtualpage].PageStatus == NONE) {
+    }else if (currentThread->space->pageTableInfo[virtualpage].PageStatus == NOWHERE) {
         DEBUG('a',"Page has not been allocated yet\n");
     }
 

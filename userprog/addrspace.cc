@@ -244,7 +244,7 @@ AddrSpace::AddrSpace(OpenFile *exec) : fileTable(MaxOpenFiles),
         pageTableInfo[i].use = false;
         pageTableInfo[i].dirty = false;
         pageTableInfo[i].readOnly = false;
-        pageTableInfo[i].PageStatus = NONE;
+        pageTableInfo[i].PageStatus = NOWHERE;
         pageTableInfo[i].swapLocation = -1;
 #endif
     }
@@ -275,7 +275,7 @@ AddrSpace::AddrSpace(OpenFile *exec) : fileTable(MaxOpenFiles),
         pageTableInfo[i].use = false;
         pageTableInfo[i].dirty = false;
         pageTableInfo[i].readOnly = false;
-        pageTableInfo[i].PageStatus = NONE;
+        pageTableInfo[i].PageStatus = NOWHERE;
         pageTableInfo[i].swapLocation = -1;
 #endif
     }
@@ -463,7 +463,7 @@ int AddrSpace::InitStack() {
         pageTableInfo[i].use = false;
         pageTableInfo[i].dirty = false;
         pageTableInfo[i].readOnly = false;
-        pageTableInfo[i].PageStatus = NONE;
+        pageTableInfo[i].PageStatus = NOWHERE;
         pageTableInfo[i].swapLocation = -1;
 #endif
     }
@@ -511,7 +511,7 @@ void AddrSpace::ClearStack(int id) {
 //#endif
 #ifdef USE_TLB
         pageTableInfo[i].valid = false;
-        pageTableInfo[i].PageStatus = NONE;
+        pageTableInfo[i].PageStatus = NOWHERE;
         pageTableInfo[i].swapLocation = -1;
 #endif
     }

@@ -34,7 +34,7 @@ typedef int PID;
 
 // global map of available physical memory
 enum status{
-    NONE,  // page is not allocated anywhere (can still be valid)
+    NOWHERE,  // page is not allocated anywhere (can still be valid)
     MEMORY, // in physical memory
     EXEC,  // in the executabe file
     SWAP // in the swap file
