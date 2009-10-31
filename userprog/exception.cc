@@ -340,7 +340,8 @@ void exec_thread(int arg){
 spaceId Exec_Syscall(char *filename){
     processTableLock->Acquire();
     DEBUG('a', "%s: Called Exec_Syscall\n",currentThread->getName());
-        // Get filename to kernel space
+
+    // Get filename to kernel space
     std::string cname = currentThread->space->readCString(filename);
     char *c_name = new char[cname.size()+1];
     strcpy(c_name, cname.c_str());
@@ -349,20 +350,23 @@ spaceId Exec_Syscall(char *filename){
         DEBUG('a',"%s: Unable to open file %s .\n", currentThread->getName(),c_name);
         return -1;
     }
-        // Create new thread.
+
+    // Create new thread.
     Thread *t = new Thread(c_name);
-        // Create new Address space and allocate it to the thread.
+    
+    // Create new Address space and allocate it to the thread.
     t->space = new AddrSpace(executable);
-        // Add process to process table.
+
+    // Add process to process table.
     //processTable->processCounter++;
     int myPID = processTable->addProcess(currentThread->getPID()); 
     t->setPID(myPID);
     
     DEBUG('a', "%s: New thread created with PID: %d.\n",currentThread->getName(), t->getPID());
     processTableLock->Release();
-#ifndef USE_TLB
-    delete executable;
-#endif
+//#ifndef USE_TLB
+//    delete executable;
+//#endif
     t->Fork((VoidFunctionPtr) exec_thread, 0);
     return (spaceId) t->space;
 }
@@ -380,7 +384,7 @@ void Exit_Syscall(int status){
         processTableLock->Release();
         currentThread->Finish();
     }else {
-            //Neither the end of process nor the end of Nachos
+        //Neither the end of process nor the end of Nachos
         //printf("Exit_Syscall: End of Thread PID: %d\n", currentThread->getPID());
         currentThread->space->childThreads--;
         processTableLock->Release();
@@ -720,6 +724,10 @@ void handlePageFaultException(int vAddr){
     DEBUG('a', "TLBIndex: %d tlbpos: %d\n",TLBIndex, tlbpos);
     // Copy out all pages from the TLB - update the IPT
     CopyTLB2IPT();
+
+    //TODO: must check if this page is valid first, kill currentThread with
+    //  a segfault if it is not
+
     // Now we check if the currentThread->space pageTable is in memory
     // If yes, load from IPT
     
