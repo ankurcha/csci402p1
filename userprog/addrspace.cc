@@ -132,6 +132,12 @@ AddrSpace::AddrSpace(OpenFile *exec) : fileTable(MaxOpenFiles),
                                        locksTable(MaxLock), 
                                        CVTable(MaxCV) 
 {
+    unsigned int i, size, neededPages;
+    locksTableLock = new Lock("LocksTableLock");
+    CVTableLock = new Lock("CVTableLock");
+    //NoffHeader noffH;
+    executable = exec;
+
 #ifdef USE_TLB
     numPages = NumVirtPages;
 #endif
@@ -139,12 +145,6 @@ AddrSpace::AddrSpace(OpenFile *exec) : fileTable(MaxOpenFiles),
     numPages = NumPhysPages;
 #endif
     size = numPages * PageSize;
-
-    locksTableLock = new Lock("LocksTableLock");
-    CVTableLock = new Lock("CVTableLock");
-    //NoffHeader noffH;
-    unsigned int i, size, neededPages;
-    executable = exec;
 
     // Don't allocate the input or output to disk files
     fileTable.Put(0);
@@ -460,7 +460,7 @@ int AddrSpace::InitStack() {
         pageTableInfo[i].use = false;
         pageTableInfo[i].dirty = false;
         pageTableInfo[i].readOnly = false;
-        pageTableInfo[i].status = NONE;
+        pageTableInfo[i].PageStatus = NONE;
 #endif
     }
 
@@ -507,7 +507,7 @@ void AddrSpace::ClearStack(int id) {
 //#endif
 #ifdef USE_TLB
         pageTableInfo[i].valid = false;
-        pageTableInfo[i].status = NONE;
+        pageTableInfo[i].PageStatus = NONE;
 #endif
     }
 
