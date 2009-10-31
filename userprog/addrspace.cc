@@ -614,9 +614,9 @@ std::string AddrSpace::readCString(char* s) {
 
     while(true) {
         // read a byte, retry for a PageFaultException
-        result = machine->ReadMem(s, 1, &val);
+        result = machine->ReadMem((int) s, 1, &val);
         while(!result) {
-            result = machine->ReadMem(s, 1, &val);
+            result = machine->ReadMem((int) s, 1, &val);
         }
 
         // break if we hit the null terminator
