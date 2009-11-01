@@ -302,6 +302,7 @@ void kernel_thread(int virtAddr){
         // Allocate Stack space for the new Thread and write the stackstart
         // address to the stack register.
     int stackId = currentThread->space->InitStack();
+    currentThread->stackId = stackId;
     if(stackId < 0){
         DEBUG('a', "%s: Unable to allocate stack for the new process\n",currentThread->getName());
             // Kill Process and all its children
@@ -315,10 +316,10 @@ void Fork_Syscall(int funcAddr){
     processTableLock->Acquire();
     DEBUG('a', "%s: Called Fork_Syscall.\n",currentThread->getName());
         // Create new thread.kernel_thread()
-    Thread *t = new Thread(currentThread->getName());
+    Thread *t = new Thread("forked Thread");
         // Stack was successfully created.
         // Add Process to the system's process table.
-//    currentThread->space->childThreads++;
+        // currentThread->space->childThreads++;
     int myPID = processTable->addProcess(currentThread->getPID()); 
         // Address space for new Thread and the spawning thread is the same.
     t->space = currentThread->space;
@@ -374,19 +375,22 @@ spaceId Exec_Syscall(char *filename){
 void Exit_Syscall(int status){
     cout<<"Exit Status: "<<status<<endl;
     processTableLock->Acquire();
-    //cout << "Process Count: "<<processTable->processCounter<<"currentThread->space->childThreads "<<currentThread->space->childThreads<<endl;
     if (processTable->processCounter == 1 && currentThread->space->childThreads == 0) {
         //printf("Exit_Syscall: End of NACHOS\n");
         interrupt->Halt();
     }else if (currentThread->space->childThreads == 0) {
-        processTable->processCounter--;
+//        processTable->processCounter--;
+        processTable->removeProcess(currentThread->PID);
         //printf( "Exit_Syscall: End of Process PID: %d\n", currentThread->getPID());
+        currentThread->space->ClearStack(currentThread->stackId);
         processTableLock->Release();
         currentThread->Finish();
     }else {
         //Neither the end of process nor the end of Nachos
         //printf("Exit_Syscall: End of Thread PID: %d\n", currentThread->getPID());
-        currentThread->space->childThreads--;
+        processTable->removeProcess(currentThread->PID);
+        //currentThread->space->childThreads--;
+        currentThread->space->ClearStack(currentThread->stackId);
         processTableLock->Release();
         currentThread->Finish();
     }

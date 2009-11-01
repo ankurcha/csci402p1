@@ -101,6 +101,7 @@ class Thread {
     char* getName() { return (name); }
     void Print() { printf("%s, ", name); }
     int PID; 
+    int stackId;
     int getPID(){
         return PID;
     }
