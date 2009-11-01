@@ -25,8 +25,10 @@ InvertedPageTableEntry *IPT; // IPT for nachos
 bool FIFOreplacementPolicy = false; // Default: Random replacement
 OpenFile *swapFile;
 //int swapLocation = 0;
-Lock* swapLock;
-BitMap* swapBitMap;
+Lock* swapLock = new Lock("swapLock");
+
+// allow enough swap for 10 huge processes
+BitMap* swapBitMap = new BitMap(NumVirtPages * 10);
 //#endif
 
 
@@ -169,10 +171,6 @@ Initialize(int argc, char **argv)
     fileSystem->Create(sfname, 1);
     swapFile = fileSystem->Open(sfname);
     //swapLocation = 0;
-    Lock* swapLock = new Lock("swapLock");
-
-    // allow enough swap for 10 huge processes
-    BitMap* swapBitMap = new BitMap(NumVirtPages * 10);
 #endif
 #endif
     
