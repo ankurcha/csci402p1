@@ -34,7 +34,7 @@
 #include <vector>
 
 #ifdef NETWORK
-#define MaxDataSize (MaxMailSize - sizeof(int) -sizeof(int))
+//#define MaxDataSize (MaxMailSize - sizeof(int) -sizeof(int))
 int sequenceNumber = 0;
 #endif
 
@@ -44,14 +44,15 @@ class Packet {
     public:
     unsigned char senderId;
     unsigned char sequenceNumber;
-    char data[MaxDataSize];
+    char data[MaxMailSize - 2*sizeof(char)];
 
-    char* Serialize(){
-        char *message = new char[MaxMailSize];
+    // message MUST be a pointer to a char array of MaxMailSize
+    char* Serialize(char* message){
+        //char *message = new char[MaxMailSize];
         message[0] = senderId;
         message[1] = sequenceNumber;
-        for(unsigned i=0;i<MaxDataSize;i++)
-            message[i+2] = data[i];
+        for(unsigned i=2; i < MaxMailSize; i++)
+            message[i] = data[i-2];
         return message;
     }
 
