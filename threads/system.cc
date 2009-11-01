@@ -24,6 +24,7 @@ Timer *timer;				// the hardware timer device,
 InvertedPageTableEntry *IPT; // IPT for nachos
 bool FIFOreplacementPolicy = false; // Default: Random replacement
 OpenFile *swapFile;
+char *sfname;
 //int swapLocation = 0;
 Lock* swapLock = new Lock("swapLock");
 
@@ -165,13 +166,11 @@ Initialize(int argc, char **argv)
     
 #ifdef USER_PROGRAM
     machine = new Machine(debugUserProg);	// this must come first
-#ifdef USE_TLB
     IPT = new InvertedPageTableEntry[NumPhysPages];
-    char *sfname = mktemp("swapfileXXXX");
+    sfname = mktemp("swapfileXXXX");
     fileSystem->Create(sfname, 1);
     swapFile = fileSystem->Open(sfname);
     //swapLocation = 0;
-#endif
 #endif
     
 #ifdef FILESYS
@@ -215,7 +214,7 @@ Cleanup()
     delete timer;
     delete scheduler;
     delete interrupt;
-    
+    cout << remove(sfname)>=0?"success":"Fail"; 
     Exit(0);
 }
 

@@ -1,14 +1,9 @@
 #include "syscall.h"
 #include "print.c"
 
-#define Dim 20
-
-int a[50];
-
-
 void helloWorld(){
-    print("HelloWorld\n");
-    Exit(13);
+    print("hello World\n");
+    Exit(7);
 }
 
 int main(){
