@@ -669,8 +669,8 @@ int findAvailablePage(){
     int virtualPage = -1, physicalPage = -1;
     AddrSpace *targetSpace;
     // Find a free page in the IPT, if any
-    for(int i=0;i<NumPhysPages;i++){
-        if(IPT[i].physicalPage == -1){
+    for(int i=0; i < NumPhysPages; i++){
+        if(IPT[i].valid == false){
             // This page is free!!!
             DEBUG('a', "Found a free page at %d\n", i);
             physicalPage = i;
@@ -685,6 +685,7 @@ int findAvailablePage(){
     if(IPT[physicalPage].dirty){
         // Page modified but not committed.
         if(IPT[physicalPage].space->pageTableInfo[virtualPage].swapLocation == -1){
+            //TODO: need to select a swap location
             IPT[physicalPage].space->pageTableInfo[virtualPage].swapLocation = swapLocation++;
         }
         // Write the page to swapLocation.
@@ -755,6 +756,9 @@ void handlePageFaultException(int vAddr){
     if(currentThread->space->pageTableInfo[virtualpage].valid == false) {
         // RESTORE INTERRUPTS
         (void) interrupt->SetLevel(oldLevel);
+
+        cout << "ERROR: Virtual Page " << virtualpage << " is not valid\n"
+             << " SEGFAULT!\n";
 
         // die die die
         Exit_Syscall(1);

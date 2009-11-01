@@ -26,6 +26,8 @@ public:
     InvertedPageTableEntry(){
             virtualPage = -1;
             physicalPage = -1;
+            valid = false;
+            dirty = false;
         }
     enum {
             CODE,
