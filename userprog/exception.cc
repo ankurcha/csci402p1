@@ -750,7 +750,7 @@ void loadPageFromExec(int ppn, int vpn) {
     int pageOffset = 0;
     int length = 0;
     if(codeStart < pageStart) {
-        codeOffset = PageStart - codeStart;
+        codeOffset = pageStart - codeStart;
         pageOffset = 0;
         if(codeEnd <= pageStart) {
             // do nothing
@@ -787,7 +787,7 @@ void loadPageFromExec(int ppn, int vpn) {
     //*** now do the initdata section
     int initOffset = 0;
     if(initStart < pageStart) {
-        initOffset = PageStart - initStart;
+        initOffset = pageStart - initStart;
         pageOffset = 0;
         if(initEnd <= pageStart) {
             // do nothing
