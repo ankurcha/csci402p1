@@ -159,6 +159,10 @@ AddrSpace::AddrSpace(OpenFile *exec) : fileTable(MaxOpenFiles),
     ASSERT(noffH.noffMagic == NOFFMAGIC);
 
     // calculate the size of this process
+    cerr << "Allocating an address space, exec data is as follows:\n"
+         << " codeVaddr: " << noffH.code.virturalAddr << " codeSize: " << noffH.code.size << endl
+         << " initVaddr: " << noffH.initData.virturalAddr << " initSize: " << noffH.initData.size << endl
+         << " uninitVaddr: " << noffH.uninitData.virturalAddr << " uninitSize: " << noffH.uninitData.size << endl;
     dataSize = noffH.code.size + noffH.initData.size + noffH.uninitData.size ;
     dataPages = divRoundUp(dataSize, PageSize);
 
