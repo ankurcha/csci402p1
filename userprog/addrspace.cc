@@ -520,12 +520,12 @@ void AddrSpace::ClearStack(int id) {
 #ifdef USE_TLB
         if(pageTableInfo[i].PageStatus == MEMORY) {
             // free the memory
-            IPT[pageTableInfo.physicalPage].valid = false;
+            IPT[pageTableInfo[i].physicalPage].valid = false;
         }
         if(pageTableInfo[i].swapLocation != -1) {
             // free the swap
             swapLock->Acquire();
-            swapBitMap.Clear(pageTableInfo[i].swapLocation);
+            swapBitMap->Clear(pageTableInfo[i].swapLocation);
             swapLock->Release();
             pageTableInfo[i].swapLocation = -1;
         }
