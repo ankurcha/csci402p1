@@ -47,7 +47,7 @@ class Packet {
     public:
     unsigned char senderId;
     unsigned char sequenceNumber;
-    char data[MaxMailSize - 2*sizeof(char)];
+    char data[MaxMailSize - 2 * sizeof(char)];
 
     // message MUST be a pointer to a char array of MaxMailSize
     char* Serialize(char* message){
@@ -307,7 +307,7 @@ void kernel_thread(int virtAddr){
         // Allocate Stack space for the new Thread and write the stackstart
         // address to the stack register.
     int stackId = currentThread->space->InitStack();
-    printf("StackId: %d\n", stackId);
+    //printf("StackId: %d\n", stackId);
     currentThread->stackId = stackId;
     if(stackId < 0){
         printf("%s: Unable to allocate stack for the new process\n",currentThread->getName());
@@ -332,7 +332,7 @@ void Fork_Syscall(int funcAddr){
         // Restore state.
     currentThread->space->RestoreState();
     processTableLock->Release();
-    printf("Fork Complete\n");
+    //printf("Fork Complete\n");
 }
 
 void exec_thread(int arg){
@@ -502,7 +502,6 @@ CVId CreateCondition_Syscall(char* name){
 			delete newCV;
 		}else{
             CVTableLock->Release();
-                //printf("CREA\n");
 			return retval;
 		}
 	}
@@ -560,7 +559,6 @@ void WaitCV_Syscall(CVId cvId, LockId lockId){
     (void) CV->cv->Wait(ConditionLockWrapper->lock);
     
     CVTableLock->Acquire();
-    printf("current counter: %d",CV->counter--);
     CVTableLock->Release();
 }
 
@@ -676,7 +674,6 @@ int findAvailablePage(){
     for(int i=0; i < NumPhysPages; i++){
         if(IPT[i].valid == false){
             // This page is free!!!
-            printf( "Found a free page at %d\n", i);
             ppn = i;
             // Yippie!!
             return ppn;
@@ -983,7 +980,6 @@ void Send_Syscall(int receiverID,int mbox,int vaddr){
     
     // Serialize everything to be sent
    char *message = new char[MaxMailSize];
-   cout << message;
    message = pkt.Serialize(message);
     if (bytesRead != -1) {
         // Payload successfully acquired
