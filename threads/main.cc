@@ -114,11 +114,11 @@ main(int argc, char **argv)
         FIFOreplacementPolicy = false; // Make Random replacement policy as the default.
         if(!strcmp(*argv, "-P")){
             if(!strcmp(*(argv+1),"RAND")){
-                DEBUG('f',"Using random replacement policy\n");
+                printf("Using random replacement policy\n");
                 FIFOreplacementPolicy=false;
             }
             else{
-                DEBUG('f',"Using FIFO replacement policy\n");
+                printf("Using FIFO replacement policy\n");
                 FIFOreplacementPolicy=true;
             }
         }

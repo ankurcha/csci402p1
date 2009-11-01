@@ -303,6 +303,7 @@ void kernel_thread(int virtAddr){
         // Allocate Stack space for the new Thread and write the stackstart
         // address to the stack register.
     int stackId = currentThread->space->InitStack();
+    printf("StackId: %d\n", stackId);
     currentThread->stackId = stackId;
     if(stackId < 0){
         printf("%s: Unable to allocate stack for the new process\n",currentThread->getName());
@@ -327,6 +328,7 @@ void Fork_Syscall(int funcAddr){
         // Restore state.
     currentThread->space->RestoreState();
     processTableLock->Release();
+    printf("Fork Complete\n");
 }
 
 void exec_thread(int arg){
@@ -624,7 +626,6 @@ int getTimestamp(){
 
 void CopyTranslationEntry(TranslationEntry* sourceTE,TranslationEntry* destTE){
     // Perform deep copy the source to the destination
-    
     destTE->virtualPage = sourceTE->virtualPage;
     destTE->physicalPage = sourceTE->physicalPage;
     destTE->valid = sourceTE->valid;
@@ -671,7 +672,7 @@ int findAvailablePage(){
     for(int i=0; i < NumPhysPages; i++){
         if(IPT[i].valid == false){
             // This page is free!!!
-            DEBUG('a', "Found a free page at %d\n", i);
+            printf( "Found a free page at %d\n", i);
             ppn = i;
             // Yippie!!
             return ppn;
@@ -737,7 +738,7 @@ void handlePageFaultException(int vAddr){
 
     // DISABLE INTERRUPTS
     IntStatus oldLevel = interrupt->SetLevel(IntOff);
-
+    
     int virtualpage = vAddr / PageSize;
     int physicalPage = -1;
     int tlbpos = 0;
@@ -755,11 +756,7 @@ void handlePageFaultException(int vAddr){
 
     //if(currentThread->space->pageTableInfo[virtualpage].PageStatus == MEMORY){
     if(physicalPage != -1) {
-        // Find page in IPT
-        //physicalPage = findInIPT(virtualpage, currentThread->PID);
-
         // make sure the page was actually found where it is supposed to be
-        //ASSERT(physicalPage != -1);
         DEBUG('a',"Working with Physical Page: %d\n",physicalPage);
 
         // Copy IPT -> TLB
