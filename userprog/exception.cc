@@ -686,7 +686,7 @@ int findAvailablePage(){
         if(IPT[ppn].space->pageTableInfo[vpn].swapLocation == -1){
             // need to select a swap location
             swapLock->Acquire();
-            int newSwapLocation = swapBitMap.Find();
+            int newSwapLocation = swapBitMap->Find();
             swapLock->Release();
             if(newSwapLocation == -1) {
                 // Ran out of SWAP !!!
@@ -704,7 +704,7 @@ int findAvailablePage(){
         // Okay!! page is not dirty and was never written to swap file...
         // need to select a new swap location
         swapLock->Acquire();
-        int newSwapLocation = swapBitMap.Find();
+        int newSwapLocation = swapBitMap->Find();
         swapLock->Release();
         if(newSwapLocation == -1) {
             // Ran out of SWAP !!!
