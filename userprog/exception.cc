@@ -666,53 +666,71 @@ int SelectPageToBeSwapped()
 }
 
 int findAvailablePage(){
-    int virtualPage = -1, physicalPage = -1;
+    int vpn = -1, ppn = -1;
     AddrSpace *targetSpace;
     // Find a free page in the IPT, if any
     for(int i=0; i < NumPhysPages; i++){
         if(IPT[i].valid == false){
             // This page is free!!!
             DEBUG('a', "Found a free page at %d\n", i);
-            physicalPage = i;
+            ppn = i;
             // Yippie!!
-            return physicalPage;
+            return ppn;
         }
     }
     // Need to swap pages!!
-    physicalPage = SelectPageToBeSwapped();
-    virtualPage = IPT[physicalPage].virtualPage;
-    targetSpace = IPT[physicalPage].space;
+    ppn = SelectPageToBeSwapped();
+    vpn = IPT[ppn].virtualPage;
+    targetSpace = IPT[ppn].space;
     
-    if(IPT[physicalPage].dirty){
+    if(IPT[ppn].dirty){
         // Page modified but not committed.
-        if(IPT[physicalPage].space->pageTableInfo[virtualPage].swapLocation == -1){
-            //TODO: need to select a swap location
-            IPT[physicalPage].space->pageTableInfo[virtualPage].swapLocation = swapLocation++;
+        if(IPT[ppn].space->pageTableInfo[vpn].swapLocation == -1){
+            // need to select a swap location
+            swapLock->Acquire();
+            int newSwapLocation = swapBitMap.Find();
+            swapLock->Release();
+            if(newSwapLocation == -1) {
+                // Ran out of SWAP !!!
+                cerr << "ERROR: Swap file FULL !!\n";
+                Exit_Syscall(1);
+                return -1;
+            }
+            IPT[ppn].space->pageTableInfo[vpn].swapLocation = newSwapLocation;
         }
         // Write the page to swapLocation.
-        swapFile->WriteAt(&(machine->mainMemory[PageSize * physicalPage]),PageSize,
-                          (PageSize * IPT[physicalPage].space->pageTableInfo[virtualPage].swapLocation));
-        IPT[physicalPage].space->pageTableInfo[virtualPage].PageStatus = SWAP;
-    }else if(IPT[physicalPage].space->pageTableInfo[virtualPage].swapLocation == -1){
+        swapFile->WriteAt(&(machine->mainMemory[PageSize * ppn]),PageSize,
+                          (PageSize * IPT[ppn].space->pageTableInfo[vpn].swapLocation));
+        IPT[ppn].space->pageTableInfo[vpn].PageStatus = SWAP;
+    }else if(IPT[ppn].space->pageTableInfo[vpn].swapLocation == -1){
         // Okay!! page is not dirty and was never written to swap file...
-        //TODO:
-        IPT[physicalPage].space->pageTableInfo[virtualPage].swapLocation = swapLocation++;
-        swapFile->WriteAt(&(machine->mainMemory[PageSize * physicalPage]),PageSize,
-                          (PageSize * IPT[physicalPage].space->pageTableInfo[virtualPage].swapLocation));
-        IPT[physicalPage].space->pageTableInfo[virtualPage].PageStatus = SWAP;
+        // need to select a new swap location
+        swapLock->Acquire();
+        int newSwapLocation = swapBitMap.Find();
+        swapLock->Release();
+        if(newSwapLocation == -1) {
+            // Ran out of SWAP !!!
+            cerr << "ERROR: Swap file FULL !!\n";
+            Exit_Syscall(1);
+            return -1;
+        }
+        IPT[ppn].space->pageTableInfo[vpn].swapLocation = newSwapLocation;
+        swapFile->WriteAt(&(machine->mainMemory[PageSize * ppn]),PageSize,
+                          (PageSize * IPT[ppn].space->pageTableInfo[vpn].swapLocation));
+        IPT[ppn].space->pageTableInfo[vpn].PageStatus = SWAP;
     }else {
-        IPT[physicalPage].space->pageTableInfo[virtualPage].PageStatus = SWAP;
+        IPT[ppn].space->pageTableInfo[vpn].PageStatus = SWAP;
     }
     
     //If currentThread, invalidate all entries in TLB
-    if(IPT[physicalPage].space == currentThread->space){
+    if(IPT[ppn].space == currentThread->space){
         for(int i=0; i< TLBSize; i++){
-            if(machine->tlb[i].virtualPage == virtualPage){
+            if(machine->tlb[i].virtualPage == vpn){
                 machine->tlb[i].valid = false;
             }
         }
     }
-    return physicalPage;
+    return ppn;
 }
 
 void handlePageFaultException(int vAddr){
@@ -769,6 +787,11 @@ void handlePageFaultException(int vAddr){
     // Find a free page in memory to get th page in - FindOpenPhysicalPage
     physicalPage = findAvailablePage();
     DEBUG('a',"physicalPage Value: %d\n",physicalPage);
+    if(physicalPage == -1) {
+        // RESTORE INTERRUPTS
+        (void) interrupt->SetLevel(oldLevel);
+        return;
+    }
 
     // So by now we have the physical page which we want to screw with.
     // so, zero it out!!
