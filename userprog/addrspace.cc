@@ -354,7 +354,7 @@ AddrSpace::~AddrSpace()
 //    }
 //#endif
 #ifdef USE_TLB
-    //TODO: free the physical memory
+    // free the physical memory
     for(unsigned int i=0; i < numPages; i++) {
         if(pageTableInfo[i].valid) {
             IPT[pageTableInfo[i].physicalPage].valid = false;
