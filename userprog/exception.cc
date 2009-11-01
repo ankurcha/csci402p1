@@ -876,8 +876,8 @@ void Send_Syscall(int receiverID,int mbox,int vaddr){
     payload = pkt.data;
     
     // Serialize everything to be sent
-   char *message;
-   message = pkt.Serialize();
+   char *message = new char[MaxMailSize];
+   message = pkt.Serialize(message);
     if (bytesRead != -1) {
         // Payload successfully acquired
         // Send packet
