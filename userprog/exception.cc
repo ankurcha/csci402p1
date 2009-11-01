@@ -359,11 +359,11 @@ spaceId Exec_Syscall(char *filename){
 
     // Add process to process table.
     //processTable->processCounter++;
+    processTableLock->Release();
     int myPID = processTable->addProcess(currentThread->getPID()); 
     t->setPID(myPID);
     
     DEBUG('a', "%s: New thread created with PID: %d.\n",currentThread->getName(), t->getPID());
-    processTableLock->Release();
 //#ifndef USE_TLB
 //    delete executable;
 //#endif
@@ -682,7 +682,6 @@ int findAvailablePage(){
     physicalPage = SelectPageToBeSwapped();
     virtualPage = IPT[physicalPage].virtualPage;
     targetSpace = IPT[physicalPage].space;
-    
     if(IPT[physicalPage].dirty){
         // Page modified but not committed.
         if(IPT[physicalPage].space->pageTableInfo[virtualPage].swapLocation == -1){
@@ -692,12 +691,12 @@ int findAvailablePage(){
         swapFile->WriteAt(&(machine->mainMemory[PageSize * physicalPage]),PageSize,
                           (PageSize * IPT[physicalPage].space->pageTableInfo[virtualPage].swapLocation));
         IPT[physicalPage].space->pageTableInfo[virtualPage].PageStatus = SWAP;
-    }else if(IPT[physicalPage].space->pageTableInfo[virtualPage].swapLocation == -1){
+    }else if(IPT[physicalPage].space->pageTableInfo[virtualPage].swapLocation == -1 && IPT[physicalPage].dirty == false){
         // Okay!! page is not dirty and was never written to swap file...
-        //IPT[physicalPage].space->pageTableInfo[virtualPage].swapLocation = swapLocation++;
-        //swapFile->WriteAt(&(machine->mainMemory[PageSize * physicalPage]),PageSize,
-        //                  (PageSize * IPT[physicalPage].space->pageTableInfo[virtualPage].swapLocation));
-        IPT[physicalPage].space->pageTableInfo[virtualPage].PageStatus = NOWHERE;
+        IPT[physicalPage].space->pageTableInfo[virtualPage].swapLocation = swapLocation++;
+        swapFile->WriteAt(&(machine->mainMemory[PageSize * physicalPage]),PageSize,
+                          (PageSize * IPT[physicalPage].space->pageTableInfo[virtualPage].swapLocation));
+        IPT[physicalPage].space->pageTableInfo[virtualPage].PageStatus = SWAP;
     }else {
         IPT[physicalPage].space->pageTableInfo[virtualPage].PageStatus = SWAP;
     }
@@ -733,6 +732,7 @@ void handlePageFaultException(int vAddr){
     // Now we check if the page is in memory
     // If yes, load from IPT
     physicalPage = findInIPT(virtualpage, currentThread->PID);
+
     //if(currentThread->space->pageTableInfo[virtualpage].PageStatus == MEMORY){
     if(physicalPage != -1) {
         // Find page in IPT
