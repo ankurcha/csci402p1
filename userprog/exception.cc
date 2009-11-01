@@ -33,6 +33,10 @@
 #include <sstream>
 #include <vector>
 
+#ifdef CHANGED
+#include <algorithm>
+#endif
+
 #ifdef NETWORK
 int sequenceNumber = 0;
 #endif
@@ -733,6 +737,93 @@ int findAvailablePage(){
     return ppn;
 }
 
+void loadPageFromExec(int ppn, int vpn) {
+    int pageStart = vpn * PageSize;
+    int pageEnd = pageStart + PageSize;
+    int codeStart = currentThread->space->noffH.code.virtualAddr;
+    int codeEnd = codeStart + currentThread->space->noffH.code.size;
+    int initStart = currentThread->space->noffH.initData.virtualAddr;
+    int initEnd = initStart + currentThread->space->noffH.initData.size;
+
+    // There are 6 potential alignments between the code section and this page
+    //  must make sure they are all handled
+    int codeOffset = 0;
+    int pageOffset = 0;
+    int length = 0;
+    if(codeStart < pageStart) {
+        codeOffset = pageStart - codeStart;
+        pageOffset = 0;
+        if(codeEnd <= pageStart) {
+            // do nothing
+        } else {
+            if(codeEnd >= pageEnd) {
+                // copy into the whole page
+                length = PageSize;
+            } else {
+                // copy the end of the code section to this page
+                length = codeEnd - pageStart;
+            }
+        }
+    } else {  //codeStart >= pageStart
+        codeOffset = 0;
+        pageOffset = codeStart - pageStart;
+        if(codeStart >= pageEnd) {
+            // do nothing
+        } else {
+            if(codeEnd >= pageEnd) {
+                // copy start of code section to this page
+                length = pageEnd - codeStart;
+            } else {
+                // copy whole code section to this page
+                length = codeEnd - codeStart;
+            }
+        }
+    }
+    
+    currentThread->space->executable->ReadAt(
+        &(machine->mainMemory[(ppn * PageSize) + pageOffset]), // location in memory (target)
+        length, // size
+        currentThread->space->noffH.code.inFileAddr + codeOffset); // file location
+
+    //*** now do the initdata section
+    int initOffset = 0;
+    if(initStart < pageStart) {
+        initOffset = pageStart - initStart;
+        pageOffset = 0;
+        if(initEnd <= pageStart) {
+            // do nothing
+        } else {
+            if(initEnd >= pageEnd) {
+                // copy into the whole page
+                length = PageSize;
+            } else {
+                // copy the end of the init section to this page
+                length = initEnd - pageStart;
+            }
+        }
+    } else {  //initStart >= pageStart
+        initOffset = 0;
+        pageOffset = initStart - pageStart;
+        if(initStart >= pageEnd) {
+            // do nothing
+        } else {
+            if(initEnd >= pageEnd) {
+                // copy start of init section to this page
+                length = pageEnd - initStart;
+            } else {
+                // copy whole init section to this page
+                length = initEnd - initStart;
+            }
+        }
+    }
+    
+    currentThread->space->executable->ReadAt(
+        &(machine->mainMemory[(ppn * PageSize) + pageOffset]), // location in memory (target)
+        length, // size
+        currentThread->space->noffH.initData.inFileAddr + initOffset); // file location
+
+}
+
 void handlePageFaultException(int vAddr){
     DEBUG('a', "Handling PageFault for VADDR: %d\n", vAddr);
 
@@ -799,11 +890,13 @@ void handlePageFaultException(int vAddr){
         DEBUG('a', "Loading page from file: %d, virtualPage: %d\n", 
               currentThread->space->noffH.code.inFileAddr, 
               virtualpage);
-        currentThread->space->executable->ReadAt(
-                            &(machine->mainMemory[physicalPage * PageSize]), // location in memory (target)
-                            PageSize, // size
-                            currentThread->space->noffH.code.inFileAddr + virtualpage * PageSize // length
-                            );
+        // load this page from the executable
+        loadPageFromExec(physicalPage, virtualpage);
+        //currentThread->space->executable->ReadAt(
+        //                    &(machine->mainMemory[physicalPage * PageSize]), // location in memory (target)
+        //                    PageSize, // size
+        //                    currentThread->space->noffH.code.inFileAddr + virtualpage * PageSize // length
+        //                    );
     }else if(currentThread->space->pageTableInfo[virtualpage].PageStatus == SWAP){
         DEBUG('a',"Load SwapFile\n");
         swapFile->ReadAt(
@@ -845,6 +938,7 @@ void handlePageFaultException(int vAddr){
  * Returns the number of bytes received
  */
 int Receive_Syscall(int senderID, int mbox,int vaddr){
+    int bytesRead = -1;
 #ifdef NETWORK
     char *message = new char[MaxMailSize];
     bzero(message, MaxMailSize);
@@ -859,9 +953,9 @@ int Receive_Syscall(int senderID, int mbox,int vaddr){
     // Copy message to vaddr
     Packet pkt;
     pkt.Deserialize(message);
-    int bytesRead = copyout(vaddr, sizeof(pkt.data), pkt.data);
-    return bytesRead;
+    bytesRead = copyout(vaddr, sizeof(pkt.data), pkt.data);
 #endif
+    return bytesRead;
 }
 
 void Send_Syscall(int receiverID,int mbox,int vaddr){
