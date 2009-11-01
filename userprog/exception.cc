@@ -359,8 +359,8 @@ spaceId Exec_Syscall(char *filename){
     // Add process to process table.
     //processTable->processCounter++;
     processTableLock->Release();
-    int myPID = processTable->addProcess(currentThread->getPID()); 
-    t->setPID(myPID);
+    int myPID = processTable->addProcess(currentThread->PID); 
+    t->PID = myPID;
     
     DEBUG('a', "%s: New thread created with PID: %d.\n",currentThread->getName(), t->getPID());
     t->Fork((VoidFunctionPtr) exec_thread, 0);
