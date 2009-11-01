@@ -323,7 +323,7 @@ void Fork_Syscall(int funcAddr){
     Thread *t = new Thread("forked Thread");
         // Stack was successfully created.
         // Add Process to the system's process table.
-        currentThread->space->childThreads++;
+    currentThread->space->childThreads++;
     int myPID = processTable->addProcess(currentThread->getPID()); 
         // Address space for new Thread and the spawning thread is the same.
     t->space = currentThread->space;
