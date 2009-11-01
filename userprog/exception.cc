@@ -34,7 +34,6 @@
 #include <vector>
 
 #ifdef NETWORK
-//#define MaxDataSize (MaxMailSize - sizeof(int) -sizeof(int))
 int sequenceNumber = 0;
 #endif
 
@@ -59,8 +58,9 @@ class Packet {
     void Deserialize(char *message){
         senderId = message[0];
         sequenceNumber = message[1];
-        for(unsigned i=0;i<MaxDataSize;i++)
-            data[i] = message[i+2];
+        for(unsigned i=2;i<MaxMailSize;i++){
+            data[i-2] = message[i];
+        }
     }
 }; 
 #endif
@@ -872,12 +872,13 @@ void Send_Syscall(int receiverID,int mbox,int vaddr){
     Packet pkt;
     pkt.senderId = (char) netname;
     pkt.sequenceNumber = (char) sequenceNumber++;
-    char *payload = new char[MaxDataSize];
-    int bytesRead = copyin(vaddr, 32 , pkt.data);
+    char *payload;
+    int bytesRead = copyin(vaddr, MaxMailSize - 2*sizeof(char) , pkt.data);
     payload = pkt.data;
     
     // Serialize everything to be sent
    char *message = new char[MaxMailSize];
+   cout << message;
    message = pkt.Serialize(message);
     if (bytesRead != -1) {
         // Payload successfully acquired

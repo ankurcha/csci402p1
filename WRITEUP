@@ -181,8 +181,9 @@ V. Testing: (For each test case, you must show)
     + How to test
         - To test the network system calls, send() and receive(),
           in the network directory, 
-          execute $./nachos -m 0 -x ../test/networkTestClient1 
-          > 1.txt &; ./nachos -m 1 -x ../test/networkTestClient2 > 2.txt &
+          execute 
+            $./nachos -m 0 -x ../test/networkTestClient1 > 1.txt &; ./nachos -m 1 -x ../test/networkTestClient2 > 2.txt &
+
           To check the robustness of the system we do a send() to a
           receiverID -1 and this fails as shown in the output Also, if we 
           only execute the second part of the command(after the semicolon) 
