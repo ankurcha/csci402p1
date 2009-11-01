@@ -304,9 +304,7 @@ void kernel_thread(int virtAddr){
     int stackId = currentThread->space->InitStack();
     currentThread->stackId = stackId;
     if(stackId < 0){
-        DEBUG('a', "%s: Unable to allocate stack for the new process\n",currentThread->getName());
-            // Kill Process and all its children
-            //    currentThread->space->killAllThreads();
+        printf("%s: Unable to allocate stack for the new process\n",currentThread->getName());
         return;
     }
     machine->Run();
@@ -319,7 +317,7 @@ void Fork_Syscall(int funcAddr){
     Thread *t = new Thread("forked Thread");
         // Stack was successfully created.
         // Add Process to the system's process table.
-        // currentThread->space->childThreads++;
+        currentThread->space->childThreads++;
     int myPID = processTable->addProcess(currentThread->getPID()); 
         // Address space for new Thread and the spawning thread is the same.
     t->space = currentThread->space;
@@ -365,9 +363,6 @@ spaceId Exec_Syscall(char *filename){
     t->setPID(myPID);
     
     DEBUG('a', "%s: New thread created with PID: %d.\n",currentThread->getName(), t->getPID());
-//#ifndef USE_TLB
-//    delete executable;
-//#endif
     t->Fork((VoidFunctionPtr) exec_thread, 0);
     return (spaceId) t->space;
 }
@@ -376,21 +371,20 @@ void Exit_Syscall(int status){
     cout<<"Exit Status: "<<status<<endl;
     processTableLock->Acquire();
     if (processTable->processCounter == 1 && currentThread->space->childThreads == 0) {
-        //printf("Exit_Syscall: End of NACHOS\n");
+        printf("Exit_Syscall: End of NACHOS\n");
         interrupt->Halt();
     }else if (currentThread->space->childThreads == 0) {
-//        processTable->processCounter--;
         processTable->removeProcess(currentThread->PID);
-        //printf( "Exit_Syscall: End of Process PID: %d\n", currentThread->getPID());
+        printf( "Exit_Syscall: End of Process PID: %d\n", currentThread->getPID());
         currentThread->space->ClearStack(currentThread->stackId);
         processTableLock->Release();
         currentThread->Finish();
     }else {
         //Neither the end of process nor the end of Nachos
-        //printf("Exit_Syscall: End of Thread PID: %d\n", currentThread->getPID());
+        printf("Exit_Syscall: End of Thread PID: %d\n", currentThread->getPID());
         processTable->removeProcess(currentThread->PID);
-        //currentThread->space->childThreads--;
-        currentThread->space->ClearStack(currentThread->stackId);
+        currentThread->space->childThreads--;
+        //currentThread->space->ClearStack(currentThread->stackId);
         processTableLock->Release();
         currentThread->Finish();
     }
@@ -867,7 +861,8 @@ int Receive_Syscall(int senderID, int mbox,int vaddr){
     // Copy message to vaddr
     Packet pkt;
     pkt.Deserialize(message);
-    return copyout(vaddr, sizeof(pkt.data), pkt.data);
+    int bytesRead = copyout(vaddr, sizeof(pkt.data), pkt.data);
+    return bytesRead;
 #endif
 }
 

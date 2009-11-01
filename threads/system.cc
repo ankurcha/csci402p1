@@ -165,8 +165,9 @@ Initialize(int argc, char **argv)
     machine = new Machine(debugUserProg);	// this must come first
 #ifdef USE_TLB
     IPT = new InvertedPageTableEntry[NumPhysPages];
-    fileSystem->Create("SWAPFILE", 1);
-    swapFile = fileSystem->Open("SWAPFILE");
+    char *sfname = mktemp("swapfileXXXX");
+    fileSystem->Create(sfname, 1);
+    swapFile = fileSystem->Open(sfname);
     //swapLocation = 0;
     Lock* swapLock = new Lock("swapLock");
 
