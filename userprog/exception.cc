@@ -669,7 +669,7 @@ int findAvailablePage(){
     int virtualPage = -1, physicalPage = -1;
     AddrSpace *targetSpace;
     // Find a free page in the IPT, if any
-    for(int i=0;i<NumPhysPages;i++){
+    for(int i=0; i < NumPhysPages; i++){
         if(IPT[i].valid == false){
             // This page is free!!!
             DEBUG('a', "Found a free page at %d\n", i);
@@ -695,10 +695,11 @@ int findAvailablePage(){
         IPT[physicalPage].space->pageTableInfo[virtualPage].PageStatus = SWAP;
     }else if(IPT[physicalPage].space->pageTableInfo[virtualPage].swapLocation == -1){
         // Okay!! page is not dirty and was never written to swap file...
-        //IPT[physicalPage].space->pageTableInfo[virtualPage].swapLocation = swapLocation++;
-        //swapFile->WriteAt(&(machine->mainMemory[PageSize * physicalPage]),PageSize,
-        //                  (PageSize * IPT[physicalPage].space->pageTableInfo[virtualPage].swapLocation));
-        IPT[physicalPage].space->pageTableInfo[virtualPage].PageStatus = NOWHERE;
+        //TODO:
+        IPT[physicalPage].space->pageTableInfo[virtualPage].swapLocation = swapLocation++;
+        swapFile->WriteAt(&(machine->mainMemory[PageSize * physicalPage]),PageSize,
+                          (PageSize * IPT[physicalPage].space->pageTableInfo[virtualPage].swapLocation));
+        IPT[physicalPage].space->pageTableInfo[virtualPage].PageStatus = SWAP;
     }else {
         IPT[physicalPage].space->pageTableInfo[virtualPage].PageStatus = SWAP;
     }
