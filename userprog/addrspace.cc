@@ -135,7 +135,6 @@ AddrSpace::AddrSpace(OpenFile *exec) : fileTable(MaxOpenFiles),
     unsigned int i, size, neededPages;
     locksTableLock = new Lock("LocksTableLock");
     CVTableLock = new Lock("CVTableLock");
-    //NoffHeader noffH;
     executable = exec;
 
 #ifdef USE_TLB

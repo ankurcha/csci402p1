@@ -79,7 +79,7 @@ public:
                 table->erase(table->find(pid));
                 process->childLock->Release();
                 return 0;
-            }
+                }
             
         }
         return -1;
