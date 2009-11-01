@@ -33,6 +33,10 @@
 #include <sstream>
 #include <vector>
 
+#ifdef CHANGED
+#include <algorithm>
+#endif
+
 #ifdef NETWORK
 int sequenceNumber = 0;
 #endif
@@ -732,6 +736,70 @@ int findAvailablePage(){
     return ppn;
 }
 
+void loadPageFromExec(int ppn, int vpn) {
+    int pageStart = vpn * PageSize;
+    int pageEnd = pageStart + PageSize;
+    int codeStart = currentThread->space->noffH.code.virtualAddr;
+    int codeEnd = codeStart + currentThread->space->noffH.code.size;
+    int initStart = currentThread->space->noffH.initData.virtualAddr;
+    int initEnd = initStart + currentThread->space->noffH.initData.size;
+
+    // There are 6 potential alignments between the code section and this page
+    //  must make sure they are all handled
+    int codeOffset, pageOffset, length;
+    if(codeStart < pageStart) {
+        codeOffset = PageStart - codeStart;
+        pageOffset = 0;
+        if(codeEnd <= pageStart) {
+            // do nothing
+        } else {
+            if(codeEnd >= pageEnd) {
+                // copy into the whole page
+                length = PageSize;
+            } else {
+                // copy the end of the code section to this page
+                length = codeEnd - pageStart;
+            }
+        }
+    } else {  //codeStart >= pageStart
+        codeOffset = 0;
+        pageOffset = codeStart - pageStart;
+        if(codeStart >= pageEnd) {
+            // do nothing
+        } else {
+            if(codeEnd >= pageEnd) {
+                // copy start of code section to this page
+                length = pageEnd - codeStart;
+            } else {
+                // copy whole code section to this page
+                length = codeEnd - codeStart;
+            }
+        }
+    }
+    
+    currentThread->space->executable->ReadAt(
+        &(machine->mainMemory[(ppn * PageSize) + pageOffset]), // location in memory (target)
+        length, // size
+        currentThread->space->noffH.code.inFileAddr + codeOffset); // file location
+
+    //// find the offset in the exec file and page where copying will start
+    //int offset = codeStart - PageStart;
+    //int codeOffset = 0;
+    //if(offset < 0) {
+    //    codeOffset = -offset;
+    //    offset = 0;
+    //}
+
+    //// find the length of the exec file that will be copied
+    //int length = codeSize - codeOffset;
+    //if(length < 0) length = 0;
+    //if((length + offset) > PageSize) {
+    //    length = PageSize - offset;
+    //}
+    //if(length < 0) length = 0;
+
+}
+
 void handlePageFaultException(int vAddr){
     DEBUG('a', "Handling PageFault for VADDR: %d\n", vAddr);
 
@@ -802,11 +870,13 @@ void handlePageFaultException(int vAddr){
         DEBUG('a', "Loading page from file: %d, virtualPage: %d\n", 
               currentThread->space->noffH.code.inFileAddr, 
               virtualpage);
-        currentThread->space->executable->ReadAt(
-                            &(machine->mainMemory[physicalPage * PageSize]), // location in memory (target)
-                            PageSize, // size
-                            currentThread->space->noffH.code.inFileAddr + virtualpage * PageSize // length
-                            );
+        //TODO: load properly
+        loadPageFromExec(physicalPage, virtualpage);
+        //currentThread->space->executable->ReadAt(
+        //                    &(machine->mainMemory[physicalPage * PageSize]), // location in memory (target)
+        //                    PageSize, // size
+        //                    currentThread->space->noffH.code.inFileAddr + virtualpage * PageSize // length
+        //                    );
     }else if(currentThread->space->pageTableInfo[virtualpage].PageStatus == SWAP){
         DEBUG('a',"Load SwapFile\n");
         swapFile->ReadAt(
