@@ -746,7 +746,9 @@ void loadPageFromExec(int ppn, int vpn) {
 
     // There are 6 potential alignments between the code section and this page
     //  must make sure they are all handled
-    int codeOffset, pageOffset, length;
+    int codeOffset = 0;
+    int pageOffset = 0;
+    int length = 0;
     if(codeStart < pageStart) {
         codeOffset = PageStart - codeStart;
         pageOffset = 0;
@@ -782,21 +784,42 @@ void loadPageFromExec(int ppn, int vpn) {
         length, // size
         currentThread->space->noffH.code.inFileAddr + codeOffset); // file location
 
-    //// find the offset in the exec file and page where copying will start
-    //int offset = codeStart - PageStart;
-    //int codeOffset = 0;
-    //if(offset < 0) {
-    //    codeOffset = -offset;
-    //    offset = 0;
-    //}
-
-    //// find the length of the exec file that will be copied
-    //int length = codeSize - codeOffset;
-    //if(length < 0) length = 0;
-    //if((length + offset) > PageSize) {
-    //    length = PageSize - offset;
-    //}
-    //if(length < 0) length = 0;
+    //*** now do the initdata section
+    int initOffset = 0;
+    if(initStart < pageStart) {
+        initOffset = PageStart - initStart;
+        pageOffset = 0;
+        if(initEnd <= pageStart) {
+            // do nothing
+        } else {
+            if(initEnd >= pageEnd) {
+                // copy into the whole page
+                length = PageSize;
+            } else {
+                // copy the end of the init section to this page
+                length = initEnd - pageStart;
+            }
+        }
+    } else {  //initStart >= pageStart
+        initOffset = 0;
+        pageOffset = initStart - pageStart;
+        if(initStart >= pageEnd) {
+            // do nothing
+        } else {
+            if(initEnd >= pageEnd) {
+                // copy start of init section to this page
+                length = pageEnd - initStart;
+            } else {
+                // copy whole init section to this page
+                length = initEnd - initStart;
+            }
+        }
+    }
+    
+    currentThread->space->executable->ReadAt(
+        &(machine->mainMemory[(ppn * PageSize) + pageOffset]), // location in memory (target)
+        length, // size
+        currentThread->space->noffH.initData.inFileAddr + initOffset); // file location
 
 }
 
@@ -870,7 +893,7 @@ void handlePageFaultException(int vAddr){
         DEBUG('a', "Loading page from file: %d, virtualPage: %d\n", 
               currentThread->space->noffH.code.inFileAddr, 
               virtualpage);
-        //TODO: load properly
+        // load this page from the executable
         loadPageFromExec(physicalPage, virtualpage);
         //currentThread->space->executable->ReadAt(
         //                    &(machine->mainMemory[physicalPage * PageSize]), // location in memory (target)
