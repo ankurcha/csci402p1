@@ -344,14 +344,23 @@ AddrSpace::AddrSpace(OpenFile *exec) : fileTable(MaxOpenFiles),
 AddrSpace::~AddrSpace()
 {
 #ifdef CHANGED
-    // free the physical memory being used by this page table
 //#ifndef USE_TLB
+    // free the physical memory being used by this page table
 //    for(unsigned int i=0; i < numPages; i++) {
 //        physMemMapLock->Acquire();
 //        physMemMap.Clear(pageTable[i].physicalPage);
 //        physMemMapLock->Release();
 //    }
 //#endif
+#ifdef USE_TLB
+    // free the physical memory
+    for(unsigned int i=0; i < numPages; i++) {
+        if(pageTableInfo[i].valid) {
+            IPT[pageTableInfo[i].physicalPage].valid = false;
+        }
+    }
+#endif
+
     delete pageTable;
     delete pageTableInfo;
     delete stackTableLock;
@@ -509,9 +518,19 @@ void AddrSpace::ClearStack(int id) {
 //        pageTable[i].valid = FALSE;
 //#endif
 #ifdef USE_TLB
+        if(pageTableInfo[i].PageStatus == MEMORY) {
+            // free the memory
+            IPT[pageTableInfo.physicalPage].valid = false;
+        }
+        if(pageTableInfo[i].swapLocation != -1) {
+            // free the swap
+            swapLock->Acquire();
+            swapBitMap.Clear(pageTableInfo[i].swapLocation);
+            swapLock->Release();
+            pageTableInfo[i].swapLocation = -1;
+        }
         pageTableInfo[i].valid = false;
         pageTableInfo[i].PageStatus = NOWHERE;
-        pageTableInfo[i].swapLocation = -1;
 #endif
     }
 
