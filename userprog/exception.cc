@@ -747,6 +747,7 @@ void loadPageFromExec(int ppn, int vpn) {
 
     // There are 6 potential alignments between the code section and this page
     //  must make sure they are all handled
+    bool read = true;
     int codeOffset = 0;
     int pageOffset = 0;
     int length = 0;
@@ -755,6 +756,7 @@ void loadPageFromExec(int ppn, int vpn) {
         pageOffset = 0;
         if(codeEnd <= pageStart) {
             // do nothing
+            read = false;
         } else {
             if(codeEnd >= pageEnd) {
                 // copy into the whole page
@@ -769,6 +771,7 @@ void loadPageFromExec(int ppn, int vpn) {
         pageOffset = codeStart - pageStart;
         if(codeStart >= pageEnd) {
             // do nothing
+            read = false;
         } else {
             if(codeEnd >= pageEnd) {
                 // copy start of code section to this page
@@ -779,21 +782,25 @@ void loadPageFromExec(int ppn, int vpn) {
             }
         }
     }
-    
-    cout << "Loading page " << vpn << " from exec, codeOffset: " << codeOffset
-         << " pageOffset: " << pageOffset << " length: " << length << endl;
-    currentThread->space->executable->ReadAt(
-        &(machine->mainMemory[(ppn * PageSize) + pageOffset]), // location in memory (target)
-        length, // size
-        currentThread->space->noffH.code.inFileAddr + codeOffset); // file location
+
+    if(read) {
+        cout << "Loading page " << vpn << " from exec, codeOffset: " << codeOffset
+             << " pageOffset: " << pageOffset << " length: " << length << endl;
+        currentThread->space->executable->ReadAt(
+            &(machine->mainMemory[(ppn * PageSize) + pageOffset]), // location in memory (target)
+            length, // size
+            currentThread->space->noffH.code.inFileAddr + codeOffset); // file location
+    }
 
     //*** now do the initdata section
+    read = true;
     int initOffset = 0;
     if(initStart < pageStart) {
         initOffset = pageStart - initStart;
         pageOffset = 0;
         if(initEnd <= pageStart) {
             // do nothing
+            read = false;
         } else {
             if(initEnd >= pageEnd) {
                 // copy into the whole page
@@ -808,6 +815,7 @@ void loadPageFromExec(int ppn, int vpn) {
         pageOffset = initStart - pageStart;
         if(initStart >= pageEnd) {
             // do nothing
+            read = false;
         } else {
             if(initEnd >= pageEnd) {
                 // copy start of init section to this page
@@ -819,12 +827,14 @@ void loadPageFromExec(int ppn, int vpn) {
         }
     }
     
-    cout << "Loading page " << vpn << " from exec, initOffset: " << initOffset
-         << " pageOffset: " << pageOffset << " length: " << length << endl;
-    currentThread->space->executable->ReadAt(
-        &(machine->mainMemory[(ppn * PageSize) + pageOffset]), // location in memory (target)
-        length, // size
-        currentThread->space->noffH.initData.inFileAddr + initOffset); // file location
+    if(read) {
+        cout << "Loading page " << vpn << " from exec, initStart: " << initStart << " initOffset: " << initOffset
+             << " pageOffset: " << pageOffset << " length: " << length << endl;
+        currentThread->space->executable->ReadAt(
+            &(machine->mainMemory[(ppn * PageSize) + pageOffset]), // location in memory (target)
+            length, // size
+            currentThread->space->noffH.initData.inFileAddr + initOffset); // file location
+    }
 
 }
 
