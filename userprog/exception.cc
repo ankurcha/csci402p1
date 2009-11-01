@@ -779,6 +779,8 @@ void loadPageFromExec(int ppn, int vpn) {
         }
     }
     
+    cout << "Loading page " << vpn << " from exec, codeOffset: " << codeOffset
+         << " pageOffset: " << pageOffset << " length: " << length << endl;
     currentThread->space->executable->ReadAt(
         &(machine->mainMemory[(ppn * PageSize) + pageOffset]), // location in memory (target)
         length, // size
@@ -816,6 +818,8 @@ void loadPageFromExec(int ppn, int vpn) {
         }
     }
     
+    cout << "Loading page " << vpn << " from exec, initOffset: " << initOffset
+         << " pageOffset: " << pageOffset << " length: " << length << endl;
     currentThread->space->executable->ReadAt(
         &(machine->mainMemory[(ppn * PageSize) + pageOffset]), // location in memory (target)
         length, // size
