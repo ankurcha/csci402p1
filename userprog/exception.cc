@@ -848,6 +848,7 @@ void handlePageFaultException(int vAddr){
  * Returns the number of bytes received
  */
 int Receive_Syscall(int senderID, int mbox,int vaddr){
+    int bytesRead = -1;
 #ifdef NETWORK
     char *message = new char[MaxMailSize];
     bzero(message, MaxMailSize);
@@ -862,9 +863,9 @@ int Receive_Syscall(int senderID, int mbox,int vaddr){
     // Copy message to vaddr
     Packet pkt;
     pkt.Deserialize(message);
-    int bytesRead = copyout(vaddr, sizeof(pkt.data), pkt.data);
-    return bytesRead;
+    bytesRead = copyout(vaddr, sizeof(pkt.data), pkt.data);
 #endif
+    return bytesRead;
 }
 
 void Send_Syscall(int receiverID,int mbox,int vaddr){
