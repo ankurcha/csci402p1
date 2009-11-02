@@ -3,12 +3,13 @@
 #define Dim 20
 
 
-int A[Dim][Dim];
-int B[Dim][Dim];
-int C[Dim][Dim];
 
 void matmult()
 {
+    int A[Dim][Dim];
+    int B[Dim][Dim];
+    int C[Dim][Dim];
+
   int i, j, k;
 
   for (i = 0; i < Dim; i++)           /* first initialize the matrices */
