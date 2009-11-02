@@ -584,10 +584,10 @@ void AddrSpace::RestoreState()
 #ifdef USE_TLB
     IntStatus oldLevel = interrupt->SetLevel(IntOff);
     for(int i=0; i < TLBSize; i++){
-        if(machine->tlb[i].valid) {
-            IPT[machine->tlb[i].physicalPage].use = machine->tlb[i].use;
-            IPT[machine->tlb[i].physicalPage].dirty = machine->tlb[i].dirty;
-        }
+        //if(machine->tlb[i].valid) {
+        //    IPT[machine->tlb[i].physicalPage].use = machine->tlb[i].use;
+        //    IPT[machine->tlb[i].physicalPage].dirty = machine->tlb[i].dirty;
+        //}
         machine->tlb[i].valid = false;
     }
     (void) interrupt->SetLevel(oldLevel);
