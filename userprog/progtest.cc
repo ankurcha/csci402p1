@@ -27,6 +27,11 @@ StartProcess(char *filename)
 {
     OpenFile *executable = fileSystem->Open(filename);
     AddrSpace *space;
+    if(FIFOreplacementPolicy){
+        printf("Using FIFO replacement policy\n");
+    }else{
+        printf("Using RAND replacement policy\n");
+    }
 
     if (executable == NULL) {
 	printf("Unable to open file %s\n", filename);
