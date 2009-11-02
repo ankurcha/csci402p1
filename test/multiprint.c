@@ -1,5 +1,5 @@
 #include "syscall.h"
-#include "print.c"
+#include "print.h"
 
 void helloWorld(){
     print("hello World\n");
@@ -7,7 +7,6 @@ void helloWorld(){
 }
 
 int main(){
-
     print("Forking matmult\n");
     Fork(helloWorld);
     Yield();
