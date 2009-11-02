@@ -31,6 +31,7 @@ int main(){
 
   print("Forking matmult\n");
   Fork(matmult);
-  print("Exiting main()\n");
+  Yield();
+  print("Exiting main\n");
   Exit(0);
 }

@@ -301,7 +301,7 @@ void Close_Syscall(int fd) {
 
 void kernel_thread(int virtAddr){
         // Setup new thread.
-    cerr << "kernel_thread called for virtAddr: " << virtAddr << endl;
+    //cerr << "kernel_thread called for virtAddr: " << virtAddr << endl;
     machine->WriteRegister(PCReg, virtAddr);
     machine->WriteRegister(NextPCReg, virtAddr+4);
     currentThread->space->RestoreState();
@@ -782,8 +782,8 @@ void loadPageFromExec(int ppn, int vpn) {
     }
 
     if(read) {
-        cout << "Loading page " << vpn << " from exec, codeOffset: " << codeOffset
-             << " pageOffset: " << pageOffset << " length: " << length << endl;
+//        cout << "Loading page " << vpn << " from exec, codeOffset: " << codeOffset
+//             << " pageOffset: " << pageOffset << " length: " << length << endl;
         currentThread->space->executable->ReadAt(
             &(machine->mainMemory[(ppn * PageSize) + pageOffset]), // location in memory (target)
             length, // size
@@ -826,8 +826,8 @@ void loadPageFromExec(int ppn, int vpn) {
     }
     
     if(read) {
-        cout << "Loading page " << vpn << " from exec, initStart: " << initStart << " initOffset: " << initOffset
-             << " pageOffset: " << pageOffset << " length: " << length << endl;
+        //cout << "Loading page " << vpn << " from exec, initStart: " << initStart << " initOffset: " << initOffset
+        //     << " pageOffset: " << pageOffset << " length: " << length << endl;
         currentThread->space->executable->ReadAt(
             &(machine->mainMemory[(ppn * PageSize) + pageOffset]), // location in memory (target)
             length, // size
