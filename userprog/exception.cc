@@ -782,8 +782,8 @@ void loadPageFromExec(int ppn, int vpn) {
     }
 
     if(read) {
-//        cout << "Loading page " << vpn << " from exec, codeOffset: " << codeOffset
-//             << " pageOffset: " << pageOffset << " length: " << length << endl;
+        //cout << "Loading page " << vpn << " from exec, codeOffset: " << codeOffset
+        //     << " pageOffset: " << pageOffset << " length: " << length << endl;
         currentThread->space->executable->ReadAt(
             &(machine->mainMemory[(ppn * PageSize) + pageOffset]), // location in memory (target)
             length, // size
@@ -903,6 +903,7 @@ void handlePageFaultException(int vAddr){
               currentThread->space->noffH.code.inFileAddr, 
               virtualpage);
         // load this page from the executable
+        //cout << "Loading vPage: " << virtualpage << " from exec into pPage: " << physicalPage << endl;
         loadPageFromExec(physicalPage, virtualpage);
         //currentThread->space->executable->ReadAt(
         //                    &(machine->mainMemory[physicalPage * PageSize]), // location in memory (target)

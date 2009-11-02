@@ -163,11 +163,11 @@ multiForkmatmult.o: multiForkmatmult.c
 multiForkmatmult: multiForkmatmult.o start.o
 	$(LD) $(LDFLAGS) start.o multiForkmatmult.o -o multiForkmatmult.coff
 	../bin/coff2noff multiForkmatmult.coff multiForkmatmult
-multiprint.o: multiprint.c
-	$(CC) $(CFLAGS) -c multiprint.c
 
+multiprint.o: multiprint.c print
+	$(CC) $(CFLAGS) -c multiprint.c
 multiprint: multiprint.o start.o
-	$(LD) $(LDFLAGS) start.o multiprint.o -o multiprint.coff
+	$(LD) $(LDFLAGS) start.o print.o multiprint.o -o multiprint.coff
 	../bin/coff2noff multiprint.coff multiprint
 clean:
 	rm -f *.o *.coff
