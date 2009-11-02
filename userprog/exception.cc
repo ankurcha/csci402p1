@@ -301,6 +301,7 @@ void Close_Syscall(int fd) {
 
 void kernel_thread(int virtAddr){
         // Setup new thread.
+    cerr << "kernel_thread called for virtAddr: " << virtAddr << endl;
     machine->WriteRegister(PCReg, virtAddr);
     machine->WriteRegister(NextPCReg, virtAddr+4);
     currentThread->space->RestoreState();
