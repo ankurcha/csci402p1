@@ -81,6 +81,8 @@ class AddrSpace {
     unsigned int numPages;
 
 #ifdef CHANGED
+    unsigned int PID;
+    
     // number of bytes and pages used by code and data
     unsigned int dataSize;
     unsigned int dataPages;

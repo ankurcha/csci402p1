@@ -137,6 +137,8 @@ AddrSpace::AddrSpace(OpenFile *exec) : fileTable(MaxOpenFiles),
     CVTableLock = new Lock("CVTableLock");
     executable = exec;
 
+    PID = currentThread->PID;
+
 #ifdef USE_TLB
     numPages = NumVirtPages;
 #endif

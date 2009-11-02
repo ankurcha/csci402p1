@@ -645,7 +645,7 @@ void CopyTLB2IPT(){
 
 int findInIPT(int vAddr,int PID){
     for(int i=0;i<NumPhysPages;i++)
-        if(IPT[i].virtualPage == vAddr && IPT[i].PID == PID)
+        if(IPT[i].virtualPage == vAddr && IPT[i].valid && IPT[i].PID == PID)
             return i;
     // Didn't find the page in IPT!!
     return -1;
@@ -855,7 +855,7 @@ void handlePageFaultException(int vAddr){
 
     // Now we check if the page is in memory
     // If yes, load from IPT
-    physicalPage = findInIPT(virtualpage, currentThread->PID);
+    physicalPage = findInIPT(virtualpage, currentThread->space->PID);
 
     //if(currentThread->space->pageTableInfo[virtualpage].PageStatus == MEMORY){
     if(physicalPage != -1) {
@@ -931,7 +931,7 @@ void handlePageFaultException(int vAddr){
     IPT[physicalPage].use = false;
     IPT[physicalPage].dirty = false;
     IPT[physicalPage].readOnly = false;
-    IPT[physicalPage].PID = currentThread->PID;
+    IPT[physicalPage].PID = currentThread->space->PID;
     IPT[physicalPage].PageStatus = currentThread->space->pageTableInfo[virtualpage].PageStatus;
     IPT[physicalPage].swapLocation = currentThread->space->pageTableInfo[virtualpage].swapLocation;
     IPT[physicalPage].space = currentThread->space;
