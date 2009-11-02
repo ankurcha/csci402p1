@@ -903,6 +903,7 @@ void handlePageFaultException(int vAddr){
               currentThread->space->noffH.code.inFileAddr, 
               virtualpage);
         // load this page from the executable
+        cout << "Loading vPage: " << virtualpage << " from exec into pPage: " << physicalPage << endl;
         loadPageFromExec(physicalPage, virtualpage);
         //currentThread->space->executable->ReadAt(
         //                    &(machine->mainMemory[physicalPage * PageSize]), // location in memory (target)
