@@ -224,7 +224,7 @@ V. Testing: (For each test case, you must show)
         - multiExecmatmult test
              The exit status of both processes should be 7220
         - multiForkmatmult test
-             The exit status of the forked thread should be 7220 and 
+             The exit status of the forked threads should be 7220 and 
              that of main program should be 0
 VI. Discussion:
     + Experiment expectation.
