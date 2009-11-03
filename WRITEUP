@@ -183,7 +183,7 @@ V. Testing: (For each test case, you must show)
         - To test the network system calls, send() and receive(),
           in the network directory, 
           execute 
-            %./nachos -m 0 -x ../test/networkTestClient1 > 1.txt &; ./nachos -m 1 -x ../test/networkTestClient2 > 2.txt &
+            %./nachos -m 0 -x ../test/networkTestClient1 > 1.txt & ; ./nachos -m 1 -x ../test/networkTestClient2 > 2.txt &
 
           To check the robustness of the system we do a send() to a
           receiverID -1 and this fails as shown in the output Also, if we 
@@ -195,12 +195,12 @@ V. Testing: (For each test case, you must show)
         - To test for multiple process co-existing in Virtual memory
             For this test we will exec the matmult program twice 
             and see the output.
-                $./nachos -x ../test/multiExecmatmult
+                $./nachos -P {FIFO|RAND} -x ../test/multiExecmatmult
         
         - To test for multiple thread co-existing in the virtual memory
             For this test we for a process which does the exact same thing 
             as that by the matmult program
-                $./nachos -x ../test/multiForkmatmult
+                $./nachos -P {FIFO|RAND} -x ../test/multiForkmatmult
 
     + Test Output
         - Test for send and receive calls
@@ -248,4 +248,7 @@ VI. Discussion:
             the parts have been properly implemented.
 
 VII. Miscellaneous:
-
+ * At the moment we have made the protocol such that is simply exposes the underlying
+   network functionality of nachos by plainly passing the messages from the user program
+   to the destination program. Further levels would be written on top of these at a later
+   time.

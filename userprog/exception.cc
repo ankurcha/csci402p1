@@ -50,21 +50,36 @@ class Packet {
     char data[MaxMailSize - 2 * sizeof(char)];
 
     // message MUST be a pointer to a char array of MaxMailSize
-    char* Serialize(char* message){
-        //char *message = new char[MaxMailSize];
-        message[0] = senderId;
-        message[1] = sequenceNumber;
-        for(unsigned i=2; i < MaxMailSize; i++)
-            message[i] = data[i-2];
+    char* Serialize(char *message){
+        strcpy(message, data);
+        //cout<<message;
+        //message[0] = senderId;
+        //message[1] = sequenceNumber;
+        //for(unsigned i=2; i < MaxMailSize; i++)
+        //    message[i] = data[i-2];
+//        cout<<"--->";
+//        for (unsigned i=0; i<MaxMailSize-2; i++) {
+//            cout<<message[i];
+//        }
+//        cout << endl;
         return message;
     }
 
     void Deserialize(char *message){
-        senderId = message[0];
-        sequenceNumber = message[1];
-        for(unsigned i=2;i<MaxMailSize;i++){
-            data[i-2] = message[i];
-        }
+        //cout<<"<---";
+//        for (unsigned i=0; i<MaxMailSize; i++) {
+//            cout<<message[i];
+//        }
+        //cout<<endl;
+        //strcpy(data, message);
+        //cout<<"data"<<data;
+        //senderId = message[0];
+        //sequenceNumber = message[1];
+        for(unsigned i=0;i<32;i++)
+            data[i] = message[i];
+        //for(unsigned i=2;i<MaxMailSize;i++){
+        //    data[i-2] = message[i];
+       //}
     }
 }; 
 #endif
@@ -962,25 +977,29 @@ void handlePageFaultException(int vAddr){
  * Receives the  message sent to mbox. 
  * Returns the number of bytes received
  */
-int Receive_Syscall(int senderID,int vaddr){
-    int bytesRead = -1;
+int Receive_Syscall(int senderID, int mbox, int vaddr){
 #ifdef NETWORK
+    int bytesRead = -1;
     char *message = new char[MaxMailSize];
+    //cout<<"Inside Receive_SYSCALL\n"<<endl;
     bzero(message, MaxMailSize);
+    
     PacketHeader pktHead;
     MailHeader mailHead;
-    
-    if(senderID >= 0)
-        postOffice->Receive(senderID, &pktHead, &mailHead, message);
-    else
-        cout << "Error: bad receiver/mailbox";
-
+    if (senderID >= 0 && mbox >=0) {
+         postOffice->Receive(senderID, &pktHead, &mailHead, message);
+    }else{
+        interrupt->Halt();
+    }
     // Copy message to vaddr
     Packet pkt;
     pkt.Deserialize(message);
+    //cout << "Data received: "<<pkt.data<<endl;
+    fflush(stdout);
     bytesRead = copyout(vaddr, sizeof(pkt.data), pkt.data);
-#endif
     return bytesRead;
+#endif
+
 }
 
 void Send_Syscall(int receiverID,int mbox,int vaddr){
@@ -988,10 +1007,12 @@ void Send_Syscall(int receiverID,int mbox,int vaddr){
     Packet pkt;
     pkt.senderId = (char) netname;
     pkt.sequenceNumber = (char) sequenceNumber++;
-    char *payload;
-    int bytesRead = copyin(vaddr, MaxMailSize - 2*sizeof(char) , pkt.data);
-    payload = pkt.data;
     
+    char *payload = new char[32];
+    int bytesRead = copyin(vaddr, 32 , pkt.data);
+    
+    //strcpy(pkt.data, payload);
+    //cout<< "Sending: "<<payload<<endl;
     // Serialize everything to be sent
    char *message = new char[MaxMailSize];
    message = pkt.Serialize(message);
@@ -1115,7 +1136,8 @@ void ExceptionHandler(ExceptionType which) {
             case SC_Receive:
                 DEBUG('a', "Receive_Syscall\n");
                 rv =  Receive_Syscall(machine->ReadRegister(4), 
-                                      machine->ReadRegister(5));
+                                      machine->ReadRegister(5),
+                                      machine->ReadRegister(6));
                 break;
 #endif
         }

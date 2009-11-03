@@ -215,7 +215,6 @@ Cleanup()
     delete timer;
     delete scheduler;
     delete interrupt;
-    cout << remove(sfname)>=0?"success":"Fail"; 
     Exit(0);
 }
 
