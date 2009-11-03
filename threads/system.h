@@ -65,6 +65,7 @@ extern Timer *timer;				// the hardware alarm clock
 
 //#ifdef USE_TLB
 extern InvertedPageTableEntry *IPT;
+extern Lock* IPTLock;
 extern bool FIFOreplacementPolicy;
 extern OpenFile *swapFile;
 //extern int swapLocation;
