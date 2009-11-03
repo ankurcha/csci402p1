@@ -652,6 +652,7 @@ int findInIPT(int vAddr,int PID){
     // Didn't find the page in IPT!!
     return -1;
 }
+
 int SelectPageToBeSwapped()
 {
     static int physicalPage = -1;
@@ -663,7 +664,7 @@ int SelectPageToBeSwapped()
         //printf( "FIFO selection.\n");
         physicalPage = (physicalPage + 1) % NumPhysPages;
         //cout<<"FIFO selected: "<<physicalPage<<endl;
-   }    
+    }    
     return physicalPage;
 }
 
@@ -855,6 +856,7 @@ void handlePageFaultException(int vAddr){
 
     // Now we check if the page is in memory
     // If yes, load from IPT
+    IPTLock->Acquire();
     physicalPage = findInIPT(virtualpage, currentThread->space->PID);
 
     //if(currentThread->space->pageTableInfo[virtualpage].PageStatus == MEMORY){
@@ -867,8 +869,10 @@ void handlePageFaultException(int vAddr){
         CopyTranslationEntry( &(IPT[physicalPage]), &(machine->tlb[tlbpos]) );
         // RESTORE INTERRUPTS
         (void) interrupt->SetLevel(oldLevel);
+        IPTLock->Release();
         return;
     } // END OF MEMORY MATCH
+    IPTLock->Release();
 
     // must check if this page is valid first, kill currentThread with
     //  a segfault if it is not
@@ -883,11 +887,13 @@ void handlePageFaultException(int vAddr){
         return;
     }
 
+    IPTLock->Acquire();
     // Find a free page in memory to get th page in - FindOpenPhysicalPage
     physicalPage = findAvailablePage();
     DEBUG('a',"physicalPage Value: %d\n",physicalPage);
     if(physicalPage == -1) {
         // RESTORE INTERRUPTS
+        IPTLock->Release();
         return;
     }
 
@@ -937,10 +943,12 @@ void handlePageFaultException(int vAddr){
     IntStatus oldLevel = interrupt->SetLevel(IntOff); 
     // Now copy the IPT[physicalPage] to TLB[TLBIndex]
     CopyTranslationEntry(&(IPT[physicalPage]),&(machine->tlb[tlbpos]));
-    // Everything is done!!
-
     // RESTORE INTERRUPTS
     (void) interrupt->SetLevel(oldLevel);
+
+    IPTLock->Release();
+
+    // Everything is done!!
     return;
 }
 #endif
