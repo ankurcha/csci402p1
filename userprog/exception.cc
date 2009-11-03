@@ -838,7 +838,7 @@ void handlePageFaultException(int vAddr){
     DEBUG('a', "Handling PageFault for VADDR: %d\n", vAddr);
 
     IntStatus oldLevel;
-    //oldLevel = interrupt->SetLevel(IntOff);
+    oldLevel = interrupt->SetLevel(IntOff);
     
     int virtualpage = vAddr / PageSize;
     int physicalPage = -1;
@@ -863,7 +863,7 @@ void handlePageFaultException(int vAddr){
         // make sure the page was actually found where it is supposed to be
         DEBUG('a',"Working with Physical Page: %d\n",physicalPage);
         // DISABLE INTERRUPTS
-        oldLevel = interrupt->SetLevel(IntOff);
+        //oldLevel = interrupt->SetLevel(IntOff);
 
         // Copy IPT -> TLB
         CopyTranslationEntry( &(IPT[physicalPage]), &(machine->tlb[tlbpos]) );
@@ -894,6 +894,7 @@ void handlePageFaultException(int vAddr){
     DEBUG('a',"physicalPage Value: %d\n",physicalPage);
     if(physicalPage == -1) {
         // RESTORE INTERRUPTS
+        (void) interrupt->SetLevel(oldLevel);
         IPTLock->Release();
         return;
     }
@@ -942,7 +943,7 @@ void handlePageFaultException(int vAddr){
     IPT[physicalPage].space = currentThread->space;
     
     // DISABLE INTERRUPTS
-    oldLevel = interrupt->SetLevel(IntOff); 
+    //oldLevel = interrupt->SetLevel(IntOff); 
 
     // Now copy the IPT[physicalPage] to TLB[TLBIndex]
     CopyTranslationEntry(&(IPT[physicalPage]),&(machine->tlb[tlbpos]));
