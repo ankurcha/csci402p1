@@ -560,7 +560,11 @@ void AddrSpace::SaveState()
 {
 #ifdef USE_TLB
     // Save state infor from the tlb
-    IPTLock->Acquire();
+    bool haveLock = false;
+    if( !IPTLock->isHeldByCurrentThread ) {
+        IPTLock->Acquire();
+        haveLock = true;
+    }
     IntStatus oldLevel = interrupt->SetLevel(IntOff);
     for(int i=0; i<TLBSize; i++) {
         if(machine->tlb[i].valid){
@@ -569,7 +573,9 @@ void AddrSpace::SaveState()
         }
     }
     (void) interrupt->SetLevel(oldLevel);
-    IPTLock->Release();
+    if(haveLock) {
+        IPTLock->Release();
+    }
 #endif
 }
 
