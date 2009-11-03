@@ -11,7 +11,7 @@ int main(){
     */
 
     int response;
-    char *message = "foo  ";
+    char *message;
     char *receivedMessage;
     int i, netname;
     char NetID[5];
@@ -22,34 +22,37 @@ int main(){
     /* create a custom message */
     netname = GetMachineID();
     itoa(netname, NetID);
-    message[4] = NetID[0];
-    for (i=0; i<MACHINENUM; i++) {
+    message = NetID;
+    /*
+       Send messages to others.
+    */
+    for (i=netname; i<=MACHINENUM; i++) {
         if(i == GetMachineID())
             continue; 
         print("Client ");
         print(NetID);
-        print(": Sending foo to machine# ");
+        print(": Sending ");
+        print(message);
+        print(" to machine# ");
         print(itoa(i,a));
         print(" mailbox# 0\n");
         Send(i, 0, message);
     }
     
-    print("Printing Received Messages\n");
-    for (i=0; i<MACHINENUM; i++) {
-        if(i == GetMachineID())
-            continue;
-        print("Messages from machine#");
-        print(itoa(i,a));
-        print("\n");
-        while((response = Receive(i, 0, receivedMessage))<=0);
-        
-        print("Client ");
-        print(NetID);
-        print(": ");
-        print(receivedMessage);
-        print("\n");
-    }
-    
+        print("Printing Received Messages\n");
+        for (i=0; i<MACHINENUM; i++) {
+            if(i == GetMachineID())
+                continue;
+            print("Messages from machine#");
+            print(itoa(i,a));
+            print("\n");
+            response = Receive(i, 0, receivedMessage);
+            print("Client ");
+            print(NetID);
+            print(": ");
+            print(receivedMessage);
+            print("\n");
+        }            
     /*print("Trying to send to a bad receiver = -1\n");
     Send(-1,0, message);
     
