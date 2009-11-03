@@ -195,6 +195,11 @@ void DestroyCondition(CVId id);
 /* Generates a random number */
 int Random();
 
+int GetMachineID();
+
+int Receive_Syscall(int mbox,int vaddr);
+
+void Send_Syscall(int receiverID,int mbox,int vaddr);
 #endif /* IN_ASM */
 
 #endif /* SYSCALL_H */

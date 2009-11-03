@@ -12,14 +12,15 @@
 #define Dim 	20	/* sum total of the arrays doesn't fit in 
 			 * physical memory 
 			 */
-
-int A[Dim][Dim];
-int B[Dim][Dim];
-int C[Dim][Dim];
-
 int
 main()
 {
+    
+    int A[Dim][Dim];
+    int B[Dim][Dim];
+    int C[Dim][Dim];
+    
+    
     int i, j, k;
 
     for (i = 0; i < Dim; i++)		/* first initialize the matrices */

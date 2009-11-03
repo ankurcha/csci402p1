@@ -1,7 +1,7 @@
 #include "print.c"
 #include "syscall.h"
 
-int main(){
+void main(){
     /* This client sends message "Hello Client 1!" to
      * machine Id 1 with mailbox number 0
      * This client then waits for a message from machine Id
@@ -12,10 +12,10 @@ int main(){
     char *message = "bar";
     char *receivedMessage;
 
-    response = Receive(0, 0, receivedMessage);
-    print("Client 2: ");
+    response = Receive(0, receivedMessage);
+    print("Client 1: ");
     print(receivedMessage);
-    print("\nClient 2: Sending bar\n");
+    print("\nClient 1: Sending bar to client 0/0\n");
     Send(0, 0, message);
-    Exit(0);
+    print("Crap\n");
 }

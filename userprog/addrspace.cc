@@ -517,14 +517,6 @@ void AddrSpace::ClearStack(int id) {
 
     // free the physical memory associated with this stack
     for(int i = start; i < start + stackPages; i++) {
-//#ifndef USE_TLB
-//        physMemMapLock->Acquire();
-//        physMemMap.Clear(pageTable[i].physicalPage);
-//        physMemMapLock->Release();
-//
-//        pageTable[i].physicalPage = 0;
-//        pageTable[i].valid = FALSE;
-//#endif
 #ifdef USE_TLB
         if(pageTableInfo[i].PageStatus == MEMORY) {
             // free the memory
