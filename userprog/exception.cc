@@ -855,7 +855,7 @@ void handlePageFaultException(int vAddr){
 
     // Now we check if the page is in memory
     // If yes, load from IPT
-    IPTLock->Acquire();
+    //IPTLock->Acquire();
     physicalPage = findInIPT(virtualpage, currentThread->space->PID);
 
     //if(currentThread->space->pageTableInfo[virtualpage].PageStatus == MEMORY){
@@ -871,10 +871,10 @@ void handlePageFaultException(int vAddr){
         // RESTORE INTERRUPTS
         (void) interrupt->SetLevel(oldLevel);
 
-        IPTLock->Release();
+        //IPTLock->Release();
         return;
     } // END OF MEMORY MATCH
-    IPTLock->Release();
+    //IPTLock->Release();
 
     // must check if this page is valid first, kill currentThread with
     //  a segfault if it is not
@@ -888,14 +888,14 @@ void handlePageFaultException(int vAddr){
         return;
     }
 
-    IPTLock->Acquire();
+    //IPTLock->Acquire();
     // Find a free page in memory to get th page in - FindOpenPhysicalPage
     physicalPage = findAvailablePage();
     DEBUG('a',"physicalPage Value: %d\n",physicalPage);
     if(physicalPage == -1) {
         // RESTORE INTERRUPTS
         (void) interrupt->SetLevel(oldLevel);
-        IPTLock->Release();
+        //IPTLock->Release();
         return;
     }
 
@@ -951,7 +951,7 @@ void handlePageFaultException(int vAddr){
     // RESTORE INTERRUPTS
     (void) interrupt->SetLevel(oldLevel);
 
-    IPTLock->Release();
+    //IPTLock->Release();
 
     // Everything is done!!
     return;
