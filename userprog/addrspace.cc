@@ -561,7 +561,7 @@ void AddrSpace::SaveState()
 #ifdef USE_TLB
     // Save state infor from the tlb
     bool haveLock = false;
-    if( !IPTLock->isHeldByCurrentThread ) {
+    if( !IPTLock->isHeldByCurrentThread() ) {
         IPTLock->Acquire();
         haveLock = true;
     }
