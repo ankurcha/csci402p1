@@ -969,7 +969,7 @@ int Receive_Syscall(int senderID,int vaddr){
     PacketHeader pktHead;
     MailHeader mailHead;
     
-    if(senderID >= 0 && mbox >= 0)
+    if(senderID >= 0)
         postOffice->Receive(senderID, &pktHead, &mailHead, message);
     else
         cout << "Error: bad receiver/mailbox";
