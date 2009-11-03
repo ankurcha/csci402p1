@@ -170,7 +170,8 @@ IV. Implementation:
             int findAvailablePage()
             void handlePageFaultException(int vAddr)
             int Receive_Syscall(int senderID, int mbox,int vaddr)
-            void Send_Syscall(int receiverID,int mbox,int vaddr)        
+            void Send_Syscall(int receiverID,int mbox,int vaddr)
+	    int getMachineID();      
 
     + Functions modified and in which file.
             userspace/exception.cc
