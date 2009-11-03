@@ -197,9 +197,9 @@ int Random();
 
 int GetMachineID();
 
-int Receive_Syscall(int mbox,int vaddr);
+int Receive(int mbox,int vaddr);
 
-void Send_Syscall(int receiverID,int mbox,int vaddr);
+void Send(int receiverID, int mbox, int vaddr);
 #endif /* IN_ASM */
 
 #endif /* SYSCALL_H */

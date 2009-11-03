@@ -17,5 +17,5 @@ void main(){
     print(receivedMessage);
     print("\nClient 1: Sending bar to client 0/0\n");
     Send(0, 0, message);
-    print("Crap\n");
+    Exit(0);
 }

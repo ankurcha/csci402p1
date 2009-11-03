@@ -961,7 +961,7 @@ void handlePageFaultException(int vAddr){
  * Receives the  message sent to mbox. 
  * Returns the number of bytes received
  */
-int Receive_Syscall(int senderID, int mbox,int vaddr){
+int Receive_Syscall(int senderID,int vaddr){
     int bytesRead = -1;
 #ifdef NETWORK
     char *message = new char[MaxMailSize];
@@ -1003,7 +1003,7 @@ void Send_Syscall(int receiverID,int mbox,int vaddr){
         MailHeader mailHead;
         mailHead.to = mbox;
         mailHead.from = pkt.senderId;
-        mailHead.length = sizeof(message) + 1;
+        mailHead.length = strlen(message) + 1;
         // Send the message to other client
         bool retVal = postOffice->Send(pktHead, mailHead, message);
         if (!retVal) {
@@ -1114,8 +1114,7 @@ void ExceptionHandler(ExceptionType which) {
             case SC_Receive:
                 DEBUG('a', "Receive_Syscall\n");
                 rv =  Receive_Syscall(machine->ReadRegister(4), 
-                                      machine->ReadRegister(5),
-                                      machine->ReadRegister(6));
+                                      machine->ReadRegister(5));
                 break;
 #endif
         }
