@@ -32,7 +32,7 @@ INCDIR =-I../userprog -I../threads
 CFLAGS = -G 0 -c $(INCDIR)
 
 
-all: halt matmult sort testfiles lockcreate destroylock createcv destroycv fork exec exectest printtest queue init test_code multih networkTestClient1 networkTestClient2 multiForkmatmult multiExecmatmult multiprint
+all: halt matmult sort testfiles lockcreate destroylock createcv destroycv fork exec exectest printtest queue init test_code multih networkTestClient1 networkTestClient2 multiForkmatmult multiExecmatmult multiExecmatmult2 multiprint
 
 
 start.o: start.s ../userprog/syscall.h
@@ -157,6 +157,12 @@ multiExecmatmult.o: multiExecmatmult.c
 multiExecmatmult: multiExecmatmult.o start.o
 	$(LD) $(LDFLAGS) start.o multiExecmatmult.o -o multiExecmatmult.coff
 	../bin/coff2noff multiExecmatmult.coff multiExecmatmult
+
+multiExecmatmult2.o: multiExecmatmult2.c
+	$(CC) $(CFLAGS) -c multiExecmatmult2.c
+multiExecmatmult2: multiExecmatmult2.o start.o
+	$(LD) $(LDFLAGS) start.o multiExecmatmult2.o -o multiExecmatmult2.coff
+	../bin/coff2noff multiExecmatmult2.coff multiExecmatmult2
 
 multiForkmatmult.o: multiForkmatmult.c
 	$(CC) $(CFLAGS) -c multiForkmatmult.c
