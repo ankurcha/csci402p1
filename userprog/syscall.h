@@ -42,6 +42,7 @@
 #define SC_Random 20
 #define SC_Send	21
 #define SC_Receive  22
+#define SC_GetMachineID 23
 
 #define MAXFILENAME 256
 

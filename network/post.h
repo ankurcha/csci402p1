@@ -109,13 +109,13 @@ class PostOffice {
     
     bool Send(PacketHeader pktHdr, MailHeader mailHdr, char *data);
     				// Send a message to a mailbox on a remote 
-				// machine.  The fromBox in the MailHeader is 
-				// the return box for ack's.
+				   // machine.  The fromBox in the MailHeader is 
+				  // the return box for ack's.
     
     void Receive(int box, PacketHeader *pktHdr, 
 		MailHeader *mailHdr, char *data);
     				// Retrieve a message from "box".  Wait if
-				// there is no message in the box.
+				    // there is no message in the box.
 
     void PostalDelivery();	// Wait for incoming messages, 
 				// and then put them in the correct mailbox

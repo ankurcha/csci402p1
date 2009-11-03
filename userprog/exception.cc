@@ -638,9 +638,11 @@ void CopyTranslationEntry(TranslationEntry* sourceTE,TranslationEntry* destTE){
 }
 
 void CopyTLB2IPT(){
+    IntStatus oldLevel = interrupt->SetLevel(IntOff);
     for (int i=0; i<TLBSize; i++)
         if(machine->tlb[i].valid)
             CopyTranslationEntry(&(machine->tlb[i]),&(IPT[machine->tlb[i].physicalPage]));
+    (void) interrupt->SetLevel(oldLevel);
 }
 
 int findInIPT(int vAddr,int PID){
@@ -658,13 +660,10 @@ int SelectPageToBeSwapped()
         physicalPage = Random() % NumPhysPages;
         DEBUG('a', "Random selection swaping: %d.\n",physicalPage);
     }else{
-        DEBUG('a', "FIFO selection.\n");
-        for(int i=0; i<NumPhysPages; i++){
-            if(IPT[i].age < IPT[physicalPage].age){
-                physicalPage = i;
-            }
-        }
-    }    
+        //printf( "FIFO selection.\n");
+        physicalPage = (physicalPage + 1) % NumPhysPages;
+        //cout<<"FIFO selected: "<<physicalPage<<endl;
+   }    
     return physicalPage;
 }
 
@@ -725,6 +724,7 @@ int findAvailablePage(){
     }
     
     //If currentThread, invalidate all entries in TLB
+    
     if(IPT[ppn].space == currentThread->space){
         for(int i=0; i< TLBSize; i++){
             if(machine->tlb[i].virtualPage == vpn){
@@ -840,15 +840,15 @@ void handlePageFaultException(int vAddr){
     DEBUG('a', "Handling PageFault for VADDR: %d\n", vAddr);
 
     // DISABLE INTERRUPTS
-    IntStatus oldLevel = interrupt->SetLevel(IntOff);
+   // IntStatus oldLevel = interrupt->SetLevel(IntOff);
     
     int virtualpage = vAddr / PageSize;
     int physicalPage = -1;
     int tlbpos = 0;
-
     tlbpos = TLBIndex;
     TLBIndex = (TLBIndex+1) % TLBSize;
     DEBUG('a', "TLBIndex: %d tlbpos: %d\n",TLBIndex, tlbpos);
+
 
     // Copy out all pages from the TLB - update the IPT
     CopyTLB2IPT();
@@ -862,9 +862,9 @@ void handlePageFaultException(int vAddr){
         // make sure the page was actually found where it is supposed to be
         DEBUG('a',"Working with Physical Page: %d\n",physicalPage);
 
+        IntStatus oldLevel = interrupt->SetLevel(IntOff);
         // Copy IPT -> TLB
         CopyTranslationEntry( &(IPT[physicalPage]), &(machine->tlb[tlbpos]) );
-
         // RESTORE INTERRUPTS
         (void) interrupt->SetLevel(oldLevel);
         return;
@@ -874,7 +874,6 @@ void handlePageFaultException(int vAddr){
     //  a segfault if it is not
     if(currentThread->space->pageTableInfo[virtualpage].valid == false) {
         // RESTORE INTERRUPTS
-        (void) interrupt->SetLevel(oldLevel);
 
         cout << "ERROR: Virtual Page " << virtualpage << " is not valid\n"
              << " SEGFAULT!\n";
@@ -889,7 +888,6 @@ void handlePageFaultException(int vAddr){
     DEBUG('a',"physicalPage Value: %d\n",physicalPage);
     if(physicalPage == -1) {
         // RESTORE INTERRUPTS
-        (void) interrupt->SetLevel(oldLevel);
         return;
     }
 
@@ -936,6 +934,7 @@ void handlePageFaultException(int vAddr){
     IPT[physicalPage].swapLocation = currentThread->space->pageTableInfo[virtualpage].swapLocation;
     IPT[physicalPage].space = currentThread->space;
     
+    IntStatus oldLevel = interrupt->SetLevel(IntOff); 
     // Now copy the IPT[physicalPage] to TLB[TLBIndex]
     CopyTranslationEntry(&(IPT[physicalPage]),&(machine->tlb[tlbpos]));
     // Everything is done!!
@@ -1008,6 +1007,11 @@ void Send_Syscall(int receiverID,int mbox,int vaddr){
 #endif
 }
 
+int GetMachineID_Syscall(){
+#ifdef NETWORK
+    return netname;
+#endif
+}
 void ExceptionHandler(ExceptionType which) {
     int type = machine->ReadRegister(2); // Which syscall?
     int rv=0; 	// the return value from a syscall
@@ -1105,6 +1109,10 @@ void ExceptionHandler(ExceptionType which) {
                 rv =  Receive_Syscall(machine->ReadRegister(4), 
                                       machine->ReadRegister(5),
                                       machine->ReadRegister(6));
+                break;
+            case SC_GetMachineID:
+                DEBUG('a', "Get Machine ID\n");
+                rv = GetMachineID_Syscall();
                 break;
 #endif
         }

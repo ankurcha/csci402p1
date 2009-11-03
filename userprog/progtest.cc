@@ -27,7 +27,7 @@ StartProcess(char *filename)
 {
     OpenFile *executable = fileSystem->Open(filename);
     AddrSpace *space;
-    if(FIFOreplacementPolicy){
+    if(FIFOreplacementPolicy == true){
         printf("Using FIFO replacement policy\n");
     }else{
         printf("Using RAND replacement policy\n");

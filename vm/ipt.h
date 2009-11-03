@@ -13,6 +13,7 @@ public:
     InvertedPageTableEntry(){
             virtualPage = -1;
             physicalPage = -1;
+            age = 0;
             valid = false;
             dirty = false;
         }

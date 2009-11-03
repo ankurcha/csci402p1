@@ -90,6 +90,7 @@ main(int argc, char **argv)
 //#ifdef THREADS
 //    ThreadTest();
 //#endif
+    FIFOreplacementPolicy = false; // Make Random replacement policy as the default.
 
     for (argc--, argv++; argc > 0; argc -= argCount, argv += argCount) {
 	argCount = 1;
@@ -111,14 +112,13 @@ main(int argc, char **argv)
         }
 #endif
 #ifdef USE_TLB
-        FIFOreplacementPolicy = false; // Make Random replacement policy as the default.
         if(!strcmp(*argv, "-P")){
-            if(!strcmp(*(argv+1),"RAND")){
+            if(!strcmp(*(argv+1),"FIFO")){
+                FIFOreplacementPolicy=true;
+            }else{
                 FIFOreplacementPolicy=false;
             }
-            else{
-                FIFOreplacementPolicy=true;
-            }
+            argCount = 2;
         }
 #endif
 #ifdef USER_PROGRAM
@@ -163,10 +163,10 @@ main(int argc, char **argv)
 #ifdef NETWORK
         if (!strcmp(*argv, "-o")) {
 	    ASSERT(argc > 1);
-            Delay(2); 				// delay for 2 seconds
+            Delay(5); 				// delay for 2 seconds
 						// to give the user time to 
 						// start up another nachos
-            MailTest(atoi(*(argv + 1)));
+            //MailTest(atoi(*(argv + 1)));
             argCount = 2;
         }
 #endif // NETWORK

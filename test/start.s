@@ -231,6 +231,14 @@ Receive:
     j   $31
     .end Receive
 
+    .globl GetMachineID
+	.ent	GetMachineID
+GetMachineID:
+    addiu $2,$0,SC_GetMachineID
+    syscall
+    j   $31
+    .end GetMachineID
+
 /* dummy function to keep gcc happy */
         .globl  __main
         .ent    __main
