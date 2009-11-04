@@ -378,13 +378,12 @@ spaceId Exec_Syscall(char *filename){
     
     // Create new Address space and allocate it to the thread.
     t->space = new AddrSpace(executable);
-
     // Add process to process table.
     //processTable->processCounter++;
     processTableLock->Release();
     int myPID = processTable->addProcess(currentThread->PID); 
     t->PID = myPID;
-    
+    t->space->PID = myPID; 
     DEBUG('a', "%s: New thread created with PID: %d.\n",currentThread->getName(), t->getPID());
     t->Fork((VoidFunctionPtr) exec_thread, 0);
     return (spaceId) t->space;
@@ -693,6 +692,7 @@ int findAvailablePage(){
             return ppn;
         }
     }
+    // Didn't get a pagethat was free 
     // Need to swap pages!!
     ppn = SelectPageToBeSwapped();
     vpn = IPT[ppn].virtualPage;
@@ -738,6 +738,7 @@ int findAvailablePage(){
     }
     
     //If currentThread, invalidate all entries in TLB
+    IntStatus oldLevel = interrupt->SetLevel(IntOff);
     if(IPT[ppn].space == currentThread->space){
         for(int i=0; i< TLBSize; i++){
             if(machine->tlb[i].virtualPage == vpn){
@@ -745,6 +746,7 @@ int findAvailablePage(){
             }
         }
     }
+    (void) interrupt->SetLevel(oldLevel);
     return ppn;
 }
 
@@ -851,10 +853,8 @@ void loadPageFromExec(int ppn, int vpn) {
 
 void handlePageFaultException(int vAddr){
     DEBUG('a', "Handling PageFault for VADDR: %d\n", vAddr);
-
     IntStatus oldLevel;
     oldLevel = interrupt->SetLevel(IntOff);
-    
     int virtualpage = vAddr / PageSize;
     int physicalPage = -1;
     int tlbpos = 0;
@@ -863,29 +863,23 @@ void handlePageFaultException(int vAddr){
     TLBIndex = (TLBIndex+1) % TLBSize;
     DEBUG('a', "TLBIndex: %d tlbpos: %d\n",TLBIndex, tlbpos);
 
-    //(void) interrupt->SetLevel(oldLevel);
-
     // Copy out all pages from the TLB - update the IPT
     CopyTLB2IPT();
 
     // Now we check if the page is in memory
     // If yes, load from IPT
-    //IPTLock->Acquire();
+    // IPTLock->Acquire();
     physicalPage = findInIPT(virtualpage, currentThread->space->PID);
 
-    //if(currentThread->space->pageTableInfo[virtualpage].PageStatus == MEMORY){
     if(physicalPage != -1) {
         // make sure the page was actually found where it is supposed to be
         DEBUG('a',"Working with Physical Page: %d\n",physicalPage);
-        // DISABLE INTERRUPTS
-        //oldLevel = interrupt->SetLevel(IntOff);
-
         // Copy IPT -> TLB
+        CopyTLB2IPT();
         CopyTranslationEntry( &(IPT[physicalPage]), &(machine->tlb[tlbpos]) );
 
         // RESTORE INTERRUPTS
         (void) interrupt->SetLevel(oldLevel);
-
         //IPTLock->Release();
         return;
     } // END OF MEMORY MATCH
@@ -895,10 +889,10 @@ void handlePageFaultException(int vAddr){
     //  a segfault if it is not
     if(currentThread->space->pageTableInfo[virtualpage].valid == false) {
         // RESTORE INTERRUPTS
-        (void) interrupt->SetLevel(oldLevel);
         cout << "ERROR: Virtual Page " << virtualpage << " is not valid\n"
              << " SEGFAULT!\n";
         // die die die
+        (void) interrupt->SetLevel(oldLevel);
         Exit_Syscall(1);
         return;
     }
@@ -924,13 +918,9 @@ void handlePageFaultException(int vAddr){
               currentThread->space->noffH.code.inFileAddr, 
               virtualpage);
         // load this page from the executable
-        //cout << "Loading vPage: " << virtualpage << " from exec into pPage: " << physicalPage << endl;
+        cout << "Loading vPage: " << virtualpage << " from exec into pPage: " << physicalPage << endl;
         loadPageFromExec(physicalPage, virtualpage);
-        //currentThread->space->executable->ReadAt(
-        //                    &(machine->mainMemory[physicalPage * PageSize]), // location in memory (target)
-        //                    PageSize, // size
-        //                    currentThread->space->noffH.code.inFileAddr + virtualpage * PageSize // length
-        //                    );
+        
     }else if(currentThread->space->pageTableInfo[virtualpage].PageStatus == SWAP){
         DEBUG('a',"Load SwapFile\n");
         swapFile->ReadAt(
@@ -957,9 +947,6 @@ void handlePageFaultException(int vAddr){
     IPT[physicalPage].swapLocation = currentThread->space->pageTableInfo[virtualpage].swapLocation;
     IPT[physicalPage].space = currentThread->space;
     
-    // DISABLE INTERRUPTS
-    //oldLevel = interrupt->SetLevel(IntOff); 
-
     // Now copy the IPT[physicalPage] to TLB[TLBIndex]
     CopyTranslationEntry(&(IPT[physicalPage]),&(machine->tlb[tlbpos]));
 
