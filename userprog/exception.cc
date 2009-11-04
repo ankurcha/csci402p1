@@ -653,9 +653,11 @@ void CopyTranslationEntry(TranslationEntry* sourceTE,TranslationEntry* destTE){
 }
 
 void CopyTLB2IPT(){
+    IntStatus oldLevel = interrupt->SetLevel(IntOff);
     for (int i=0; i<TLBSize; i++)
         if(machine->tlb[i].valid)
             CopyTranslationEntry(&(machine->tlb[i]),&(IPT[machine->tlb[i].physicalPage]));
+    (void) interrupt->SetLevel(oldLevel);
 }
 
 int findInIPT(int vAddr,int PID){
@@ -859,9 +861,12 @@ void handlePageFaultException(int vAddr){
     int physicalPage = -1;
     int tlbpos = 0;
 
+    // if we enable interrupts, this needs a lock
+    //TLBIndexLock->Acquire()
     tlbpos = TLBIndex;
     TLBIndex = (TLBIndex+1) % TLBSize;
     DEBUG('a', "TLBIndex: %d tlbpos: %d\n",TLBIndex, tlbpos);
+    //TLBIndexLock->Release()
 
     //(void) interrupt->SetLevel(oldLevel);
 
