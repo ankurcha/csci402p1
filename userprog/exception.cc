@@ -749,6 +749,7 @@ int findAvailablePage(){
         }
     }
     (void) interrupt->SetLevel(oldLevel);
+
     return ppn;
 }
 
@@ -861,19 +862,18 @@ void handlePageFaultException(int vAddr){
     int physicalPage = -1;
     int tlbpos = 0;
 
-    // if we enable interrupts, this needs a lock
-    //TLBIndexLock->Acquire()
+    TLBIndexLock->Acquire()
     tlbpos = TLBIndex;
     TLBIndex = (TLBIndex+1) % TLBSize;
     DEBUG('a', "TLBIndex: %d tlbpos: %d\n",TLBIndex, tlbpos);
-    //TLBIndexLock->Release()
+    TLBIndexLock->Release()
 
     // Copy out all pages from the TLB - update the IPT
     CopyTLB2IPT();
 
     // Now we check if the page is in memory
     // If yes, load from IPT
-    // IPTLock->Acquire();
+    //IPTLock->Acquire();
     physicalPage = findInIPT(virtualpage, currentThread->space->PID);
 
     if(physicalPage != -1) {

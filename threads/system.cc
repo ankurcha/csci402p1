@@ -23,6 +23,7 @@ Timer *timer;				// the hardware timer device,
 //#ifdef USE_TLB
 InvertedPageTableEntry *IPT; // IPT for nachos
 Lock* IPTLock = new Lock("IPTLock");
+Lock* TLBIndexLock = new Lock("TLBIndexLock");
 bool FIFOreplacementPolicy = false; // Default: Random replacement
 OpenFile *swapFile;
 char *sfname;
