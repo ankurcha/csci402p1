@@ -166,7 +166,7 @@ main(int argc, char **argv)
             Delay(5); 				// delay for 2 seconds
 						// to give the user time to 
 						// start up another nachos
-            MailTest(atoi(*(argv + 1)));
+            //MailTest(atoi(*(argv + 1)));
             argCount = 2;
         }
 #endif // NETWORK

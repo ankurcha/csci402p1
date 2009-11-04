@@ -45,18 +45,18 @@ using namespace std;
 #ifdef NETWORK
 class Packet {
     public:
-    unsigned char senderId;
-    unsigned char sequenceNumber;
+    int senderId;
+    int sequenceNumber;
     char data[MaxMailSize - 2 * sizeof(char)];
 
     // message MUST be a pointer to a char array of MaxMailSize
     char* Serialize(char *message){
-        strcpy(message, data);
+        // strcpy(message, data);
         //cout<<message;
-        //message[0] = senderId;
-        //message[1] = sequenceNumber;
-        //for(unsigned i=2; i < MaxMailSize; i++)
-        //    message[i] = data[i-2];
+        message[0] = '0' + senderId;
+        message[1] = '0' + sequenceNumber;
+        for(unsigned i=2; i < MaxMailSize; i++)
+            message[i] = data[i-2];
 //        cout<<"--->";
 //        for (unsigned i=0; i<MaxMailSize-2; i++) {
 //            cout<<message[i];
@@ -73,13 +73,13 @@ class Packet {
         //cout<<endl;
         //strcpy(data, message);
         //cout<<"data"<<data;
-        //senderId = message[0];
-        //sequenceNumber = message[1];
-        for(unsigned i=0;i<32;i++)
-            data[i] = message[i];
-        //for(unsigned i=2;i<MaxMailSize;i++){
-        //    data[i-2] = message[i];
-       //}
+        senderId = (int)(message[0] - '0');
+        sequenceNumber = (int)(message[1] - '0');
+        //for(unsigned i=0;i<32;i++)
+        //    data[i] = message[i];
+        for(unsigned i=2;i<MaxMailSize;i++){
+            data[i-2] = message[i];
+       }
     }
 }; 
 #endif
