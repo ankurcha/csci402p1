@@ -862,11 +862,11 @@ void handlePageFaultException(int vAddr){
     int physicalPage = -1;
     int tlbpos = 0;
 
-    TLBIndexLock->Acquire()
+    TLBIndexLock->Acquire();
     tlbpos = TLBIndex;
     TLBIndex = (TLBIndex+1) % TLBSize;
     DEBUG('a', "TLBIndex: %d tlbpos: %d\n",TLBIndex, tlbpos);
-    TLBIndexLock->Release()
+    TLBIndexLock->Release();
 
     // Copy out all pages from the TLB - update the IPT
     CopyTLB2IPT();
@@ -923,7 +923,6 @@ void handlePageFaultException(int vAddr){
               currentThread->space->noffH.code.inFileAddr, 
               virtualpage);
         // load this page from the executable
-        cout << "Loading vPage: " << virtualpage << " from exec into pPage: " << physicalPage << endl;
         loadPageFromExec(physicalPage, virtualpage);
         
     }else if(currentThread->space->pageTableInfo[virtualpage].PageStatus == SWAP){
