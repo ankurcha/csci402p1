@@ -4,5 +4,7 @@
 int main(){
     print("Spawning 2 multiForkmatmult processes\n");
     Exec("../test/multiForkmatmult");
+    Yield();
     Exec("../test/multiForkmatmult");
+    Exit(2);
 }

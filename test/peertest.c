@@ -8,7 +8,7 @@ int main(){
     char *message;
     char *receivedMessage;
     int i, netname;
-    char NetID[5];
+    char NetID;
     char a[5];
     int destinationId[5] = {
         0,1,2,3,4
