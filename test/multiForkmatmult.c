@@ -33,6 +33,6 @@ int main(){
   print("Forking matmult\n");
   Fork(matmult);
   Fork(matmult);
-  print("Exiting main()\n");
+  print("Exiting multiForkmatmult main()\n");
   Exit(0);
 }

@@ -323,6 +323,7 @@ void kernel_thread(int virtAddr){
 }
 
 void Fork_Syscall(int funcAddr){
+    printf("Fork Started\n");
     processTableLock->Acquire();
     DEBUG('a', "%s: Called Fork_Syscall.\n",currentThread->getName());
         // Create new thread.kernel_thread()
@@ -338,7 +339,7 @@ void Fork_Syscall(int funcAddr){
         // Restore state.
     currentThread->space->RestoreState();
     processTableLock->Release();
-    //printf("Fork Complete\n");
+    printf("Fork Complete\n");
 }
 
 void exec_thread(int arg){
@@ -360,6 +361,7 @@ spaceId Exec_Syscall(char *filename){
     OpenFile *executable = fileSystem->Open(c_name);
     if(!executable){
         DEBUG('a',"%s: Unable to open file %s .\n", currentThread->getName(),c_name);
+        processTableLock->Release();
         return -1;
     }
 

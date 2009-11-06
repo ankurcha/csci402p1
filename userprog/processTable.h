@@ -30,6 +30,7 @@ private:
     map<PID, Process*> *table;
 public:
     int processCounter;
+
     PID addProcess(PID PPID){
         Process *process = new Process();
         Process *parentProcess = NULL;
@@ -58,7 +59,8 @@ public:
             process->childLock->Acquire();
             if (process->childCount != 0) {
                 // Wait for all process to exit, avoid zombies
-                process->childCV->Wait(process->childLock);
+                // ZOMBIES ARE BETTER THAN DEADLOCK !!!!!! -max
+                //process->childCV->Wait(process->childLock);
             }
             
             if (process->ppid >= 0) {
@@ -66,6 +68,7 @@ public:
                 if (parentProcess!= NULL) {
                     parentProcess->childLock->Acquire();
                     // Actually remove process from process table
+                    //TODO: don't we need the tableLock to do this? -max
                     table->erase(table->find(pid));
                     parentProcess->childCount--;
                     if (parentProcess->childCount == 0) {
@@ -76,6 +79,7 @@ public:
                     return 1;
                 }
             }else {
+                //TODO: tableLock?
                 table->erase(table->find(pid));
                 process->childLock->Release();
                 return 0;
