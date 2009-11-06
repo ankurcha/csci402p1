@@ -32,7 +32,7 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
-
+#include "tpl.c"
 #ifdef CHANGED
 #include <algorithm>
 #endif
@@ -51,35 +51,25 @@ class Packet {
 
     // message MUST be a pointer to a char array of MaxMailSize
     char* Serialize(char *message){
-        // strcpy(message, data);
-        //cout<<message;
-        message[0] = '0' + senderId;
-        message[1] = '0' + sequenceNumber;
-        for(unsigned i=2; i < MaxMailSize; i++)
-            message[i] = data[i-2];
-//        cout<<"--->";
-//        for (unsigned i=0; i<MaxMailSize-2; i++) {
-//            cout<<message[i];
-//        }
-//        cout << endl;
+        tpl_node *tn;
+        size_t len;
+        tn = tpl_map("S(iis)", this);
+        tpl_pack(tn, 0);
+        tpl_dump(tn, TPL_MEM, (void *) message, &len);
+        tpl_free(tn);
         return message;
     }
 
     void Deserialize(char *message){
-        //cout<<"<---";
-//        for (unsigned i=0; i<MaxMailSize; i++) {
-//            cout<<message[i];
-//        }
-        //cout<<endl;
-        //strcpy(data, message);
-        //cout<<"data"<<data;
-        senderId = (int)(message[0] - '0');
-        sequenceNumber = (int)(message[1] - '0');
-        //for(unsigned i=0;i<32;i++)
-        //    data[i] = message[i];
-        for(unsigned i=2;i<MaxMailSize;i++){
-            data[i-2] = message[i];
-       }
+       tpl_node *tn;
+       struct Packet s;
+       tn = tpl_map("S(iis)", &s);
+       tpl_load(tn, TPL_MEM, message, strlen(message));
+       tpl_unpack(tn, 0);
+       tpl_free(tn);
+       senderId = s.senderId;
+       sequenceNumber = s.sequenceNumber;
+       strcpy(data, s.data);
     }
 }; 
 #endif
