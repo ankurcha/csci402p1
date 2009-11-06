@@ -370,6 +370,7 @@ spaceId Exec_Syscall(char *filename){
     OpenFile *executable = fileSystem->Open(c_name);
     if(!executable){
         DEBUG('a',"%s: Unable to open file %s .\n", currentThread->getName(),c_name);
+        processTableLock->Release();
         return -1;
     }
 
