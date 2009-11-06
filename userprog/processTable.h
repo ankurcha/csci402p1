@@ -30,6 +30,7 @@ private:
     map<PID, Process*> *table;
 public:
     int processCounter;
+
     PID addProcess(PID PPID){
         Process *process = new Process();
         Process *parentProcess = NULL;
@@ -58,7 +59,8 @@ public:
             process->childLock->Acquire();
             if (process->childCount != 0) {
                 // Wait for all process to exit, avoid zombies
-                process->childCV->Wait(process->childLock);
+                // ZOMBIES ARE BETTER THAN DEADLOCK !!!!!! -max
+                //process->childCV->Wait(process->childLock);
             }
             
             if (process->ppid >= 0) {
