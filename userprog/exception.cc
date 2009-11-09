@@ -32,13 +32,16 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
-#include "tpl.c"
 #ifdef CHANGED
 #include <algorithm>
 #endif
 
 #ifdef NETWORK
-int sequenceNumber = 0;
+int getTimestamp(){
+    time_t ltime;
+    ltime = time(NULL);
+    return ltime;
+}
 #endif
 
 using namespace std;
@@ -46,30 +49,25 @@ using namespace std;
 class Packet {
     public:
     int senderId;
-    int sequenceNumber;
-    char data[MaxMailSize - 2 * sizeof(char)];
+    int timestamp;
+    char data[MaxMailSize - 2 * sizeof(int)];
 
     // message MUST be a pointer to a char array of MaxMailSize
     char* Serialize(char *message){
-        tpl_node *tn;
-        size_t len;
-        tn = tpl_map("S(iis)", this);
-        tpl_pack(tn, 0);
-        tpl_dump(tn, TPL_MEM, (void *) message, &len);
-        tpl_free(tn);
+        message[1] = senderId;
+        mesage[0] = senderId >> 8;
+        message[3] = timestamp;
+        message[2] = timestamp >> 8;
+        for(unsigned i = 4; i< MaxMailSize; i++)
+            message[i] = data[i-4];
         return message;
     }
 
     void Deserialize(char *message){
-       tpl_node *tn;
-       struct Packet s;
-       tn = tpl_map("S(iis)", &s);
-       tpl_load(tn, TPL_MEM, message, strlen(message));
-       tpl_unpack(tn, 0);
-       tpl_free(tn);
-       senderId = s.senderId;
-       sequenceNumber = s.sequenceNumber;
-       strcpy(data, s.data);
+        senderId = (int)((message[0] * 256) + message[1]);
+        timestamp = (int)((message[2] * 256) + message[3]);
+        for(unsigned i=4; i< MaxMailSize; i++)
+            data[i-4] = message[i];
     }
 }; 
 #endif
@@ -988,8 +986,8 @@ int Receive_Syscall(int senderID, int mbox, int vaddr){
 void Send_Syscall(int receiverID,int mbox,int vaddr){
 #ifdef NETWORK
     Packet pkt;
-    pkt.senderId = (char) netname;
-    pkt.sequenceNumber = (char) sequenceNumber++;
+    pkt.senderId = netname;
+    pkt.timestamp = getTimestamp();
     
     char *payload = new char[32];
     int bytesRead = copyin(vaddr, 32 , pkt.data);
