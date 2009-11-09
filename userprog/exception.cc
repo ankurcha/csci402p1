@@ -973,11 +973,14 @@ int Receive_Syscall(int senderID, int mbox, int vaddr){
         interrupt->Halt();
     }
     // Copy message to vaddr
-    Packet pkt;
-    pkt.Deserialize(message);
+
+    // @ankur: Let the handling of the packet details happen in the userprogram
+    //Packet pkt;
+    //pkt.Deserialize(message);
+
     //cout << "Data received: "<<pkt.data<<endl;
     fflush(stdout);
-    bytesRead = copyout(vaddr, sizeof(pkt.data), pkt.data);
+    bytesRead = copyout(vaddr, sizeof(message), message);
     return bytesRead;
 #endif
 
