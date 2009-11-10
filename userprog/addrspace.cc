@@ -28,11 +28,11 @@
 
 extern "C" { int bzero(char *, int); };
 
-//#ifdef CHANGED
-//Lock* physMemMapLock = new Lock("physMemMapLock");
-//BitMap physMemMap(NumPhysPages);
-//Lock* childLock;
-//#endif
+#ifdef CHANGED
+Lock* physMemMapLock = new Lock("physMemMapLock");
+BitMap physMemMap(NumPhysPages);
+Lock* childLock;
+#endif
 
 Table::Table(int s) : map(s), table(0), lock(0), size(s) {
     table = new void *[size];
