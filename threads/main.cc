@@ -90,7 +90,9 @@ main(int argc, char **argv)
 //#ifdef THREADS
 //    ThreadTest();
 //#endif
-    FIFOreplacementPolicy = false; // Make Random replacement policy as the default.
+#ifdef USE_TLB
+    FIFOreplacementPolicy = false; // Make Random replacement policy as the default
+#endif
 
     for (argc--, argv++; argc > 0; argc -= argCount, argv += argCount) {
 	argCount = 1;
