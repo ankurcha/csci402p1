@@ -71,6 +71,7 @@ class Packet {
     }
 }; 
 #endif
+
 extern "C" { int bzero(char *, int); };
 Lock *processTableLock = new Lock("processTableLock");
 Lock* locksTableLock = new Lock("locksTableLock");
@@ -627,10 +628,10 @@ int Random_Syscall(){
 }
 
 int getTimestamp(){
-    return (int) time(0);
+    return (int) time(NULL);
 }
-#ifdef USE_TLB
 
+#ifdef USE_TLB
 void CopyTranslationEntry(TranslationEntry* sourceTE,TranslationEntry* destTE){
     // Perform deep copy the source to the destination
     destTE->virtualPage = sourceTE->virtualPage;

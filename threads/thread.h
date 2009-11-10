@@ -98,18 +98,20 @@ class Thread {
     void CheckOverflow();   			// Check if thread has 
 						// overflowed its stack
     void setStatus(ThreadStatus st) { status = st; }
+    
     char* getName() { return (name); }
+    
     void Print() { printf("%s, ", name); }
+    
     int PID; 
     int stackId;
-    int getPID(){
-        return PID;
-    }
     
-    void setPID(int pid){
-        this->PID = pid;
-    }
+    int getPID(){ return PID; }
+    
+    void setPID(int pid){ this->PID = pid;}
+    
     int getStackID(){return stackID;}
+    
     void setStackID(int sid){ stackID = sid ;}
 private:
     // some of the private data for this class is listed above

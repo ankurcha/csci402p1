@@ -206,23 +206,23 @@ AddrSpace::AddrSpace(OpenFile *exec) : fileTable(MaxOpenFiles),
     pageTableInfo = new PageTableEntry[numPages]; 
     for (i = 0; i < dataPages; i++) {
         // find a free page in physical memory
-//#ifndef USE_TLB
-//        physMemMapLock->Acquire();
-//        int physPage = physMemMap.Find();
-//        ASSERT(physPage != -1); // make sure a page was found
-//        physMemMapLock->Release();
-//        pageTable[i].virtualPage = i;
-//        pageTable[i].physicalPage = physPage;
-//        pageTable[i].valid = TRUE;
-//        pageTable[i].use = FALSE;
-//        pageTable[i].dirty = FALSE;
-//        pageTable[i].readOnly = FALSE;  // if the code segment was entirely on 
-//                                        // a separate page, we could set its 
-//                                        // pages to be read-only
-//
-//        // zero out the physical memory associated with this page
-//        bzero(&(machine->mainMemory[PageSize * physPage]), PageSize);
-//#endif
+#ifndef USE_TLB
+        physMemMapLock->Acquire();
+        int physPage = physMemMap.Find();
+        ASSERT(physPage != -1); // make sure a page was found
+        physMemMapLock->Release();
+        pageTable[i].virtualPage = i;
+        pageTable[i].physicalPage = physPage;
+        pageTable[i].valid = TRUE;
+        pageTable[i].use = FALSE;
+        pageTable[i].dirty = FALSE;
+        pageTable[i].readOnly = FALSE;  // if the code segment was entirely on 
+                                        // a separate page, we could set its 
+                                        // pages to be read-only
+
+        // zero out the physical memory associated with this page
+        bzero(&(machine->mainMemory[PageSize * physPage]), PageSize);
+#endif
 #ifdef USE_TLB
         pageTableInfo[i].virtualPage = i;
         pageTableInfo[i].physicalPage = 0;
@@ -236,14 +236,14 @@ AddrSpace::AddrSpace(OpenFile *exec) : fileTable(MaxOpenFiles),
     }
     // set all the unused pages to invalid
     for(; i < stackStart; i++) {
-//#ifndef USE_TLB
-//        pageTable[i].virtualPage = i;
-//        pageTable[i].physicalPage = 0;
-//        pageTable[i].valid = FALSE;  // no physical memory for this page
-//        pageTable[i].use = FALSE;
-//        pageTable[i].dirty = FALSE;
-//        pageTable[i].readOnly = FALSE;
-//#endif
+#ifndef USE_TLB
+        pageTable[i].virtualPage = i;
+        pageTable[i].physicalPage = 0;
+        pageTable[i].valid = FALSE;  // no physical memory for this page
+        pageTable[i].use = FALSE;
+        pageTable[i].dirty = FALSE;
+        pageTable[i].readOnly = FALSE;
+#endif
 #ifdef USE_TLB
         pageTableInfo[i].virtualPage = i;
         pageTableInfo[i].physicalPage = 0;
@@ -258,23 +258,23 @@ AddrSpace::AddrSpace(OpenFile *exec) : fileTable(MaxOpenFiles),
     // allocate pages for the stack
     for (; i < numPages; i++) {
         // find a free page in physical memory
-//#ifndef USE_TLB
-//        physMemMapLock->Acquire();
-//        int physPage = physMemMap.Find();
-//        ASSERT(physPage != -1); // make sure a page was found
-//        physMemMapLock->Release();
-//        pageTable[i].virtualPage = i;
-//        pageTable[i].physicalPage = physPage;
-//        pageTable[i].valid = TRUE;
-//        pageTable[i].use = FALSE;
-//        pageTable[i].dirty = FALSE;
-//        pageTable[i].readOnly = FALSE;  // if the code segment was entirely on 
-//                                        // a separate page, we could set its 
-//                                        // pages to be read-only
-//
-//        // zero out the physical memory associated with this page
-//        bzero(&(machine->mainMemory[PageSize * physPage]), PageSize);
-//#endif
+#ifndef USE_TLB
+        physMemMapLock->Acquire();
+        int physPage = physMemMap.Find();
+        ASSERT(physPage != -1); // make sure a page was found
+        physMemMapLock->Release();
+        pageTable[i].virtualPage = i;
+        pageTable[i].physicalPage = physPage;
+        pageTable[i].valid = TRUE;
+        pageTable[i].use = FALSE;
+        pageTable[i].dirty = FALSE;
+        pageTable[i].readOnly = FALSE;  // if the code segment was entirely on 
+                                        // a separate page, we could set its 
+                                        // pages to be read-only
+
+        // zero out the physical memory associated with this page
+        bzero(&(machine->mainMemory[PageSize * physPage]), PageSize);
+#endif
 #ifdef USE_TLB
         pageTableInfo[i].virtualPage = i;
         pageTableInfo[i].physicalPage = 0;
@@ -288,56 +288,56 @@ AddrSpace::AddrSpace(OpenFile *exec) : fileTable(MaxOpenFiles),
     }
     
     // then, copy in the code and data segments into memory
-//#ifndef USE_TLB
-//    if (noffH.code.size > 0) {
-//        DEBUG('a', "Initializing code segment, at vaddr 0x%x, size %d\n", 
-//                        noffH.code.virtualAddr, noffH.code.size);
-//
-//        // initialize the code segment one page at a time
-//        int page = noffH.code.virtualAddr / PageSize;
-//        int offset = noffH.code.virtualAddr % PageSize; // only !=0 for page 1
-//        int fileAddr = noffH.code.inFileAddr;
-//        int _size = -1;
-//        for( int code = noffH.code.size; code > 0; code -= _size) {
-//            ASSERT(pageTable[page].valid);
-//            int paddr = (pageTable[page].physicalPage * PageSize) + offset;
-//            _size = min(code, PageSize - offset);
-//            DEBUG('a', "Initializing code segment, at paddr 0x%x, size %d\n", 
-//                            paddr, _size);
-//
-//            executable->ReadAt(&(machine->mainMemory[paddr]), _size, fileAddr);
-//
-//            fileAddr += _size;
-//            offset = 0;
-//            page++;
-//        }
-//    }
-//    if (noffH.initData.size > 0) {
-//        DEBUG('a', "Initializing initData segment, at vaddr 0x%x, size %d\n", 
-//                        noffH.initData.virtualAddr, noffH.initData.size);
-//
-//        // initialize the initData segment one page at a time
-//        int page = noffH.initData.virtualAddr / PageSize;
-//        int offset = noffH.initData.virtualAddr % PageSize; // only !=0 for page 1
-//        DEBUG('a', "Offset is %d\n", offset);
-//        int fileAddr = noffH.initData.inFileAddr;
-//        int _size = -1;
-//        for( int data = noffH.initData.size; data > 0; data -= _size) {
-//            DEBUG('a', "  %d bytes remain\n", data);
-//            ASSERT(pageTable[page].valid);
-//            int paddr = (pageTable[page].physicalPage * PageSize) + offset;
-//            _size = min(data, PageSize - offset);
-//            DEBUG('a', "Initializing initData segment, at paddr 0x%x, size %d\n", 
-//                            paddr, _size);
-//
-//            executable->ReadAt(&(machine->mainMemory[paddr]), _size, fileAddr);
-//
-//            fileAddr += _size;
-//            offset = 0;
-//            page++;
-//        }
-//    }
-//#endif                                         
+#ifndef USE_TLB
+    if (noffH.code.size > 0) {
+        DEBUG('a', "Initializing code segment, at vaddr 0x%x, size %d\n", 
+                        noffH.code.virtualAddr, noffH.code.size);
+
+        // initialize the code segment one page at a time
+        int page = noffH.code.virtualAddr / PageSize;
+        int offset = noffH.code.virtualAddr % PageSize; // only !=0 for page 1
+        int fileAddr = noffH.code.inFileAddr;
+        int _size = -1;
+        for( int code = noffH.code.size; code > 0; code -= _size) {
+            ASSERT(pageTable[page].valid);
+            int paddr = (pageTable[page].physicalPage * PageSize) + offset;
+            _size = min(code, PageSize - offset);
+            DEBUG('a', "Initializing code segment, at paddr 0x%x, size %d\n", 
+                            paddr, _size);
+
+            executable->ReadAt(&(machine->mainMemory[paddr]), _size, fileAddr);
+
+            fileAddr += _size;
+            offset = 0;
+            page++;
+        }
+    }
+    if (noffH.initData.size > 0) {
+        DEBUG('a', "Initializing initData segment, at vaddr 0x%x, size %d\n", 
+                        noffH.initData.virtualAddr, noffH.initData.size);
+
+        // initialize the initData segment one page at a time
+        int page = noffH.initData.virtualAddr / PageSize;
+        int offset = noffH.initData.virtualAddr % PageSize; // only !=0 for page 1
+        DEBUG('a', "Offset is %d\n", offset);
+        int fileAddr = noffH.initData.inFileAddr;
+        int _size = -1;
+        for( int data = noffH.initData.size; data > 0; data -= _size) {
+            DEBUG('a', "  %d bytes remain\n", data);
+            ASSERT(pageTable[page].valid);
+            int paddr = (pageTable[page].physicalPage * PageSize) + offset;
+            _size = min(data, PageSize - offset);
+            DEBUG('a', "Initializing initData segment, at paddr 0x%x, size %d\n", 
+                            paddr, _size);
+
+            executable->ReadAt(&(machine->mainMemory[paddr]), _size, fileAddr);
+
+            fileAddr += _size;
+            offset = 0;
+            page++;
+        }
+    }
+#endif                                         
 }
 #endif
 
@@ -352,14 +352,14 @@ AddrSpace::AddrSpace(OpenFile *exec) : fileTable(MaxOpenFiles),
 AddrSpace::~AddrSpace()
 {
 #ifdef CHANGED
-//#ifndef USE_TLB
+#ifndef USE_TLB
     // free the physical memory being used by this page table
-//    for(unsigned int i=0; i < numPages; i++) {
-//        physMemMapLock->Acquire();
-//        physMemMap.Clear(pageTable[i].physicalPage);
-//        physMemMapLock->Release();
-//    }
-//#endif
+    for(unsigned int i=0; i < numPages; i++) {
+        physMemMapLock->Acquire();
+        physMemMap.Clear(pageTable[i].physicalPage);
+        physMemMapLock->Release();
+    }
+#endif
 #ifdef USE_TLB
     // free the physical memory
     for(unsigned int i=0; i < numPages; i++) {
@@ -456,22 +456,22 @@ int AddrSpace::InitStack() {
     // allocate the memory for this stack
     for(int i=start; i < stackPages + start; i++) {
         // find a free page in physical memory
-//#ifndef USE_TLB
-//        physMemMapLock->Acquire();
-//        int physPage = physMemMap.Find();
-//        ASSERT(physPage != -1); // make sure a page was found
-//        physMemMapLock->Release();
-//
-//        pageTable[i].virtualPage = i;
-//        pageTable[i].physicalPage = physPage;
-//        pageTable[i].valid = TRUE;
-//        pageTable[i].use = FALSE;
-//        pageTable[i].dirty = FALSE;
-//        pageTable[i].readOnly = FALSE;
-//
-//        // zero out the physical memory associated with this page
-//        bzero(&(machine->mainMemory[PageSize * physPage]), PageSize);
-//#endif
+#ifndef USE_TLB
+        physMemMapLock->Acquire();
+        int physPage = physMemMap.Find();
+        ASSERT(physPage != -1); // make sure a page was found
+        physMemMapLock->Release();
+
+        pageTable[i].virtualPage = i;
+        pageTable[i].physicalPage = physPage;
+        pageTable[i].valid = TRUE;
+        pageTable[i].use = FALSE;
+        pageTable[i].dirty = FALSE;
+        pageTable[i].readOnly = FALSE;
+
+        // zero out the physical memory associated with this page
+        bzero(&(machine->mainMemory[PageSize * physPage]), PageSize);
+#endif
 #ifdef USE_TLB
         pageTableInfo[i].virtualPage = i;
         pageTableInfo[i].physicalPage = 0;
@@ -579,10 +579,10 @@ void AddrSpace::SaveState()
 
 void AddrSpace::RestoreState() 
 {
-//#ifndef USE_TLB
-//    machine->pageTable = pageTable;
-//    machine->pageTableSize = numPages;
-//#endif
+#ifndef USE_TLB
+    machine->pageTable = pageTable;
+    machine->pageTableSize = numPages;
+#endif
 
     // All the pages in the machine->TLB must be invalidated now
 #ifdef USE_TLB
@@ -606,42 +606,43 @@ void AddrSpace::RestoreState()
 //----------------------------------------------------------------------
 
 // modify this method to not use pageTable
-//std::string AddrSpace::readCString(char* s) {
-//    std::string ret = "";
-//
-//    unsigned int page = (unsigned int) s / PageSize;
-//    if(page >= numPages || !pageTable[page].valid) {
-//        cerr << "ERROR: virtual address [" << (unsigned int) s 
-//             << "] passed to readCString is invalid\n"
-//             << " segmentation fault?\n";
-//        return ret;
-//    }
-//    unsigned int offset = (unsigned int) s % PageSize;
-//    unsigned int paddr = (pageTable[page].physicalPage * PageSize) + offset;
-//
-//    // read the string till we hit null
-//    while(machine->mainMemory[paddr] != 0) {
-//        // append this char
-//        ret += machine->mainMemory[paddr];
-//
-//        // update the physical address
-//        offset++;
-//        if(offset >= PageSize) {
-//            offset = 0;
-//            page++;
-//            if(page >= numPages || !pageTable[page].valid) {
-//                cerr << "ERROR: virtual address [" << (unsigned int) s 
-//                     << "] passed to readCString is invalid\n"
-//                     << " string prematurely truncated to " << ret << endl
-//                     << " segmentation fault?\n";
-//                return ret;
-//            }
-//        }
-//        paddr = (pageTable[page].physicalPage * PageSize) + offset;
-//    }
-//
-//    return ret;
-//}
+std::string AddrSpace::readCString(char* s) {
+    std::string ret = "";
+
+    unsigned int page = (unsigned int) s / PageSize;
+    if(page >= numPages || !pageTable[page].valid) {
+        cerr << "ERROR: virtual address [" << (unsigned int) s 
+             << "] passed to readCString is invalid\n"
+             << " segmentation fault?\n";
+        return ret;
+    }
+    unsigned int offset = (unsigned int) s % PageSize;
+    unsigned int paddr = (pageTable[page].physicalPage * PageSize) + offset;
+
+    // read the string till we hit null
+    while(machine->mainMemory[paddr] != 0) {
+        // append this char
+        ret += machine->mainMemory[paddr];
+
+        // update the physical address
+        offset++;
+        if(offset >= PageSize) {
+            offset = 0;
+            page++;
+            if(page >= numPages || !pageTable[page].valid) {
+                cerr << "ERROR: virtual address [" << (unsigned int) s 
+                     << "] passed to readCString is invalid\n"
+                     << " string prematurely truncated to " << ret << endl
+                     << " segmentation fault?\n";
+                return ret;
+            }
+        }
+        paddr = (pageTable[page].physicalPage * PageSize) + offset;
+    }
+
+    return ret;
+}
+/*
 std::string AddrSpace::readCString(char* s) {
     std::string ret = "";
     int val = 0;
@@ -667,5 +668,6 @@ std::string AddrSpace::readCString(char* s) {
 
     return ret;
 }
+*/
 #endif
 

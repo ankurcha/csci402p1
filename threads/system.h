@@ -63,7 +63,7 @@ extern Timer *timer;				// the hardware alarm clock
 
 #ifdef CHANGED
 
-//#ifdef USE_TLB
+#ifdef USE_TLB
 extern InvertedPageTableEntry *IPT;
 extern Lock* IPTLock;
 extern Lock* TLBIndexLock;
@@ -72,7 +72,7 @@ extern OpenFile *swapFile;
 //extern int swapLocation;
 extern Lock* swapLock;
 extern BitMap *swapBitMap;
-//#endif
+#endif
 
 #endif
 
