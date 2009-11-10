@@ -987,20 +987,21 @@ int Receive_Syscall(int senderID, int mbox, int vaddr){
 
 }
 
-void Send_Syscall(int receiverID,int mbox,int vaddr){
+int Send_Syscall(int receiverID,int mbox,int vaddr){
 #ifdef NETWORK
     Packet pkt;
     pkt.senderId = netname;
     pkt.timestamp = getTimestamp();
     
-    char *payload = new char[32];
-    int bytesRead = copyin(vaddr, 32 , pkt.data);
-    
+    //char *payload = new char[32];
     //strcpy(pkt.data, payload);
     //cout<< "Sending: "<<payload<<endl;
     // Serialize everything to be sent
-   char *message = new char[MaxMailSize];
-   message = pkt.Serialize(message);
+    
+    char *message = new char[MaxMailSize];
+    int bytesRead = copyin(vaddr, MaxMailSize-1 , message);
+    // message = pkt.Serialize(message);
+    
     if (bytesRead != -1) {
         // Payload successfully acquired
         // Send packet
@@ -1010,7 +1011,7 @@ void Send_Syscall(int receiverID,int mbox,int vaddr){
         MailHeader mailHead;
         mailHead.to = mbox;
         mailHead.from = pkt.senderId;
-        mailHead.length = strlen(message) + 1;
+        mailHead.length = bytesRead;
         // Send the message to other client
         bool retVal = postOffice->Send(pktHead, mailHead, message);
         if (!retVal) {
@@ -1019,10 +1020,12 @@ void Send_Syscall(int receiverID,int mbox,int vaddr){
         }else {
             //printf("Message sent: %s\n", message);
             fflush(stdout);
+            return retVal;
         }
     }else {
         DEBUG('a', "Failed to read Payload\n");
     }
+    return -1;
 #endif
 }
 
