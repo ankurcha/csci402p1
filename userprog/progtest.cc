@@ -27,12 +27,13 @@ StartProcess(char *filename)
 {
     OpenFile *executable = fileSystem->Open(filename);
     AddrSpace *space;
+#ifdef USE_TLB
     if(FIFOreplacementPolicy == true){
         printf("Using FIFO replacement policy\n");
     }else{
         printf("Using RAND replacement policy\n");
     }
-
+#endif
     if (executable == NULL) {
 	printf("Unable to open file %s\n", filename);
 	return;
