@@ -11,7 +11,7 @@ int Hospital_Receive();
 
 int Hospital_Send(char *data);
 
-int Broadcast(char *message);
+int Hospital_Broadcast(char *data);
 
 /*
  * Packet structure

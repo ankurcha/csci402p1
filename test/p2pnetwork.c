@@ -21,6 +21,19 @@ int Deserialize(Packet &p, char* data){
     return 0;
 }
 
+/* Communication Functions */
+
+int Hospital_Receive(){
+
+}
+
+int Hospital_Send(char *data){
+
+}
+
+int Hospital_Broadcast(char *data){
+
+}
 /* Lock Functions */
 
 int HLock_Create(int HlockId, int EntityID){
