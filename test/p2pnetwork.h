@@ -7,11 +7,11 @@
  *
  */
 
-int Hospital_Receive();
+int Hospital_Receive(int, int, Packet&);
 
-int Hospital_Send(char *data);
+int Hospital_Send(int receiverId, int mailboxId, Packet&);
 
-int Hospital_Broadcast(char *data);
+int Hospital_Multicast(int[], int[], int, Packet&);
 
 /*
  * Packet structure

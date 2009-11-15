@@ -46,6 +46,7 @@ int getTimestamp(){
 
 using namespace std;
 #ifdef NETWORK
+/*
 class Packet {
     public:
     int senderId;
@@ -69,7 +70,8 @@ class Packet {
         for(unsigned i=4; i< MaxMailSize; i++)
             data[i-4] = message[i];
     }
-}; 
+};
+*/
 #endif
 
 extern "C" { int bzero(char *, int); };
@@ -974,12 +976,6 @@ int Receive_Syscall(int senderID, int mbox, int vaddr){
         interrupt->Halt();
     }
     // Copy message to vaddr
-
-    // @ankur: Let the handling of the packet details happen in the userprogram
-    //Packet pkt;
-    //pkt.Deserialize(message);
-
-    //cout << "Data received: "<<pkt.data<<endl;
     fflush(stdout);
     bytesRead = copyout(vaddr, sizeof(message), message);
     return bytesRead;
@@ -992,11 +988,6 @@ int Send_Syscall(int receiverID,int mbox,int vaddr){
     Packet pkt;
     pkt.senderId = netname;
     pkt.timestamp = getTimestamp();
-    
-    //char *payload = new char[32];
-    //strcpy(pkt.data, payload);
-    //cout<< "Sending: "<<payload<<endl;
-    // Serialize everything to be sent
     
     char *message = new char[MaxMailSize];
     int bytesRead = copyin(vaddr, MaxMailSize-1 , message);
@@ -1018,7 +1009,6 @@ int Send_Syscall(int receiverID,int mbox,int vaddr){
             printf("Cannot Send\n");
             interrupt->Halt();
         }else {
-            //printf("Message sent: %s\n", message);
             fflush(stdout);
             return retVal;
         }
@@ -1027,6 +1017,16 @@ int Send_Syscall(int receiverID,int mbox,int vaddr){
     }
     return -1;
 #endif
+}
+
+int GetMachineID_Syscall(){
+#ifdef NETWORK
+    return netname;
+#endif
+}
+
+int GetTimestamp_Syscall(){
+        return (int) time(NULL);
 }
 
 void ExceptionHandler(ExceptionType which) {
@@ -1118,8 +1118,15 @@ void ExceptionHandler(ExceptionType which) {
                 break;
             case SC_Send:
                 DEBUG('a', "Send_Syscal\n");
-                Send_Syscall(machine->ReadRegister(4), machine->ReadRegister(5),
+                rv = Send_Syscall(machine->ReadRegister(4), machine->ReadRegister(5),
                              machine->ReadRegister(6));
+                break;
+            case SC_GetMachineID:
+                DEBUG('a', "Get Machine ID\n");
+                rv = GetMachineID_Syscall();
+                break;
+            case SC_GetTimestamp:
+                rv = GetTimestamp_Syscall();
                 break;
             case SC_Receive:
                 DEBUG('a', "Receive_Syscall\n");

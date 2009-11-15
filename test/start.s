@@ -239,6 +239,14 @@ GetMachineID:
     j   $31
     .end GetMachineID
 
+    .globl GetTimestamp
+	.ent	GetTimestamp
+GetTimestamp:
+    addiu $2,$0,SC_GetTimestamp
+    syscall
+    j   $31
+    .end GetTimestamp
+
 /* dummy function to keep gcc happy */
         .globl  __main
         .ent    __main

@@ -43,6 +43,7 @@
 #define SC_Send	21
 #define SC_Receive  22
 #define SC_GetMachineID 23
+#define SC_GetTimestamp 24
 
 #define MAXFILENAME 256
 
@@ -196,6 +197,8 @@ void DestroyCondition(CVId id);
 int Random();
 
 int GetMachineID();
+
+int GetTimestamp();
 
 void Send(int sendMachineID,int mbox,char* message);
 
