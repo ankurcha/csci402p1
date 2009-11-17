@@ -36,13 +36,6 @@
 #include <algorithm>
 #endif
 
-#ifdef NETWORK
-int getTimestamp(){
-    time_t ltime;
-    ltime = time(NULL);
-    return ltime;
-}
-#endif
 
 using namespace std;
 #ifdef NETWORK
@@ -985,10 +978,6 @@ int Receive_Syscall(int senderID, int mbox, int vaddr){
 
 int Send_Syscall(int receiverID,int mbox,int vaddr){
 #ifdef NETWORK
-    Packet pkt;
-    pkt.senderId = netname;
-    pkt.timestamp = getTimestamp();
-    
     char *message = new char[MaxMailSize];
     //TODO: this is not consistent with the way we are using this syscall, 
     // and it could potentially lead to segfaults, this assumes that vaddr
@@ -1009,7 +998,7 @@ int Send_Syscall(int receiverID,int mbox,int vaddr){
         
         MailHeader mailHead;
         mailHead.to = mbox;
-        mailHead.from = pkt.senderId;
+        mailHead.from = netname;
         mailHead.length = bytesRead;
         // Send the message to other client
         bool retVal = postOffice->Send(pktHead, mailHead, message);
