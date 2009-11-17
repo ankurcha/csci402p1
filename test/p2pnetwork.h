@@ -1,3 +1,7 @@
+
+#ifndef P2PNETWORK_H
+#define P2PNETWORK_H 1
+
 #inlcude "syscall.h"
 #define MaxMailSize 40
 #define MaxDataSize (MaxMailSize - 4)
@@ -101,3 +105,6 @@ int HCV_Broadcast(int HCVId, int HLockId, int EntityID);
 /* A synchronized print routine to print the lines on the console nicely
  */
 int SyncPrint(char *, int EntityID);
+
+#endif /* P2PNETWORK_H */
+

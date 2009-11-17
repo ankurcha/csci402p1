@@ -990,6 +990,14 @@ int Send_Syscall(int receiverID,int mbox,int vaddr){
     pkt.timestamp = getTimestamp();
     
     char *message = new char[MaxMailSize];
+    //TODO: this is not consistent with the way we are using this syscall, 
+    // and it could potentially lead to segfaults, this assumes that vaddr
+    // points to a block of MaxMailSize bytes, but our test code uses short
+    // string literals
+    //
+    // We could modify the syscall to be told the number of bytes to read, 
+    // but that is really just compromising the interface for the sake of 
+    // careless developers (us).
     int bytesRead = copyin(vaddr, MaxMailSize-1 , message);
     // message = pkt.Serialize(message);
     

@@ -46,12 +46,14 @@ int Hospital_Send(int receiverId, int mailboxId, Packet& p){
      * after serializing the data into a packet which can be received
      * at the other end using Hospital_Receive(...) function
      */
+    int status = -1;
     char message[MaxMailSize];
     message = Serialize(p, message); 
     /* Now that we have the packet serialized in message,
      * do a send till we are sure that this host receives it,
      **************** THIS IS A BLOCKING SEND ********************
      */
+    status = -1;
     while(status == -1)
         status = Send(receiverId, mailboxId, message);
     /* Finally, We were able to successfully send to the receiver host
