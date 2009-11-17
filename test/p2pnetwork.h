@@ -90,21 +90,26 @@ int DeserializePacket(Packet&, char*, int senderId);
 /* Register/Acquire/Release/Destroy a lock with the distributed system 
  * causes all to become aware that this lock is available for messing with
  */
-int HLock_Create(int HlockId, int EntityID);
-int HLock_Acquire(int HlockId, int EntityID);
-int HLock_Release(int HlockId, int EntityID);
-int HLock_Destroy(int HlockId, int EntityID);
+int HLock_Acquire(int HlockId);
+int HLock_Release(int HlockId);
 
 /* Register/Signal/Wait/Broadcast/Destroy a Condition variable with the
  * distributed system
  */
-int HCV_Signal(int HCVId, int HLockId, int EntityID);
-int HCV_Wait(int HCVId, int HLockId, int EntityID);
-int HCV_Broadcast(int HCVId, int HLockId, int EntityID);
+int HCV_Signal(int HCVId, int HLockId);
+int HCV_Wait(int HCVId, int HLockId);
+int HCV_Broadcast(int HCVId, int HLockId);
 
 /* A synchronized print routine to print the lines on the console nicely
  */
 int SyncPrint(char *, int EntityID);
+
+/* Update the shared memory elements */
+
+int HTable_Update(int tableId, int key, int value);
+
+/* Send a message to network */
+int SendToNetwork();
 
 #endif /* P2PNETWORK_H */
 
