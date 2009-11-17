@@ -8,7 +8,7 @@
 # All rights reserved.  See copyright.h for copyright notice and limitation 
 # of liability and disclaimer of warranty provisions.
 
-DEFINES = -DUSER_PROGRAM -DFILESYS_NEEDED -DFILESYS_STUB -DNETWORK -DUSE_TLB -DVM
+DEFINES = -DUSER_PROGRAM -DFILESYS_NEEDED -DFILESYS_STUB -DNETWORK -DVM
 INCPATH = -I../filesys -I../bin -I../userprog -I../threads -I../machine -I../network -I../vm 
 HFILES = $(THREAD_H) $(USERPROG_H) $(VM_H) $(NETWORK_H)
 CFILES = $(THREAD_C) $(USERPROG_C) $(VM_C) $(NETWORK_C)
@@ -1688,7 +1688,7 @@ exception.o: ../userprog/exception.cc ../threads/copyright.h \
   ../threads/list.h ../machine/stats.h ../machine/timer.h \
   ../filesys/filesys.h ../network/post.h ../threads/copyright.h \
   ../machine/network.h ../threads/synchlist.h ../threads/synch.h \
-  ../userprog/syscall.h ../network/tpl.c ../network/tpl.h
+  ../userprog/syscall.h 
 progtest.o: ../userprog/progtest.cc ../threads/copyright.h \
   ../threads/system.h ../threads/copyright.h ../threads/utility.h \
   ../threads/bool.h ../machine/sysdep.h ../threads/copyright.h \
