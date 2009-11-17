@@ -198,9 +198,9 @@ AddrSpace::AddrSpace(OpenFile *exec) : fileTable(MaxOpenFiles),
                                                      // TURN OFF ALL PRELOADING
     DEBUG('a', "Initializing page table, num pages %d, size %d\n", 
                                         numPages, size);
-//#ifndef USE_TLB
-    //pageTable = new TranslationEntry[numPages];
-//#endif
+#ifndef USE_TLB
+    pageTable = new TranslationEntry[numPages];
+#endif
 
     //*** CREATE THE PAGE TABLE ***
     pageTableInfo = new PageTableEntry[numPages]; 
