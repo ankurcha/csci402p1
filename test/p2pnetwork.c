@@ -1,4 +1,5 @@
 #include "p2pnetwork.h"
+
 char *Serialize(Packet& p, char *message){
     unsigned int i=0;
     message[1] = p.senderId;
