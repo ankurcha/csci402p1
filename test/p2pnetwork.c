@@ -107,7 +107,7 @@ int HLock_Release(int HlockId){
     p.data[4] = HlockId>>8;
     p.data[5] = HlockId;
     /* Send message to announce release of the lock to the network entity */
-    status = Hospital_Multicast(getHostList(), getMailboxList(), GetNumberOfHosts(), p);
+    status = ScheduleForSend(p);
     /* Check for successful Multicast */
     if(status > -1)
         status = 0;
@@ -132,3 +132,4 @@ int HLock_Acquire(int HlockId){
      *  
      *  i
      *  */
+}
