@@ -17,6 +17,10 @@ int Hospital_Send(int receiverId, int mailboxId, Packet&);
 
 int Hospital_Multicast(int[], int[], int, Packet&);
 
+int[] getHostList();
+int[] getMailboxList();
+int GetNumberOfHosts();
+
 /*
  * Packet structure
  * The data portion of the packet has fields. Each field is 1 byte in length
@@ -46,7 +50,7 @@ int Hospital_Multicast(int[], int[], int, Packet&);
  *              EMPTY - 0x00 All Locks Are the same
  *          For CV Operations
  *              EMPTY - 0x00 All Condition Variables are the same
- * data[2] and data[3] - Entity Id (sized int hence 2 bytes)
+ * data[2,3,4,5,6,7] - Entity Id (sized int hence 2 bytes)
  *          For NODE - Node ID
  *          For Lock - Lock ID
  *          For CV   - CV ID
@@ -80,7 +84,7 @@ enum {
 struct packet{
     int senderId;
     int timestamp;
-    char *data;
+    char data[MaxDataSize];
 };
 
 typedef struct packet Packet;
@@ -90,21 +94,26 @@ int DeserializePacket(Packet&, char*, int senderId);
 /* Register/Acquire/Release/Destroy a lock with the distributed system 
  * causes all to become aware that this lock is available for messing with
  */
-int HLock_Create(int HlockId, int EntityID);
-int HLock_Acquire(int HlockId, int EntityID);
-int HLock_Release(int HlockId, int EntityID);
-int HLock_Destroy(int HlockId, int EntityID);
+int HLock_Acquire(int HlockId);
+int HLock_Release(int HlockId);
 
 /* Register/Signal/Wait/Broadcast/Destroy a Condition variable with the
  * distributed system
  */
-int HCV_Signal(int HCVId, int HLockId, int EntityID);
-int HCV_Wait(int HCVId, int HLockId, int EntityID);
-int HCV_Broadcast(int HCVId, int HLockId, int EntityID);
+int HCV_Signal(int HCVId, int HLockId);
+int HCV_Wait(int HCVId, int HLockId);
+int HCV_Broadcast(int HCVId, int HLockId);
 
 /* A synchronized print routine to print the lines on the console nicely
  */
 int SyncPrint(char *, int EntityID);
+
+/* Update the shared memory elements */
+
+int HTable_Update(int tableId, int key, int value);
+
+/* Send a message to network */
+int SendToNetwork();
 
 #endif /* P2PNETWORK_H */
 

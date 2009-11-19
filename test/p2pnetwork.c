@@ -84,35 +84,53 @@ int Hospital_Multicast(int hostList[],int mailboxList[], int NumberOfHosts, Pack
     return status;
 }
 /* Lock Functions */
+int HLock_Acquire(int HlockId){
+    /* Check the validity of the HlockId and EntityId */
 
-int HLock_Create(int HlockId, int EntityID){
-    LockId LID = -1;
-    int SendStatus = -1;
-    char LockMessage[MaxDataSize]; /* Message to be sent */
-    if(HlockId <= -1)
-        return -1;
-    /* Broadcast a create a message to all the different 
-     * registered nodes which have replied NODE_READY 
-     * We pass this message to the broadcast call and forget
-    */
-
-    /* Create the lock and confirm it up else return -1 */
-    LID = CreateLock("Lock");
-    if(LID < 0)
-        return -1;
-
-    /* Successfully created a lock now we create a message */
-    /* Operation type */
-    LockMessage[0] = LOCK_CREATE;
-    /* Operation detail is empty for locks */
-    LockMessage[1] = EMPTY;
-    /* Lock ID */
-    LockMessage[2] = EntityID >> 8;
-    LockMessage[3] = EntityID;
-
-    /* Now send this message */
-    SendStatus = Hospital_Send(LockMessage);
-    return SendStatus;
+    /* Create a lock query */
+    /* Send the SYN to the network entity for Lock Acquire*/
+    /* Wait for an ACK */
+    /* Received and ACK now just return the value received */
 }
 
+int HLock_Release(int HlockId){
+    int status = -1;
+    /* Check if I already own this lock */
+    if(HlockId <0)
+        return status;
+    /* Create message for Lock Release */
+    Packet p;
+    p.senderId = GetMachineId();
+    p.timestamp = GetTimestamp();
+    p.data[0] = LOCK_RELEASE;
+    p.data[1] = EMPTY;
+    p.data[2] = data[3] = EMPTY;
+    p.data[4] = HlockId>>8;
+    p.data[5] = HlockId;
+    /* Send message to announce release of the lock to the network entity */
+    status = ScheduleForSend(p);
+    /* Check for successful Multicast */
+    if(status > -1)
+        status = 0;
+    return status;
+    /* Return success */
+}
 
+int HLock_Acquire(int HlockId){
+    int status = -1;
+    /* For this operation we need to do a distributed concensus and then decide
+     * who should get the lock, else we just keep waiting till we do get
+     */
+
+    p.senderId = GetMachineId();
+    p.timestamp = GetTimestamp();
+    p.data[0] = LOCK_ACQUIRE;
+    data[1] = data[2] = data[3] = EMPTY;
+    data[4] = HlockId>>8;
+    data[5] = HlickId;
+    
+    /* We have now built the packet and now we should do the following
+     *  
+     *  i
+     *  */
+}
