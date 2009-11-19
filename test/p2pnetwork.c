@@ -93,8 +93,42 @@ int HLock_Acquire(int HlockId){
 }
 
 int HLock_Release(int HlockId){
+    int status = -1;
     /* Check if I already own this lock */
+    if(HlockId <0)
+        return status;
+    /* Create message for Lock Release */
+    Packet p;
+    p.senderId = GetMachineId();
+    p.timestamp = GetTimestamp();
+    p.data[0] = LOCK_RELEASE;
+    p.data[1] = EMPTY;
+    p.data[2] = data[3] = EMPTY;
+    p.data[4] = HlockId>>8;
+    p.data[5] = HlockId;
     /* Send message to announce release of the lock to the network entity */
-    /* Wait for ACK from the network entity */
+    status = Hospital_Multicast(getHostList(), getMailboxList(), GetNumberOfHosts(), p);
+    /* Check for successful Multicast */
+    if(status > -1)
+        status = 0;
+    return status;
     /* Return success */
 }
+
+int HLock_Acquire(int HlockId){
+    int status = -1;
+    /* For this operation we need to do a distributed concensus and then decide
+     * who should get the lock, else we just keep waiting till we do get
+     */
+
+    p.senderId = GetMachineId();
+    p.timestamp = GetTimestamp();
+    p.data[0] = LOCK_ACQUIRE;
+    data[1] = data[2] = data[3] = EMPTY;
+    data[4] = HlockId>>8;
+    data[5] = HlickId;
+    
+    /* We have now built the packet and now we should do the following
+     *  
+     *  i
+     *  */

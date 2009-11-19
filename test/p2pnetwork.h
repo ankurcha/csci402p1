@@ -17,6 +17,10 @@ int Hospital_Send(int receiverId, int mailboxId, Packet&);
 
 int Hospital_Multicast(int[], int[], int, Packet&);
 
+int[] getHostList();
+int[] getMailboxList();
+int GetNumberOfHosts();
+
 /*
  * Packet structure
  * The data portion of the packet has fields. Each field is 1 byte in length
@@ -46,7 +50,7 @@ int Hospital_Multicast(int[], int[], int, Packet&);
  *              EMPTY - 0x00 All Locks Are the same
  *          For CV Operations
  *              EMPTY - 0x00 All Condition Variables are the same
- * data[2] and data[3] - Entity Id (sized int hence 2 bytes)
+ * data[2,3,4,5,6,7] - Entity Id (sized int hence 2 bytes)
  *          For NODE - Node ID
  *          For Lock - Lock ID
  *          For CV   - CV ID
@@ -80,7 +84,7 @@ enum {
 struct packet{
     int senderId;
     int timestamp;
-    char *data;
+    char data[MaxDataSize];
 };
 
 typedef struct packet Packet;
