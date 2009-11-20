@@ -13,11 +13,12 @@
  *
  */
 
-int Hospital_Receive(int, int, Packet&);
+int Packet_Receive(int mbox, 
+                   int& senderId, 
+                   int& senderMBox, 
+                   Packet &receivedPacket);
 
-int Hospital_Send(int receiverId, int mailboxId, Packet&);
-
-int Hospital_Multicast(int[], int[], int, Packet&);
+int Packet_Send(int receiverId, int recMBox, senderMBox, Packet&);
 
 int[] getHostList();
 int[] getMailboxList();
