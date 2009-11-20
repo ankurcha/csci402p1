@@ -14,7 +14,8 @@
  */
 
 #define MaxSendQueueSize 50
-
+#define MaxPendingMessagesSize 100
+#define MAXHOSTS 100
 struct messageQueueElement{
     Packet message;
     int next; /* init = -1*/
@@ -35,11 +36,22 @@ typedef struct MessageQueue MessageQueue;
 /* methods for a FIFO Message Queue */
 
 void Init_MsgQueue(MessageQueue *q);
-void MsgQueue_Push(MessageQueue *q, char msg[40]);
+void MsgQueue_Push(MessageQueue *q, Packet& msg);
+void MsgQueue_Insert(MessageQueue *q, int pos, Packet& msg);
 char[] MsgQueue_Pop(MessageQueue *q);
 char MsgQueue_IsEmpty(MessageQueue *q);
 
 /* FIFO Queue for the send messages, used by the event dispatcher */
-MessageQueue sendQueue[MaxSendQueueSize];
 /* This process handles the messages that are meant to be sent */
-
+MessageQueue sendQueue[MaxSendQueueSize];
+/* This process handles the messages that are received and pending processing */
+MessageQueue pendingMessagesQueue[MaxPendingMessagesSize];
+/* Table of the last timestamp for each host */
+int LastTimestampSeen[MAXHOSTS];
+/*
+   1. Everytime I receive a message I update the last timestamp seen for that host.
+*/
+void updateLastTimestampSeen(int hostID, int timestampReceived);
+/* 2. Queue up message to pending queue till further notice 
+      For this we will use, void MsgQueue_Push(pendingMessagesQueue, msg);
+ */

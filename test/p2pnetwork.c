@@ -103,6 +103,39 @@ void DeserializePacket(Packet& p, char* message) {
 }
 */
 
+int addHeldResource(int type, int id){
+    int i=0;
+    int targetpos = -1;
+    for(i=0;i<MAX_RESOURCES;i++)
+        if(resourcesHeld[i].valid = 0){
+            targetpos = i;
+            break;
+        }
+    if(targetPos == -1)
+        return -1;
+    resourcesHeld[targetPos].resourceType = type;
+    resourcesHeld[targetPos].resourceID = id;
+    resourcesHeld[targetPos].valid = 1;
+    return targetPos;
+}
+
+void initResourcesHeldList(){
+    int i = 0;
+    for(i=0;i<MAX_RESOURCES;i++)
+        resourcesHeld[i].valid = 0;
+}
+
+int releaseResource(int type, int id){
+    int i = 0;
+    for(i =0; i<MAX_RESOURCES;i++){
+        if(resourcesHeld[i].resourceType == type && 
+           resourcesHeld[i].resourceId == id){
+            resourcesHeld[i].valid = 0;
+            return 1;
+        }
+    }
+    return 0;
+}
 /* Communication Functions */
 
 int Hospital_Receive(int senderId, int mailboxId, Packet &receivedPacket){
@@ -210,9 +243,6 @@ int HLock_Acquire(int HlockId){
     data[4] = HlockId>>8;
     data[5] = HlickId;
     
-    /* We have now built the packet and now we should do the following
-     * 
-     * 
-     *  
+    /* We have now built the packet and now we should do the following  
     */
 }

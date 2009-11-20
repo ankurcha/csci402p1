@@ -44,6 +44,63 @@ int MsgQueue_Push(MessageQueue *q, Packet& msg){
     return i;
 }
 
+int MsgQueue_Insert(MessageQueue *q, int pos, Packet& msg){
+    /* head is start */
+    /* tail is end */
+    
+    int i=0;
+    int target = 0;
+    if(pos >= q->length)
+        return -1;
+    if (q->head == -1 && q->tail == -1) {
+        /* first Element to be inserted */
+        q->head = 0;
+        q->tail = 0;
+    }
+    for (i=q->head; i<q->tail; i++) {
+        if (q->queue[i].message.timestamp > msg.timestamp && q->queue[i].valid == 1) {
+            /* find the position to insert at */
+            target = i;
+            break;
+        }
+    }
+    /* found the position where i have to insert */
+    /* make a hole */
+    if (q->tail == q->length) {
+        return -1;
+    }
+    for (i = q->tail-1; i>=target; i--) {
+        q->queue[i+1] = q->queue[i];
+    }
+    /* insert msg at i */
+    q->queue[target].message = msg;
+    q->queue[target].valid = 1;
+    q->tail = q->tail + 1;
+}
+
+Packet MsgQueue_Delete(MessageQueue *q, int LastTimestamp){
+    
+    int temp;
+        
+    if (q->head == -1) {
+        return NULL;
+    }
+    
+    temp = q->head;
+    
+    if (q->head == q->tail) {
+        q->head = -1;
+        q->tail = -1;
+    }else{
+        q->head = q->head++;
+        if(q->tail == -1)
+            print("Error: queue malformed\n");
+    }
+    q->queue[temp].valid = 0;
+    return q->queue[temp].message;
+    
+}
+
 Packet MsgQueue_Pop(MessageQueue *q){
     int temp;
     
@@ -120,3 +177,9 @@ int ScheduleForSend(Packet p){
     status = MsgQueue_Push(sendQueue, p);
     return status;
 }
+
+void updateLastTimestampSeen(int hostID, int timestampReceived){
+    LastTimestampSeen[hostID] = timestampReceived;
+}
+
+

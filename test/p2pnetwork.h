@@ -6,8 +6,9 @@
 #define MaxMailSize 40
 /*#define MaxDataSize (MaxMailSize - 4)*/
 
+#define MAX_RESOURCES 50
 /*
- * These system calls for doing the netowork I/Oi
+ * These system calls for doing the netowork I/O
  * This also takes care of the protocol stack.
  *
  */
@@ -21,6 +22,24 @@ int Hospital_Multicast(int[], int[], int, Packet&);
 int[] getHostList();
 int[] getMailboxList();
 int GetNumberOfHosts();
+
+/*
+ * We need to keep a list of the resources that we currently hold
+ * so, all the locks and CVs that we hold are with us are present in
+ * this list of resources
+ */
+struct Resource{
+    int resourceType; /* 0 - Lock , 1 - CV */
+    int resourceID;
+    char valid; /* 0 init */
+};
+
+typedef struct Resource Resource;
+
+Resource resourcesHeld[MAX_RESOURCES]
+void initResourcesHeldList();
+int addHeldResource(int type, int id);
+int releaseResource(int type, int id);
 
 /*
  * Packet structure
