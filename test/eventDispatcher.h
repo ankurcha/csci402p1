@@ -37,13 +37,15 @@ typedef struct MessageQueue MessageQueue;
 
 void Init_MsgQueue(MessageQueue *q);
 void MsgQueue_Push(MessageQueue *q, Packet& msg);
-void MsgQueue_Insert(MessageQueue *q, int pos, Packet& msg);
+void MsgQueue_SortedInsert(MessageQueue *q, Packet& msg);
 char[] MsgQueue_Pop(MessageQueue *q);
 char MsgQueue_IsEmpty(MessageQueue *q);
 
 /* FIFO Queue for the send messages, used by the event dispatcher */
 /* This process handles the messages that are meant to be sent */
 MessageQueue sendQueue[MaxSendQueueSize];
+
+/******** TOTAL Ordering stuff *********/
 /* This process handles the messages that are received and pending processing */
 MessageQueue pendingMessagesQueue[MaxPendingMessagesSize];
 /* Table of the last timestamp for each host */
@@ -55,3 +57,5 @@ void updateLastTimestampSeen(int hostID, int timestampReceived);
 /* 2. Queue up message to pending queue till further notice 
       For this we will use, void MsgQueue_Push(pendingMessagesQueue, msg);
  */
+
+int messageReceive(Packet &p);

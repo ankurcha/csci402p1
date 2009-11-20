@@ -44,14 +44,12 @@ int MsgQueue_Push(MessageQueue *q, Packet& msg){
     return i;
 }
 
-int MsgQueue_Insert(MessageQueue *q, int pos, Packet& msg){
+int MsgQueue_SortedInsert(MessageQueue *q, Packet& msg){
     /* head is start */
     /* tail is end */
     
     int i=0;
     int target = 0;
-    if(pos >= q->length)
-        return -1;
     if (q->head == -1 && q->tail == -1) {
         /* first Element to be inserted */
         q->head = 0;
@@ -135,6 +133,29 @@ char MsgQueue_IsEmpty(MessageQueue *q){
         return 1;
     }else
         return 0;
+}
+
+int messageReceive(Packet &p){
+    int i = 0;
+    int smallest = 0;
+    int smallestTimestamp = 0;
+    if (p == NULL) {
+        return -1;
+    }
+    /* Update the last timestamp seen table */
+    updateLastTimestampSeen(p.senderId, p.timestamp);
+    /* Queue the packet into the pending queue in timestamp order*/
+    MsgQueue_SortedInsert(pendingMessagesQueue, p);
+    /* Retrieve the earliest timestamp from my last timestamp received table
+     * this value is the maximum timestamp for messages that I can process */
+    for (i=0; i<MAXHOSTS; i++) {
+        if(smallest > LastTimestampSeen[i]){
+            smallest = i;
+            smallestTimestamp = LastTimestampSeen[smallest];
+        }
+    }
+    
+    /* now we know the smallest timestamp among the packets seen so far */
 }
 
 /* Method for the event Dispatcher this does all the sending */
