@@ -130,7 +130,8 @@ int HLock_Acquire(int HlockId){
     data[5] = HlickId;
     
     /* We have now built the packet and now we should do the following
+     * 
+     * 
      *  
-     *  i
-     *  */
+    */
 }
