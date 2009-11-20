@@ -42,4 +42,3 @@ char MsgQueue_IsEmpty(MessageQueue *q);
 /* FIFO Queue for the send messages, used by the event dispatcher */
 MessageQueue sendQueue[MaxSendQueueSize];
 /* This process handles the messages that are meant to be sent */
-
