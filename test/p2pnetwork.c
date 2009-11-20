@@ -1,6 +1,71 @@
 #include "p2pnetwork.h"
+#include "print.h"
 
-char *Serialize(Packet& p, char *message){
+int copyOutInt(char* message, int index) {
+    int val = 0;
+    unsigned int i = 0;
+
+    for(i=0; i < 4; i++) {
+        val = (val << 8) + message[i + index];
+    }
+
+    return val;
+}
+
+void copyInInt(char* message, int index, int val) {
+    unsigned int i = 0;
+
+    for(i=0; i < 4; i++) {
+        message[i + index] = (val >> (8 * (3-i))) & 0xFF;
+    }
+}
+
+int copyOutShort(char* message, int index) {
+    int val = 0;
+    unsigned int i = 0;
+
+    for(i=0; i < 2; i++) {
+        val = (val << 8) + message[i + index];
+    }
+
+    return val;
+}
+
+void copyInShort(char* message, int index, int val) {
+    unsigned int i = 0;
+
+    for(i=0; i < 2; i++) {
+        message[i + index] = (val >> (8 * (1-i))) & 0xFF;
+    }
+}
+
+void copyOutData(char* message, int index, char* data, int length) {
+    unsigned int i=0;
+
+    if(index + length > MaxMailSize) {
+        print("ERROR: copyOutData beyond end of message\n");
+        return;
+    }
+
+    for( i=0; i<length; i++) {
+        data[i] = message[i + index];
+    }
+}
+
+void copyInData(char* message, int index, char* data, int length) {
+    unsigned int i=0;
+
+    if(index + length > MaxMailSize) {
+        print("ERROR: copyInData beyond end of message\n");
+        return;
+    }
+
+    for( i=0; i<length; i++) {
+        message[i + index] = data[i];
+    }
+}
+
+/*char *Serialize(Packet& p, char *message){
     unsigned int i=0;
     message[1] = p.senderId;
     message[0] = p.senderId >> 8;
@@ -10,8 +75,23 @@ char *Serialize(Packet& p, char *message){
         message[i] = data[i-4];
     return message;
 }
+*/
 
-int Deserialize(Packet &p, char* data){
+void SerializePacket(Packet& p, char* message) {
+    copyInShort(message, SENDER_ID, p.senderId);
+    copyInInt(message, TIMESTAMP, p.timestamp);
+    message[PACKET_TYPE] = p.packetType;
+    copyInData(message, DATA, p.data, MaxMailSize - DATA);
+}
+
+void DeserializePacket(Packet& p, char* message) {
+    p.senderId = copyOutShort(message, SENDER_ID);
+    p.timestamp = copyOutInt(message, TIMESTAMP);
+    p.packetType = message[PACKET_TYPE];
+    copyOutData(message, DATA, p.data, MaxMailSize - DATA);
+}
+
+/*int Deserialize(Packet &p, char* data){
     unsigned int i = 0;
     if(p == NULL)
         return -1;
@@ -21,6 +101,7 @@ int Deserialize(Packet &p, char* data){
         data[i-4] = message[i];
     return 0;
 }
+*/
 
 /* Communication Functions */
 
