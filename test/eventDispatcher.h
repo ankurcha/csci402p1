@@ -16,7 +16,7 @@
 #define MaxSendQueueSize 50
 
 struct messageQueueElement{
-    packet message;
+    Packet message;
     int next; /* init = -1*/
     char valid; /* intit = 0 */
 };
@@ -24,7 +24,7 @@ struct messageQueueElement{
 typedef struct messageQueueElement QueueElement;
 
 struct MessageQueue{
-    QueueElement * queue;
+    QueueElement *queue;
     int length;
     int head;
     int tail;
@@ -42,3 +42,4 @@ char MsgQueue_IsEmpty(MessageQueue *q);
 /* FIFO Queue for the send messages, used by the event dispatcher */
 MessageQueue sendQueue[MaxSendQueueSize];
 /* This process handles the messages that are meant to be sent */
+
