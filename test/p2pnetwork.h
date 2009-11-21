@@ -50,6 +50,7 @@ typedef struct Resource Resource;
 
 Resource resourcesHeld[MAX_RESOURCES];
 Resource resourcesRequested[MAX_RESOURCES];
+MessageQueue waitingNodes[MAX_HOSTS]; /* to track of the nodes that are waiting */
 
 void initResources(Resource arr[]);
 int addResource(Resource arr[],int type, int id, int replies);

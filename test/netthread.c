@@ -68,7 +68,7 @@ void processExternalPacket(Packet pkt) {
             }
             break;
         case LOCK_OK:
-            /* We got a LOCK_OK so now we need to check whether we requested this
+            /* Got a LOCK_OK so now we need to check whether we requested this
                Lock and if yes, we keep processing till all have replied with LOCK_OK
              */
                 /* get the lock being referred to */
@@ -82,10 +82,8 @@ void processExternalPacket(Packet pkt) {
                     replies = getRepliesSeen(resourcesRequested, LOCK, temp);
                     if(replies == totalEntities){
                         /* Now we have seen all the LOCK_OKs that we need and hence
-                         * we get the LOCK NOW
-                         */
-                        /* Delete the resource from the requestedResource and add
-                         * it to the HeldResources
+                         * we get the LOCK NOW and delete the resource from the 
+                         * requestedResource and add it to the HeldResources
                          */
                         Acquire(netthread_Lock);
                         deleteResource(resourcesRequested, LOCK, temp);
@@ -102,8 +100,12 @@ void processExternalPacket(Packet pkt) {
             break;
         case CV_WAIT:
             /* TODO: add them to the queue of requests */
+                MsgQueue_Push(waitingNodes, pkt);
             break;
         case CV_SIGNAL:
+                /* When we get a Signal we first will POP the waitingNodes Queue
+                 * Then check if the node associated with us is the one being signaled
+                 * If yes, we will wake it up
         case CV_BROADCAST:
             /*TODO: these are the same right? Yes they are*/
             /*TODO: I think I have to wake up the entity thread Yes*/
@@ -209,10 +211,15 @@ void processLocalPacket(Packet pkt) {
                         Packet_Send(receiverId, recMBox, 0, pkt);
                     }
                 }
-                /* Wait until you receive a signal and it is for you*/
+                /* Also, we need to maintain a list waiting nodes */
+                MsgQueue_Push(waitingNodes, pkt);
+                /* This will be popped when we receive a SIGNAL */
+                /* Wait until you receive a signal and it is for you */
             }
             break;
         case CV_SIGNAL:
+            /* When we want to send a signal, we should know who exactly to send
+             * the signal to ie 
         case CV_BROADCAST:
             /*TODO: these are the same right? Yes they are*/
             /*TODO: I think I have to wake up the entity thread Yes*/
