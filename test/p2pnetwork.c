@@ -246,3 +246,40 @@ int HLock_Acquire(int HlockId){
     /* We have now built the packet and now we should do the following  
     */
 }
+
+void readConfig(){
+    /* Read the configuration file given as the argument and parse the numbers
+     * to the global variables
+     */
+    OpenFileId fd;
+    char buf[100];
+    char temp[10];
+    int num;
+    int bytesread;
+    int i = 0;
+    int k;
+    int start = 0;
+    int end = -1;
+    fd = Open("configfile",10);
+    bytesread = Read(buf, 100, fd);
+    Close(fd);
+    end = 0;
+    for (k = 0; k<7; k++) {
+        /* Parse the comma separated numbers */
+        for (i=0; i<bytesread; i++) {
+            if(buf[i] != ','){
+                end++;
+            }
+        }
+        /* copy the number string to temp */
+        for(j=start;j<end;j++)
+            temp[j-start] = buf[j];
+        print("Reading Config:"); 
+        print(temp);
+        print("\n");
+        numberOfEntities[k] = atoi(temp);
+        end++;
+        start = end;
+    }
+    return;
+}

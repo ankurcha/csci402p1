@@ -17,6 +17,14 @@ II. Assumptions:
 III. Design:
 
     Part 1:
+	+ Configuration file design
+	    The configuration file is used to tell the number of entities of each type that we wish to create.
+	    The format of the configuration is fairly simple.
+		Number of Patients, Number of Receptionists, Number of Door boys, Number of Doctors, 
+		Number of Cashiers, Number of Clerks, Number of Hospital Managers
+		
+		Example configuration file
+		  20,3,2,2,3,2,1
 
 IV. Implementation:
 

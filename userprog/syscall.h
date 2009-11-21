@@ -200,9 +200,9 @@ int GetMachineID();
 
 int GetTimestamp();
 
-void Send(int sendMachineID,int mbox,char* message);
+void Send(int receiverID,int receiverMbox,int senderMbox, char* message);
 
-int Receive(int recvMachineID,int mbox,char* message);
+int Receive(int receiveMbox,int *senderID, int *senderMbox,char* message);
 #endif /* IN_ASM */
 
 #endif /* SYSCALL_H */
