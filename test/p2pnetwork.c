@@ -254,6 +254,34 @@ int HLock_Acquire(int HlockId){
     return status;
 }
 
+int DistLock_Acquire(char* name) {
+    /*TODO: Send a lock acquire message to all the targets */
+    /* Add the requested resource to the requestedResource Array */
+    addResource(resourcesRequested, LOCK, temp, 0);
+    for(j=0;j<7;j++){
+        for(int i=0;i<numberOfEntities[j];i++){
+            /* TODO: Send to each entity. how? we need the receiverId and recMBox */
+            /* Sending LOCK_ACQUIRE to all and waiting for LOCK_OK */
+            Packet_Send(receiverId, recMBox, 0, pkt);
+        }
+    }
+}
+
+int DistLock_Release(char* name) {
+    /* We just need to take the lock out of the heldResources List */
+    temp = copyOutInt(pkt.data,0);
+    if(deleteResource(HeldResources,LOCK, temp) == 1){
+        /* Lock is no longer held by the lock
+         * Just broadcast this message to all the othe nodes */
+        for(j=0;j<7;j++){
+            for(int i=0;i<numberOfEntities[j];i++){
+                /* TODO: Send to each entity how? we need the receiverId and recMBox */
+                Packet_Send(receiverId, recMBox, 0, pkt);
+            }
+        }
+    }
+}
+
 int HCV_Signal(int HCVId, int HLockId){
 
 }
@@ -313,3 +341,4 @@ void readConfig(){
     }
     return;
 }
+

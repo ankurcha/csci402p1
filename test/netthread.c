@@ -125,6 +125,7 @@ void processLocalPacket(Packet pkt) {
     int status = -1;
     int totalEntities = 0;
     int temp, temp1;
+    char name[MaxMailSize - DATA - NAME];
     Packet p;
     int i, senderId, senderMbox;
     for(j=0;j<7;j++){
@@ -132,44 +133,19 @@ void processLocalPacket(Packet pkt) {
     }
 
     switch(pkt.packetType){
-        case EMPTY:
-            /*TODO: update latest timestamp ? */
-            break;
-            
-        case LOCK_CREATE:
-        case LOCK_DESTROY:
-            break;
         case LOCK_ACQUIRE:
-            /*TODO: Send a lock acquire message to all the targets */
-            /* Add the requested resource to the requestedResource Array */
-            temp = copyOutInt(pkt.data,0);
-            addResource(resourcesRequested, LOCK, temp, 0);
-            for(j=0;j<7;j++){
-                for(int i=0;i<numberOfEntities[j];i++){
-                    /* TODO: Send to each entity. how? we need the receiverId and recMBox */
-                    /* Sending LOCK_ACQUIRE to all and waiting for LOCK_OK */
-                    Packet_Send(receiverId, recMBox, 0, pkt);
-                }
-            }
+            copyOutData(pkt.data, NAME, name, MaxMailSize - DATA - NAME);
+            DistLock_Acquire(name);
+            /* now, once we receive enough OK's, 
+             * we will wake the local entity */
             break;
-        case LOCK_OK:
-            /* We just need to take the lock out of the heldResources List */
-            temp = copyOutInt(pkt.data,0);
-            if(deleteResource(HeldResources,LOCK, temp) == 1){
-                /* Lock is no longer held by the lock
-                 * Just broadcast this message to all the othe nodes */
-                for(j=0;j<7;j++){
-                    for(int i=0;i<numberOfEntities[j];i++){
-                        /* TODO: Send to each entity how? we need the receiverId and recMBox */
-                        Packet_Send(receiverId, recMBox, 0, pkt);
-                    }
-                }
-            }
+
+        case LOCK_RELEASE:
+            copyOutData(pkt.data, NAME, name, MaxMailSize - DATA - NAME);
+            DistLock_Release(name);
+            /* no futher action */
             break;
             
-        case CV_CREATE:
-        case CV_DESTROY:
-            break;
         case CV_WAIT:
             /*TODO: add them to the queue */
             /* Get the lock ID and the CV ID */
@@ -225,8 +201,6 @@ void processLocalPacket(Packet pkt) {
             /*TODO: I think I have to wake up the entity thread Yes*/
             break;
             
-        case NODE_START:
-        case NODE_STOP:
         case NODE_READY:
             /*TODO: what do these do? */
             break;

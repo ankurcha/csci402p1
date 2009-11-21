@@ -170,6 +170,9 @@ void copyInData(char* message, int index, char* data, int length);
 int HLock_Acquire(int HlockId);
 int HLock_Release(int HlockId);
 
+int DistLock_Acquire(char* name);
+int DistLock_Release(char* name);
+
 /* Register/Signal/Wait/Broadcast/Destroy a Condition variable with the
  * distributed system
  */
