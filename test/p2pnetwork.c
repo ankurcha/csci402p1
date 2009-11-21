@@ -287,6 +287,29 @@ int HLock_Acquire(int HlockId){
     return status;
 }
 
+int HCV_Signal(int HCVId, int HLockId){
+
+}
+
+int HCV_Wait(int HCVId, int HLockId){
+    int status = -1;
+    Packet p;
+    p.senderId = GetMachineId();
+    p.timestamp = GetTimestamp();
+    p.packetType = CV_WAIT;
+    copyInInt(p.data, 0, HCVId);
+    copyInInt(p.data, 2, HLockId);
+    /* It is assumed that by now LockId is Held and CVID which is passed is
+     * to be held */
+    addResource(HeldResources, CV, HCVId, 0);
+    Acquire(netthread_Lock);
+    /* Send the message to the netthread to do the wait */
+    status = Packet_Send(GetMachineId(), myNetThreadMbox, 0, p);
+    /* Now we just wait for someone to signal us to life */
+    Wait(netthread_CV, netthread_Lock);
+    Release(netthread_Lock);
+    /* We reach this point only when we got a signal message for this CV */
+}
 void readConfig(){
     /* Read the configuration file given as the argument and parse the numbers
      * to the global variables

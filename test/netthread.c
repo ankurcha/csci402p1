@@ -42,14 +42,14 @@ void processExternalPacket(Packet pkt) {
     /* Process this packet */
     switch(pkt.packetType) {
         case EMPTY:
-            /*TODO: update latest timestamp ? */
+            /* TODO: update latest timestamp ? */
             break;
 
         case LOCK_CREATE:
         case LOCK_DESTROY:
             break;
         case LOCK_ACQUIRE:
-            /*TODO: check if I have or am waiting for this lock */
+            /* TODO: check if I have or am waiting for this lock */
             /* Check if I am currently holding the packet */
             temp = copyOutInt(pkt.data,0);
             /* check if I am holding this lock */
@@ -101,7 +101,7 @@ void processExternalPacket(Packet pkt) {
         case CV_DESTROY:
             break;
         case CV_WAIT:
-            /*TODO: add them to the queue of requests*/
+            /* TODO: add them to the queue of requests */
             break;
         case CV_SIGNAL:
         case CV_BROADCAST:
@@ -124,6 +124,7 @@ void processLocalPacket(Packet pkt) {
     int status = -1;
     int totalEntities = 0;
     int temp, temp1;
+    Packet p;
     int i, senderId, senderMbox;
     for(j=0;j<7;j++){
         totalEntities += numberOfEntities[j];
@@ -173,17 +174,39 @@ void processLocalPacket(Packet pkt) {
             temp = copyOutInt(pkt.data, 0); /* CVID */
             temp1 = copyOutInt(pkt.data, 4); /* LockID */
             /* Check if I hold the lock and the CB */
-            if (IsResourcePresent(HeldResources, CV, temp) && IsResourcePresent(HeldResources, LOCK, temp1)) {
+            if (IsResourcePresent(HeldResources, CV, temp) && 
+                    IsResourcePresent(HeldResources, LOCK, temp1)) {
                 /* YES!! I am in the CR, now its ok to mess around */
                 /* Release the conditionLock */
-                if(deleteResource(HeldResources, LOCK, temp) == 1){
+                if(deleteResource(HeldResources, LOCK, temp1) == 1){
+                    /* After Releasing the lock we will move the CV to RequestedResources
+                     * till we get a Signal */
+                    addResource(resourcesRequested, CV, temp1, 0);
+                    deleteResource(HeldResources, CV, temp);
                     /* Lock is no longer held by the lock
-                     * Just broadcast this message to all the othe nodes */
+                     * Just broadcast this message to all the othe nodes 
+                     * Build the packet to be sent around */
+                    p.senderId = GetMachineID();
+                    p.timestamp = GetTimestamp();
+                    p.packetType = LOCK_OK;
+                    copyInInt(p.data, 0, temp);
+                    /* Now send p to all other nodes */
                     for(j=0;j<7;j++){
-                        for(int i=0;i<numberOfEntities[j];i++){
-                            /* TODO: Send to each entity how? we need the receiverId and recMBox */
-                            Packet_Send(receiverId, recMBox, 0, pkt);
+                        for(i=0;i<numberOfEntities[j];i++){
+                            /* 
+                             * TODO: Send to each entity how? we need 
+                             * the receiverId and recMBox 
+                             */
+                            Packet_Send(receiverId, recMBox, 0, p);
                         }
+                    }
+                }
+
+                /* At this point all the locks have been released */
+                /* We can now send the CV_WAIT to all the nodes */
+                for(j=0;j<7;j++){
+                    for(i=0;i<numberOfEntities[j];i++){
+                        Packet_Send(receiverId, recMBox, 0, pkt);
                     }
                 }
                 /* Wait until you receive a signal and it is for you*/
