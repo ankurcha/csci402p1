@@ -30,7 +30,8 @@ int Packet_Receive(int mbox,
     return status;
 }
 
-int Packet_Send(int receiverId, int recMBox, senderMBox, Packet& p){
+
+int Packet_Send(int receiverId, int recMBox, int senderMBox, Packet& p){
     /* This function actually sends data to receiverId:mailboxId
      * after serializing the data into a packet which can be received
      * at the other end using Hospital_Receive(...) function
@@ -52,7 +53,6 @@ int Packet_Send(int receiverId, int recMBox, senderMBox, Packet& p){
 
     /* Finally, We were able to successfully send to the receiver host
      * now just return status to the calling function
-     * TODO: Do we need a time out???
     */
 
     return status;
@@ -164,41 +164,75 @@ void DeserializePacket(Packet& p, char* message) {
 }
 */
 
-int addHeldResource(int type, int id){
+int addResource(Resource arr[], int type, int id, int replies){
     int i=0;
     int targetpos = -1;
     for(i=0;i<MAX_RESOURCES;i++)
-        if(resourcesHeld[i].valid = 0){
+        if(arr[i].valid = 0){
             targetpos = i;
             break;
         }
     if(targetPos == -1)
         return -1;
-    resourcesHeld[targetPos].resourceType = type;
-    resourcesHeld[targetPos].resourceID = id;
-    resourcesHeld[targetPos].valid = 1;
+    arr[targetPos].resourceType = type;
+    arr[targetPos].resourceID = id;
+    arr[targetPos].valid = 1;
+    arr[targetPos].replies = replies;
     return targetPos;
 }
 
-void initResourcesHeldList(){
-    int i = 0;
-    for(i=0;i<MAX_RESOURCES;i++)
-        resourcesHeld[i].valid = 0;
-}
-
-int releaseResource(int type, int id){
+int getRepliesSeen(Resource arr[], int type, int id){
     int i = 0;
     for(i =0; i<MAX_RESOURCES;i++){
-        if(resourcesHeld[i].resourceType == type && 
-           resourcesHeld[i].resourceId == id){
-            resourcesHeld[i].valid = 0;
+        if(arr[i].resourceType == type && 
+           arr[i].resourceId == id && arr[i].valid == 1){
+            return arr[i].replies;
+        }
+    }
+    return -1;
+}
+
+
+void updateReplies(Resource arr[], int type, int id, int val){
+    int i = 0;
+    for(i =0; i<MAX_RESOURCES;i++){
+        if(arr[i].resourceType == type && 
+           arr[i].resourceId == id && arr[i].valid == 1){
+            arr[i].replies = val;
             return 1;
         }
     }
     return 0;
 }
 
+void initResources(Resource arr[]){
+    int i = 0;
+    for(i=0;i<MAX_RESOURCES;i++)
+        arr[i].valid = 0;
+}
 
+int deleteResource(Resource arr[], int type, int id){
+    int i = 0;
+    for(i =0; i<MAX_RESOURCES;i++){
+        if(arr[i].resourceType == type && 
+           arr[i].resourceId == id){
+            arr[i].valid = 0;
+            return 1;
+        }
+    }
+    return 0;
+}
+
+int IsResourcePresent(Resource arr[], int type, int id){
+    int i = 0;
+    for (i=0; i<MAX_RESOURCES; i++) {
+        if (arr[i].resourcesType == type && 
+            arr[i].resourcesId == id && arr[i].valid == 1) {
+            return 1;
+        }
+    }
+    return 0;
+}
 /*******************************
  ******* Lock Functions ********
  *******************************/
@@ -217,14 +251,6 @@ int HLock_Release(int HlockId){
     if(HlockId <0)
         return status;
     /* Create message for Lock Release */
-    Packet p;
-    p.senderId = GetMachineId();
-    p.timestamp = GetTimestamp();
-    p.data[0] = LOCK_RELEASE;
-    p.data[1] = EMPTY;
-    p.data[2] = data[3] = EMPTY;
-    p.data[4] = HlockId>>8;
-    p.data[5] = HlockId;
     /* Send message to announce release of the lock to the network entity */
     status = ScheduleForSend(p);
     /* Check for successful Multicast */
@@ -239,16 +265,26 @@ int HLock_Acquire(int HlockId){
     /* For this operation we need to do a distributed concensus and then decide
      * who should get the lock, else we just keep waiting till we do get
      */
-
+    int status = -1;
+    Packet p;
     p.senderId = GetMachineId();
     p.timestamp = GetTimestamp();
-    p.data[0] = LOCK_ACQUIRE;
-    data[1] = data[2] = data[3] = EMPTY;
-    data[4] = HlockId>>8;
-    data[5] = HlickId;
+    p.packetType = LOCK_ACQUIRE;
+    copyInInt(p.data, 0, HlockId); /* Data part just contains the LockID */
     
-    /* We have now built the packet and now we should do the following  
+    /* We have now built the packet and now we should do the following
+     * 1. Send a message to the network-thread(mbox)
+     * receiver
     */
+    Acquire(netthread_Lock);
+    status = Packet_Send(GetMachineId(), myNetThreadMbox, 0, p);
+    /* Now we have to wait for the for the netthread to reply to us with
+     * a go ahead this is done using a CV and a lock.
+     */
+    Wait(netthread_CV, netthread_Lock);
+    /* When we return we are sure that we have Acquired the lock */
+    Release(netthread_Lock);
+    return status;
 }
 
 void readConfig(){

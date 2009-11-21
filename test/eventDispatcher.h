@@ -36,10 +36,19 @@ typedef struct MessageQueue MessageQueue;
 /* methods for a FIFO Message Queue */
 
 void Init_MsgQueue(MessageQueue *q);
+
 void MsgQueue_Push(MessageQueue *q, Packet& msg);
-void MsgQueue_SortedInsert(MessageQueue *q, Packet& msg);
+
 char[] MsgQueue_Pop(MessageQueue *q);
+
 char MsgQueue_IsEmpty(MessageQueue *q);
+
+void MsgQueue_SortedInsert(MessageQueue *q, Packet& msg);
+
+Packet* MsgQueue_Delete(MessageQueue *q, int LastTimestamp);
+Packet* MsgQueue_SortedDelete(MessageQueue *q);
+
+int MsgQueue_Find(MessageQueue *q, Packet& msg);
 
 /* FIFO Queue for the send messages, used by the event dispatcher */
 /* This process handles the messages that are meant to be sent */

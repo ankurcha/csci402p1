@@ -44,6 +44,26 @@ int MsgQueue_Push(MessageQueue *q, Packet& msg){
     return i;
 }
 
+int MsgQueue_Find(MessageQueue *q, Packet& msg){
+    int i=0;
+    int temp;
+    if(q->head == -1){
+        return -1;
+    }
+    
+    temp = q->head;
+    
+    while (temp != -1) {
+        if (q->queue[temp].valid == 0 && q->queue[temp].message == msg) {
+            return temp;
+        }else {
+            temp = q->queue[temp].next;
+        }
+    }
+    /* we checked the entire messageQueue but couldn't find anything */
+    return -1;
+}
+
 int MsgQueue_SortedInsert(MessageQueue *q, Packet& msg){
     /* head is start */
     /* tail is end */
@@ -76,7 +96,7 @@ int MsgQueue_SortedInsert(MessageQueue *q, Packet& msg){
     q->tail = q->tail + 1;
 }
 
-Packet MsgQueue_Delete(MessageQueue *q, int LastTimestamp){
+Packet* MsgQueue_Delete(MessageQueue *q, int LastTimestamp){
     /* This function returns smallest packet in the queue which has a timestamp
      * less or equal to than the LastTimestamp parameter
      */
@@ -100,6 +120,18 @@ Packet MsgQueue_Delete(MessageQueue *q, int LastTimestamp){
     }
 
     return NULL;
+}
+
+Packet* MsgQueue_SortedDelete(MessageQueue *q, int packetType){
+    /*
+        This fuction pops out an element from the queue which is of PacketType
+        and is of the earliest timestamp then also returns it.
+     */
+    int temp;
+    if(q->head == -1){
+        return NULL;
+    }
+    temp = q->head;
 }
 
 Packet MsgQueue_Pop(MessageQueue *q){
@@ -127,7 +159,6 @@ Packet MsgQueue_Pop(MessageQueue *q){
     
     return q->queue[temp].message;
 }
-
 
 char MsgQueue_IsEmpty(MessageQueue *q){
     if(q->head == -1){
