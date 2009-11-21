@@ -9,6 +9,10 @@
 #define MAX_RESOURCES 50
 
 int numberOfEntities[7]; /* The number of entities */
+
+int netthread_Lock; /* We use these to interact with the netthread */
+int netthread_CV; /* Used to wait on the netthread for a reply */
+
 /*
  * These system calls for doing the netowork I/O
  * This also takes care of the protocol stack.
@@ -20,7 +24,7 @@ int Packet_Receive(int mbox,
                    int& senderMBox, 
                    Packet &receivedPacket);
 
-int Packet_Send(int receiverId, int recMBox, senderMBox, Packet&);
+int Packet_Send(int receiverId, int recMBox, int senderMBox, Packet&);
 
 int[] getHostList();
 int[] getMailboxList();
@@ -31,18 +35,36 @@ int GetNumberOfHosts();
  * so, all the locks and CVs that we hold are with us are present in
  * this list of resources
  */
+enum{
+    LOCK,
+    CV
+};
 struct Resource{
     int resourceType; /* 0 - Lock , 1 - CV */
     int resourceID;
     char valid; /* 0 init */
+    int replies; /* Number of replies that are received */
 };
 
 typedef struct Resource Resource;
 
-Resource resourcesHeld[MAX_RESOURCES]
-void initResourcesHeldList();
-int addHeldResource(int type, int id);
-int releaseResource(int type, int id);
+Resource resourcesHeld[MAX_RESOURCES];
+Resource resourcesRequested[MAX_RESOURCES];
+MessageQueue waitingNodes[MAX_HOSTS]; /* to track of the nodes that are waiting */
+
+void initResources(Resource arr[]);
+int addResource(Resource arr[],int type, int id, int replies);
+int deleteResource(Resource arr[],int type, int id);
+int IsResourcePresent(Resource arr[],int type, int id);
+int getRepliesSeen(Resource arr[], int type, int id)
+void updateReplies(Resource arr[],int type, int id, int val);
+
+/* Requests that are queued 
+ * These can just be a list of packets that are waiting to be processed
+ * Use push and pop fuctions to interact
+ */
+
+MessageQueue pendingRequests[MaxSendQueueSize];
 
 /*
  * Packet structure
@@ -83,7 +105,7 @@ enum {
     LOCK_CREATE = 0x01,
     LOCK_DESTROY = 0x02,
     LOCK_ACQUIRE = 0x03,
-    LOCK_RELEASE = 0x04,
+    LOCK_OK = 0x04,
     CV_CREATE = 0x05,
     CV_DESTROY = 0x06,
     CV_WAIT = 0x07,
