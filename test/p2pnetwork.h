@@ -89,7 +89,8 @@ enum {
     CV_BROADCAST = 0x09,
     NODE_START = 0x0A,
     NODE_STOP = 0x0B,
-    NODE_READY = 0x0C
+    NODE_READY = 0x0C,
+    LOCAL_ENTITY = 0x0D
 };
 /* Entity Identification */
 enum {

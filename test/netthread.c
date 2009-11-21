@@ -10,20 +10,18 @@
 #include "syscall.h"
 #include "print.h"
 
-void network_thread(int ent) {
-    /*TODO need to establish the identity of my matching entity*/
-    int myEntity = 0;
+void network_thread(int mbox) {
+    int senderId = 0;
+    int senderMbox = 0;
     Packet myPacket;
 
-    myEntity = ent;
-    
     /* Begin an infinite loop where we wait for data from the network */
     while(true) {
-        Receive();
+        Packet_Receive(mbox, senderId, senderMbox, myPacket);
 
         /*TODO populate myPacket */
 
-        if(myPacket.senderId != myEntity) {
+        if(myPacket.packetType != LOCAL_ENTITY) {
             /* process a packet from another entity on the network */
             processExternalPacket(myPacket);
         } else {
@@ -35,7 +33,7 @@ void network_thread(int ent) {
 
 void processExternalPacket(Packet pkt) {
     /* Process this packet */
-    switch(packet_type) {
+    switch(pkt.packetType) {
         case EMPTY:
             /*TODO update latest timestamp ? */
             break;
