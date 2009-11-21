@@ -7,6 +7,8 @@
 /*#define MaxDataSize (MaxMailSize - 4)*/
 
 #define MAX_RESOURCES 50
+
+int numberOfEntities[7]; /* The number of entities */
 /*
  * These system calls for doing the netowork I/O
  * This also takes care of the protocol stack.
@@ -164,5 +166,10 @@ int HTable_Update(int tableId, int key, int value);
 /* Send a message to network */
 int SendToNetwork();
 
+/* misc functions:
+ * 1. Read configuration file
+ */
+
+int readConfig(char *filename);
 #endif /* P2PNETWORK_H */
 

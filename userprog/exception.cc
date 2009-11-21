@@ -954,29 +954,36 @@ void handlePageFaultException(int vAddr){
  * Receives the  message sent to mbox. 
  * Returns the number of bytes received
  */
-int Receive_Syscall(int senderID, int mbox, int vaddr){
+int Receive_Syscall(int receiveMbox,int senderIDvaddr, int senderMboxvaddr, int vaddr){
 #ifdef NETWORK
     int bytesRead = -1;
+    int senderID = -1;
+    int senderMbox = -1;
     char *message = new char[MaxMailSize];
     //cout<<"Inside Receive_SYSCALL\n"<<endl;
     bzero(message, MaxMailSize);
     
     PacketHeader pktHead;
     MailHeader mailHead;
-    if (senderID >= 0 && mbox >=0) {
-         postOffice->Receive(senderID, &pktHead, &mailHead, message);
+    if (receiveMbox >=0) {
+        postOffice->Receive(receiveMbox, &pktHead, &mailHead, message);
     }else{
         interrupt->Halt();
     }
     // Copy message to vaddr
     fflush(stdout);
+    senderID = pktHead.from;
+    senderMbox = mailHead.from;
+    
+    copyout(senderIDvaddr, sizeof(senderID), senderID);
+    copyout(senderMboxvaddr, sizeof(senderMbox), senderMbox);
     bytesRead = copyout(vaddr, sizeof(message), message);
     return bytesRead;
 #endif
 
 }
 
-int Send_Syscall(int receiverID,int mbox,int vaddr){
+int Send_Syscall(int receiverID,int receiverMbox,int senderMbox, int vaddr){
 #ifdef NETWORK
     char *message = new char[MaxMailSize];
     //TODO: this is not consistent with the way we are using this syscall, 
@@ -997,8 +1004,8 @@ int Send_Syscall(int receiverID,int mbox,int vaddr){
         pktHead.to = receiverID;
         
         MailHeader mailHead;
-        mailHead.to = mbox;
-        mailHead.from = netname;
+        mailHead.to = receiverMbox;
+        mailHead.from = senderMbox;
         mailHead.length = bytesRead;
         // Send the message to other client
         bool retVal = postOffice->Send(pktHead, mailHead, message);
@@ -1116,7 +1123,7 @@ void ExceptionHandler(ExceptionType which) {
             case SC_Send:
                 DEBUG('a', "Send_Syscal\n");
                 rv = Send_Syscall(machine->ReadRegister(4), machine->ReadRegister(5),
-                             machine->ReadRegister(6));
+                             machine->ReadRegister(6), machine->ReadRegister(7));
                 break;
             case SC_GetMachineID:
                 DEBUG('a', "Get Machine ID\n");
@@ -1129,7 +1136,8 @@ void ExceptionHandler(ExceptionType which) {
                 DEBUG('a', "Receive_Syscall\n");
                 rv =  Receive_Syscall(machine->ReadRegister(4), 
                                       machine->ReadRegister(5),
-                                      machine->ReadRegister(6));
+                                      machine->ReadRegister(6),
+                                      machine->ReadRegister(7));
                 break;
 #endif
         }

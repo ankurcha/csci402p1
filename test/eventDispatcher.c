@@ -77,26 +77,29 @@ int MsgQueue_SortedInsert(MessageQueue *q, Packet& msg){
 }
 
 Packet MsgQueue_Delete(MessageQueue *q, int LastTimestamp){
-    
-    int temp;
-        
-    if (q->head == -1) {
+    /* This function returns smallest packet in the queue which has a timestamp
+     * less or equal to than the LastTimestamp parameter
+     */
+    if(q == NULL || LastTimestamp<0)
         return NULL;
-    }
-    
-    temp = q->head;
-    
-    if (q->head == q->tail) {
+    int temp = q->head;
+    if(q->tail == q->head){
         q->head = -1;
         q->tail = -1;
-    }else{
-        q->head = q->head++;
-        if(q->tail == -1)
+    }else if (q->queue[q->head].message.timestamp <= LastTimestamp) {
+        q->head = q->queue[q->head].next;
+        
+        if(q->tail == -1){
             print("Error: queue malformed\n");
+        }
+        
+        q->queue[temp].valid = 0;
+        q->queue[temp].next = -1;
+        
+        return q->queue[temp].message;
     }
-    q->queue[temp].valid = 0;
-    return q->queue[temp].message;
-    
+
+    return NULL;
 }
 
 Packet MsgQueue_Pop(MessageQueue *q){
@@ -137,8 +140,9 @@ char MsgQueue_IsEmpty(MessageQueue *q){
 
 int messageReceive(Packet &p){
     int i = 0;
+    Packet *smallMsg;
     int smallest = 0;
-    int smallestTimestamp = 0;
+    int smallestTimestamp = -1;
     if (p == NULL) {
         return -1;
     }
@@ -155,7 +159,17 @@ int messageReceive(Packet &p){
         }
     }
     
-    /* now we know the smallest timestamp among the packets seen so far */
+    /* now we know the smallest timestamp among the packets seen so far 
+     * hence we can now identify all the messages that we can successfully
+     * process as the list is sorted.
+     */
+    smallMsg = MsgQueue_Delete(pendingMessagesQueue, smallestTimestamp);
+    while (smallMsg != NULL) {
+        /* Process the message */
+        
+        /* Get next message to process */
+        smallMsg = MsgQueue_Delete(pendingMessagesQueue, smallestTimestamp);
+    }
 }
 
 /* Method for the event Dispatcher this does all the sending */
