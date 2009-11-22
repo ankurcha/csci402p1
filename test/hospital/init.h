@@ -116,27 +116,40 @@ LockId recpLineLock;
 /*shared data struct related to a Receptionist */
 struct Receptionists_ {
     /* receptionist line CV */
-    CVId receptionCV;
+    char receptionCV[20];
     int peopleInLine;
     
     /* receptionist transactional lock and CV and protected variables */
-    LockId transLock;
-    CVId receptionistWaitCV;
+    char transLock[20];
+    char receptionistWaitCV[20];
     int currentToken;
     
     /* receptionist break CV */
-    CVId ReceptionistBreakCV;
+    char ReceptionistBreakCV[20];
     
 };
 typedef struct Receptionists_ Receptionists;
-void __Receptionists(Receptionists *recep ){
+
+void __Receptionists(Receptionists *recep, int recepID){
+    char name[20];
+    name = "";
+    name = itoa(recepID,name);
     recep->peopleInLine = 0;
-    recep->receptionCV = CreateCondition("receptionCV");
-    recep->transLock = CreateLock("Receptionists.transLock");
-    recep->receptionistWaitCV = CreateCondition("receptionistWaitCV");
-    recep->ReceptionistBreakCV = CreateCondition("ReceptionistBreakCV");
+    name = "";
+    name = itoa(recepID,name);
+    strcpy(recep->receptionCV, strcat(name, "_receptionCV"));
+    name = "";
+    name = itoa(recepID,name);
+    strcpy(recep->transLock, strcat(name, "_Receptionists.transLock"));
+    name = "";
+    name = itoa(recepID,name);
+    strcpy(recep->receptionistWaitCV, strcat(name, "_receptionistWaitCV"));
+    name = "";
+    name = itoa(recepID,name);
+    strcpy(recep->ReceptionistBreakCV, strcat(name, "_ReceptionistBreakCV"));
     recep->currentToken = 0;
 }
+
 /* list mapping patient tokens to consultFees */
 LockId feeListLock;
 List feeList;
@@ -147,11 +160,11 @@ LockId feesPaidLock;
 struct Cashier_ {
     /* line CV and length */
     int lineLength;
-    CVId lineCV;
+    char lineCV[20];
     
     /* transaction lock, CV, and variables protected by the former */
-    LockId transLock;
-    CVId transCV;
+    char transLock[20];
+    char transCV[20];
     int patToken;
     int fee;
     int payment;
@@ -160,31 +173,36 @@ struct Cashier_ {
     int sales;
     
     /* cashier's CV for going on break */
-    CVId breakCV;
+    char breakCV[20];
 };
 typedef struct Cashier_ Cashier;
-void __Cashier(Cashier *cash) {
+void __Cashier(Cashier *cash, int ID) {
+    char name[20];
     cash->lineLength = 0;
     cash->patToken = 0;
     cash->fee = 0;
     cash->payment = 0;
-    
-    cash->lineCV = CreateCondition("Cashier.lineCV");
-    cash->transLock = CreateLock("Cashier.transLock");
-    cash->transCV = CreateCondition("Cashier.transCV");
-    cash->breakCV = CreateCondition("Cashier.breakCV");
+    name = "";
+    name = itoa(ID,name);
+    strcpy(cash->lineCV, strcat(name, "_Cashier.lineCV"));
+    name = "";
+    name = itoa(ID,name);
+    strcpy(cash->transLock, strcat(name, "_Cashier.transLock"));
+    name = "";
+    name = itoa(ID,name);
+    strcpy(cash->transCV, strcat(name, "_Cashier.transCV"));
+    name = "";
+    name = itoa(ID,name);
+    strcpy(cash->breakCV, strcat(name, "_Cashier.breakCV"));
 }
 void _Cashier(Cashier *cash) {
-    DestroyCondition( cash->lineCV );
-    DestroyLock( cash->transLock );
-    DestroyCondition( cash->transCV );
-    DestroyCondition( cash->breakCV );
+    
 }
-LockId ClerkLinesLock;
-LockId PaymentLock;
+char ClerkLinesLock[20];
+char PaymentLock[20];
 int totalsales=0;
 /* hospitalLock protects the count of patients remaining in the hospital */
-LockId hospitalLock;
+char hospitalLock[20];
 int peopleInHospital = 1;
 struct PharmacyClerks_ {
     int patientsInLine;
@@ -192,66 +210,79 @@ struct PharmacyClerks_ {
     int payment;
     int fee;
     int patPrescription;
-    CVId ClerkCV;
+    char ClerkCV[20];
     
-    CVId ClerkBreakCV;
-    LockId ClerkTransLock;
-    CVId ClerkTransCV;
+    char ClerkBreakCV[20];
+    char ClerkTransLock[20];
+    char ClerkTransCV[20];
     
     /*protected by PaymentLock */
     int sales;
 };
 typedef struct PharmacyClerks_ PharmacyClerks;
-void __PharmacyClerks(PharmacyClerks *pcl){
+void __PharmacyClerks(PharmacyClerks *pcl, int ID){
+    char name[20];
     pcl-> patientsInLine= 0;
     pcl->state=FREE;
     pcl->payment=0;
     pcl->fee=(int)(1267)%100;
     pcl->patPrescription=0;
-    
-    pcl->ClerkCV = CreateCondition("ClerkCV");
-    pcl->ClerkBreakCV = CreateCondition("ClerkBreakCV");
-    pcl->ClerkTransLock = CreateLock("ClerkTransLock");
-    pcl->ClerkTransCV = CreateCondition("ClerkTransCV");
+    name = "";
+    name = itoa(ID,name);
+    strcpy(pcl->ClerkCV, strcat(name, "_ClerkCV"));
+    name = "";
+    name = itoa(ID,name);
+    strcpy(pcl->ClerkBreakCV, strcat(name, "_ClerkBreakCV"));
+    name = "";
+    name = itoa(ID,name);
+    strcpy(pcl->ClerkTransLock, strcat(name, "_ClerkTransLock"));
+    name = "";
+    name = itoa(ID,name);
+    strcpy(pcl->ClerkTransCV, strcat(name, "_ClerkTransCV"));
 }  
 struct Doctor_ {
     /* line lock and CV and protected variables */
-    LockId LineLock;
-    CVId LineCV;
+    char LineLock[20];
+    char LineCV[20];
     int peopleInLine;
     /*CV for doorboys to sleep on */
-    CVId doorboyBreakCV;
+    char doorboyBreakCV[20];
     
     
     /*transaction lock and CV and variables protected */
-    LockId transLock;
-    CVId transCV;
+    char transLock[20];
+    char transCV[20];
     int prescription;
     int patientToken;
 } ;
 typedef struct Doctor_ Doctor;
-void __Doctor(Doctor *doc) {
+void __Doctor(Doctor *doc, int ID) {
+    char name[20];
     doc->prescription = -1;
     doc->patientToken = -1;
     
     doc->peopleInLine = 0;
-    doc->LineLock = CreateLock("LineLock");
-    doc->LineCV = CreateCondition("LineCV");
-    doc->doorboyBreakCV = CreateCondition("Doctor.doorboyBreakCV");
-    
-    doc->transLock = CreateLock("Doctor.transLock");
-    doc->transCV = CreateCondition("Doctor.transCV");
+    name = "";
+    name = itoa(ID,name);
+    strcpy(doc->LineLock, strcat(name, "_LineLock"));
+    name = "";
+    name = itoa(ID,name);
+    strcpy(doc->LineCV, strcat(name, "_LineCV"));
+    name = "";
+    name = itoa(ID,name);
+    strcpy(doc->doorboyBreakCV, strcat(name, "_Doctor.doorboyBreakCV"));
+    name = "";
+    name = itoa(ID,name);
+    strcpy(doc->transLock, strcat(name, "_Doctor.transLock"));
+    name = "";
+    name = itoa(ID,name);
+    strcpy(doc->transCV, strcat(name, "_Doctor.transCV"));
 }
-void _Doctor(Doctor *doc) {
-    DestroyLock(doc->LineLock);
-    DestroyCondition(doc->LineCV);
-    DestroyCondition(doc->doorboyBreakCV);
-    DestroyLock(doc->transLock);
-    DestroyLock(doc->transCV);
+void _Doctor(Doctor *doc) {    
 }
 /* globals to track the queue of doorboys waiting to service doctors */
-LockId doorboyLineLock;
-CVId doorboyLineCV;
+char doorboyLineLock[20];
+char doorboyLineCV[20];
 int doorboyLineLength = 0;
 /*int wakingDoctorID = 0; */
 Queue wakingDoctorList;
@@ -268,7 +299,7 @@ PharmacyClerks clerks[MAX_CLERKS];
 
 int test_state = 0;
 
-LockId creationLock;
+char creationLock[20];
 int patientCount = 0;
 int recptionistCount = 0;
 int doorboyCount = 0;
@@ -277,4 +308,74 @@ int cashierCount = 0;
 int pharmacyCount = 0;
 int hospitalmanagerCount = 0;
 
+void createPatient(){
+    int temp;
+    Acquire(creationLock);
+    temp = patientCount;
+    patientCount++;
+    Release(creationLock);
+    patients(temp);
+    Exit(0);
+}
+
+void createReceptionist(){
+    int temp;
+    Acquire(creationLock);
+    temp = recptionistCount;
+    recptionistCount++;
+    Release(creationLock);
+    receptionist(temp);
+    Exit(0);
+}
+
+void createDoorBoy(){
+    int temp;
+    Acquire(creationLock);
+    temp = doorboyCount;
+    doorboyCount++;
+    Release(creationLock);
+    doorboy(temp);
+    Exit(0);
+}
+
+void createDoctor(){
+    int temp;
+    Acquire(creationLock);
+    temp = doctorCount;
+    doctorCount++;
+    Release(creationLock);
+    doctor(temp);
+    Exit(0);
+    
+}
+
+void createCashier(){
+    int temp;
+    Acquire(creationLock);
+    temp = cashierCount;
+    cashierCount++;
+    Release(creationLock);
+    cashier(temp);
+    Exit(0);
+}
+
+void createPharmacyClerk(){
+    int temp;
+    Acquire(creationLock);
+    temp = pharmacyCount;
+    pharmacyCount++;
+    Release(creationLock);
+    clerk(temp);
+    Exit(0);
+}
+
+void createHospitalManager(){
+    int temp;
+    Acquire(creationLock);
+    temp = hospitalmanagerCount;
+    hospitalmanagerCount++;
+    Release(creationLock);
+    hospitalManager(temp);
+    Exit(0);
+}
 

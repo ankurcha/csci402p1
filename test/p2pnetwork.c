@@ -141,33 +141,56 @@ void DeserializePacket(Packet& p, char* message) {
 }
 
 
-int getResourceStatus(int resourceID){
-    if (resources[resourceID].valid == 1)
-        return resources[i].state;
-    else
-        return RES_NONE;
+int getResourceStatus(char* name){
+    int status = RES_NONE;
+    int i=0;
+    for (i=0; i<MAX_RESOURCES; i++) {
+        if (!strcmp(resources[i].name, name) && resources[i].valid == 1) {
+            switch (resources[i].state) {
+                case RES_HELD:
+                    status = RES_HELD;
+                    break;
+                case RES_REQ:
+                    status = RES_REQ;
+                    break;
+                default:
+                    status = RES_NONE;
+                    break;
+            }
+        }
+    }
+    return status;
 
 }
 
-int updateResourceStatus(int resourceID, int newStatus){
-    if (resources[resourceID].valid == 1){
-        resources[resourceID].state = newStatus;
-        return resources[resourceID].state;
-    } else
-        return -1;
-}
-
-int getResourceReplies(int resourceID){
-    if(resources[resourceID].valid == 1){
-            return resources[resourceID].replies;
+int updateResourceStatus(char* name, int newStatus){
+    int i;
+    for (i=0; i<MAX_RESOURCES; i++) {
+        if(resources[i].valid == 1 && !strcmp(resources[i].name, name)){
+            resources[i].state = newStatus;
+            return resources[i].state;
+        }
     }
     return -1;
 }
 
-int updateResourceReplies(int resourceID, int newReplies){
-    if(resources[resourceID].valid == 1){
-        resources[resourceID].replies = newReplies;
-        return resources[resourceID].replies;
+int getResourceReplies(int resourceID){
+    int i;
+    for (i=0; i<MAX_RESOURCES; i++) {
+        if(resources[i].valid == 1 && !strcmp(resources[i].name, name)){
+            return resources[i].replies;
+        }
+    }
+    return -1;
+}
+
+int updateResourceReplies(char *name, int newReplies){
+    int i;
+    for (i=0; i<MAX_RESOURCES; i++) {
+        if(resources[i].valid == 1 && !strcmp(resources[i].name, name)){
+            resources[i].replies = newReplies;
+            return resources[i].replies;
+        }
     }
     return -1;
 }
@@ -178,23 +201,43 @@ void initResources(){
         resources[i].valid = 0;
 }
 
-int addResource(int resourceID, int state){
-    resources[resourceID].timestamp = GetTimestamp();
-    resources[resourceID].valid = 1;
-    resources[resourceID].replies = 0;
-    resources[resourceID].state = state;
-    return resourceID;
+int addResource(char *name, int state){
+    int i=0;
+    int targetpos = -1;
+    for(i=0;i<MAX_RESOURCES;i++)
+        if(resources[i].valid = 0){
+            targetpos = i;
+            break;
+        }
+    if(targetPos == -1)
+        return -1;
+    
+    resources[targetPos].name = strcpy(resources[targetPos].name, name);
+    resources[targetPos].timestamp = GetTimestamp();
+    resources[targetPos].valid = 1;
+    resources[targetPos].replies = 0;
+    resources[targetPos].state = state;
+    return targetPos;
 }
 
-int deleteResource(Resource arr[], int resourceID){
-    resources[resourceID].valid = 0;
-    return 1;
-}
-
-int IsResourcePresent(Resource arr[], int resourceID){
-    if (resources[resourceID].valid == 1) {
+int deleteResource(Resource arr[], char* name){
+    int i = 0;
+    for(i =0; i<MAX_RESOURCES;i++){
+        if(!strcmp(resources[i].name, name)){
+            resources[i].valid = 0;
             return 1;
         }
+    }
+    return 0;
+}
+
+int IsResourcePresent(Resource arr[], char* name){
+    int i = 0;
+    for (i=0; i<MAX_RESOURCES; i++) {
+        if (!strcmp(resources[i].name, name) && resources[i].valid == 1) {
+            return 1;
+        }
+    }
     return 0;
 }
 

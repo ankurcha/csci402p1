@@ -25,6 +25,7 @@ int netthread_CV; /* Used to wait on the netthread for a reply */
  */
 
 struct Resource{
+    char name[20];
     int timestamp; /* record when the request was made */
     char valid; /* 0 init */
     int replies; /* Number of replies that are received */
