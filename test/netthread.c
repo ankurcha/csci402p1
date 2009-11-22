@@ -22,9 +22,11 @@ void network_thread(int mbox) {
     while(true) {
         Packet_Receive(mbox, senderId, senderMbox, myPacket);
 
-        /*TODO: populate myPacket */
+        /*TODO enqueue this packet */
+        /*TODO check if it updates the minTS */
+        /*TODO process all messages up to minTS */
 
-        if(senderMbox = 0) {
+        if(senderMbox != 0) {
             /* process a packet from another entity on the network */
             processExternalPacket(myPacket, senderId, senderMbox);
         } else {
@@ -56,17 +58,17 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
             /* check if I am holding this lock */
             switch(getResourceStatus(name)) {
                 case RES_HELD:
-                    if(myTS > pkt.timestamp) {
-                        print("ERROR: received and earlier request for a lock I already hold");
+                    if(resources[name].timestamp > pkt.timestamp) {
+                        print("ERROR: received an earlier request for a lock I already hold");
                         break;
                     }
+                    /* fallthrough */
                 case RES_REQ:
-                    if(myTS < pkt.timestamp) {
+                    if(resources[name].timestamp < pkt.timestamp) {
                         /*TODO add them to the list */
                         break;
                     }
                     /* fallthrough */
-
                 case RES_NONE:
                     /* Resource is not held, hence, we send out a LOCK_OK message
                      * construct a packet 
@@ -84,40 +86,38 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
             break;
 
         case LOCK_OK:
-            /* 
-             * Got a LOCK_OK so now we need to check whether we requested this
+            /* Got a LOCK_OK so now we need to check whether we requested this
              * Lock and if yes, we keep processing till all have replied with 
              * LOCK_OK
-             *
              */
-                /* get the lock being referred to */
-                name = copyOutInt(pkt.data, NAME);
-                if(getResourceStatus(name) == RES_REQ) {
-                    /* Yes, lock was requested */
-                    /* Update the number of replies that we have received so far */
-                    replies = getRepliesSeen(resourcesRequested, LOCK, name);
-                    updateReplies(resourcesRequested, LOCK, name, replies+1);
-                    replies = getRepliesSeen(resourcesRequested, LOCK, name);
+            /* get the lock being referred to */
+            name = copyOutInt(pkt.data, NAME);
+            if(getResourceStatus(name) == RES_REQ) {
+                /* Yes, lock was requested */
 
-                    if(replies == totalEntities) {
-                        /* Now we have seen all the LOCK_OKs that we need and hence
-                         * we get the LOCK NOW and delete the resource from the 
-                         * requestedResource and add it to the HeldResources
-                         */
-                        Acquire(netthread_Lock);
-                        deleteResource(resourcesRequested, LOCK, name);
-                        addResource(HeldResources, LOCK, name, 0);
-                        /* Now we can send a signal to the entity */
-                        Signal(netthread_CV, netthread_Lock);
-                        Release(netthread_Lock);
-                    }
+                /* Update the number of replies that we have received so far */
+                replies = getResourceReplies(name);
+                replies++;
+                updateResourceReplies(name, replies);
+
+                if(replies == totalEntities) {
+                    /* Now we have seen all the LOCK_OKs that we need and hence
+                     * we get the LOCK NOW and delete the resource from the 
+                     * requestedResource and add it to the HeldResources
+                     */
+                    resources[name].status = RES_HELD;
+                    /* Now we can send a signal to the entity */
+                    Acquire(netthread_Lock);
+                    Signal(netthread_CV, netthread_Lock);
+                    Release(netthread_Lock);
                 }
+            }
             break;
         case CV_WAIT:
             /* TODO: add them to the queue of requests */
-                name = copyOutInt(pkt.data, NAME); /* CVID */
-                temp = copyOutInt(pkt.data, 4); /* LockID */
-                MsgQueue_Push(pendingCVQueue[name], pkt, senderId, senderMbox);
+            name = copyOutInt(pkt.data, NAME); /* CVID */
+            temp = copyOutInt(pkt.data, 4); /* LockID */
+            MsgQueue_Push(pendingCVQueue[name], pkt, senderId, senderMbox);
             break;
         case CV_SIGNAL:
         case CV_BROADCAST:

@@ -95,18 +95,6 @@ typedef struct packet Packet;
  ********** FUNCTIONS ************
  *********************************/
 
-/* These system calls for doing the netowork I/O
- * This also takes care of the protocol stack.
- *
- */
-
-int Packet_Receive(int mbox, 
-                   int& senderId, 
-                   int& senderMBox, 
-                   Packet &receivedPacket);
-
-int Packet_Send(int receiverId, int recMBox, int senderMBox, Packet&);
-
 void initResources(Resource arr[]);
 int addResource(Resource arr[],int id, int state);
 int deleteResource(Resource arr[], int id);
@@ -116,10 +104,19 @@ int updateResourceStatus(int resourceID, int newStatus);
 int getResourceReplies(int resourceID);
 int updateResourceReplies(int resourceID, int replies);
 
-/*char *SerializePacket(Packet&, char*, int senderId);*/
+/* These system calls for doing the netowork I/O
+ * This also takes care of the protocol stack.
+ */
+
+int Packet_Receive(int mbox, 
+                   int& senderId, 
+                   int& senderMBox, 
+                   Packet &receivedPacket);
+
+int Packet_Send(int receiverId, int recMBox, int senderMBox, Packet&);
+
 void SerializePacket(Packet& p, char* message);
 void DeserializePacket(Packet& p, char* message);
-/*int DeserializePacket(Packet&, char*, int senderId);*/
 
 /* Defined some methods for putting data into and out of messages */
 int copyOutInt(char* message, int index);

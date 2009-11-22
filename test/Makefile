@@ -32,7 +32,7 @@ INCDIR =-I../userprog -I../threads
 CFLAGS = -G 0 -c $(INCDIR)
 
 
-all: halt matmult sort testfiles lockcreate destroylock createcv destroycv fork exec exectest printtest queue init test_code multih networkTestClient1 networkTestClient2 multiForkmatmult multiExecmatmult multiExecmatmult2 multiprint peertest
+all: halt matmult sort testfiles lockcreate destroylock createcv destroycv fork exec exectest printtest queue heap init test_code multih networkTestClient1 networkTestClient2 multiForkmatmult multiExecmatmult multiExecmatmult2 multiprint peertest
 
 
 start.o: start.s ../userprog/syscall.h
@@ -122,6 +122,10 @@ print: print.o
 queue.o: queue.c queue.h print
 	$(CC) $(CFLAGS) -c queue.c
 queue: queue.o
+
+heap.o: heap.c heap.h
+	$(CC) $(CFLAGS) -c heap.c
+heap: heap.o
 
 init.o: init.c print queue
 	$(CC) $(CFLAGS) -c init.c
