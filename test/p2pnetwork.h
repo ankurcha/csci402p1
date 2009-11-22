@@ -76,7 +76,7 @@ int updateResourceReplies(int resourceID, int replies);
  */
 /* to track of the nodes that are waiting */
 QueueElement queue[MAX_CV][MAX_CV_QUEUE_LEN];
-MessageQueue pendingRequests[MAX_CV]; /* use push and pop only */
+MessageQueue pendingCVQueue[MAX_CV]; /* use push and pop only */
 /* with great power comes a new namespace - here we have none!!*/ 
 
 enum {
