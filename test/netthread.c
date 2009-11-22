@@ -56,17 +56,17 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
             /* check if I am holding this lock */
             switch(getResourceStatus(name)) {
                 case RES_HELD:
-                    if(myTS > pkt.timestamp) {
-                        print("ERROR: received and earlier request for a lock I already hold");
+                    if(resources[name].timestamp > pkt.timestamp) {
+                        print("ERROR: received an earlier request for a lock I already hold");
                         break;
                     }
+                    /* fallthrough */
                 case RES_REQ:
-                    if(myTS < pkt.timestamp) {
+                    if(resources[name].timestamp < pkt.timestamp) {
                         /*TODO add them to the list */
                         break;
                     }
                     /* fallthrough */
-
                 case RES_NONE:
                     /* Resource is not held, hence, we send out a LOCK_OK message
                      * construct a packet 
@@ -84,7 +84,6 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
             break;
 
         case LOCK_OK:
-            /*TODO should  we make this LOCK_OK? */
             /* Got a LOCK_OK so now we need to check whether we requested this
                Lock and if yes, we keep processing till all have replied with LOCK_OK
              */
@@ -93,20 +92,20 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
                 /* If the lock was requested,*/ 
                 if(getResourceStatus(name) == RES_REQ) {
                     /* Yes, lock was requested */
+
                     /* Update the number of replies that we have received so far */
-                    replies = getRepliesSeen(resourcesRequested, LOCK, name);
-                    updateReplies(resourcesRequested, LOCK, name, replies+1);
-                    replies = getRepliesSeen(resourcesRequested, LOCK, name);
+                    replies = getResourceReplies(name);
+                    replies++;
+                    updateResourceReplies(name, replies);
 
                     if(replies == totalEntities) {
                         /* Now we have seen all the LOCK_OKs that we need and hence
                          * we get the LOCK NOW and delete the resource from the 
                          * requestedResource and add it to the HeldResources
                          */
-                        Acquire(netthread_Lock);
-                        deleteResource(resourcesRequested, LOCK, name);
-                        addResource(HeldResources, LOCK, name, 0);
+                        resources[name].status = RES_HELD;
                         /* Now we can send a signal to the entity */
+                        Acquire(netthread_Lock);
                         Signal(netthread_CV, netthread_Lock);
                         Release(netthread_Lock);
                     }
@@ -115,7 +114,7 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
 
         case CV_WAIT:
             /* TODO: add them to the queue of requests */
-                MsgQueue_Push(waitingNodes, pkt);
+            MsgQueue_Push(waitingNodes, pkt);
             break;
         case CV_SIGNAL:
         case CV_BROADCAST:
