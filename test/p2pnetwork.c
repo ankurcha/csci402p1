@@ -318,7 +318,7 @@ int RemoteLock_Acquire(Packet pkt){
 }
 
 int HCV_Signal(int HCVId, int HLockId){
-    
+    /* Get the receiverId from the queue */
 }
 
 int HCV_Wait(int HCVId, int HLockId){
