@@ -17,13 +17,28 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox);
 void processLocalPacket(Packet pkt);
 
 void network_thread(int mbox) {
+    int i,j;
     int senderId = 0;
     int senderMbox = 0;
     Packet myPacket;
-    int minTS;
     Message msgQueue[MaxMsgQueue];
     Message message;
     int queueLength = 0;
+    int minTS;
+    int machineIndex[7];
+    int numEntities;
+    int maxTS[MaxEntities];
+
+    /* this array should make it easier to scan all entities */
+    machineIndex[0] = 0;
+    for(i=0; i<7; i++) {
+        machineIndex[i] = machineIndex[i-1] + numberOfEntities[i-1];
+    }
+    numEntities = machineIndex[6] + numberOfEntities[6];
+    if(numEntites > MaxEntities) {
+        print("ERROR: numEntities > MaxEntities\n");
+        Halt();
+    }
 
     /* Begin an infinite loop where we wait for data from the network */
     while(true) {
@@ -31,7 +46,24 @@ void network_thread(int mbox) {
 
         if(senderMbox != 0) {
             /* process a packet from another entity on the network */
-            /*TODO check if it updates the minTS */
+
+            /* updates the maxTS for this entitiy */
+            /* senderId is the machine num, remember mbox 0 is reserved */
+            i = machineIndex[senderId] + senderMbox - 1;
+            if(myPacket.timestamp > maxTS[i]) {
+                maxTS[i] = myPacket.timestamp;
+            } else {
+                print("ASSUMPTION VIOLATED: packet received out of order\n");
+                Halt();
+            }
+
+            /* update minTS */
+            minTS = maxTS[0];
+            for(i=1; i<numEntities; i++) {
+                if(maxTS[i] < minTS) {
+                    minTS = maxTS[i];
+                }
+            }
 
             /* enqueue this packet */
             if(queueLength < MaxMsgQueue) {
