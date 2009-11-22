@@ -49,47 +49,18 @@ QueueElement queue[MAX_CV][MAX_CV_QUEUE_LEN];
 MessageQueue pendingCVQueue[MAX_CV]; /* use push and pop only */
 /* with great power comes a new namespace - here we have none!!*/ 
 
-/*********************************
- ********** FUNCTIONS ************
- *********************************/
-
-/* These system calls for doing the netowork I/O
- * This also takes care of the protocol stack.
- *
- */
-
-int Packet_Receive(int mbox, 
-                   int& senderId, 
-                   int& senderMBox, 
-                   Packet &receivedPacket);
-
-int Packet_Send(int receiverId, int recMBox, int senderMBox, Packet&);
-
-void initResources(Resource arr[]);
-int addResource(Resource arr[],int id, int state);
-int deleteResource(Resource arr[], int id);
-
-int getResourceStatus(int resourceID);
-int updateResourceStatus(int resourceID, int newStatus);
-int getResourceReplies(int resourceID);
-int updateResourceReplies(int resourceID, int replies);
-
+/* Packet types */
 enum {
     EMPTY = 0x00,
-    LOCK_CREATE = 0x01,
-    LOCK_DESTROY = 0x02,
-    LOCK_ACQUIRE = 0x03,
+    LOCK_ACQUIRE = 0x01,
+    LOCK_RELEASE = 0x02
     LOCK_OK = 0x04,
-    CV_CREATE = 0x05,
-    CV_DESTROY = 0x06,
     CV_WAIT = 0x07,
     CV_SIGNAL = 0x08,
     CV_BROADCAST = 0x09,
-    NODE_START = 0x0A,
-    NODE_STOP = 0x0B,
     NODE_READY = 0x0C,
-    LOCAL_ENTITY = 0x0D
 };
+
 /* Entity Identification */
 enum {
     RECEPTIONIST_NODE = 0x0D,
@@ -117,6 +88,32 @@ struct packet{
     char data[MaxMailSize - DATA];
 };
 typedef struct packet Packet;
+
+
+/*********************************
+ ********** FUNCTIONS ************
+ *********************************/
+
+/* These system calls for doing the netowork I/O
+ * This also takes care of the protocol stack.
+ *
+ */
+
+int Packet_Receive(int mbox, 
+                   int& senderId, 
+                   int& senderMBox, 
+                   Packet &receivedPacket);
+
+int Packet_Send(int receiverId, int recMBox, int senderMBox, Packet&);
+
+void initResources(Resource arr[]);
+int addResource(Resource arr[],int id, int state);
+int deleteResource(Resource arr[], int id);
+
+int getResourceStatus(int resourceID);
+int updateResourceStatus(int resourceID, int newStatus);
+int getResourceReplies(int resourceID);
+int updateResourceReplies(int resourceID, int replies);
 
 /*char *SerializePacket(Packet&, char*, int senderId);*/
 void SerializePacket(Packet& p, char* message);
