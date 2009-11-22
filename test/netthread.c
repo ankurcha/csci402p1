@@ -17,24 +17,56 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox);
 void processLocalPacket(Packet pkt);
 
 void network_thread(int mbox) {
+    int i,j;
     int senderId = 0;
     int senderMbox = 0;
     Packet myPacket;
-    int minTS;
     Message msgQueue[MaxMsgQueue];
     Message message;
     int queueLength = 0;
+    int minTS;
+    int machineIndex[7];
+    int numEntities;
+    int maxTS[MaxEntities];
+
+    /* this array should make it easier to scan all entities */
+    machineIndex[0] = 0;
+    for(i=0; i<7; i++) {
+        machineIndex[i] = machineIndex[i-1] + numberOfEntities[i-1];
+    }
+    numEntities = machineIndex[6] + numberOfEntities[6];
+    if(numEntites > MaxEntities) {
+        print("ERROR: numEntities > MaxEntities\n");
+        Halt();
+    }
 
     /* Begin an infinite loop where we wait for data from the network */
-    while (true) {
+    while(true) {
         Packet_Receive(mbox, senderId, senderMbox, myPacket);
 
-        if (senderMbox != 0) {
+        if(senderMbox != 0) {
             /* process a packet from another entity on the network */
-            /*TODO check if it updates the minTS */
+
+            /* updates the maxTS for this entitiy */
+            /* senderId is the machine num, remember mbox 0 is reserved */
+            i = machineIndex[senderId] + senderMbox - 1;
+            if(myPacket.timestamp > maxTS[i]) {
+                maxTS[i] = myPacket.timestamp;
+            } else {
+                print("ASSUMPTION VIOLATED: packet received out of order\n");
+                Halt();
+            }
+
+            /* update minTS */
+            minTS = maxTS[0];
+            for(i=1; i<numEntities; i++) {
+                if(maxTS[i] < minTS) {
+                    minTS = maxTS[i];
+                }
+            }
 
             /* enqueue this packet */
-            if (queueLength < MaxMsgQueue) {
+            if(queueLength < MaxMsgQueue) {
                 msgQueue[queueLength].senderId = senderId;
                 msgQueue[queueLength].senderMbox = senderMbox;
                 msgQueue[queueLength].pkt = myPacket;
@@ -46,7 +78,7 @@ void network_thread(int mbox) {
             }
 
             /* process all messages up to minTS */
-            while (msgQueue[0].key < minTS) {
+            while(msgQueue[0].key < minTS) {
                 message = Heap_ExtractMin(msgQueue, queueLength);
                 myPacket = message.pkt;
                 senderId = message.senderId;
@@ -145,18 +177,15 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
         break;
     case CV_SIGNAL:
     case CV_BROADCAST:
-        /*TODO: When we get a Signal we will POP the pendingCVQueue[name] Queue
+        /*TODO When we get a Signal we first will POP the pendingCVQueue Queue
          * Then check if the node associated with us is the one being signaled
-         * If yes, we wake it up.
+         * If yes, we will wake it up
          */
-        int psenderId = 0;
-        int psenderMbox = 0;
+        int senderId = 0;
+        int senderMbox = 0;
         name = copyOutInt(pkt.data, NAME);
         Packet p = MsgQueue_Pop(pendingCVQueue[name], &senderId, &senderMbox);
-        /* Check if the one to be woken up is actually you. */
-        if ()
-            break;
-
+        break;
     case NODE_READY:
         /*TODO: add to the node ready count, once all nodes are ready,
          * start the simulation

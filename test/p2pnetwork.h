@@ -5,6 +5,7 @@
 #define MaxMailSize 40
 #define MAX_CV 50
 #define MAX_CV_QUEUE_LEN 100
+#define MaxEntities 50
 /*#define MaxDataSize (MaxMailSize - 4)*/
 
 #define MAX_RESOURCES 50
