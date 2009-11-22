@@ -9,31 +9,56 @@
 #include "p2pnetwork.h"
 #include "syscall.h"
 #include "print.h"
+#include "heap.h"
+
+#define MaxMsgQueue 200
 
 void processExternalPacket(Packet pkt, int senderId, int senderMbox);
 void processLocalPacket(Packet pkt);
 
 void network_thread(int mbox) {
-	int senderId = 0;
-	int senderMbox = 0;
-	Packet myPacket;
+    int senderId = 0;
+    int senderMbox = 0;
+    Packet myPacket;
+    int minTS;
+    Message msgQueue[MaxMsgQueue];
+    Message message;
+    int queueLength = 0;
 
-	/* Begin an infinite loop where we wait for data from the network */
-	while (true) {
-		Packet_Receive(mbox, senderId, senderMbox, myPacket);
+    /* Begin an infinite loop where we wait for data from the network */
+    while(true) {
+        Packet_Receive(mbox, senderId, senderMbox, myPacket);
 
-		/*TODO enqueue this packet */
-		/*TODO check if it updates the minTS */
-		/*TODO process all messages up to minTS */
+        if(senderMbox != 0) {
+            /* process a packet from another entity on the network */
+            /*TODO check if it updates the minTS */
 
-		if (senderMbox != 0) {
-			/* process a packet from another entity on the network */
-			processExternalPacket(myPacket, senderId, senderMbox);
-		} else {
-			/* process a packet from my matching entity thread */
-			processLocalPacket(myPacket);
-		}
-	}
+            /* enqueue this packet */
+            if(queueLength < MaxMsgQueue) {
+                msgQueue[queueLength].senderId = senderId;
+                msgQueue[queueLength].senderMbox = senderMbox;
+                msgQueue[queueLength].pkt = myPacket;
+                msgQueue[queueLength].key = myPacket.timestamp;
+                Heap_Push(msgQueue, queueLength);
+            } else {
+                print("ERROR: msgQueue ran out of space\n");
+                Halt();
+            }
+
+            /* process all messages up to minTS */
+            while(msgQueue[0].key < minTS) {
+                message = Heap_ExtractMin(msgQueue, queueLength);
+                myPacket = message.pkt;
+                senderId = message.senderId;
+                senderMbox = message.senderMbox;
+
+                processExternalPacket(myPacket, senderId, senderMbox);
+            }
+        } else {
+            /* process a packet from my matching entity thread */
+            processLocalPacket(myPacket);
+        }
+    }
 }
 
 void processExternalPacket(Packet pkt, int senderId, int senderMbox) {

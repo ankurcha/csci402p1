@@ -7,13 +7,13 @@
 
 #include "heap.h"
 
-void swap_heap_elements(heap_element* start, int x, int y) {
-	heap_element temp = start[x];
+void swap_heap_elements(Message* start, int x, int y) {
+	Message temp = start[x];
 	start[x] = start[y];
 	start[y] = temp;
 }
 
-void Heap_Push(heap_element* starst, int *length) {
+void Heap_Push(Message* start, int* length) {
 	int x = *length;
 	int xp = (x - 1) >> 1;
 	(*length)++;
@@ -28,11 +28,10 @@ void Heap_Push(heap_element* starst, int *length) {
 	return;
 }
 
-heap_element Heap_ExtractMin(heap_element* start, int *length) {
+Message Heap_ExtractMin(Message* start, int* length) {
 	int x = 0;
 	int xc1 = 1;
 	int xc2 = 2;
-
 	swap_heap_elements(start, 0, (*length) - 1);
 	(*length)--;
 
@@ -42,18 +41,16 @@ heap_element Heap_ExtractMin(heap_element* start, int *length) {
 		if (xc2 >= *length) {
 			xc2 = xc1;
 		}
-
 		/* find the lesser of two children */
-		if (start[xc1] > start[xc2]) {
+		if (start[xc1].key > start[xc2].key) {
 			xc1 = xc2;
 		}
 
 		/* swap if my lesser child is smaller */
-		if (start[x] <= start[xc1]) {
+		if (start[x].key <= start[xc1].key) {
 			break;
 		}
 		swap_heap_elements(start, x, xc1);
-
 		x = xc1;
 		xc1 = (x << 1) + 1;
 		xc2 = (x << 1) + 2;
