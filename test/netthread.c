@@ -89,22 +89,23 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
                Lock and if yes, we keep processing till all have replied with LOCK_OK
              */
                 /* get the lock being referred to */
-                temp = copyOutInt(pkt.data,0);
+                name = copyOutInt(pkt.data, NAME);
                 /* If the lock was requested,*/ 
-                if(IsResourcePresent(resourcesRequested, LOCK, temp) == 1) {
+                if(getResourceStatus(name) == RES_REQ) {
                     /* Yes, lock was requested */
                     /* Update the number of replies that we have received so far */
-                    replies = getRepliesSeen(resourcesRequested, LOCK, temp);
-                    updateReplies(resourcesRequested, LOCK, temp, replies+1);
-                    replies = getRepliesSeen(resourcesRequested, LOCK, temp);
+                    replies = getRepliesSeen(resourcesRequested, LOCK, name);
+                    updateReplies(resourcesRequested, LOCK, name, replies+1);
+                    replies = getRepliesSeen(resourcesRequested, LOCK, name);
+
                     if(replies == totalEntities) {
                         /* Now we have seen all the LOCK_OKs that we need and hence
                          * we get the LOCK NOW and delete the resource from the 
                          * requestedResource and add it to the HeldResources
                          */
                         Acquire(netthread_Lock);
-                        deleteResource(resourcesRequested, LOCK, temp);
-                        addResource(HeldResources, LOCK, temp, 0);
+                        deleteResource(resourcesRequested, LOCK, name);
+                        addResource(HeldResources, LOCK, name, 0);
                         /* Now we can send a signal to the entity */
                         Signal(netthread_CV, netthread_Lock);
                         Release(netthread_Lock);
@@ -165,21 +166,22 @@ void processLocalPacket(Packet pkt) {
         case CV_WAIT:
             /*TODO: add them to the queue */
             /* Get the lock ID and the CV ID */
-            temp = copyOutInt(pkt.data, 0); /* CVID */
+            name = copyOutInt(pkt.data, NAME); /* CVID */
             temp1 = copyOutInt(pkt.data, 4); /* LockID */
             DistCV_Wait(temp, temp1);
             break;
+
         case CV_SIGNAL:
+            name = copyOutInt(pkt.data, NAME); /* CVID */
             /* When we want to send a signal, we should know who exactly to send
-             * the signal to ie 
+             * the signal to ie */
+            break;
+
         case CV_BROADCAST:
-            /*TODO: these are the same right? Yes they are*/
+            name = copyOutInt(pkt.data, NAME); /* CVID */
             /*TODO: I think I have to wake up the entity thread Yes*/
             break;
             
-        case NODE_READY:
-            /*TODO: what do these do? */
-            break;
         case default:
             break;
     }
