@@ -7,6 +7,7 @@
 /*  Ankur Chauhan, ankurcha */
 /*  Max Pflueger, pflueger */
 /*  Aneesha Mathew, aneesham */
+#include "init.h"
 
 char test_code2=0;
 void patients(int ID){
@@ -466,4 +467,70 @@ void patients(int ID){
     Release(hospitalLock);
 }
 
-
+int main(int argc, char** argv){
+    int i;
+    char inp[20];
+    strcpy(testlock,"TestLock");
+    strcpy(TokenCounterLock, "TokenCounterLock");
+    strcpy(recpLineLock, "recpLineLock");
+    strcpy(feeListLock, "feeListLock");
+    strcpy(cashierLineLock, "cashierLineLock");
+    strcpy(feesPaidLock, "feesPaidLock");
+    strcpy(ClerkLinesLock, "ClerkLineLock");
+    strcpy(PaymentLock, "PaymentLock");
+    strcpy(hospitalLock, "HospitalLock");
+    strcpy(doorboyLineLock, "doorboyLineLock");
+    strcpy(doorboyLineCV, "doorboyLineCV");
+    strcpy(creationLock, "creationLock");
+    wakingDoctorList.queue = wakingdoctor_element;
+    wakingDoctorList.length =  MAX_PATIENTS;
+    wakingDoctorList.head = -1;
+    wakingDoctorList.tail = -1; 
+    Init_Queue(&wakingDoctorList);
+    feeList.head = 0;
+    /*Initialize datastructures for all the threads
+     //1. Patients don't need initialization
+     //2. Receptionists
+     */
+    Write("Initializing Recptionists DS\n",25,1);
+    for (i=0; i<RECP_MAX; i++) {
+        __Receptionists(&receptionists[i], i);
+    }
+    /*3. DoorBoy doesn't need anything
+     4. Doctors*/
+    print("Initializing Doctors DS\n");
+    for (i=0; i<MAX_DOCTORS; i++) {
+        __Doctor(&doctors[i], i);
+    }
+    print("Initializing Cashiers DS\n");
+    /*5. Cashiers*/
+    for (i=0; i<MAX_CASHIER; i++) {
+        __Cashier(&cashiers[i], i);
+    }
+    print("Initializing Clerks DS\n");
+    /*6. Clerks */
+    for (i=0; i<MAX_CLERKS; i++) {
+        __PharmacyClerks(&clerks[i], i);
+    }
+    /* 7. Hospital Manager */
+    print("Initializing Hospital Manager DS\n");
+    for (i=0; i<totalHospMan; i++) {
+        
+    }
+    
+    numPatients = Random() % (MAX_PATIENTS - MIN_PATIENTS +1) + MIN_PATIENTS; 
+    Acquire(hospitalLock);
+    peopleInHospital = numPatients;
+    Release(hospitalLock);    
+    
+    
+    print("Creating ");
+    print(itoa(numPatients,str));
+    print(" Patients\n");
+    
+    for(i=0;i<numPatients;i++)
+        Fork(createPatient);
+    
+    for(i=0;i<100;i++)
+        Yield();
+}
