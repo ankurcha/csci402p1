@@ -5,7 +5,7 @@
  */
 
 #ifndef QUEUE_H
-#define QUEUE_H
+#define QUEUE_H 1
 
 struct queue_element{
     int value;

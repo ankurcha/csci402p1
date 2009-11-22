@@ -22,9 +22,11 @@ void network_thread(int mbox) {
     while(true) {
         Packet_Receive(mbox, senderId, senderMbox, myPacket);
 
-        /*TODO: populate myPacket */
+        /*TODO enqueue this packet */
+        /*TODO check if it updates the minTS */
+        /*TODO process all messages up to minTS */
 
-        if(senderMbox = 0) {
+        if(senderMbox != 0) {
             /* process a packet from another entity on the network */
             processExternalPacket(myPacket, senderId, senderMbox);
         } else {
