@@ -16,7 +16,7 @@ void doctor(ID){
         print(itoa(ID, str));
         print(": Alive!!\n");
         
-        Acquire(doorboyLineLock);
+        HLock_Acquire(doorboyLineLock);
         
         
         /* assure that there is a doorboy in line */
@@ -31,10 +31,10 @@ void doctor(ID){
                 
             }
             
-            Release(doorboyLineLock);
+            HLock_Release(doorboyLineLock);
             Yield();
             waitingtime--;
-            Acquire(doorboyLineLock);
+            HLock_Acquire(doorboyLineLock);
             if(waitingtime <= 0){
                 print("Waited for a long time with no Doorboys, exiting...\n");
                 return;
@@ -50,14 +50,14 @@ void doctor(ID){
         
         /*wakingDoctorID = ID; */
         Queue_Push(&wakingDoctorList, ID);
-        Signal(doorboyLineCV,doorboyLineLock);
+        HLock_Signal(doorboyLineCV,doorboyLineLock);
         
         /* acquire the transaction lock and wait for the doorboy to arrive */
-        Acquire(doctors[ID].transLock);
-        Release(doorboyLineLock);
+        HLock_Acquire(doctors[ID].transLock);
+        HLock_Release(doorboyLineLock);
         
         /*////  DOORBOY INTERACTION  ////// */
-        Wait(doctors[ID].transCV, doctors[ID].transLock);
+        HLock_Wait(doctors[ID].transCV, doctors[ID].transLock);
         
         doctorBreak = 0;
         /* go on break if so inclined */
@@ -120,7 +120,7 @@ void doctor(ID){
        	{
        		print("D_");
         	print(itoa(ID, str));
-       		print(":TEST7: Back from Break,Signalling patient to come in.\n");
+       		print(":TEST7: Back from Break,HLock_Signalling patient to come in.\n");
        		
        	}
        	else
@@ -131,7 +131,7 @@ void doctor(ID){
         
         
         
-        Signal(doctors[ID].transCV, doctors[ID].transLock);
+        HLock_Signal(doctors[ID].transCV, doctors[ID].transLock);
         
         print("D_");
         print(itoa(ID, str));
@@ -140,7 +140,7 @@ void doctor(ID){
         
         /*////  PATIENT INTERACTION  ////// */
         /* and wait for that patient to arrive */
-        Wait(doctors[ID].transCV, doctors[ID].transLock);
+        HLock_Wait(doctors[ID].transCV, doctors[ID].transLock);
         
         /* consult: 10-20 yields */
         
@@ -163,9 +163,9 @@ void doctor(ID){
         print(": Telling fee to cashiers\n");
         
         consultFee = (50 + (Random() % 201));
-        Acquire(feeListLock);
+        HLock_Acquire(feeListLock);
         List_Append(&feeList, doctors[ID].patientToken, consultFee);
-        Release(feeListLock);
+        HLock_Release(feeListLock);
         
         /* pass the prescription to the patient and wait for them to leave */
         
@@ -173,11 +173,11 @@ void doctor(ID){
         print(itoa(ID, str));
         print(": Waiting for the patient to leave\n");
         
-        Signal(doctors[ID].transCV, doctors[ID].transLock);
-        Wait(doctors[ID].transCV, doctors[ID].transLock);
+        HLock_Signal(doctors[ID].transCV, doctors[ID].transLock);
+        HLock_Wait(doctors[ID].transCV, doctors[ID].transLock);
         
         /* done, the patient has left */
-        Release(doctors[ID].transLock);
+        HLock_Release(doctors[ID].transLock);
         
         print("D_");
         print(itoa(ID, str));
