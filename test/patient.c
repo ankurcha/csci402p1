@@ -518,7 +518,7 @@ int main(int argc, char** argv){
         
     }
     
-    numPatients = Random() % (MAX_PATIENTS - MIN_PATIENTS +1) + MIN_PATIENTS; 
+    numPatients = numberOfEntities[1];
     Acquire(hospitalLock);
     peopleInHospital = numPatients;
     Release(hospitalLock);    

@@ -1,4 +1,3 @@
-
 #ifndef P2PNETWORK_H
 #define P2PNETWORK_H 1
 
@@ -15,6 +14,14 @@
  ************************************/
 
 int numberOfEntities[7]; /* The number of entities */
+/* numberOfEntities[0] - patients
+ * numberOfEntities[1] - receptionists
+ * numberOfEntities[2] - doorboy
+ * numberOfEntities[3] - doctors
+ * numberOfEntities[4] - cashiers
+ * numberOfEntities[5] - clerks
+ * numberOfEntities[6] - hospital managers
+ */
 
 int netthread_Lock; /* We use these to interact with the netthread */
 int netthread_CV; /* Used to wait on the netthread for a reply */
@@ -39,7 +46,7 @@ enum{
     RES_HELD,
     RES_REQ,
     RES_NONE
-}
+};
 
 /* Requests that are queued 
  * These can just be a list of packets that are waiting to be processed
@@ -54,7 +61,7 @@ MessageQueue pendingCVQueue[MAX_CV]; /* use push and pop only */
 enum {
     EMPTY = 0x00,
     LOCK_ACQUIRE = 0x01,
-    LOCK_RELEASE = 0x02
+    LOCK_RELEASE = 0x02,
     LOCK_OK = 0x04,
     CV_WAIT = 0x07,
     CV_SIGNAL = 0x08,
@@ -75,11 +82,11 @@ enum {
 
 /* Define our message structure */
 enum {
-    SENDER_ID = 0;
-    TIMESTAMP = 2;
-    PACKET_TYPE = 6;
-    DATA = 7;
-}
+    SENDER_ID = 0,
+    TIMESTAMP = 2,
+    PACKET_TYPE = 6,
+    DATA = 7
+};
 
 /* Easy access to the data in a message */
 struct packet{

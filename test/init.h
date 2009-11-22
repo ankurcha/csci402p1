@@ -43,12 +43,8 @@ int numClerks = 0;
 int numDoorboys = 0;
 int numRecp = 0;
 int numPatients = 0;
-char test1active = 0;
-char test2active = 0;
-char test4active = 0;
-char test7active = 0;
-char test5active = 0;
 int feesPaid = 0;
+int test_state = 0;
 
 struct linkedlist_element { 
     /*Used for storing the <token,fees> pairs */
@@ -296,8 +292,6 @@ DoorBoy doorboys[MAX_DOCTORS];
 Doctor doctors[MAX_DOCTORS];
 Cashier cashiers[MAX_CASHIER];
 PharmacyClerks clerks[MAX_CLERKS];
-
-int test_state = 0;
 
 char creationLock[20];
 int patientCount = 0;

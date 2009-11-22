@@ -1,41 +1,36 @@
 #include "init.h"
 
-int testmode=0;
-
 void clerk(int ID){
     char str[50];
     while(1){
-        Acquire(ClerkLinesLock);
+    	HLock_Acquire(ClerkLinesLock);
         
         if(clerks[ID].patientsInLine > 0) { /* someone in line */
             /*signal the first person */
-            Signal(clerks[ID].ClerkCV, ClerkLinesLock);
+        	HLock_Signal(clerks[ID].ClerkCV, ClerkLinesLock);
         } else { /* noone in line */
             /* go on break */
-            
             /* prefix for test condition */
-            
             if(test_state == 11)
             	print("T11: ");
-            
+
             print("CL_");
             print(itoa(ID, str));
             print(": Going on break\n");
             
-            
-            Wait(clerks[ID].ClerkBreakCV, ClerkLinesLock);
-            Release(ClerkLinesLock);
+            HLock_Wait(clerks[ID].ClerkBreakCV, ClerkLinesLock);
+            HLock_Release(ClerkLinesLock);
             continue;
         }
         
         /* I have a patient */
         /* acquire the transaction Lock for further transactions */
         /*  with the patient */
-        Acquire(clerks[ID].ClerkTransLock);
-        Release(ClerkLinesLock);
+        HLock_Acquire(clerks[ID].ClerkTransLock);
+        HLock_Release(ClerkLinesLock);
         
         /* waiting for patient to give prescription */
-        Wait(clerks[ID].ClerkTransCV, clerks[ID].ClerkTransLock);
+        HLock_Wait(clerks[ID].ClerkTransCV, clerks[ID].ClerkTransLock);
         
         /* patient gives prescription: */
         
@@ -44,9 +39,9 @@ void clerk(int ID){
         print(": gave Medicines!\n");
         
         
-        Signal(clerks[ID].ClerkTransCV, clerks[ID].ClerkTransLock);
+        HLock_Signal(clerks[ID].ClerkTransCV, clerks[ID].ClerkTransLock);
         /* wait for payment */
-        Wait(clerks[ID].ClerkTransCV, clerks[ID].ClerkTransLock);
+        HLock_Wait(clerks[ID].ClerkTransCV, clerks[ID].ClerkTransLock);
         /*Collect payment */
         
         print("CL_");
@@ -60,13 +55,13 @@ void clerk(int ID){
         }
         
         /* add this payment to our total collected */
-        Acquire(PaymentLock);
+        HLock_Acquire(PaymentLock);
         totalsales += clerks[ID].payment;
         clerks[ID].sales += clerks[ID].payment;
-        Release(PaymentLock);
+        HLock_Release(PaymentLock);
         
         
-        Release(clerks[ID].ClerkTransLock);
+        HLock_Release(clerks[ID].ClerkTransLock);
     }
     Exit(0);
 }
@@ -123,7 +118,7 @@ int main(int argc, char** argv){
     }
     
     /*Spawning Pharmacys clerks */
-    numClerks= (Random() % (MAX_CLERKS - MIN_CLERKS +1) + MIN_CLERKS) ;
+    numClerks = numberOfEntities[5];
     print("Creating ");
     print(itoa(numClerks,str));
     print(" Clerks\n");

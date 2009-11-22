@@ -23,18 +23,18 @@ void hospitalManager(int ID) {
                 test5cycles--;
             }else {
                 return;
-            }   
+            }
         }
-        Acquire(hospitalLock);
+        HLock_Acquire(hospitalLock);
         if (peopleInHospital <= 0) {
-            
+
         	print("H_");
             print(itoa(ID, str));
             print(":  No one to service, Killing myself!!!\n");
             
             return;
         }
-        Release(hospitalLock);
+        HLock_Release(hospitalLock);
         
         sleeptime = Random() % 30000;
         /*Sleep for some random amount of time */
@@ -68,9 +68,9 @@ void hospitalManager(int ID) {
         
         if (patientsWaiting > 1) {
             for (j=0; j<numRecp; j++) {
-                Acquire(recpLineLock);
-                Signal(receptionists[j].ReceptionistBreakCV, recpLineLock);
-                Release(recpLineLock);
+            	HLock_Acquire(recpLineLock);
+            	HLock_Signal(receptionists[j].ReceptionistBreakCV, recpLineLock);
+            	HLock_Release(recpLineLock);
             }
         }
         /*2. Query Cashiers */
@@ -91,16 +91,16 @@ void hospitalManager(int ID) {
                 print("  -> Signal Cashier\n");
                 
                 /*Wake up this receptionist up */
-                Acquire(cashierLineLock);
-                Broadcast(cashiers[i].breakCV, cashierLineLock);
-                Release(cashierLineLock);
+                HLock_Acquire(cashierLineLock);
+                HLock_Broadcast(cashiers[i].breakCV, cashierLineLock);
+                HLock_Release(cashierLineLock);
                 
             }
         }
         
         /*Query cashiers for total sales */
         
-        Acquire(feesPaidLock);
+        HLock_Acquire(feesPaidLock);
         print(" T10: Total fees collected by cashiers:");
         print(itoa(feesPaid,str));
         
@@ -110,27 +110,27 @@ void hospitalManager(int ID) {
             /* IntStatus oldLevel = interrupt->SetLevel(IntOff);*/
             sum = 0;
             for (i=0; i<numCashiers; i++) {
-                
+
             	print(" T10: cashier");
             	print(itoa(i,str));
             	print(" :");
             	print(itoa(cashiers[i].sales,str));
-                print("\n");  
-                
+                print("\n");
+
                 sum += cashiers[i].sales;
             }
-            
+
             print("T10: TOTAL:");
             print(itoa(sum,str));
-            
-            
-            
+
+
+
             /* sum just printed should match feesPaid, printed earlier */
             /*  (void) interrupt->SetLevel(oldLevel);*/
         }
-        Release(feesPaidLock);
-        
-        
+        HLock_Release(feesPaidLock);
+
+
         /*3. Query pharmacy */
         
         print("H_");
@@ -150,16 +150,16 @@ void hospitalManager(int ID) {
                 print("waiting -> Signaling Clerk\n");
                 
                 /*Wake up this clerk up */
-                Acquire(ClerkLinesLock);
-                Signal(clerks[i].ClerkBreakCV, ClerkLinesLock);
-                Release(ClerkLinesLock);
+                HLock_Acquire(ClerkLinesLock);
+                HLock_Signal(clerks[i].ClerkBreakCV, ClerkLinesLock);
+                HLock_Release(ClerkLinesLock);
                 
             }
         }
         
         /*Query clerks for total sales */
         
-        Acquire(PaymentLock);
+        HLock_Acquire(PaymentLock);
         
         print("H_");
         print(itoa(ID, str));
@@ -167,31 +167,31 @@ void hospitalManager(int ID) {
         print(itoa(totalsales,str));
         print("\n");
         
-        
-        
+
+
         if( test_state == 10 ) {
             /* this is a test for race conditions, so we can't have any: */
             /*   IntStatus oldLevel = interrupt->SetLevel(IntOff);*/
             sum = 0;
             for (i=0; i<numClerks; i++) {
-            	
+
                 print("T10: clerk ");
                 print(itoa(i,str));
                 print(" : ");
                 print(itoa(clerks[i].sales,str));
                 print("\n");
-                
+
                 sum += clerks[i].sales;
             }
-            
+
             print("T10: TOTAL: ");
             print(itoa(sum,str));
-            
+
             /* sum just printed should match feesPaid, printed earlier */
             /* (void) interrupt->SetLevel(oldLevel);*/
         }
-        Release(PaymentLock);
-        
+        HLock_Release(PaymentLock);
+
         Yield();
         
         /*Check on the doorboys */

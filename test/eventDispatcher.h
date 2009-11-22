@@ -39,7 +39,7 @@ typedef struct MessageQueue MessageQueue;
 
 void Init_MsgQueue(MessageQueue *q);
 
-void MsgQueue_Push(MessageQueue *q, Packet& msg, int senderId, int senderMbox);
+void MsgQueue_Push(MessageQueue *q, Packet *msg, int senderId, int senderMbox);
 
 Packet MsgQueue_Pop(MessageQueue *q, int *senderId, int *senderId, int senderMbox);
 

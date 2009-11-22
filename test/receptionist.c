@@ -132,7 +132,7 @@ int main(int argc, char** argv){
         
     }
     
-    numRecp = (Random() % (RECP_MAX - RECP_MIN +1) + RECP_MIN) ;
+    numRecp = numberOfEntities[1];
     
     print("Creating ");
     print(itoa(numRecp,str));

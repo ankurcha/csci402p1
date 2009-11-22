@@ -1,5 +1,5 @@
 #include "init.h"
-int testmode=0;
+
 void cashier(int ID) {
     
 	char str[50];
@@ -9,7 +9,7 @@ void cashier(int ID) {
     print(":  Alive!!\n");
     
     while(1) {
-        Acquire(cashierLineLock);
+        HLock_Acquire(cashierLineLock);
         
         if(cashiers[ID].lineLength > 0) { /* someone in line */
             /*signal person on top */
@@ -18,55 +18,52 @@ void cashier(int ID) {
             print(itoa(ID, str));
             print(":  someone in my line...\n");                                 
             
-            Signal(cashiers[ID].lineCV, cashierLineLock);
+            HLock_Signal(cashiers[ID].lineCV, cashierLineLock);
             
         } else { /* noone in line */
             /* go on break */
             
             /* prefix for test condition */
             if(test_state == 11)
-                
                 print("T11: ");
             print("Cash_");
             print(itoa(ID, str));
             print(":  No one in line... going on break\n");
-            
-            Wait(cashiers[ID].breakCV, cashierLineLock);
+            HLock_Wait(cashiers[ID].breakCV, cashierLineLock);
             Release(cashierLineLock);
-            
             continue;
         }
         
         /* I have a patient */
         /* acquire transLock and use it to govern transactions */
         /*  with the patient */
-        Acquire(cashiers[ID].transLock);
-        Release(cashierLineLock);
+        HLock_Acquire(cashiers[ID].transLock);
+        HLock_Release(cashierLineLock);
         
         /* waiting for patient to deposit its token in patToken */
-        Wait(cashiers[ID].transCV, cashiers[ID].transLock);
+        HLock_Wait(cashiers[ID].transCV, cashiers[ID].transLock);
         
         /* lookup value for cashiers[ID].patToken in the token table */
-        Acquire(feeListLock);
+        HLock_Acquire(feeListLock);
         cashiers[ID].fee = List_getValue(&feeList,cashiers[ID].patToken);
-        Release(feeListLock);
+        HLock_Release(feeListLock);
         /* tell patient the fee */
         
-        Signal(cashiers[ID].transCV, cashiers[ID].transLock);
+        HLock_Signal(cashiers[ID].transCV, cashiers[ID].transLock);
         /* wait for payment */
-        Signal(cashiers[ID].transCV,cashiers[ID].transLock);
+        HLock_Signal(cashiers[ID].transCV,cashiers[ID].transLock);
         
         /* add this payment to our total collected */
-        Acquire(feesPaidLock);
+        HLock_Acquire(feesPaidLock);
         feesPaid += cashiers[ID].payment;
         cashiers[ID].sales += cashiers[ID].payment;
-        Release(feesPaidLock);
+        HLock_Release(feesPaidLock);
         if(cashiers[ID].payment < cashiers[ID].fee) {
         	print("ERROR: call security, that patient didin't pay!");
             
         }        
         
-        Release(cashiers[ID].transLock);
+        HLock_Release(cashiers[ID].transLock);
     }
     Exit(0);
 }
@@ -124,8 +121,8 @@ int main(int argc, char** argv){
     }
     
     /* spawn the cashier Threads */
-    numCashiers = (Random() % (MAX_CASHIER - MIN_CASHIER +1) + MIN_CASHIER) ;
-    
+    numCashiers = numberOfEntities[4] ;
+
     print("Creating ");
     print(itoa(numCashiers,str));
     print(" Cashiers\n");
