@@ -6,7 +6,7 @@
  *  Copyright 2009 University of Southern California. All rights reserved.
  *
  */
-#include "eventDispatacher.h"
+#include "eventDispatcher.h"
 
 
 void Init_MsgQueue(MessageQueue *q, QueueElement *queueElements, int length){
@@ -23,7 +23,7 @@ void Init_MsgQueue(MessageQueue *q, QueueElement *queueElements, int length){
     return;
 }
 
-int MsgQueue_Push(MessageQueue *q, Packet& msg, int senderId, int senderMbox){
+int MsgQueue_Push(MessageQueue *q, Packet *msg, int senderId, int senderMbox){
     int i=0;
     while(i < q->length){
         if(!q->queue[i].valid)
@@ -31,7 +31,7 @@ int MsgQueue_Push(MessageQueue *q, Packet& msg, int senderId, int senderMbox){
         i++;
     }
     if(i == q->length){
-        return = -1;
+        return -1;
     }
     if(q->tail == -1)
         q->head = i;
@@ -40,7 +40,7 @@ int MsgQueue_Push(MessageQueue *q, Packet& msg, int senderId, int senderMbox){
     
     q->queue[i].valid = 1;
     q->queue[i].next = -1;
-    q->queue[i].message = msg;
+    q->queue[i].message = *msg;
     q->queue[i].senderId = senderId;
     q->queue[i].senderMbox = senderMbox;
     q->tail = i;

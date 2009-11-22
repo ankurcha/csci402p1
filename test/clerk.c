@@ -1,7 +1,5 @@
 #include "init.h"
 
-int testmode=0;
-
 void clerk(int ID){
     char str[50];
     while(1){
@@ -12,16 +10,13 @@ void clerk(int ID){
         	HLock_Signal(clerks[ID].ClerkCV, ClerkLinesLock);
         } else { /* noone in line */
             /* go on break */
-            
             /* prefix for test condition */
-            
             if(test_state == 11)
             	print("T11: ");
-            
+
             print("CL_");
             print(itoa(ID, str));
             print(": Going on break\n");
-            
             
             HLock_Wait(clerks[ID].ClerkBreakCV, ClerkLinesLock);
             HLock_Release(ClerkLinesLock);
@@ -123,7 +118,7 @@ int main(int argc, char** argv){
     }
     
     /*Spawning Pharmacys clerks */
-    numClerks= (Random() % (MAX_CLERKS - MIN_CLERKS +1) + MIN_CLERKS) ;
+    numClerks = numberOfEntities[5];
     print("Creating ");
     print(itoa(numClerks,str));
     print(" Clerks\n");

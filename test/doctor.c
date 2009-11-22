@@ -240,6 +240,7 @@ int main(int argc, char** argv){
     }
     
     /*1. Doctors */
+    numDoctors = numberOfEntities[3];
     
     print("Creating "); 
     print(itoa(numDoctors,str)); 

@@ -202,7 +202,7 @@ int main(int argc, char** argv){
         
     }
     
-    numDoctors = (Random() % (MAX_DOCTORS - MIN_DOCTORS + 1) + MIN_DOCTORS);
+    numDoctors = numberOfEntities[2];
         numDoorboys = numDoctors;
         print("Creating ");
         print(itoa(numDoorboys,str));

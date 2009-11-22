@@ -1,5 +1,5 @@
 #include "init.h"
-int testmode=0;
+
 void cashier(int ID) {
     
 	char str[50];
@@ -25,15 +25,12 @@ void cashier(int ID) {
             
             /* prefix for test condition */
             if(test_state == 11)
-                
                 print("T11: ");
             print("Cash_");
             print(itoa(ID, str));
             print(":  No one in line... going on break\n");
-            
-            Wait(cashiers[ID].breakCV, cashierLineLock);
+            HLock_Wait(cashiers[ID].breakCV, cashierLineLock);
             Release(cashierLineLock);
-            
             continue;
         }
         
@@ -124,8 +121,8 @@ int main(int argc, char** argv){
     }
     
     /* spawn the cashier Threads */
-    numCashiers = (Random() % (MAX_CASHIER - MIN_CASHIER +1) + MIN_CASHIER) ;
-    
+    numCashiers = numberOfEntities[4] ;
+
     print("Creating ");
     print(itoa(numCashiers,str));
     print(" Cashiers\n");
