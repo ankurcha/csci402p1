@@ -140,59 +140,89 @@ void DeserializePacket(Packet& p, char* message) {
     copyOutData(message, DATA, p.data, MaxMailSize - DATA);
 }
 
-int addResource(Resource arr[], int type, int id, int replies){
+
+int getResourceStatus(int resourceID){
+    int status = RES_NONE;
     int i=0;
-    int targetpos = -1;
-    for(i=0;i<MAX_RESOURCES;i++)
-        if(arr[i].valid = 0){
-            targetpos = i;
-            break;
+    for (i=0; i<MAX_RESOURCES; i++) {
+        if (resources[i].resourceID == resourceID && resources[i].valid == 1) {
+            switch (resources[i].state) {
+                case RES_HELD:
+                    status = RES_HELD;
+                    break;
+                case RES_REQ:
+                    status = RES_REQ;
+                    break;
+                default:
+                    status = RES_NONE;
+                    break;
+            }
         }
-    if(targetPos == -1)
-        return -1;
-    arr[targetPos].resourceType = type;
-    arr[targetPos].resourceID = id;
-    arr[targetPos].valid = 1;
-    arr[targetPos].replies = replies;
-    return targetPos;
+    }
+    return status;
 }
 
-int getRepliesSeen(Resource arr[], int type, int id){
-    int i = 0;
-    for(i =0; i<MAX_RESOURCES;i++){
-        if(arr[i].resourceType == type && 
-           arr[i].resourceId == id && arr[i].valid == 1){
-            return arr[i].replies;
+int updateResourceStatus(int resourceID, int newStatus){
+    int i;
+    for (i=0; i<MAX_RESOURCES; i++) {
+        if(resources[i].valid == 1 && resources[i].resourceID == resourceID){
+            resources[i].state = newStatus;
+            return resources[i].state;
         }
     }
     return -1;
 }
 
-
-void updateReplies(Resource arr[], int type, int id, int val){
-    int i = 0;
-    for(i =0; i<MAX_RESOURCES;i++){
-        if(arr[i].resourceType == type && 
-           arr[i].resourceId == id && arr[i].valid == 1){
-            arr[i].replies = val;
-            return 1;
+int getResourceReplies(int resourceID){
+    int i;
+    for (i=0; i<MAX_RESOURCES; i++) {
+        if(resources[i].valid == 1 && resources[i].resourceID == resourceID){
+            return resources[i].replies;
         }
     }
-    return 0;
+    return -1;
 }
 
-void initResources(Resource arr[]){
+int updateResourceReplies(int resourceID, int newReplies){
+    int i;
+    for (i=0; i<MAX_RESOURCES; i++) {
+        if(resources[i].valid == 1 && resources[i].resourceID == resourceID){
+            resources[i].replies = newReplies;
+            return resources[i].replies;
+        }
+    }
+    return -1;
+}
+
+void initResources(){
     int i = 0;
     for(i=0;i<MAX_RESOURCES;i++)
-        arr[i].valid = 0;
+        resources[i].valid = 0;
 }
 
-int deleteResource(Resource arr[], int type, int id){
+int addResource(int id, int state){
+    int i=0;
+    int targetpos = -1;
+    for(i=0;i<MAX_RESOURCES;i++)
+        if(resources[i].valid = 0){
+            targetpos = i;
+            break;
+        }
+    if(targetPos == -1)
+        return -1;
+    resources[targetPos].resourceID = id;
+    resources[targetPos].timestamp = GetTimestamp();
+    resources[targetPos].valid = 1;
+    resources[targetPos].replies = 0;
+    resources[targetPos].state = state;
+    return targetPos;
+}
+
+int deleteResource(Resource arr[], int id){
     int i = 0;
     for(i =0; i<MAX_RESOURCES;i++){
-        if(arr[i].resourceType == type && 
-           arr[i].resourceId == id){
-            arr[i].valid = 0;
+        if(resources[i].resourceId == id){
+            resources[i].valid = 0;
             return 1;
         }
     }
@@ -202,13 +232,13 @@ int deleteResource(Resource arr[], int type, int id){
 int IsResourcePresent(Resource arr[], int type, int id){
     int i = 0;
     for (i=0; i<MAX_RESOURCES; i++) {
-        if (arr[i].resourcesType == type && 
-            arr[i].resourcesId == id && arr[i].valid == 1) {
+        if (resources[i].resourcesId == id && resources[i].valid == 1) {
             return 1;
         }
     }
     return 0;
 }
+
 /*******************************
  ******* Lock Functions ********
  *******************************/
@@ -219,7 +249,7 @@ int HLock_Release(int HlockId){
         return status;
     /* Create message for Lock Release */
     /* Send message to announce release of the lock to the network entity */
-    status = ScheduleForSend(p);
+    status = Packet_Send(GetMachineId(), myNetThreadMbox, 0, p);
     /* Check for successful Multicast */
     if(status > -1)
         status = 0;
@@ -254,7 +284,7 @@ int HLock_Acquire(int HlockId){
     return status;
 }
 
-int DistLock_Acquire(char* name) {
+int DistLock_Acquire(int name) {
     /*TODO: Send a lock acquire message to all the targets */
     /* Add the requested resource to the requestedResource Array */
     addResource(resourcesRequested, LOCK, temp, 0);
@@ -267,10 +297,10 @@ int DistLock_Acquire(char* name) {
     }
 }
 
-int DistLock_Release(char* name) {
+int DistLock_Release(int name) {
     /* We just need to take the lock out of the heldResources List */
     temp = copyOutInt(pkt.data,0);
-    if(deleteResource(HeldResources,LOCK, temp) == 1){
+    if(updateResourceStatus(temp, RES_NONE) == 1){
         /* Lock is no longer held by the lock
          * Just broadcast this message to all the othe nodes */
         for(j=0;j<7;j++){
@@ -279,7 +309,12 @@ int DistLock_Release(char* name) {
                 Packet_Send(receiverId, recMBox, 0, pkt);
             }
         }
+        return 1; /* successfully released lock */
     }
+}
+
+int RemoteLock_Acquire(Packet pkt){
+    
 }
 
 int HCV_Signal(int HCVId, int HLockId){
@@ -288,23 +323,79 @@ int HCV_Signal(int HCVId, int HLockId){
 
 int HCV_Wait(int HCVId, int HLockId){
     int status = -1;
+    int CV_Lock = -1;
+    status = getResourceStatus(HLockId);
+    if(status == RES_HELD){
+        CV_Lock = getCV_Lock_Mapping(HCVId);
+        Packet p;
+        p.senderId = GetMachineId();
+        p.timestamp = GetTimestamp();
+        p.packetType = CV_WAIT;
+        copyInInt(p.data, 0, HCVId);
+        copyInInt(p.data, 2, CV_Lock);    
+        /* It is assumed that by now LockId is Held and CVID which is passed is
+         * to be held */
+        Acquire(netthread_Lock);
+        HLock_Acquire(CV_Lock);
+        /* Send the message to the netthread to do the wait */
+        status = Packet_Send(GetMachineId(), myNetThreadMbox, 0, p);
+        /* Now we just wait for someone to signal us to life */
+        HLock_Release(CV_Lock);
+        Wait(netthread_CV, netthread_Lock);
+        HLock_Acquire(HLockId);
+        Release(netthread_Lock);
+        return 1;
+        /* We reach this point only when we got a signal message for this CV */        
+    }else if (status == RES_REQ) {
+        /* We were supposed to have had the lock acquired -- this is an error */
+        return 0;
+    }else if(status == RES_NONE){
+        /* No record of any such Lock in my resource List!! */
+        return -1;
+    }
+    return -2;
+}
+
+int DistCV_Wait(int CVID, int LockID){
     Packet p;
     p.senderId = GetMachineId();
     p.timestamp = GetTimestamp();
     p.packetType = CV_WAIT;
-    copyInInt(p.data, 0, HCVId);
-    copyInInt(p.data, 2, HLockId);
-    /* It is assumed that by now LockId is Held and CVID which is passed is
-     * to be held */
-    addResource(HeldResources, CV, HCVId, 0);
-    Acquire(netthread_Lock);
-    /* Send the message to the netthread to do the wait */
-    status = Packet_Send(GetMachineId(), myNetThreadMbox, 0, p);
-    /* Now we just wait for someone to signal us to life */
-    Wait(netthread_CV, netthread_Lock);
-    Release(netthread_Lock);
-    /* We reach this point only when we got a signal message for this CV */
+    copyInInt(p.data, 0, CVID);
+    copyInInt(p.data, 2, LockID);        
+    /* Check if I hold the lock and the CB */
+    if (getResourceStatus(temp1) == REQ_HELD) {
+        /* YES!! I am in the CR, now its ok to mess around */
+        /* Release the conditionLock */
+        if(HLock_Release(LockID) == 1){
+            /* Lock is no longer held by the lock
+             * Just broadcast this message to all the othe nodes 
+             * Build the packet to be sent around */
+            /* Now send p to all other nodes */
+            for(j=0;j<7;j++){
+                for(i=0;i<numberOfEntities[j];i++){
+                    /* 
+                     * TODO: Send to each entity how? we need 
+                     * the receiverId and recMBox 
+                     */
+                    Packet_Send(receiverId, recMBox, 0, p);
+                }
+            }
+        }
+        
+        /* At this point all the locks have been released */
+        /* We can now send the CV_WAIT to all the nodes */
+        for(j=0;j<7;j++){
+            for(i=0;i<numberOfEntities[j];i++){
+                Packet_Send(receiverId, recMBox, 0, pkt);
+            }
+        }
+        /* Also, we need to maintain a list waiting nodes */
+        /* This will be popped when we receive a SIGNAL */
+        /* Wait until you receive a signal and it is for you */
+    }
 }
+
 void readConfig(){
     /* Read the configuration file given as the argument and parse the numbers
      * to the global variables
@@ -341,4 +432,9 @@ void readConfig(){
     }
     return;
 }
-
+                          
+int getCV_Lock_Mapping(int CVID){
+    int LockId = -1;
+    /* Do some magical mapping */
+    return LockId;
+}

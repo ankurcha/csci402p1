@@ -167,47 +167,7 @@ void processLocalPacket(Packet pkt) {
             /* Get the lock ID and the CV ID */
             temp = copyOutInt(pkt.data, 0); /* CVID */
             temp1 = copyOutInt(pkt.data, 4); /* LockID */
-            /* Check if I hold the lock and the CB */
-            if (IsResourcePresent(HeldResources, CV, temp) && 
-                    IsResourcePresent(HeldResources, LOCK, temp1)) {
-                /* YES!! I am in the CR, now its ok to mess around */
-                /* Release the conditionLock */
-                if(deleteResource(HeldResources, LOCK, temp1) == 1){
-                    /* After Releasing the lock we will move the CV to RequestedResources
-                     * till we get a Signal */
-                    addResource(resourcesRequested, CV, temp1, 0);
-                    deleteResource(HeldResources, CV, temp);
-                    /* Lock is no longer held by the lock
-                     * Just broadcast this message to all the othe nodes 
-                     * Build the packet to be sent around */
-                    p.senderId = GetMachineID();
-                    p.timestamp = GetTimestamp();
-                    p.packetType = LOCK_OK;
-                    copyInInt(p.data, 0, temp);
-                    /* Now send p to all other nodes */
-                    for(j=0;j<7;j++){
-                        for(i=0;i<numberOfEntities[j];i++){
-                            /* 
-                             * TODO: Send to each entity how? we need 
-                             * the receiverId and recMBox 
-                             */
-                            Packet_Send(receiverId, recMBox, 0, p);
-                        }
-                    }
-                }
-
-                /* At this point all the locks have been released */
-                /* We can now send the CV_WAIT to all the nodes */
-                for(j=0;j<7;j++){
-                    for(i=0;i<numberOfEntities[j];i++){
-                        Packet_Send(receiverId, recMBox, 0, pkt);
-                    }
-                }
-                /* Also, we need to maintain a list waiting nodes */
-                MsgQueue_Push(waitingNodes, pkt);
-                /* This will be popped when we receive a SIGNAL */
-                /* Wait until you receive a signal and it is for you */
-            }
+            DistCV_Wait(temp, temp1);
             break;
         case CV_SIGNAL:
             /* When we want to send a signal, we should know who exactly to send

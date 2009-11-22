@@ -4,6 +4,8 @@
 
 #inlcude "syscall.h"
 #define MaxMailSize 40
+#define MAX_CV 50
+#define MAX_CV_QUEUE_LEN 100
 /*#define MaxDataSize (MaxMailSize - 4)*/
 
 #define MAX_RESOURCES 50
@@ -35,37 +37,40 @@ int GetNumberOfHosts();
  * so, all the locks and CVs that we hold are with us are present in
  * this list of resources
  */
-enum{
-    LOCK,
-    CV
-};
+
 struct Resource{
-    int resourceType; /* 0 - Lock , 1 - CV */
     int resourceID;
+    int timestamp; /* record when the request was made */
     char valid; /* 0 init */
     int replies; /* Number of replies that are received */
+    int state; /* can be RES_HELD or RES_REQ or RES_NONE */
 };
 
 typedef struct Resource Resource;
+Resource resources[MAX_RESOURCES];
 
-Resource resourcesHeld[MAX_RESOURCES];
-Resource resourcesRequested[MAX_RESOURCES];
-MessageQueue waitingNodes[MAX_HOSTS]; /* to track of the nodes that are waiting */
-
+enum{
+    RES_HELD,
+    RES_REQ,
+    RES_NONE
+}
 void initResources(Resource arr[]);
-int addResource(Resource arr[],int type, int id, int replies);
-int deleteResource(Resource arr[],int type, int id);
-int IsResourcePresent(Resource arr[],int type, int id);
-int getRepliesSeen(Resource arr[], int type, int id)
-void updateReplies(Resource arr[],int type, int id, int val);
+int addResource(Resource arr[],int id, int state);
+int deleteResource(Resource arr[], int id);
+
+int getResourceStatus(int resourceID);
+int updateResourceStatus(int resourceID, int newStatus);
+int getResourceReplies(int resourceID);
+int updateResourceReplies(int resourceID, int replies);
 
 /* Requests that are queued 
  * These can just be a list of packets that are waiting to be processed
  * Use push and pop fuctions to interact
  */
-
-MessageQueue pendingRequests[MaxSendQueueSize];
-
+/* to track of the nodes that are waiting */
+QueueElement queue[MAX_CV][MAX_CV_QUEUE_LEN];
+MessageQueue pendingRequests[MAX_CV]; /* use push and pop only */
+/* with great power comes a new namespace - here we have none!!*/ 
 /*
  * Packet structure
  * The data portion of the packet has fields. Each field is 1 byte in length
@@ -196,5 +201,8 @@ int SendToNetwork();
  */
 
 int readConfig(char *filename);
+
+/* Gets the mapping between the CV and its assiciated Lock */
+int getCV_Lock_Mapping(int CVID);
 #endif /* P2PNETWORK_H */
 
