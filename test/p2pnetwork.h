@@ -2,7 +2,7 @@
 #ifndef P2PNETWORK_H
 #define P2PNETWORK_H 1
 
-#inlcude "syscall.h"
+#include "syscall.h"
 #define MaxMailSize 40
 #define MAX_CV 50
 #define MAX_CV_QUEUE_LEN 100
@@ -108,15 +108,12 @@ int updateResourceReplies(int resourceID, int replies);
  * This also takes care of the protocol stack.
  */
 
-int Packet_Receive(int mbox, 
-                   int& senderId, 
-                   int& senderMBox, 
-                   Packet &receivedPacket);
+int Packet_Receive(int mbox,int *senderId, int *senderMBox,Packet *receivedPacket);
 
-int Packet_Send(int receiverId, int recMBox, int senderMBox, Packet&);
+int Packet_Send(int receiverId, int recMBox, int senderMBox, Packet*);
 
-void SerializePacket(Packet& p, char* message);
-void DeserializePacket(Packet& p, char* message);
+void SerializePacket(Packet *p, char* message);
+void DeserializePacket(Packet *p, char* message);
 
 /* Defined some methods for putting data into and out of messages */
 int copyOutInt(char* message, int index);

@@ -4,9 +4,9 @@
 /* Communication Functions */
 
 int Packet_Receive(int mbox, 
-                   int& senderId, 
-                   int& senderMBox, 
-                   Packet &receivedPacket)
+                   int* senderId,
+                   int* senderMBox,
+                   Packet *receivedPacket)
 {
     /* This function performs a read and put the fields in the respective places 
      * receivedPacket.senderId - reference to senderId
@@ -31,7 +31,7 @@ int Packet_Receive(int mbox,
 }
 
 
-int Packet_Send(int receiverId, int recMBox, int senderMBox, Packet& p){
+int Packet_Send(int receiverId, int recMBox, int senderMBox, Packet* p){
     /* This function actually sends data to receiverId:mailboxId
      * after serializing the data into a packet which can be received
      * at the other end using Hospital_Receive(...) function
@@ -126,14 +126,14 @@ void copyInData(char* message, int index, char* data, int length) {
     }
 }
 
-void SerializePacket(Packet& p, char* message) {
+void SerializePacket(Packet *p, char* message) {
     copyInShort(message, SENDER_ID, p.senderId);
     copyInInt(message, TIMESTAMP, p.timestamp);
     message[PACKET_TYPE] = p.packetType;
     copyInData(message, DATA, p.data, MaxMailSize - DATA);
 }
 
-void DeserializePacket(Packet& p, char* message) {
+void DeserializePacket(Packet *p, char* message) {
     p.senderId = copyOutShort(message, SENDER_ID);
     p.timestamp = copyOutInt(message, TIMESTAMP);
     p.packetType = message[PACKET_TYPE];

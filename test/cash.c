@@ -93,7 +93,7 @@ int main(int argc, char** argv){
     wakingDoctorList.tail = -1; 
     Init_Queue(&wakingDoctorList);
     feeList.head = 0;
-    /*Initialize datastructures for all the threads
+    /*Initialize data structures for all the threads
      //1. Patients don't need initialization
      //2. Receptionists
      */
@@ -131,10 +131,7 @@ int main(int argc, char** argv){
     print(" Cashiers\n");
     
     for(i=0;i<numCashiers;i++)
-    {
-        
         Fork(createCashier);
-    }
     
     /*HospINIT(testmode);*/
     for(i=0;i<100;i++)
