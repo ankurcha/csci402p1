@@ -318,7 +318,7 @@ int RemoteLock_Acquire(Packet pkt){
 }
 
 int HCV_Signal(int HCVId, int HLockId){
-
+    
 }
 
 int HCV_Wait(int HCVId, int HLockId){
@@ -337,9 +337,7 @@ int HCV_Wait(int HCVId, int HLockId){
          * to be held */
         Acquire(netthread_Lock);
         HLock_Acquire(CV_Lock);
-        /* Send the message to the netthread to do the wait */
         status = Packet_Send(GetMachineId(), myNetThreadMbox, 0, p);
-        /* Now we just wait for someone to signal us to life */
         HLock_Release(CV_Lock);
         Wait(netthread_CV, netthread_Lock);
         HLock_Acquire(HLockId);
@@ -363,39 +361,25 @@ int DistCV_Wait(int CVID, int LockID){
     p.packetType = CV_WAIT;
     copyInInt(p.data, 0, CVID);
     copyInInt(p.data, 2, LockID);        
-    /* Check if I hold the lock and the CB */
-    if (getResourceStatus(temp1) == REQ_HELD) {
-        /* YES!! I am in the CR, now its ok to mess around */
-        /* Release the conditionLock */
-        if(HLock_Release(LockID) == 1){
-            /* Lock is no longer held by the lock
-             * Just broadcast this message to all the othe nodes 
-             * Build the packet to be sent around */
-            /* Now send p to all other nodes */
-            for(j=0;j<7;j++){
-                for(i=0;i<numberOfEntities[j];i++){
-                    /* 
-                     * TODO: Send to each entity how? we need 
-                     * the receiverId and recMBox 
-                     */
-                    Packet_Send(receiverId, recMBox, 0, p);
-                }
-            }
+    for(j=0;j<7;j++){
+        for(i=0;i<numberOfEntities[j];i++){
+            /* 
+             * TODO: Send to each entity how? we need 
+             * the receiverId and recMBox 
+             */
+            Packet_Send(receiverId, recMBox, 0, p);
         }
-        
-        /* At this point all the locks have been released */
-        /* We can now send the CV_WAIT to all the nodes */
-        for(j=0;j<7;j++){
-            for(i=0;i<numberOfEntities[j];i++){
-                Packet_Send(receiverId, recMBox, 0, pkt);
-            }
-        }
-        /* Also, we need to maintain a list waiting nodes */
-        /* This will be popped when we receive a SIGNAL */
-        /* Wait until you receive a signal and it is for you */
     }
+    /* Also, we need to maintain a list waiting nodes */
+    /* This will be popped when we receive a SIGNAL */
+    MsgQueue_Push(pendingCVQueue, p);
+    return 1;
 }
 
+int DistCV_Signal(int CVID){
+    
+    return 1;
+}
 void readConfig(){
     /* Read the configuration file given as the argument and parse the numbers
      * to the global variables

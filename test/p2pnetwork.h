@@ -28,10 +28,6 @@ int Packet_Receive(int mbox,
 
 int Packet_Send(int receiverId, int recMBox, int senderMBox, Packet&);
 
-int[] getHostList();
-int[] getMailboxList();
-int GetNumberOfHosts();
-
 /*
  * We need to keep a list of the resources that we currently hold
  * so, all the locks and CVs that we hold are with us are present in
@@ -69,7 +65,7 @@ int updateResourceReplies(int resourceID, int replies);
  */
 /* to track of the nodes that are waiting */
 QueueElement queue[MAX_CV][MAX_CV_QUEUE_LEN];
-MessageQueue pendingRequests[MAX_CV]; /* use push and pop only */
+MessageQueue pendingCVQueue[MAX_CV]; /* use push and pop only */
 /* with great power comes a new namespace - here we have none!!*/ 
 /*
  * Packet structure
