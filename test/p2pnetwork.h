@@ -10,26 +10,16 @@
 
 #define MAX_RESOURCES 50
 
+/************************************
+ ******** GLOBAL DATA ***************
+ ************************************/
+
 int numberOfEntities[7]; /* The number of entities */
 
 int netthread_Lock; /* We use these to interact with the netthread */
 int netthread_CV; /* Used to wait on the netthread for a reply */
 
-/*
- * These system calls for doing the netowork I/O
- * This also takes care of the protocol stack.
- *
- */
-
-int Packet_Receive(int mbox, 
-                   int& senderId, 
-                   int& senderMBox, 
-                   Packet &receivedPacket);
-
-int Packet_Send(int receiverId, int recMBox, int senderMBox, Packet&);
-
-/*
- * We need to keep a list of the resources that we currently hold
+/* We need to keep a list of the resources that we currently hold
  * so, all the locks and CVs that we hold are with us are present in
  * this list of resources
  */
@@ -50,14 +40,6 @@ enum{
     RES_REQ,
     RES_NONE
 }
-void initResources(Resource arr[]);
-int addResource(Resource arr[],int id, int state);
-int deleteResource(Resource arr[], int id);
-
-int getResourceStatus(int resourceID);
-int updateResourceStatus(int resourceID, int newStatus);
-int getResourceReplies(int resourceID);
-int updateResourceReplies(int resourceID, int replies);
 
 /* Requests that are queued 
  * These can just be a list of packets that are waiting to be processed
@@ -67,40 +49,32 @@ int updateResourceReplies(int resourceID, int replies);
 QueueElement queue[MAX_CV][MAX_CV_QUEUE_LEN];
 MessageQueue pendingCVQueue[MAX_CV]; /* use push and pop only */
 /* with great power comes a new namespace - here we have none!!*/ 
-/*
- * Packet structure
- * The data portion of the packet has fields. Each field is 1 byte in length
- * data[0] - type of operation
- *           LOCK_CREATE = 0x01
- *           LOCK_DESTROY = 0x02
- *           LOCK_ACQUIRE = 0x03
- *           LOCK_RELEASE = 0x04
- *           CV_CREATE = 0x05
- *           CV_DESTROY = 0x06
- *           CV_WAIT = 0x07
- *           CV_SIGNAL = 0x08
- *           CV_BROADCAST = 0x09
- *           NODE_START = 0x0A
- *           NODE_STOP = 0x0B
- *           NODE_READY = 0x0C
- * data[1] - Operation detail
- *           For NODE Operations
- *              RECEPTIONIST_NODE = 0x01
- *              PATIENT_NODE = 0x02
- *              DOCTOR_NODE = 0x03
- *              DOORBOY_NODE = 0x04
- *              CASHIER_NODE = 0x05
- *              CLERK_NODE = 0x06
- *              MANAGER_NODE = 0x07
- *          For LOCK Operations
- *              EMPTY - 0x00 All Locks Are the same
- *          For CV Operations
- *              EMPTY - 0x00 All Condition Variables are the same
- * data[2,3,4,5,6,7] - Entity Id (sized int hence 2 bytes)
- *          For NODE - Node ID
- *          For Lock - Lock ID
- *          For CV   - CV ID
+
+/*********************************
+ ********** FUNCTIONS ************
+ *********************************/
+
+/* These system calls for doing the netowork I/O
+ * This also takes care of the protocol stack.
+ *
  */
+
+int Packet_Receive(int mbox, 
+                   int& senderId, 
+                   int& senderMBox, 
+                   Packet &receivedPacket);
+
+int Packet_Send(int receiverId, int recMBox, int senderMBox, Packet&);
+
+void initResources(Resource arr[]);
+int addResource(Resource arr[],int id, int state);
+int deleteResource(Resource arr[], int id);
+
+int getResourceStatus(int resourceID);
+int updateResourceStatus(int resourceID, int newStatus);
+int getResourceReplies(int resourceID);
+int updateResourceReplies(int resourceID, int replies);
+
 enum {
     EMPTY = 0x00,
     LOCK_CREATE = 0x01,
@@ -171,8 +145,8 @@ void copyInData(char* message, int index, char* data, int length);
 int HLock_Acquire(int HlockId);
 int HLock_Release(int HlockId);
 
-int DistLock_Acquire(char* name);
-int DistLock_Release(char* name);
+int DistLock_Acquire(int name);
+int DistLock_Release(int name);
 
 /* Register/Signal/Wait/Broadcast/Destroy a Condition variable with the
  * distributed system
