@@ -1,9 +1,9 @@
 #include "syscall.h"
 #include "print.c"
 
-main(){
+main() {
 
-  Exec("../test/exectest");
-  Exit(0);
+	Exec("../test/exectest");
+	Exit(0);
 
 }

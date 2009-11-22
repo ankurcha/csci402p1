@@ -14,9 +14,7 @@
 int a[3];
 int b, c;
 
-int
-main()
-{
-    Halt();
-    /* not reached */
+int main() {
+	Halt();
+	/* not reached */
 }

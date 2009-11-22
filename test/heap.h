@@ -9,8 +9,8 @@
 #define HEAP_H 1
 
 struct heap_element {
-    int key;
-    void* value;
+	int key;
+	void* value;
 };
 typedef struct heap_element heap_element;
 
@@ -23,5 +23,4 @@ void Heap_Push(heap_element* start, int *length);
 heap_element Heap_ExtractMin(heap_element* start, int *length);
 
 #endif /* HEAP_H */
-
 
