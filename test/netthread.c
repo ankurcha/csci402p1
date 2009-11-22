@@ -85,43 +85,48 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
 
         case LOCK_OK:
             /* Got a LOCK_OK so now we need to check whether we requested this
-               Lock and if yes, we keep processing till all have replied with LOCK_OK
+             * Lock and if yes, we keep processing till all have replied with 
+             * LOCK_OK
              */
-                /* get the lock being referred to */
-                name = copyOutInt(pkt.data, NAME);
-                /* If the lock was requested,*/ 
-                if(getResourceStatus(name) == RES_REQ) {
-                    /* Yes, lock was requested */
+            /* get the lock being referred to */
+            name = copyOutInt(pkt.data, NAME);
+            if(getResourceStatus(name) == RES_REQ) {
+                /* Yes, lock was requested */
 
-                    /* Update the number of replies that we have received so far */
-                    replies = getResourceReplies(name);
-                    replies++;
-                    updateResourceReplies(name, replies);
+                /* Update the number of replies that we have received so far */
+                replies = getResourceReplies(name);
+                replies++;
+                updateResourceReplies(name, replies);
 
-                    if(replies == totalEntities) {
-                        /* Now we have seen all the LOCK_OKs that we need and hence
-                         * we get the LOCK NOW and delete the resource from the 
-                         * requestedResource and add it to the HeldResources
-                         */
-                        resources[name].status = RES_HELD;
-                        /* Now we can send a signal to the entity */
-                        Acquire(netthread_Lock);
-                        Signal(netthread_CV, netthread_Lock);
-                        Release(netthread_Lock);
-                    }
+                if(replies == totalEntities) {
+                    /* Now we have seen all the LOCK_OKs that we need and hence
+                     * we get the LOCK NOW and delete the resource from the 
+                     * requestedResource and add it to the HeldResources
+                     */
+                    resources[name].status = RES_HELD;
+                    /* Now we can send a signal to the entity */
+                    Acquire(netthread_Lock);
+                    Signal(netthread_CV, netthread_Lock);
+                    Release(netthread_Lock);
                 }
+            }
             break;
-
         case CV_WAIT:
             /* TODO: add them to the queue of requests */
-            MsgQueue_Push(waitingNodes, pkt);
+            name = copyOutInt(pkt.data, NAME); /* CVID */
+            temp = copyOutInt(pkt.data, 4); /* LockID */
+            MsgQueue_Push(pendingCVQueue[name], pkt, senderId, senderMbox);
             break;
         case CV_SIGNAL:
         case CV_BROADCAST:
-            /*TODO When we get a Signal we first will POP the waitingNodes Queue
+            /*TODO When we get a Signal we first will POP the pendingCVQueue Queue
              * Then check if the node associated with us is the one being signaled
              * If yes, we will wake it up
              */
+            int senderId = 0;
+            int senderMbox = 0;
+            name = copyOutInt(pkt.data, NAME);
+            Packet p = MsgQueue_Pop(pendingCVQueue[name], &senderId, &senderMbox);
             break;
 
         case NODE_READY:
@@ -172,6 +177,7 @@ void processLocalPacket(Packet pkt) {
 
         case CV_SIGNAL:
             name = copyOutInt(pkt.data, NAME); /* CVID */
+            DistCV_Signal(name);
             /* When we want to send a signal, we should know who exactly to send
              * the signal to ie */
             break;
