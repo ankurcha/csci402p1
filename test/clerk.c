@@ -13,7 +13,6 @@ void clerk(int ID) {
 			/* prefix for test condition */
 			if (test_state == 11)
 				print("T11: ");
-
 			print("CL_");
 			print(itoa(ID, str));
 			print(": Going on break\n");

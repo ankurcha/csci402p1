@@ -32,18 +32,18 @@ int netthread_CV; /* Used to wait on the netthread for a reply */
  */
 
 struct Resource {
-	char name[20];
-	int timestamp; /* record when the request was made */
-	char valid; /* 0 init */
-	int replies; /* Number of replies that are received */
-	int state; /* can be RES_HELD or RES_REQ or RES_NONE */
+    char name[20];
+    int timestamp; /* record when the request was made */
+    char valid; /* 0 init */
+    int replies; /* Number of replies that are received */
+    int state; /* can be RES_HELD or RES_REQ or RES_NONE */
 };
 
 typedef struct Resource Resource;
 Resource resources[MAX_RESOURCES];
 
 enum {
-	RES_HELD, RES_REQ, RES_NONE
+    RES_HELD, RES_REQ, RES_NONE
 };
 
 /* Requests that are queued 
@@ -57,38 +57,38 @@ MessageQueue pendingCVQueue[MAX_CV]; /* use push and pop only */
 
 /* Packet types */
 enum {
-	EMPTY = 0x00,
-	LOCK_ACQUIRE = 0x01,
-	LOCK_RELEASE = 0x02,
-	LOCK_OK = 0x04,
-	CV_WAIT = 0x07,
-	CV_SIGNAL = 0x08,
-	CV_BROADCAST = 0x09,
-	NODE_READY = 0x0C,
+    EMPTY = 0x00,
+    LOCK_ACQUIRE = 0x01,
+    LOCK_RELEASE = 0x02,
+    LOCK_OK = 0x04,
+    CV_WAIT = 0x07,
+    CV_SIGNAL = 0x08,
+    CV_BROADCAST = 0x09,
+    NODE_READY = 0x0C,
 };
 
 /* Entity Identification */
 enum {
-	RECEPTIONIST_NODE = 0x0D,
-	PATIENT_NODE = 0x0E,
-	DOCTOR_NODE = 0x0F,
-	DOORBOY_NODE = 0x10,
-	CASHIER_NODE = 0x11,
-	CLERK_NODE = 0x12,
-	MANAGER_NODE = 0x13
+    RECEPTIONIST_NODE = 0x0D,
+    PATIENT_NODE = 0x0E,
+    DOCTOR_NODE = 0x0F,
+    DOORBOY_NODE = 0x10,
+    CASHIER_NODE = 0x11,
+    CLERK_NODE = 0x12,
+    MANAGER_NODE = 0x13
 };
 
 /* Define our message structure */
 enum {
-	SENDER_ID = 0, TIMESTAMP = 2, PACKET_TYPE = 6, DATA = 7
+    SENDER_ID = 0, TIMESTAMP = 2, PACKET_TYPE = 6, DATA = 7
 };
 
 /* Easy access to the data in a message */
 struct packet {
-	int senderId;
-	int timestamp;
-	char packetType;
-	char data[MaxMailSize - DATA];
+    int senderId;
+    int timestamp;
+    char packetType;
+    char data[MaxMailSize - DATA];
 };
 typedef struct packet Packet;
 
@@ -110,7 +110,7 @@ int updateResourceReplies(int resourceID, int replies);
  */
 
 int Packet_Receive(int mbox, int *senderId, int *senderMBox,
-		Packet *receivedPacket);
+        Packet *receivedPacket);
 
 int Packet_Send(int receiverId, int recMBox, int senderMBox, Packet*);
 
