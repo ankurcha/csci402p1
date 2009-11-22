@@ -10,17 +10,24 @@
 
 struct heap_element {
     int key;
-    void* value;
 };
 typedef struct heap_element heap_element;
+
+struct Message {
+    int key;
+    int senderId;
+    int senderMbox;
+    Packet pkt;
+};
+typedef struct Message Message;
 
 /* methods for a priority queue */
 
 /* push the element one past the end of the heap into the heap */
-void Heap_Push(heap_element* start, int& length);
+void Heap_Push(Message* start, int* length);
 
 /* remove the minimum value from the heap */
-heap_element Heap_ExtractMin(heap_element* start, int& length);
+Message Heap_ExtractMin(Message* start, int* length);
 
 #endif /* HEAP_H */
 
