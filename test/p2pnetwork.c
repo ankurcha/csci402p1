@@ -142,54 +142,32 @@ void DeserializePacket(Packet& p, char* message) {
 
 
 int getResourceStatus(int resourceID){
-    int status = RES_NONE;
-    int i=0;
-    for (i=0; i<MAX_RESOURCES; i++) {
-        if (resources[i].resourceID == resourceID && resources[i].valid == 1) {
-            switch (resources[i].state) {
-                case RES_HELD:
-                    status = RES_HELD;
-                    break;
-                case RES_REQ:
-                    status = RES_REQ;
-                    break;
-                default:
-                    status = RES_NONE;
-                    break;
-            }
-        }
-    }
-    return status;
+    if (resources[resourceID].valid == 1)
+        return resources[i].state;
+    else
+        return RES_NONE;
+
 }
 
 int updateResourceStatus(int resourceID, int newStatus){
-    int i;
-    for (i=0; i<MAX_RESOURCES; i++) {
-        if(resources[i].valid == 1 && resources[i].resourceID == resourceID){
-            resources[i].state = newStatus;
-            return resources[i].state;
-        }
-    }
-    return -1;
+    if (resources[resourceID].valid == 1){
+        resources[resourceID].state = newStatus;
+        return resources[resourceID].state;
+    } else
+        return -1;
 }
 
 int getResourceReplies(int resourceID){
-    int i;
-    for (i=0; i<MAX_RESOURCES; i++) {
-        if(resources[i].valid == 1 && resources[i].resourceID == resourceID){
-            return resources[i].replies;
-        }
+    if(resources[resourceID].valid == 1){
+            return resources[resourceID].replies;
     }
     return -1;
 }
 
 int updateResourceReplies(int resourceID, int newReplies){
-    int i;
-    for (i=0; i<MAX_RESOURCES; i++) {
-        if(resources[i].valid == 1 && resources[i].resourceID == resourceID){
-            resources[i].replies = newReplies;
-            return resources[i].replies;
-        }
+    if(resources[resourceID].valid == 1){
+        resources[resourceID].replies = newReplies;
+        return resources[resourceID].replies;
     }
     return -1;
 }
@@ -200,42 +178,23 @@ void initResources(){
         resources[i].valid = 0;
 }
 
-int addResource(int id, int state){
-    int i=0;
-    int targetpos = -1;
-    for(i=0;i<MAX_RESOURCES;i++)
-        if(resources[i].valid = 0){
-            targetpos = i;
-            break;
-        }
-    if(targetPos == -1)
-        return -1;
-    resources[targetPos].resourceID = id;
-    resources[targetPos].timestamp = GetTimestamp();
-    resources[targetPos].valid = 1;
-    resources[targetPos].replies = 0;
-    resources[targetPos].state = state;
-    return targetPos;
+int addResource(int resourceID, int state){
+    resources[resourceID].timestamp = GetTimestamp();
+    resources[resourceID].valid = 1;
+    resources[resourceID].replies = 0;
+    resources[resourceID].state = state;
+    return resourceID;
 }
 
-int deleteResource(Resource arr[], int id){
-    int i = 0;
-    for(i =0; i<MAX_RESOURCES;i++){
-        if(resources[i].resourceId == id){
-            resources[i].valid = 0;
-            return 1;
-        }
-    }
-    return 0;
+int deleteResource(Resource arr[], int resourceID){
+    resources[resourceID].valid = 0;
+    return 1;
 }
 
-int IsResourcePresent(Resource arr[], int type, int id){
-    int i = 0;
-    for (i=0; i<MAX_RESOURCES; i++) {
-        if (resources[i].resourcesId == id && resources[i].valid == 1) {
+int IsResourcePresent(Resource arr[], int resourceID){
+    if (resources[resourceID].valid == 1) {
             return 1;
         }
-    }
     return 0;
 }
 
@@ -356,6 +315,8 @@ int HCV_Wait(int HCVId, int HLockId){
 
 int DistCV_Wait(int CVID, int LockID){
     Packet p;
+    int senderId = GetMachineId();
+    int senderMBox = 0;
     p.senderId = GetMachineId();
     p.timestamp = GetTimestamp();
     p.packetType = CV_WAIT;
@@ -367,17 +328,28 @@ int DistCV_Wait(int CVID, int LockID){
              * TODO: Send to each entity how? we need 
              * the receiverId and recMBox 
              */
-            Packet_Send(receiverId, recMBox, 0, p);
+            Packet_Send(receiverId, recMBox, senderMBox, p);
         }
     }
     /* Also, we need to maintain a list waiting nodes */
     /* This will be popped when we receive a SIGNAL */
-    MsgQueue_Push(pendingCVQueue, p);
+    MsgQueue_Push(pendingCVQueue[CVID], p, senderId, senderMBox );
     return 1;
 }
 
 int DistCV_Signal(int CVID){
-    
+    /* Find out who to send this message to, Pop from the pendingCVQueue[CVID] */
+    int senderId;
+    int senderMBox;
+    Packet pkt = MsgQueue_Pop(pendingCVQueue[CVID], &senderId, &senderMBox);
+    /* Process the Wait message */
+    Packet p;
+    p.senderId = GetMachineId();
+    p.timestamp = GetTimestamp();
+    p.packetType = CV_SIGNAL;
+    copyInInt(p.data, 0, copyOutInt(pkt.data, NAME)); /* CVID */
+    copyInInt(p.data, 2, copyOutInt(pkt.data, 4)); /* Lock ID */
+    Packet_Send(senderId, senderMBox, my, p);
     return 1;
 }
 void readConfig(){
