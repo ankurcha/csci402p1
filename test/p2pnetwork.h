@@ -41,6 +41,15 @@ enum{
     RES_NONE
 }
 
+/* Requests that are queued 
+ * These can just be a list of packets that are waiting to be processed
+ * Use push and pop fuctions to interact
+ */
+/* to track of the nodes that are waiting */
+QueueElement queue[MAX_CV][MAX_CV_QUEUE_LEN];
+MessageQueue pendingCVQueue[MAX_CV]; /* use push and pop only */
+/* with great power comes a new namespace - here we have none!!*/ 
+
 /*********************************
  ********** FUNCTIONS ************
  *********************************/
@@ -57,10 +66,6 @@ int Packet_Receive(int mbox,
 
 int Packet_Send(int receiverId, int recMBox, int senderMBox, Packet&);
 
-int[] getHostList();
-int[] getMailboxList();
-int GetNumberOfHosts();
-
 void initResources(Resource arr[]);
 int addResource(Resource arr[],int id, int state);
 int deleteResource(Resource arr[], int id);
@@ -69,15 +74,6 @@ int getResourceStatus(int resourceID);
 int updateResourceStatus(int resourceID, int newStatus);
 int getResourceReplies(int resourceID);
 int updateResourceReplies(int resourceID, int replies);
-
-/* Requests that are queued 
- * These can just be a list of packets that are waiting to be processed
- * Use push and pop fuctions to interact
- */
-/* to track of the nodes that are waiting */
-QueueElement queue[MAX_CV][MAX_CV_QUEUE_LEN];
-MessageQueue pendingCVQueue[MAX_CV]; /* use push and pop only */
-/* with great power comes a new namespace - here we have none!!*/ 
 
 enum {
     EMPTY = 0x00,
