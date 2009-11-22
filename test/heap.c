@@ -5,7 +5,6 @@
  * Max Pflueger
  */
 
-#include "print.c"
 #include "heap.h"
 
 void swap_heap_elements(heap_element* start, int x, int y) {
