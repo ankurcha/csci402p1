@@ -47,7 +47,7 @@ public:
 private:
     InvertedPageTableEntry* entries;
     std::map<long long, int> pageMap;
-}
+};
 
 #endif // VM_IPT_H
 
