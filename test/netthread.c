@@ -10,7 +10,7 @@
 #include "syscall.h"
 #include "print.h"
 
-void processExternalPacket(Packet pkt);
+void processExternalPacket(Packet pkt, int senderId, int senderMbox);
 void processLocalPacket(Packet pkt);
 
 void network_thread(int mbox) {
@@ -26,7 +26,7 @@ void network_thread(int mbox) {
 
         if(senderMbox = 0) {
             /* process a packet from another entity on the network */
-            processExternalPacket(myPacket);
+            processExternalPacket(myPacket, senderId, senderMbox);
         } else {
             /* process a packet from my matching entity thread */
             processLocalPacket(myPacket);
@@ -34,10 +34,12 @@ void network_thread(int mbox) {
     }
 }
 
-void processExternalPacket(Packet pkt) {
+void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
     int temp;
     int replies = -1;
     int totalEntities = 0;
+    int name;
+    Packet p;
     for(j=0;j<7;j++){
         totalEntities += numberOfEntities[j];
     }
@@ -49,24 +51,38 @@ void processExternalPacket(Packet pkt) {
             break;
 
         case LOCK_ACQUIRE:
-            /* TODO: check if I have or am waiting for this lock */
-            /* Check if I am currently holding the packet */
-            temp = copyOutInt(pkt.data,0);
+            name = copyOutInt(pkt.data, NAME);
+
             /* check if I am holding this lock */
-            if (!IsResourceHeld(CV, temp)) {
-                /* Resource is not held, hence, we send out a LOCK_OK message
-                 * construct a packet 
-                 */
-                Packet p;
-                p.senderId = GetMachineId();
-                p.timestamp = GetTimestamp();
-                p.packet_type = LOCK_OK;
-                copyInInt(p.data, 0, temp);
-                status = Packet_Send(receiverID, recMBox, GetMachineId(), p);
-            }else{
-                /* I hold the lock, hence I am god!!! muhahahaha!!!*/
+            switch(getResourceStatus(name)) {
+                case RES_HELD:
+                    if(myTS > pkt.timestamp) {
+                        print("ERROR: received and earlier request for a lock I already hold");
+                        break;
+                    }
+                case RES_REQ:
+                    if(myTS < pkt.timestamp) {
+                        /*TODO add them to the list */
+                        break;
+                    }
+                    /* fallthrough */
+
+                case RES_NONE:
+                    /* Resource is not held, hence, we send out a LOCK_OK message
+                     * construct a packet 
+                     */
+                    p.senderId = GetMachineId();
+                    p.timestamp = GetTimestamp();
+                    p.packet_type = LOCK_OK;
+                    copyInInt(p.data, NAME, name);
+                    Packet_Send(senderId, senderMbox, GetMachineId(), p);
+                    break;
+
+                default:
+                    print("ERROR: invalid resource status\n");
             }
             break;
+
         case LOCK_OK:
             /*TODO should  we make this LOCK_OK? */
             /* Got a LOCK_OK so now we need to check whether we requested this
@@ -101,17 +117,17 @@ void processExternalPacket(Packet pkt) {
                 MsgQueue_Push(waitingNodes, pkt);
             break;
         case CV_SIGNAL:
-                /* When we get a Signal we first will POP the waitingNodes Queue
-                 * Then check if the node associated with us is the one being signaled
-                 * If yes, we will wake it up
-                 */
         case CV_BROADCAST:
-            /*TODO: these are the same right? Yes they are*/
-            /*TODO: I think I have to wake up the entity thread Yes*/
+            /*TODO When we get a Signal we first will POP the waitingNodes Queue
+             * Then check if the node associated with us is the one being signaled
+             * If yes, we will wake it up
+             */
             break;
 
         case NODE_READY:
-            /*TODO: what do these do? */
+            /*TODO: add to the node ready count, once all nodes are ready,
+             * start the simulation
+             */
             break;
         default:
             break;
@@ -125,7 +141,7 @@ void processLocalPacket(Packet pkt) {
     int status = -1;
     int totalEntities = 0;
     int temp, temp1;
-    char name[MaxMailSize - DATA - NAME];
+    int name;
     Packet p;
     int i, senderId, senderMbox;
     for(j=0;j<7;j++){
@@ -134,14 +150,14 @@ void processLocalPacket(Packet pkt) {
 
     switch(pkt.packetType){
         case LOCK_ACQUIRE:
-            copyOutData(pkt.data, NAME, name, MaxMailSize - DATA - NAME);
+            name = copyOutInt(pkt.data, NAME);
             DistLock_Acquire(name);
             /* now, once we receive enough OK's, 
              * we will wake the local entity */
             break;
 
         case LOCK_RELEASE:
-            copyOutData(pkt.data, NAME, name, MaxMailSize - DATA - NAME);
+            name = copyOutInt(pkt.data, NAME);
             DistLock_Release(name);
             /* no futher action */
             break;
