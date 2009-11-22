@@ -32,21 +32,19 @@ int netthread_CV; /* Used to wait on the netthread for a reply */
  * this list of resources
  */
 
-struct Resource{
-    char name[20];
-    int timestamp; /* record when the request was made */
-    char valid; /* 0 init */
-    int replies; /* Number of replies that are received */
-    int state; /* can be RES_HELD or RES_REQ or RES_NONE */
+struct Resource {
+	char name[20];
+	int timestamp; /* record when the request was made */
+	char valid; /* 0 init */
+	int replies; /* Number of replies that are received */
+	int state; /* can be RES_HELD or RES_REQ or RES_NONE */
 };
 
 typedef struct Resource Resource;
 Resource resources[MAX_RESOURCES];
 
-enum{
-    RES_HELD,
-    RES_REQ,
-    RES_NONE
+enum {
+	RES_HELD, RES_REQ, RES_NONE
 };
 
 /* Requests that are queued 
@@ -56,55 +54,51 @@ enum{
 /* to track of the nodes that are waiting */
 QueueElement queue[MAX_CV][MAX_CV_QUEUE_LEN];
 MessageQueue pendingCVQueue[MAX_CV]; /* use push and pop only */
-/* with great power comes a new namespace - here we have none!!*/ 
+/* with great power comes a new namespace - here we have none!!*/
 
 /* Packet types */
 enum {
-    EMPTY = 0x00,
-    LOCK_ACQUIRE = 0x01,
-    LOCK_RELEASE = 0x02,
-    LOCK_OK = 0x04,
-    CV_WAIT = 0x07,
-    CV_SIGNAL = 0x08,
-    CV_BROADCAST = 0x09,
-    NODE_READY = 0x0C,
+	EMPTY = 0x00,
+	LOCK_ACQUIRE = 0x01,
+	LOCK_RELEASE = 0x02,
+	LOCK_OK = 0x04,
+	CV_WAIT = 0x07,
+	CV_SIGNAL = 0x08,
+	CV_BROADCAST = 0x09,
+	NODE_READY = 0x0C,
 };
 
 /* Entity Identification */
 enum {
-    RECEPTIONIST_NODE = 0x0D,
-    PATIENT_NODE = 0x0E,
-    DOCTOR_NODE = 0x0F,
-    DOORBOY_NODE = 0x10,
-    CASHIER_NODE = 0x11,
-    CLERK_NODE = 0x12,
-    MANAGER_NODE = 0x13
+	RECEPTIONIST_NODE = 0x0D,
+	PATIENT_NODE = 0x0E,
+	DOCTOR_NODE = 0x0F,
+	DOORBOY_NODE = 0x10,
+	CASHIER_NODE = 0x11,
+	CLERK_NODE = 0x12,
+	MANAGER_NODE = 0x13
 };
 
 /* Define our message structure */
 enum {
-    SENDER_ID = 0,
-    TIMESTAMP = 2,
-    PACKET_TYPE = 6,
-    DATA = 7
+	SENDER_ID = 0, TIMESTAMP = 2, PACKET_TYPE = 6, DATA = 7
 };
 
 /* Easy access to the data in a message */
-struct packet{
-    int senderId;
-    int timestamp;
-    char packetType;
-    char data[MaxMailSize - DATA];
+struct packet {
+	int senderId;
+	int timestamp;
+	char packetType;
+	char data[MaxMailSize - DATA];
 };
 typedef struct packet Packet;
-
 
 /*********************************
  ********** FUNCTIONS ************
  *********************************/
 
 void initResources(Resource arr[]);
-int addResource(Resource arr[],int id, int state);
+int addResource(Resource arr[], int id, int state);
 int deleteResource(Resource arr[], int id);
 
 int getResourceStatus(int resourceID);
@@ -116,7 +110,8 @@ int updateResourceReplies(int resourceID, int replies);
  * This also takes care of the protocol stack.
  */
 
-int Packet_Receive(int mbox,int *senderId, int *senderMBox,Packet *receivedPacket);
+int Packet_Receive(int mbox, int *senderId, int *senderMBox,
+		Packet *receivedPacket);
 
 int Packet_Send(int receiverId, int recMBox, int senderMBox, Packet*);
 
@@ -125,14 +120,13 @@ void DeserializePacket(Packet *p, char* message);
 
 /* Defined some methods for putting data into and out of messages */
 int copyOutInt(char* message, int index);
-void copyInInt(char* message, int index,  int val);
+void copyInInt(char* message, int index, int val);
 
 int copyOutShort(char* message, int index);
 void copyInShort(char* message, int index, int val);
 
 void copyOutData(char* message, int index, char* data, int length);
 void copyInData(char* message, int index, char* data, int length);
-
 
 /*********************************
  ******** MUTUAL EXCLUSION *******

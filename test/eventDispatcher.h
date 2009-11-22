@@ -16,21 +16,21 @@
 #define MaxSendQueueSize 50
 #define MaxPendingMessagesSize 100
 #define MAXHOSTS 100
-struct messageQueueElement{
-    Packet message;
-    int senderId;
-    int senderMbox;
-    int next; /* init = -1*/
-    char valid; /* intit = 0 */
+struct messageQueueElement {
+	Packet message;
+	int senderId;
+	int senderMbox;
+	int next; /* init = -1*/
+	char valid; /* intit = 0 */
 };
 
 typedef struct messageQueueElement QueueElement;
 
-struct MessageQueue{
-    QueueElement *queue;
-    int length;
-    int head;
-    int tail;
+struct MessageQueue {
+	QueueElement *queue;
+	int length;
+	int head;
+	int tail;
 };
 
 typedef struct MessageQueue MessageQueue;
@@ -41,7 +41,8 @@ void Init_MsgQueue(MessageQueue *q);
 
 void MsgQueue_Push(MessageQueue *q, Packet *msg, int senderId, int senderMbox);
 
-Packet MsgQueue_Pop(MessageQueue *q, int *senderId, int *senderId, int senderMbox);
+Packet MsgQueue_Pop(MessageQueue *q, int *senderId, int *senderId,
+		int senderMbox);
 
 char MsgQueue_IsEmpty(MessageQueue *q);
 
@@ -55,9 +56,9 @@ MessageQueue pendingMessagesQueue[MaxPendingMessagesSize];
 /* Table of the last timestamp for each host */
 int LastTimestampSeen[MAXHOSTS];
 /*
-   1. Everytime I receive a message I update the last timestamp seen for that host.
-*/
+ 1. Everytime I receive a message I update the last timestamp seen for that host.
+ */
 void updateLastTimestampSeen(int hostID, int timestampReceived);
 /* 2. Queue up message to pending queue till further notice 
-      For this we will use, void MsgQueue_Push(pendingMessagesQueue, msg);
+ For this we will use, void MsgQueue_Push(pendingMessagesQueue, msg);
  */

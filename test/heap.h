@@ -9,15 +9,15 @@
 #define HEAP_H 1
 
 struct heap_element {
-    int key;
+	int key;
 };
 typedef struct heap_element heap_element;
 
 struct Message {
-    int key;
-    int senderId;
-    int senderMbox;
-    Packet pkt;
+	int key;
+	int senderId;
+	int senderMbox;
+	Packet pkt;
 };
 typedef struct Message Message;
 
@@ -30,5 +30,3 @@ void Heap_Push(Message* start, int* length);
 Message Heap_ExtractMin(Message* start, int* length);
 
 #endif /* HEAP_H */
-
-
