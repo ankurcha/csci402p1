@@ -585,6 +585,77 @@ int UpdateData_HospitalManager(Packet p) {
     /* !!! */
     return 0;
 }
+
+int UpdateData_Global(Packet p){
+    int status = -1;
+    short variableToUpdate = 0x00;
+    int value = -1;
+    variableToUpdate = copyOutShort(p.data, 0);
+    value = copyOutInt(p.data, 2);
+    switch(variableToUpdate){
+        case NUMDOCTORS:
+            numDoctors = value;
+            break;
+        case NUMCASHIERS:
+            numCashiers = value;
+            break;
+        case NUMCLERKS:
+            numClerks = value;
+            break;
+        case NUMDOORBOYS:
+            numDoorboys = value;
+            break;
+        case NUMRECP:
+            numRecp = value;
+            break;
+        case NUMPATIENTS:
+            numPatients = value;
+            break;
+        case FEESPAID:
+            feesPaid = value;
+            break;
+        case TEST_STATE:
+            test_state = value;
+            break;
+        case TOKENCOUNTER:
+            TokenCounter = value;
+            break;
+        case TOTALSALES:
+            totalsales = value;
+            break;
+        case PEOPLEINHOSPITAL:
+            peopleInHospital = value;
+            break;
+        case DOORBOYLINELENGTH:
+            doorboyLineLength = value;
+            break;
+        case PATCOUNT:
+            patientCount = value;
+            break;
+        case RECPCOUNT:
+            recptionistCount = value;
+            break;
+        case DOORBCOUNT:
+            doorboyCount = value;
+            break;
+        case DOCCOUNT:
+            doctorCount = value;
+            break;
+        case CASHCOUNT:
+            cashierCount = value;
+            break;
+        case CLERKCOUNT:
+            pharmacyCount = value;
+            break;
+        case HOSPMANCOUNT:
+            hospitalmanagerCount = value;
+            break;
+        default:
+            break;
+    }
+    return variableToUpdate;
+}
+
 int DistUpdate_Send(Packet p) {
     /* This function is used to broadcast an Update packet to every one
      */

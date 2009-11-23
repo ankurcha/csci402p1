@@ -214,6 +214,7 @@ int UpdateData_Doctor(Packet p);
 int UpdateData_Cashier(Packet p);
 int UpdateData_Clerk(Packet p);
 int UpdateData_HospitalManager(Packet p);
+int UpdateData_Global(Packet p);
 
 /* Hospital Entity interface for the Network Data Update */
 int HDataUpdate_Recp(int id);
