@@ -8,7 +8,7 @@ int main() {
 	char *message;
 	char *receivedMessage;
 	int i, netname;
-	char NetID;
+	char NetID[32];
 	char a[5];
 	int destinationId[5] = { 0, 1, 2, 3, 4 };
 	/* create a custom message */
@@ -28,7 +28,7 @@ int main() {
 		print(" to machine# ");
 		print(itoa(i, a));
 		print(" mailbox# 0\n");
-		Send(i, 0, message);
+		Send(i, 0, 0, message);
 	}
 
 	print("Printing Received Messages\n");
@@ -36,7 +36,7 @@ int main() {
 		print("Messages from machine#");
 		print(itoa(i, a));
 		print("\n");
-		response = Receive(i, 0, receivedMessage);
+		response = Receive(i, 0, 0, receivedMessage);
 		print("Client ");
 		print(NetID);
 		print(": ");
