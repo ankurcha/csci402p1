@@ -275,7 +275,7 @@ int HCV_Wait(int HCVId, int HLockId) {
 int DistCV_Wait(int CVID, int LockID) {
     Packet p;
     int senderMBox = 0;
-    int i,j;
+    int i, j;
     p.senderId = GetMachineId();
     p.timestamp = GetTimestamp();
     p.packetType = CV_WAIT;
@@ -300,7 +300,7 @@ int DistCV_Signal(int CVID) {
      * pendingCVQueue[CVID] */
     int senderId;
     int senderMBox;
-    int i,j;
+    int i, j;
     Packet p;
     Packet pkt = MsgQueue_Pop(&pendingCVQueue[CVID], &senderId, &senderMBox);
 
@@ -314,7 +314,7 @@ int DistCV_Signal(int CVID) {
     /* send to every entity */
     for (j = 0; j < 7; j++) {
         for (i = 0; i < numberOfEntities[j]; i++) {
-            Packet_Send(j, i + 1, myMbox, p);
+            Packet_Send(j, i + 1, myMbox, &p);
         }
     }
 
@@ -336,9 +336,9 @@ void Process_CV_Signal(Packet pkt) {
     int senderId, senderMbox;
 
     name = copyOutInt(pkt.data, NAME);
-    p = MsgQueue_Pop(pendingCVQueue[name], &senderId, &senderMbox);
+    p = MsgQueue_Pop(&pendingCVQueue[name], &senderId, &senderMbox);
 
-    if (senderId == GetMachineId() && senderMBox == myMbox) {
+    if (senderId == GetMachineId() && senderMbox == myMbox) {
         /* wake up my entity */
         Acquire(netthread_Lock);
         Signal(netthread_CV, netthread_Lock);
@@ -356,8 +356,7 @@ void readConfig() {
     char temp[10];
     int num;
     int bytesread;
-    int i = 0;
-    int k;
+    int i, j, k;
     int start = 0;
     int end = -1;
     fd = Open("configfile", 10);

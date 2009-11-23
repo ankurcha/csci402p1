@@ -1,5 +1,5 @@
 /*
- * HospShared.h
+ * hospShared.h
  *
  *  Created on: Nov 22, 2009
  *      Author: ankurcha
