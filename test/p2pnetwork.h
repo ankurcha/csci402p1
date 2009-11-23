@@ -5,7 +5,7 @@
 #include "packet.h"
 #include "eventDispatcher.h"
 #include "print.h"
-#include "HospShared.h"
+#include "hospShared.h"
 
 #define MAX_CV 50
 #define MAX_CV_QUEUE_LEN 100
