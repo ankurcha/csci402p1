@@ -2,6 +2,8 @@
 #define P2PNETWORK_H 1
 
 #include "syscall.h"
+#include "packet.h"
+#include "eventDispatcher.h"
 
 #define MaxMailSize 40
 #define MAX_CV 50
@@ -96,17 +98,7 @@ enum {
 
 int myMbox;
 
-/* Easy access to the data in a message */
-struct packet {
-    int senderId;
-    int timestamp;
-    char packetType;
-    char data[MaxMailSize - DATA];
-};
-typedef struct packet Packet;
 
-/* This is kinda ugly... but I don't know of a good alternative */
-#include "eventDispatcher.h"
 
 /*********************************
  ********** FUNCTIONS ************
