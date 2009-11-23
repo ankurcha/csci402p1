@@ -287,10 +287,8 @@ void processLocalPacket(Packet pkt) {
         case CASH_DATA_UPDATE:
         case CLERK_DATA_UPDATE:
         case MAN_DATA_UPDATE:
-            /* Take care of sending updates */
-            temp = DistUpdate_Send(pkt);
-            break;
         case GLOBAL_DATA_UPDATE:
+            /* Take care of sending updates */
             temp = DistUpdate_Send(pkt);
             break;
         default:

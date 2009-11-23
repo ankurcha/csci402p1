@@ -20,4 +20,6 @@ Packet *buildPacket_Clerk(Packet *p, int id, int patientsInLine, int payment,
 Packet *buildPacket_GlobalData(Packet *p, short variable, int val);
 Packet *buildPacket_GlobalListAppend(Packet *p, short variable, int key,
         int val);
+Packet *buildPacket_GlobalQueuePush(Packet *p, int val);
+Packet *buildPacket_GlobalQueuePop(Packet *p);
 #endif /* HOSPSHARED_H_ */

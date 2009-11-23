@@ -451,69 +451,101 @@ int UpdateData_HospitalManager(Packet p) {
     return 0;
 }
 
-int UpdateData_Global(Packet p){
+int UpdateData_Global(Packet p) {
     int status = -1;
     short variableToUpdate = 0x00;
     int value = -1;
+    int key = -1;
     variableToUpdate = copyOutShort(p.data, 0);
-    value = copyOutInt(p.data, 2);
-    switch(variableToUpdate){
+    switch (variableToUpdate) {
         case NUMDOCTORS:
+            value = copyOutInt(p.data, 2);
             numDoctors = value;
             break;
         case NUMCASHIERS:
+            value = copyOutInt(p.data, 2);
             numCashiers = value;
             break;
         case NUMCLERKS:
+            value = copyOutInt(p.data, 2);
             numClerks = value;
             break;
         case NUMDOORBOYS:
+            value = copyOutInt(p.data, 2);
             numDoorboys = value;
             break;
         case NUMRECP:
+            value = copyOutInt(p.data, 2);
             numRecp = value;
             break;
         case NUMPATIENTS:
+            value = copyOutInt(p.data, 2);
             numPatients = value;
             break;
         case FEESPAID:
+            value = copyOutInt(p.data, 2);
             feesPaid = value;
             break;
         case TEST_STATE:
+            value = copyOutInt(p.data, 2);
             test_state = value;
             break;
         case TOKENCOUNTER:
+            value = copyOutInt(p.data, 2);
             TokenCounter = value;
             break;
         case TOTALSALES:
+            value = copyOutInt(p.data, 2);
             totalsales = value;
             break;
         case PEOPLEINHOSPITAL:
+            value = copyOutInt(p.data, 2);
             peopleInHospital = value;
             break;
         case DOORBOYLINELENGTH:
+            value = copyOutInt(p.data, 2);
             doorboyLineLength = value;
             break;
         case PATCOUNT:
+            value = copyOutInt(p.data, 2);
             patientCount = value;
             break;
         case RECPCOUNT:
+            value = copyOutInt(p.data, 2);
             recptionistCount = value;
             break;
         case DOORBCOUNT:
+            value = copyOutInt(p.data, 2);
             doorboyCount = value;
             break;
         case DOCCOUNT:
+            value = copyOutInt(p.data, 2);
             doctorCount = value;
             break;
         case CASHCOUNT:
+            value = copyOutInt(p.data, 2);
             cashierCount = value;
             break;
         case CLERKCOUNT:
+            value = copyOutInt(p.data, 2);
             pharmacyCount = value;
             break;
         case HOSPMANCOUNT:
+            value = copyOutInt(p.data, 2);
             hospitalmanagerCount = value;
+            break;
+        case FEELIST_APPEND:
+            key = copyOutInt(p.data, 2);
+            value = copyOutInt(p.data, 6);
+            List_Append(&feeList, key, value);
+            break;
+        case QUEUE_PUSH:
+            value = copyOutInt(p.data, 2);
+            Queue_Push(&wakingDoctorList, value);
+            break;
+        case QUEUE_POP:
+            /* NO DATA */
+            Queue_Pop(&wakingDoctorList);
             break;
         default:
             break;
@@ -586,7 +618,7 @@ int HDataUpdate_HospMan(int id) {
 int HGlobalDataUpdate(int Variable, int val) {
     int status = -1;
     Packet p;
-    buildPacket_GlobalData(p, Variable, val);
+    p = buildPacket_GlobalData(p, Variable, val);
     status = Packet_Send(GetMachineId(), myNetThreadMbox, 0, p);
     return status;
 }
@@ -594,6 +626,25 @@ int HGlobalDataUpdate(int Variable, int val) {
 int HGlobalListAppendUpdate(int key, int val) {
     int status = -1;
     Packet p;
+    p = buildPacket_GlobalListAppend(p, key, val);
+    status = Packet_Send(GetMachineID(), myNetThreadMbox, 0, p);
+    return status;
+}
+
+int HGlobalQueuePopUpdate() {
+    int status = -1;
+    Packet p;
+    p = buildPacket_GlobalQueuePop(p);
+    status = Packet_Send(GetMachineID(), myNetThreadMbox, 0, p);
+    return status;
+}
+
+int HGlobalQueuePushUpdate(int value) {
+    int status = -1;
+    Packet p;
+    p = buildPacket_GlobalQueuePush(p, value);
+    status = Packet_Send(GetMachineID(), myNetThreadMbox, 0, p);
+    return status;
 }
 
 /*
