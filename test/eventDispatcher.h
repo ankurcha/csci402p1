@@ -20,7 +20,7 @@
 #define MaxPendingMessagesSize 100
 #define MAXHOSTS 100
 
-#include "p2pnetwork.h"
+/*#include "p2pnetwork.h"*/
 #include "packet.h"
 
 struct messageQueueElement {

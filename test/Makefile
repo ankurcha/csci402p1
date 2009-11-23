@@ -32,7 +32,15 @@ INCDIR =-I../userprog -I../threads
 CFLAGS = -G 0 -c $(INCDIR)
 
 
-all: halt matmult sort testfiles lockcreate destroylock createcv destroycv fork exec exectest printtest itoa queue heap packet test_code multih networkTestClient1 networkTestClient2 multiForkmatmult multiExecmatmult multiExecmatmult2 multiprint 
+all: halt\
+     matmult\
+     sort\
+     testfiles\
+     lockcreate destroylock createcv destroycv fork exec exectest printtest\
+     test_code multih networkTestClient1 networkTestClient2\
+     multiForkmatmult multiExecmatmult multiExecmatmult2 multiprint\
+     itoa queue heap packet eventDispatcher p2pnetwork\
+     disthosp
 
 
 start.o: start.s ../userprog/syscall.h
@@ -135,11 +143,26 @@ packet.o: packet.c packet.h
 	$(CC) $(CFLAGS) -c packet.c
 packet: packet.o
 
+eventDispatcher.o: eventDispatcher.c eventDispatcher.h packet
+	$(CC) $(CFLAGS) -c eventDispatcher.c
+eventDispatcher: eventDispatcher.o
+
+p2pnetwork.o: p2pnetwork.c p2pnetwork.h packet eventDispatcher print
+	$(CC) $(CFLAGS) -c p2pnetwork.c
+p2pnetwork: p2pnetwork.o
+
 init.o: init.c print queue
 	$(CC) $(CFLAGS) -c init.c
 init: init.o start.o
 	$(LD) $(LDFLAGS) start.o init.o -o init.coff
 	../bin/coff2noff init.coff init
+
+disthosp.o: disthosp.c print p2pnetwork
+	$(CC) $(CFLAGS) -c disthosp.c
+disthosp: disthosp.o start.o
+	$(LD) $(LDFLAGS) start.o print.o p2pnetwork.o -o disthosp.coff
+	../bin/coff2noff disthosp.coff disthosp
+
 test_code.o: test_code.c
 	$(CC) $(CFLAGS) -c test_code.c
 test_code: test_code.o start.o
