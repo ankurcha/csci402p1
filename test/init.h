@@ -6,6 +6,7 @@
 #include "itoa.h"
 #include "print.h"
 #include "string.h"
+#include "p2pnetwork.h"
 
 #define BUSY 0
 #define FREE 1
@@ -50,16 +51,16 @@ typedef struct list List;
  * *************************************************/
 struct Receptionists_ {
     /* receptionist line CV */
-    char receptionCV[20];
+    CVId receptionCV;
     int peopleInLine;
 
     /* receptionist transactional lock and CV and protected variables */
-    char transLock[20];
-    char receptionistWaitCV[20];
+    LockId transLock;
+    CVId receptionistWaitCV;
     int currentToken;
 
     /* receptionist break CV */
-    char ReceptionistBreakCV[20];
+    CVId ReceptionistBreakCV;
 
 };
 typedef struct Receptionists_ Receptionists;
@@ -68,11 +69,11 @@ typedef struct Receptionists_ Receptionists;
 struct Cashier_ {
     /* line CV and length */
     int lineLength;
-    char lineCV[20];
+    CVId lineCV;
 
     /* transaction lock, CV, and variables protected by the former */
-    char transLock[20];
-    char transCV[20];
+    LockId transLock;
+    CVId transCV;
     int patToken;
     int fee;
     int payment;
@@ -81,7 +82,7 @@ struct Cashier_ {
     int sales;
 
     /* cashier's CV for going on break */
-    char breakCV[20];
+    CVId breakCV;
 };
 typedef struct Cashier_ Cashier;
 
@@ -91,11 +92,11 @@ struct PharmacyClerks_ {
     int payment;
     int fee;
     int patPrescription;
-    char ClerkCV[20];
+    CVId ClerkCV;
 
-    char ClerkBreakCV[20];
-    char ClerkTransLock[20];
-    char ClerkTransCV[20];
+    CVId ClerkBreakCV;
+    LockId ClerkTransLock;
+    CVId ClerkTransCV;
 
     /*protected by PaymentLock */
     int sales;
@@ -104,11 +105,11 @@ typedef struct PharmacyClerks_ PharmacyClerks;
 
 struct Doctor_ {
     /* line lock and CV and protected variables */
-    char LineLock[20];
-    char LineCV[20];
-    char doorboyBreakCV[20];
-    char transLock[20];
-    char transCV[20];
+    LockId LineLock;
+    CVId LineCV;
+    CVId doorboyBreakCV;
+    LockId transLock;
+    CVId transCV;
 
     int peopleInLine;
     int prescription;
@@ -152,18 +153,19 @@ Cashier cashiers[MAX_CASHIER];
 PharmacyClerks clerks[MAX_CLERKS];
 
 /**** GLOBAL LOCKS ****/
-char creationLock[20];
-char testlock[20];
-char TokenCounterLock[20];
-char recpLineLock[20];
-char feeListLock[20];
-char cashierLineLock[20];
-char feesPaidLock[20];
-char ClerkLinesLock[20];
-char PaymentLock[20];
-char hospitalLock[20];
-char doorboyLineLock[20];
-char doorboyLineCV[20];
+LockId creationLock;
+LockId testlock;
+LockId TokenCounterLock;
+LockId recpLineLock;
+LockId feeListLock;
+LockId cashierLineLock;
+LockId feesPaidLock;
+LockId ClerkLinesLock;
+LockId PaymentLock;
+LockId hospitalLock;
+LockId doorboyLineLock;
+/**** GLOBAL CVs ****/
+CVId doorboyLineCV;
 
 /**** FUNCTIONS ****/
 
@@ -209,65 +211,75 @@ int List_IsEmpty(List *l) {
 
 }
 
-void __Receptionists(Receptionists *recep, int recepID) {
-    char name[20];
-    strcpy(name, "");
-    name = itoa(recepID, name);
-    recep->peopleInLine = 0;
-    strcpy(name, "");
-    name = itoa(recepID, name);
-    strcpy(recep->receptionCV, strcat(name, "_receptionCV"));
-    strcpy(name, "");
-    name = itoa(recepID, name);
-    strcpy(recep->transLock, strcat(name, "_Receptionists.transLock"));
-    strcpy(name, "");
-    name = itoa(recepID, name);
-    strcpy(recep->receptionistWaitCV, strcat(name, "_receptionistWaitCV"));
-    strcpy(name, "");
-    name = itoa(recepID, name);
-    strcpy(recep->ReceptionistBreakCV, strcat(name, "_ReceptionistBreakCV"));
-    recep->currentToken = 0;
+int getNextRecpCV(int recepID){
+    static int CVID = 0;
+    return CVID + (20 * recepID);
 }
 
+int getNextRecpLock(int recepID){
+    static int LockID = 0;
+    return LockID + (20 * recepID + 10);
+}
+
+int getNextCashCV(int cashID){
+    static int CVID = 0;
+    return RECP_MAX + CVID + (20 * cashID);
+}
+
+int getNextCashLock(int cashID){
+    static int LockID = 0;
+    return RECP_MAX + LockID + (20 * cashID + 10);
+}
+
+int getNextClerkCV(int clerkID){
+    static int CVID = 0;
+    return RECP_MAX + MAX_CASHIER + CVID + (20 * clerkID);
+}
+
+int getNextClerkLock(int clerkID){
+    static int LockID = 0;
+    return RECP_MAX + MAX_CASHIER + LockID + (20 * clerkID + 10);
+}
+
+int getNextDocCV(int docID){
+    static int CVID = 0;
+    return RECP_MAX + MAX_CASHIER + MAX_DOCTORS + CVID + (20 * docID);
+}
+
+int getNextDocLock(int docID){
+    static int LockID = 0;
+    return RECP_MAX + MAX_CASHIER + MAX_DOCTORS + LockID + (20 * docID + 10);
+}
+
+void __Receptionists(Receptionists *recep, int recepID) {
+    recep->peopleInLine = 0;
+    recep->receptionCV = getNextRecpCV(recepID);
+    recep->receptionistWaitCV = getNextRecpCV(recepID);
+    recep->ReceptionistBreakCV = getNextRecpCV(recepID);
+    recep->transLock = getNextRecpLock(recepID);
+    recep->currentToken = 0;
+}
 void __Cashier(Cashier *cash, int ID) {
     char name[20];
     cash->lineLength = 0;
     cash->patToken = 0;
     cash->fee = 0;
     cash->payment = 0;
-    strcpy(name, "");
-    name = itoa(ID, name);
-    strcpy(cash->lineCV, strcat(name, "_Cashier.lineCV"));
-    strcpy(name, "");
-    name = itoa(ID, name);
-    strcpy(cash->transLock, strcat(name, "_Cashier.transLock"));
-    strcpy(name, "");
-    name = itoa(ID, name);
-    strcpy(cash->transCV, strcat(name, "_Cashier.transCV"));
-    strcpy(name, "");
-    name = itoa(ID, name);
-    strcpy(cash->breakCV, strcat(name, "_Cashier.breakCV"));
+    cash->lineCV = getNextCashCV(ID);
+    cash->transLock = getNextCashLock(ID);
+    cash->transCV = getNextCashCV(ID);
+    cash->breakCV = getNextCashCV(ID);
 }
-
 void __PharmacyClerks(PharmacyClerks *pcl, int ID) {
     char name[20];
     pcl-> patientsInLine = 0;
-    /* pcl->state = FREE; */
     pcl->payment = 0;
     pcl->fee = (int) (1267) % 100;
     pcl->patPrescription = 0;
-    strcpy(name, "");
-    name = itoa(ID, name);
-    strcpy(pcl->ClerkCV, strcat(name, "_ClerkCV"));
-    strcpy(name, "");
-    name = itoa(ID, name);
-    strcpy(pcl->ClerkBreakCV, strcat(name, "_ClerkBreakCV"));
-    strcpy(name, "");
-    name = itoa(ID, name);
-    strcpy(pcl->ClerkTransLock, strcat(name, "_ClerkTransLock"));
-    strcpy(name, "");
-    name = itoa(ID, name);
-    strcpy(pcl->ClerkTransCV, strcat(name, "_ClerkTransCV"));
+    pcl->ClerkCV = getNextClerkCV(ID);
+    pcl->ClerkBreakCV = getNextClerkCV(ID);
+    pcl->ClerkTransLock = getNextClerkLock(ID);
+    pcl->ClerkTransCV = getNextClerkCV(ID);
 }
 
 void __Doctor(Doctor *doc, int ID) {

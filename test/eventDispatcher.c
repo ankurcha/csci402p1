@@ -13,7 +13,7 @@ void Init_MsgQueue(MessageQueue *q, QueueElement *queueElements, int length) {
     q->queue = queueElements;
     q->length = length;
     q->head = -1;
-    q - tail = -1;
+    q-> tail = -1;
     while (i < q->length) {
         q->queue[i].next = -1;
         q->queue[i].valid = 0;
@@ -51,7 +51,7 @@ Packet MsgQueue_Pop(MessageQueue *q, int *senderId, int *senderMbox) {
 
     /* check for empty queue */
     if (q->head == -1) {
-        return NULL;
+        return 0;
     }
 
     temp = q->head;

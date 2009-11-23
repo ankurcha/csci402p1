@@ -45,11 +45,8 @@ typedef struct MessageQueue MessageQueue;
 /* methods for a FIFO Message Queue */
 
 void Init_MsgQueue(MessageQueue *q);
-
-void MsgQueue_Push(MessageQueue *q, Packet *msg, int senderId, int senderMbox);
-
-Packet MsgQueue_Pop(MessageQueue *q, int *senderId, int senderMbox);
-
+int MsgQueue_Push(MessageQueue *q, Packet *msg, int senderId, int senderMbox);
+Packet MsgQueue_Pop(MessageQueue *q, int *senderId, int *senderMbox);
 char MsgQueue_IsEmpty(MessageQueue *q);
 
 /* FIFO Queue for the send messages, used by the event dispatcher */
