@@ -100,7 +100,9 @@ enum {
     CASHCOUNT = 0x10,
     CLERKCOUNT = 0x11,
     HOSPMANCOUNT = 0x12,
-    FEELIST_APPEND = 0x13
+    FEELIST_APPEND = 0x13,
+    QUEUE_PUSH = 0x14,
+    QUEUE_POP = 0x15
 };
 
 /* Entity Identification */
@@ -198,6 +200,8 @@ int HDataUpdate_HospMan(int id);
 /* Updates the Global data variables */
 int HGlobalDataUpdate(short Variable, int val);
 int HGlobalListAppendUpdate(int key, int value);
+int HGlobalQueuePopUpdate();
+int HGlobalQueuePushUpdate(int value);
 int DistUpdate_Send(Packet p);
 int DistGlobalData_Send(Packet p);
 #endif /* P2PNETWORK_H */
