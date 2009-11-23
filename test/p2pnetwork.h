@@ -91,6 +91,8 @@ enum {
     SENDER_ID = 0, TIMESTAMP = 2, PACKET_TYPE = 6, DATA = 7
 };
 
+int myMbox;
+
 /* Easy access to the data in a message */
 struct packet {
     int senderId;
@@ -154,6 +156,10 @@ int DistLock_Release(int name);
 int HCV_Signal(int HCVId, int HLockId);
 int HCV_Wait(int HCVId, int HLockId);
 int HCV_Broadcast(int HCVId, int HLockId);
+
+int DistCV_Wait(int CVID, int LockID);
+int DistCV_Signal(int CVID);
+void Process_CV_Signal(Packet pkt);
 
 /* A synchronized print routine to print the lines on the console nicely
  */
