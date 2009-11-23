@@ -1,7 +1,7 @@
 #include "syscall.h"
 #include "queue.h"
 #include "queue.c"
-#include "itoa.c"
+#include "itoa.h"
 #include "print.h"
 #include "string.h"
 
