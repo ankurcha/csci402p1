@@ -29,6 +29,11 @@ void network_thread(int mbox) {
     int numEntities;
     int maxTS[MaxEntities];
 
+    for(i=0; i<MaxEntities; i++) {
+        maxTS[i] = 0;
+    }
+
+    readyCount = 0;
     myMbox = mbox;
 
     /* this array should make it easier to scan all entities */
@@ -188,9 +193,16 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
             break;
 
         case NODE_READY:
-            /*TODO: add to the node ready count, once all nodes are ready,
+            /* add to the node ready count, once all nodes are ready,
              * start the simulation
              */
+            readyCount++;
+            if(readyCount == numEntities) {
+                /* wake entity thread*/
+                Acquire(netthread_Lock);
+                Signal(netthread_CV, netthread_Lock);
+                Release(netthread_Lock);
+            }
             break;
         case RECP_DATA_UPDATE:
             temp = UpdateData_Receptionist(pkt);
