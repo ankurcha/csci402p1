@@ -626,7 +626,7 @@ int HDataUpdate_HospMan(int id) {
 int HGlobalDataUpdate(short Variable, int val) {
     int status = -1;
     Packet p;
-    buildPacket_GlobalData(p, Variable, val);
+    buildPacket_GlobalData(&p, Variable, val);
     status = Packet_Send(GetMachineId(), myNetThreadMbox, 0, &p);
     return status;
 }
