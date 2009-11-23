@@ -48,10 +48,10 @@ int MsgQueue_Push(MessageQueue *q, Packet *msg, int senderId, int senderMbox) {
 
 Packet MsgQueue_Pop(MessageQueue *q, int *senderId, int *senderMbox) {
     int temp;
-
+    Packet p;
     /* check for empty queue */
     if (q->head == -1) {
-        return 0;
+        return p;
     }
 
     temp = q->head;
