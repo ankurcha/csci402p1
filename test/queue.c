@@ -4,7 +4,7 @@
  * Max Pflueger
  */
 
-#include "print.c"
+#include "print.h"
 #include "queue.h"
 
 void Init_Queue(Queue* q) {

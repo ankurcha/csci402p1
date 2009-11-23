@@ -3,9 +3,13 @@
  *  
  *  Provide conversions between strings and ints
  *
+ * USC CS 402 Fall 2009
  *  Created by Ankur Chauhan on 10/10/09.
+ *  Extended by Max Pflueger
  *
  */
+
+#include "itoa.h"
 
 char* itoa(int a, char *str) {
 	int i = 0;

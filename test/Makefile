@@ -32,7 +32,7 @@ INCDIR =-I../userprog -I../threads
 CFLAGS = -G 0 -c $(INCDIR)
 
 
-all: halt matmult sort testfiles lockcreate destroylock createcv destroycv fork exec exectest printtest queue heap packet init test_code multih networkTestClient1 networkTestClient2 multiForkmatmult multiExecmatmult multiExecmatmult2 multiprint peertest
+all: halt matmult sort testfiles lockcreate destroylock createcv destroycv fork exec exectest printtest itoa queue heap packet test_code multih networkTestClient1 networkTestClient2 multiForkmatmult multiExecmatmult multiExecmatmult2 multiprint 
 
 
 start.o: start.s ../userprog/syscall.h
@@ -114,6 +114,10 @@ printtest.o: printtest.c
 printtest: printtest.o start.o
 	$(LD) $(LDFLAGS) start.o printtest.o -o printtest.coff
 	../bin/coff2noff printtest.coff printtest
+
+itoa.o: itoa.c itoa.h
+	$(CC) $(CFLAGS) -c itoa.c
+itoa: itoa.o
 
 print.o: print.c print.h
 	$(CC) $(CFLAGS) -c print.c
