@@ -225,6 +225,9 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
         case MAN_DATA_UPDATE:
             temp = UpdateData_HospitalManager(pkt);
             break;
+        case GLOBAL_DATA_UPDATE:
+            UpdateData_Global(pkt);
+            break;
         default:
             break;
     }
@@ -285,6 +288,9 @@ void processLocalPacket(Packet pkt) {
         case CLERK_DATA_UPDATE:
         case MAN_DATA_UPDATE:
             /* Take care of sending updates */
+            temp = DistUpdate_Send(pkt);
+            break;
+        case GLOBAL_DATA_UPDATE:
             temp = DistUpdate_Send(pkt);
             break;
         default:

@@ -7,7 +7,7 @@
  *
  */
 
-int strlen(char *str);
+int strlen(const char *str);
 
 char* strcat(char *dst, const char *src);
 

@@ -8,14 +8,12 @@
 #define MAX_CV 50
 #define MAX_CV_QUEUE_LEN 100
 #define MaxEntities 50
-/*#define MaxDataSize (MaxMailSize - 4)*/
-
 #define MAX_RESOURCES 50
 
 /************************************
  ******** GLOBAL DATA ***************
  ************************************/
-
+int myNetThreadMbox;
 int readyCount;
 int numberOfEntities[7]; /* The number of entities */
 /* numberOfEntities[0] - patients
@@ -76,7 +74,33 @@ enum {
     DOC_DATA_UPDATE = 0x10,
     CASH_DATA_UPDATE = 0x11,
     CLERK_DATA_UPDATE = 0x12,
-    MAN_DATA_UPDATE = 0x13
+    MAN_DATA_UPDATE = 0x13,
+    GLOBAL_DATA_UPDATE = 0x14
+};
+
+/* Global Variable Identification */
+
+enum {
+    NUMDOCTORS = 0x01,
+    NUMCASHIERS = 0x02,
+    NUMCLERKS = 0x03,
+    NUMDOORBOYS = 0x04,
+    NUMRECP = 0x04,
+    NUMPATIENTS = 0x05,
+    FEESPAID = 0x06,
+    TEST_STATE = 0x07,
+    TOKENCOUNTER = 0x08,
+    TOTALSALES = 0x09,
+    PEOPLEINHOSPITAL = 0x0A,
+    DOORBOYLINELENGTH = 0x0B,
+    PATCOUNT = 0x0C,
+    RECPCOUNT = 0x0D,
+    DOORBCOUNT = 0x0E,
+    DOCCOUNT = 0x0F,
+    CASHCOUNT = 0x10,
+    CLERKCOUNT = 0x11,
+    HOSPMANCOUNT = 0x12,
+    FEELIST_APPEND = 0x13
 };
 
 /* Entity Identification */
@@ -160,6 +184,7 @@ int UpdateData_Doctor(Packet p);
 int UpdateData_Cashier(Packet p);
 int UpdateData_Clerk(Packet p);
 int UpdateData_HospitalManager(Packet p);
+int UpdateData_Global(Packet p);
 
 /* Hospital Entity interface for the Network Data Update */
 int HDataUpdate_Recp(int id);
@@ -170,6 +195,10 @@ int HDataUpdate_Cash(int id);
 int HDataUpdate_Clerk(int id);
 int HDataUpdate_HospMan(int id);
 
+/* Updates the Global data variables */
+int HGlobalDataUpdate(short Variable, int val);
+int HGlobalListAppendUpdate(int key, int value);
 int DistUpdate_Send(Packet p);
+int DistGlobalData_Send(Packet p);
 #endif /* P2PNETWORK_H */
 
