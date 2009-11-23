@@ -139,4 +139,3 @@ void DeserializePacket(Packet *p, char* message) {
     copyOutData(message, DATA, p->data, MaxMailSize - DATA);
 }
 
-

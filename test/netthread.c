@@ -29,7 +29,7 @@ void network_thread(int mbox) {
     int numEntities;
     int maxTS[MaxEntities];
 
-    for(i=0; i<MaxEntities; i++) {
+    for (i = 0; i < MaxEntities; i++) {
         maxTS[i] = 0;
     }
 
@@ -197,7 +197,7 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
              * start the simulation
              */
             readyCount++;
-            if(readyCount == numEntities) {
+            if (readyCount == numEntities) {
                 /* wake entity thread*/
                 Acquire(netthread_Lock);
                 Signal(netthread_CV, netthread_Lock);
@@ -276,7 +276,7 @@ void processLocalPacket(Packet pkt) {
             break;
         case CV_BROADCAST:
             name = copyOutInt(pkt.data, NAME); /* CVID */
-            while(!MsgQueue_IsEmpty(pendingCVQueue[name])) {
+            while (!MsgQueue_IsEmpty(pendingCVQueue[name])) {
                 DistCV_Signal(name);
             }
             break;

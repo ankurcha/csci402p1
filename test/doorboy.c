@@ -14,17 +14,14 @@ void doorboy( ID) {
         /*Get into the doorboyLine till some doctor asks for me */
         HLock_Acquire(doorboyLineLock);
         doorboyLineLength++;
-        /** TODO: PUSH DATA TO NETWORK **/
+        HGlobalDataUpdate(DOORBOYLINELENGTH, doorboyLineLength);
         print("DB_");
         print(itoa(ID, str));
         print(": Waiting for some doctor to wake me up.");
         print("\n");
-
         HCV_Wait(doorboyLineCV, doorboyLineLock);
-
         doorboyLineLength--;
-        /** TODO: PUSH DATA TO NETWORK **/
-
+        HGlobalDataUpdate(DOORBOYLINELENGTH, doorboyLineLength);
         /*Some doctor woke me up, lets check who */
         /*myDoctor =  wakingDoctorID; */
         if (Queue_IsEmpty(&wakingDoctorList) == 1) {
@@ -34,7 +31,7 @@ void doorboy( ID) {
             continue;
         }
         myDoctor = Queue_Pop(&wakingDoctorList);
-        /** TODO: PUSH DATA TO NETWORK **/
+        HGlobalQueuePopUpdate();
         if (test_state == 2) {
             print("DB_");
             print(itoa(ID, str));
@@ -48,9 +45,7 @@ void doorboy( ID) {
             print(itoa(myDoctor, str));
             print("\n");
         }
-
         HLock_Release(doorboyLineLock);
-
         /* Inform the doctor that I have arrived, and wait for him to take  */
         /*  a break, if he so chooses */
         HLock_Acquire(doctors[myDoctor].transLock);

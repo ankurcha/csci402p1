@@ -118,7 +118,6 @@ enum {
 
 int myMbox;
 
-
 /*********************************
  ********** FUNCTIONS ************
  *********************************/
@@ -132,7 +131,6 @@ int getResourceStatus(int resourceID);
 int updateResourceStatus(int resourceID, int newStatus);
 int getResourceReplies(int resourceID);
 int updateResourceReplies(int resourceID, int replies);
-
 
 /*********************************
  ******** MUTUAL EXCLUSION *******

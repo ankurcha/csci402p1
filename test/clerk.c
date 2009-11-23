@@ -46,8 +46,9 @@ void clerk(int ID) {
         /* add this payment to our total collected */
         HLock_Acquire(PaymentLock);
         totalsales += clerks[ID].payment;
+        HGlobalDataUpdate(TOTALSALES, totalsales);
         clerks[ID].sales += clerks[ID].payment;
-        /** TODO: PUSH DATA TO NETWORK **/
+        HDataUpdate_Clerk(ID);
         HLock_Release(PaymentLock);
         HLock_Release(clerks[ID].ClerkTransLock);
     }

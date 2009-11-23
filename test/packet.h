@@ -47,4 +47,3 @@ void copyInData(char* message, int index, char* data, int length);
 
 #endif /*PACKET_H*/
 
-

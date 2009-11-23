@@ -24,20 +24,20 @@
 #include "packet.h"
 
 struct messageQueueElement {
-	Packet message;
-	int senderId;
-	int senderMbox;
-	int next; /* init = -1*/
-	char valid; /* intit = 0 */
+    Packet message;
+    int senderId;
+    int senderMbox;
+    int next; /* init = -1*/
+    char valid; /* intit = 0 */
 };
 
 typedef struct messageQueueElement QueueElement;
 
 struct MessageQueue {
-	QueueElement *queue;
-	int length;
-	int head;
-	int tail;
+    QueueElement *queue;
+    int length;
+    int head;
+    int tail;
 };
 
 typedef struct MessageQueue MessageQueue;
@@ -70,5 +70,4 @@ void updateLastTimestampSeen(int hostID, int timestampReceived);
  */
 
 #endif /*EVENT_DISPATCHER_H*/
-
 

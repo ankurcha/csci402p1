@@ -1219,68 +1219,68 @@ int main(int argc, char** argv) {
     print("Enter Testcase option: ");
     Read(inp, 20, ConsoleInput);
     switch (*(inp)) {
-    case '0':
-        HospINIT(0);
-
-        break;
-    case '2':
-        test2();
-
-        break;
-    case '3':
-        HospINIT(3);
-
-        break;
-    case '4':
-        test4();
-
-        break;
-    case '5':
-        if (*(inp + 1) == '1') {
-            HospINIT(51);
-            break;
-        }
-        if (*(inp + 1) == '2') {
-            HospINIT(52);
+        case '0':
+            HospINIT(0);
 
             break;
-        }
-        if (*(inp + 1) == '3') {
-            HospINIT(53);
-            break;
-        }
-        break;
-    case '6':
-        HospINIT(6);
+        case '2':
+            test2();
 
-        break;
-    case '7':
-        test7();
-
-        break;
-    case '8':
-        HospINIT(8);
-
-        break;
-    case '9':
-        HospINIT(9);
-
-        break;
-    case '1':
-        if (*(inp + 1) == '0') {
-            HospINIT(10);
             break;
-        }
-        if (*(inp + 1) == '1') {
-            HospINIT(11);
+        case '3':
+            HospINIT(3);
+
             break;
-        } else {
-            test1();
+        case '4':
+            test4();
+
             break;
-        }
-    default:
-        HospINIT(0);
-        break;
+        case '5':
+            if (*(inp + 1) == '1') {
+                HospINIT(51);
+                break;
+            }
+            if (*(inp + 1) == '2') {
+                HospINIT(52);
+
+                break;
+            }
+            if (*(inp + 1) == '3') {
+                HospINIT(53);
+                break;
+            }
+            break;
+        case '6':
+            HospINIT(6);
+
+            break;
+        case '7':
+            test7();
+
+            break;
+        case '8':
+            HospINIT(8);
+
+            break;
+        case '9':
+            HospINIT(9);
+
+            break;
+        case '1':
+            if (*(inp + 1) == '0') {
+                HospINIT(10);
+                break;
+            }
+            if (*(inp + 1) == '1') {
+                HospINIT(11);
+                break;
+            } else {
+                test1();
+                break;
+            }
+        default:
+            HospINIT(0);
+            break;
     }
 
     /*HospINIT(testmode);*/

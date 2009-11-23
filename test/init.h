@@ -64,7 +64,6 @@ struct Receptionists_ {
 };
 typedef struct Receptionists_ Receptionists;
 
-
 /* shared data struct related to a Cashier */
 struct Cashier_ {
     /* line CV and length */
@@ -117,12 +116,10 @@ struct Doctor_ {
 };
 typedef struct Doctor_ Doctor;
 
-
 struct Doorboy_ {
     int doorboyid;
 };
 typedef struct Doorboy_ DoorBoy;
-
 
 /**** GLOBAL VARIABLES *****/
 int numDoctors = 0;
@@ -153,7 +150,6 @@ DoorBoy doorboys[MAX_DOCTORS];
 Doctor doctors[MAX_DOCTORS];
 Cashier cashiers[MAX_CASHIER];
 PharmacyClerks clerks[MAX_CLERKS];
-
 
 /**** GLOBAL LOCKS ****/
 char creationLock[20];
@@ -274,13 +270,12 @@ void __PharmacyClerks(PharmacyClerks *pcl, int ID) {
     strcpy(pcl->ClerkTransCV, strcat(name, "_ClerkTransCV"));
 }
 
-
 void __Doctor(Doctor *doc, int ID) {
     char name[20];
     doc->prescription = -1;
     doc->patientToken = -1;
     doc->peopleInLine = 0;
-    strcpy(name,"");
+    strcpy(name, "");
     name = itoa(ID, name);
     strcpy(doc->LineLock, strcat(name, "_LineLock"));
     strcpy(name, "");
@@ -296,8 +291,6 @@ void __Doctor(Doctor *doc, int ID) {
     name = itoa(ID, name);
     strcpy(doc->transCV, strcat(name, "_Doctor.transCV"));
 }
-
-
 
 void createPatient() {
     int temp;

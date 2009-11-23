@@ -8,18 +8,18 @@
 #define QUEUE_H 1
 
 struct queue_element {
-	int value;
-	int next; /* must init to -1 */
-	char valid; /* must init to 0 */
+    int value;
+    int next; /* must init to -1 */
+    char valid; /* must init to 0 */
 };
 
 typedef struct queue_element queue_element;
 
 struct Queue {
-	queue_element* queue;
-	int length; /* must init to the length of the array */
-	int head; /* must init to -1 */
-	int tail; /* must init to -1 */
+    queue_element* queue;
+    int length; /* must init to the length of the array */
+    int head; /* must init to -1 */
+    int tail; /* must init to -1 */
 };
 
 typedef struct Queue Queue;

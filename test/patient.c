@@ -36,7 +36,6 @@ void patients(int ID) {
     } else {
         print("P: Searching for the receptionist with the shortest line\n");
     }
-
     for (i = 0; i < numRecp; i++) {
         if (test_state == 4) {
             /*Print the length of each line */
@@ -70,13 +69,13 @@ void patients(int ID) {
     }
     /* Wait in line */
     receptionists[shortestline].peopleInLine++;
-    /* TODO: PUSH DATA TO NETWORK */
+    HDataUpdate_Recp(shortestline);
     HCV_Wait(receptionists[shortestline].receptionCV, (recpLineLock));
     print("P_");
     print(itoa(ID, str));
     print(" Got woken up, get out of line and going to counter for token\n");
     receptionists[shortestline].peopleInLine--;
-    /* TODO: PUSH DATA TO NETWORK */
+    HDataUpdate_Recp(shortestline);
     /*wait for the receptionist to prepare token for me, till then I wait */
     HLock_Release(recpLineLock);
     HLock_Acquire(receptionists[shortestline].transLock);
@@ -98,7 +97,6 @@ void patients(int ID) {
     print(": Signal receptionist R_");
     print(itoa(shortestline, str));
     print(" to continue, I am done\n");
-
     /*Release transaction lock */
     HLock_Release(receptionists[shortestline].transLock);
 
@@ -107,9 +105,7 @@ void patients(int ID) {
     /*///////////////////////////////////////////////// */
 
     /*Calculate which doctor I want to see */
-
     myDoctor = (int) (Random()) % numDoctors;
-
     if (test_state == 2) {
         print("P_");
         print(itoa(ID, str));
@@ -128,10 +124,8 @@ void patients(int ID) {
         print(itoa(ID, str));
         print(" : Going to meet doctor D_\n");
     }
-
     /* Acquire doc's line lock */
     HLock_Acquire(doctors[myDoctor].LineLock);
-
     /* Wait on the line -- to be woken up by the doorboy */
     if (test_state == 2) {
         print("P_");
@@ -143,17 +137,15 @@ void patients(int ID) {
         print(" : Join line and Waiting for doorboy to tell me to go\n");
     }
     doctors[myDoctor].peopleInLine++;
-    /* TODO: PUSH DATA TO NETWORK */
+    HDataUpdate_Doc(myDoctor);
     HCV_Wait(doctors[myDoctor].LineCV, doctors[myDoctor].LineLock);
     print("P_");
     print(itoa(ID, str));
     print(" : Doorboy told me to go to doctor, proceeding....\n");
-
     doctors[myDoctor].peopleInLine--;
-    /* TODO: PUSH DATA TO NETWORK */
+    HDataUpdate_Doc(myDoctor);
     /* move into the doctor's transaction lock */
     HLock_Release(doctors[myDoctor].LineLock);
-
     print("P_");
     print(itoa(ID, str));
     print(" : Trying to acquire doctor's translock\n");
@@ -170,9 +162,8 @@ void patients(int ID) {
 
     /*The doctor is waiting for me to provide my info, oblige him!! */
     doctors[myDoctor].patientToken = myToken;
-    /* TODO: PUSH DATA TO NETWORK */
+    HDataUpdate_Doc(myDoctor);
     /* hand off to the doctor thread for consultation */
-
     if (test_state == 7) {
         print("P_");
         print(itoa(ID, str));
@@ -265,7 +256,8 @@ void patients(int ID) {
     /*if(sLen > 0) {get in line} else {get in line} */
     /* there are a lot of cases here, but they all result in us getting in line */
     cashiers[myCashier].lineLength++;
-    /* TODO: PUSH DATA TO NETWORK */
+    HDataUpdate_Cash(myCashier);
+
     print("P_");
     print(itoa(ID, str));
     print(": Waiting in line for cashier C_");
@@ -273,28 +265,34 @@ void patients(int ID) {
     print(" to attend to me, Line length: ");
     print(itoa(cashiers[myCashier].lineLength, str));
     print("\n");
+
     HCV_Wait(cashiers[myCashier].lineCV, cashierLineLock);
+
     print("P_");
     print(itoa(ID, str));
     print(": Going to meet cashier C_");
     print(itoa(myCashier, str));
     print("\n");
+
     cashiers[myCashier].lineLength--;
-    /* TODO: PUSH DATA TO NETWORK */
+    HDataUpdate_Cash(myCashier);
+
     /* APPROACH THE DESK */
     HLock_Release(cashierLineLock);
     HLock_Acquire(cashiers[myCashier].transLock);
 
     /* provide token to cashier */
     cashiers[myCashier].patToken = myToken;
-    /* TODO: PUSH DATA TO NETWORK */
+    HDataUpdate_Cash(myCashier);
+
     /* wait for cashier to come back with the fee */
     HCV_Signal(cashiers[myCashier].transCV, cashiers[myCashier].transLock);
     HCV_Wait(cashiers[myCashier].transCV, cashiers[myCashier].transLock);
 
     /* provide the money */
     cashiers[myCashier].payment = cashiers[myCashier].fee;
-    /* TODO: PUSH DATA TO NETWORK */
+    HDataUpdate_Cash(myCashier);
+
     print("P_");
     print(itoa(ID, str));
     print(": Paying money.\n");
@@ -367,7 +365,7 @@ void patients(int ID) {
 
     /*wait in line for my turn */
     clerks[shortestclerkline].patientsInLine++;
-    /* TODO: PUSH DATA TO NETWORK */
+    HDataUpdate_Clerk(shortestclerkline);
     print("P_");
     print(itoa(ID, str));
     print(": Waiting in line for clerk CL_");
@@ -384,7 +382,7 @@ void patients(int ID) {
             " Got woken up, got out of line and going to the Pharmacy CLerk to give prescription.\n");
 
     clerks[shortestclerkline].patientsInLine--;
-    /* TODO: PUSH DATA TO NETWORK */
+    HDataUpdate_Clerk(shortestclerkline);
     HLock_Release(ClerkLinesLock);
     HLock_Acquire(clerks[shortestclerkline].ClerkTransLock);
     /*signal ParmacyClerk that i am ready to give Prescription */
@@ -396,7 +394,7 @@ void patients(int ID) {
     /*Entered the line no need to hold all lines others may now continue */
     /*wait for the PharmacyClerk to Get the prescription from me.. so I wait */
     clerks[shortestclerkline].patPrescription = myPrescription;
-    /* TODO: PUSH DATA TO NETWORK */
+    HDataUpdate_Clerk(shortestclerkline);
     print("P_");
     print(itoa(ID, str));
     print(": Gave prescriptiong, waiting for medicines.\n");
@@ -414,7 +412,7 @@ void patients(int ID) {
     print(": Got Medicines, making payment.\n");
 
     clerks[shortestclerkline].payment = clerks[shortestclerkline].fee;
-    /* TODO: PUSH DATA TO NETWORK */
+    HDataUpdate_Clerk(shortestclerkline);
     /* done */
     HCV_Signal(clerks[shortestclerkline].ClerkTransCV,
             clerks[shortestclerkline].ClerkTransLock);
@@ -432,7 +430,7 @@ void patients(int ID) {
     print(itoa(ID, str));
     print(" Getting out of the hospital\n");
     peopleInHospital--;
-    /* TODO: PUSH DATA TO NETWORK */
+    HGlobalDataUpdate(PEOPLEINHOSPITAL, peopleInHospital);
     HLock_Release(hospitalLock);
 }
 

@@ -9,80 +9,80 @@
 #include "eventDispatcher.h"
 
 void Init_MsgQueue(MessageQueue *q, QueueElement *queueElements, int length) {
-	int i = 0;
-	q->queue = queueElements;
-	q->length = length;
-	q->head = -1;
-	q - tail = -1;
-	while (i < q->length) {
-		q->queue[i].next = -1;
-		q->queue[i].valid = 0;
-		i++;
-	}
-	return;
+    int i = 0;
+    q->queue = queueElements;
+    q->length = length;
+    q->head = -1;
+    q - tail = -1;
+    while (i < q->length) {
+        q->queue[i].next = -1;
+        q->queue[i].valid = 0;
+        i++;
+    }
+    return;
 }
 
 int MsgQueue_Push(MessageQueue *q, Packet *msg, int senderId, int senderMbox) {
-	int i = 0;
-	while (i < q->length) {
-		if (!q->queue[i].valid)
-			break;
-		i++;
-	}
-	if (i == q->length) {
-		return -1;
-	}
-	if (q->tail == -1)
-		q->head = i;
-	else
-		q->queue[q->tail].next = i;
+    int i = 0;
+    while (i < q->length) {
+        if (!q->queue[i].valid)
+            break;
+        i++;
+    }
+    if (i == q->length) {
+        return -1;
+    }
+    if (q->tail == -1)
+        q->head = i;
+    else
+        q->queue[q->tail].next = i;
 
-	q->queue[i].valid = 1;
-	q->queue[i].next = -1;
-	q->queue[i].message = *msg;
-	q->queue[i].senderId = senderId;
-	q->queue[i].senderMbox = senderMbox;
-	q->tail = i;
-	return i;
+    q->queue[i].valid = 1;
+    q->queue[i].next = -1;
+    q->queue[i].message = *msg;
+    q->queue[i].senderId = senderId;
+    q->queue[i].senderMbox = senderMbox;
+    q->tail = i;
+    return i;
 }
 
 Packet MsgQueue_Pop(MessageQueue *q, int *senderId, int *senderMbox) {
-	int temp;
+    int temp;
 
-	/* check for empty queue */
-	if (q->head == -1) {
-		return NULL;
-	}
+    /* check for empty queue */
+    if (q->head == -1) {
+        return NULL;
+    }
 
-	temp = q->head;
+    temp = q->head;
 
-	/* check if we popped the last element */
-	if (q->tail == q->head) {
-		q->head = -1;
-		q->tail = -1;
-	} else {
-		q->head = q->queue[q->head].next;
-		if (q->tail == -1) {
-			print("Error: queue malformed\n");
-		}
-	}
-	q->queue[temp].valid = 0;
-	q->queue[temp].next = -1;
-	*senderId = q->queue[temp].senderId;
-	*senderMbox = q->queue[temp].senderMbox;
-	return q->queue[temp].message;
+    /* check if we popped the last element */
+    if (q->tail == q->head) {
+        q->head = -1;
+        q->tail = -1;
+    } else {
+        q->head = q->queue[q->head].next;
+        if (q->tail == -1) {
+            print("Error: queue malformed\n");
+        }
+    }
+    q->queue[temp].valid = 0;
+    q->queue[temp].next = -1;
+    *senderId = q->queue[temp].senderId;
+    *senderMbox = q->queue[temp].senderMbox;
+    return q->queue[temp].message;
 }
 
 char MsgQueue_IsEmpty(MessageQueue *q) {
-	if (q->head == -1) {
-		if (q->tail != -1)
-			print("ERROR: queue is headless! run for your lives!\n");
-		return 1;
-	} else
-		return 0;
+    if (q->head == -1) {
+        if (q->tail != -1)
+            print("ERROR: queue is headless! run for your lives!\n");
+        return 1;
+    } else
+        return 0;
 }
 
 void updateLastTimestampSeen(int hostID, int timestampReceived) {
-	LastTimestampSeen[hostID] = timestampReceived;
+    LastTimestampSeen[hostID] = timestampReceived;
 }
 
