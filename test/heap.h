@@ -9,6 +9,7 @@
 #define HEAP_H 1
 
 #include "p2pnetwork.h"
+#include "packet.h"
 
 struct heap_element {
 	int key;
