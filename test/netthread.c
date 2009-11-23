@@ -261,7 +261,9 @@ void processLocalPacket(Packet pkt) {
             break;
         case CV_BROADCAST:
             name = copyOutInt(pkt.data, NAME); /* CVID */
-            /*TODO: I think I have to wake up the entity thread Yes*/
+            while(!MsgQueue_IsEmpty(pendingCVQueue[name])) {
+                DistCV_Signal(name);
+            }
             break;
         case RECP_DATA_UPDATE:
         case PAT_DATA_UPDATE:
