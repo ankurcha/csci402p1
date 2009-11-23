@@ -29,7 +29,7 @@ int getResourceStatus(int name) {
 int updateResourceStatus(int name, int newStatus) {
     int i;
     for (i = 0; i < MAX_RESOURCES; i++) {
-        if (resources[i].valid == 1 && resources[i].name ==  name) {
+        if (resources[i].valid == 1 && resources[i].name == name) {
             resources[i].state = newStatus;
             return resources[i].state;
         }
@@ -83,10 +83,10 @@ int addResource(int name, int state) {
     return targetPos;
 }
 
-int deleteResource(Resource arr[], char* name) {
+int deleteResource(int name) {
     int i = 0;
     for (i = 0; i < MAX_RESOURCES; i++) {
-        if (!strcmp(resources[i].name, name)) {
+        if (resources[i].name == name) {
             resources[i].valid = 0;
             return 1;
         }
@@ -94,10 +94,10 @@ int deleteResource(Resource arr[], char* name) {
     return 0;
 }
 
-int IsResourcePresent(Resource arr[], char* name) {
+int IsResourcePresent(int name) {
     int i = 0;
     for (i = 0; i < MAX_RESOURCES; i++) {
-        if (!strcmp(resources[i].name, name) && resources[i].valid == 1) {
+        if (resources[i].name == name && resources[i].valid == 1) {
             return 1;
         }
     }
@@ -127,7 +127,6 @@ int HLock_Acquire(int HlockId) {
     /* For this operation we need to do a distributed concensus and then decide
      * who should get the lock, else we just keep waiting till we do get
      */
-    int status = -1;
     Packet p;
     p.senderId = GetMachineId();
     p.timestamp = GetTimestamp();
@@ -139,7 +138,7 @@ int HLock_Acquire(int HlockId) {
      * receiver
      */
     Acquire(netthread_Lock);
-    status = Packet_Send(GetMachineId(), myNetThreadMbox, 0, p);
+    status = Packet_Send(GetMachineId(), myNetThreadMbox, 0, &p);
     /* Now we have to wait for the for the netthread to reply to us with
      * a go ahead this is done using a CV and a lock.
      */
@@ -150,26 +149,32 @@ int HLock_Acquire(int HlockId) {
 }
 
 int DistLock_Acquire(int name) {
+    int i, j;
     /* Send a lock acquire message to all the targets */
     /* Add the requested resource to the requestedResource Array */
-    addResource(resourcesRequested, LOCK, temp, 0);
+    Packet p;
+    p.senderId = GetMachineId();
+    p.timestamp = GetTimestamp();
+    p.packetType = LOCK_ACQUIRE;
+    copyInInt(p.data, 0, name); /* Data part just contains the LockID */
+    addResource(name, RES_REQ);
     for (j = 0; j < 7; j++) {
-        for (int i = 0; i < numberOfEntities[j]; i++) {
+        for (i = 0; i < numberOfEntities[j]; i++) {
             /* Sending LOCK_ACQUIRE to all and waiting for LOCK_OK */
-            Packet_Send(j, i + 1, myMbox, pkt);
+            Packet_Send(j, i + 1, myMbox, &pkt);
         }
     }
 }
 
 int DistLock_Release(int name) {
-    /* We just need to take the lock out of the heldResources List */
-    temp = copyOutInt(pkt.data, 0);
+    int i, j;
+    int temp = copyOutInt(pkt.data, 0);
     if (updateResourceStatus(temp, RES_NONE) == 1) {
         /* Lock is no longer held by the lock
          * Just broadcast this message to all the othe nodes */
         for (j = 0; j < 7; j++) {
-            for (int i = 0; i < numberOfEntities[j]; i++) {
-                Packet_Send(j, i + 1, myMbox, pkt);
+            for (i = 0; i < numberOfEntities[j]; i++) {
+                Packet_Send(j, i + 1, myMbox, &pkt);
             }
         }
         return 1; /* successfully released lock */
@@ -186,7 +191,6 @@ int HCV_Signal(int HCVId, int HLockId) {
     status = getResourceStatus(HLockId);
     if (status == RES_HELD) {
         CV_Lock = getCV_Lock_Mapping(HCVId);
-
         p.senderId = GetMachineId();
         p.timestamp = GetTimestamp();
         p.packetType = CV_SIGNAL;
@@ -197,7 +201,7 @@ int HCV_Signal(int HCVId, int HLockId) {
          * to be held */
 
         HLock_Acquire(CV_Lock);
-        status = Packet_Send(GetMachineId(), myNetThreadMbox, 0, p);
+        status = Packet_Send(GetMachineId(), myNetThreadMbox, 0, &p);
         HLock_Release(CV_Lock);
 
         return 1;
@@ -380,177 +384,177 @@ int getCV_Lock_Mapping(int CVID) {
 }
 
 /* Data Update Handling Functions
-int UpdateData_Patient(Packet p) {
+ int UpdateData_Patient(Packet p) {
 
-    return 0;
-}
+ return 0;
+ }
 
-int UpdateData_Receptionist(Packet p) {
-    int id, peopleInLine, currentToken;
-    id = copyOutInt(p.data, 0);
-    peopleInLine = copyOutInt(p.data, 4);
-    currentToken = copyOutInt(p.data, 8);
+ int UpdateData_Receptionist(Packet p) {
+ int id, peopleInLine, currentToken;
+ id = copyOutInt(p.data, 0);
+ peopleInLine = copyOutInt(p.data, 4);
+ currentToken = copyOutInt(p.data, 8);
 
-    receptionists[id].currentToken = currentToken;
-    receptionists[id].peopleInLine = peopleInLine;
-    return id;
-}
-int UpdateData_Doorboy(Packet p) {
+ receptionists[id].currentToken = currentToken;
+ receptionists[id].peopleInLine = peopleInLine;
+ return id;
+ }
+ int UpdateData_Doorboy(Packet p) {
 
-    return 0;
-}
-int UpdateData_Doctor(Packet p) {
-    int id, peopleInLine, prescription, patientToken;
-    id = copyOutInt(p.data, 0);
-    prescription = copyOutInt(p.data, 4);
-    patientToken = copyOutInt(p.data, 8);
+ return 0;
+ }
+ int UpdateData_Doctor(Packet p) {
+ int id, peopleInLine, prescription, patientToken;
+ id = copyOutInt(p.data, 0);
+ prescription = copyOutInt(p.data, 4);
+ patientToken = copyOutInt(p.data, 8);
 
-    doctors[id].patientToken = patientToken;
-    doctors[id].peopleInLine = peopleInLine;
-    doctors[id].prescription = prescription;
-    return id;
-}
+ doctors[id].patientToken = patientToken;
+ doctors[id].peopleInLine = peopleInLine;
+ doctors[id].prescription = prescription;
+ return id;
+ }
 
-int UpdateData_Cashier(Packet p) {
-    int id, lineLength, patToken, fee, payment, sales;
-    id = copyOutInt(p.data, 0);
-    lineLength = copyOutInt(p.data, 4);
-    patToken = copyOutInt(p.data, 8);
-    fee = copyOutInt(p.data, 12);
-    payment = copyOutInt(p.data, 16);
-    sales = copyOutInt(p.data, 20);
+ int UpdateData_Cashier(Packet p) {
+ int id, lineLength, patToken, fee, payment, sales;
+ id = copyOutInt(p.data, 0);
+ lineLength = copyOutInt(p.data, 4);
+ patToken = copyOutInt(p.data, 8);
+ fee = copyOutInt(p.data, 12);
+ payment = copyOutInt(p.data, 16);
+ sales = copyOutInt(p.data, 20);
 
-    cashiers[id].lineLength = lineLength;
-    cashiers[id].patToken = patToken;
-    cashiers[id].fee = fee;
-    cashiers[id].payment = payment;
-    cashiers[id].sales = sales;
-    return id;
-}
+ cashiers[id].lineLength = lineLength;
+ cashiers[id].patToken = patToken;
+ cashiers[id].fee = fee;
+ cashiers[id].payment = payment;
+ cashiers[id].sales = sales;
+ return id;
+ }
 
-int UpdateData_Clerk(Packet p) {
-    int id, patientsInLine, payment, fee, patPrescription, sales;
-    id = copyOutInt(p.data, 0);
-    patientsInLine = copyOutInt(p.data, 4);
-    payment = copyOutInt(p.data, 8);
-    fee = copyOutInt(p.data, 12);
-    patPrescription = copyOutInt(p.data, 16);
-    sales = copyOutInt(p.data, 20);
+ int UpdateData_Clerk(Packet p) {
+ int id, patientsInLine, payment, fee, patPrescription, sales;
+ id = copyOutInt(p.data, 0);
+ patientsInLine = copyOutInt(p.data, 4);
+ payment = copyOutInt(p.data, 8);
+ fee = copyOutInt(p.data, 12);
+ patPrescription = copyOutInt(p.data, 16);
+ sales = copyOutInt(p.data, 20);
 
-    clerks[id].patientsInLine = patientsInLine;
-    clerks[id].payment = payment;
-    clerks[id].fee = fee;
-    clerks[id].patPrescription = patPrescription;
-    clerks[id].sales = sales;
-    return id;
-}
+ clerks[id].patientsInLine = patientsInLine;
+ clerks[id].payment = payment;
+ clerks[id].fee = fee;
+ clerks[id].patPrescription = patPrescription;
+ clerks[id].sales = sales;
+ return id;
+ }
 
-int UpdateData_HospitalManager(Packet p) {
+ int UpdateData_HospitalManager(Packet p) {
 
-    return 0;
-}
+ return 0;
+ }
 
-int UpdateData_Global(Packet p) {
-    int status = -1;
-    short variableToUpdate = 0x00;
-    int value = -1;
-    int key = -1;
-    variableToUpdate = copyOutShort(p.data, 0);
-    switch (variableToUpdate) {
-        case NUMDOCTORS:
-            value = copyOutInt(p.data, 2);
-            numDoctors = value;
-            break;
-        case NUMCASHIERS:
-            value = copyOutInt(p.data, 2);
-            numCashiers = value;
-            break;
-        case NUMCLERKS:
-            value = copyOutInt(p.data, 2);
-            numClerks = value;
-            break;
-        case NUMDOORBOYS:
-            value = copyOutInt(p.data, 2);
-            numDoorboys = value;
-            break;
-        case NUMRECP:
-            value = copyOutInt(p.data, 2);
-            numRecp = value;
-            break;
-        case NUMPATIENTS:
-            value = copyOutInt(p.data, 2);
-            numPatients = value;
-            break;
-        case FEESPAID:
-            value = copyOutInt(p.data, 2);
-            feesPaid = value;
-            break;
-        case TEST_STATE:
-            value = copyOutInt(p.data, 2);
-            test_state = value;
-            break;
-        case TOKENCOUNTER:
-            value = copyOutInt(p.data, 2);
-            TokenCounter = value;
-            break;
-        case TOTALSALES:
-            value = copyOutInt(p.data, 2);
-            totalsales = value;
-            break;
-        case PEOPLEINHOSPITAL:
-            value = copyOutInt(p.data, 2);
-            peopleInHospital = value;
-            break;
-        case DOORBOYLINELENGTH:
-            value = copyOutInt(p.data, 2);
-            doorboyLineLength = value;
-            break;
-        case PATCOUNT:
-            value = copyOutInt(p.data, 2);
-            patientCount = value;
-            break;
-        case RECPCOUNT:
-            value = copyOutInt(p.data, 2);
-            recptionistCount = value;
-            break;
-        case DOORBCOUNT:
-            value = copyOutInt(p.data, 2);
-            doorboyCount = value;
-            break;
-        case DOCCOUNT:
-            value = copyOutInt(p.data, 2);
-            doctorCount = value;
-            break;
-        case CASHCOUNT:
-            value = copyOutInt(p.data, 2);
-            cashierCount = value;
-            break;
-        case CLERKCOUNT:
-            value = copyOutInt(p.data, 2);
-            pharmacyCount = value;
-            break;
-        case HOSPMANCOUNT:
-            value = copyOutInt(p.data, 2);
-            hospitalmanagerCount = value;
-            break;
-        case FEELIST_APPEND:
-            key = copyOutInt(p.data, 2);
-            value = copyOutInt(p.data, 6);
-            List_Append(&feeList, key, value);
-            break;
-        case QUEUE_PUSH:
-            value = copyOutInt(p.data, 2);
-            Queue_Push(&wakingDoctorList, value);
-            break;
-        case QUEUE_POP:
-            Queue_Pop(&wakingDoctorList);
-            break;
-        default:
-            break;
-    }
-    return variableToUpdate;
-}
-*/
+ int UpdateData_Global(Packet p) {
+ int status = -1;
+ short variableToUpdate = 0x00;
+ int value = -1;
+ int key = -1;
+ variableToUpdate = copyOutShort(p.data, 0);
+ switch (variableToUpdate) {
+ case NUMDOCTORS:
+ value = copyOutInt(p.data, 2);
+ numDoctors = value;
+ break;
+ case NUMCASHIERS:
+ value = copyOutInt(p.data, 2);
+ numCashiers = value;
+ break;
+ case NUMCLERKS:
+ value = copyOutInt(p.data, 2);
+ numClerks = value;
+ break;
+ case NUMDOORBOYS:
+ value = copyOutInt(p.data, 2);
+ numDoorboys = value;
+ break;
+ case NUMRECP:
+ value = copyOutInt(p.data, 2);
+ numRecp = value;
+ break;
+ case NUMPATIENTS:
+ value = copyOutInt(p.data, 2);
+ numPatients = value;
+ break;
+ case FEESPAID:
+ value = copyOutInt(p.data, 2);
+ feesPaid = value;
+ break;
+ case TEST_STATE:
+ value = copyOutInt(p.data, 2);
+ test_state = value;
+ break;
+ case TOKENCOUNTER:
+ value = copyOutInt(p.data, 2);
+ TokenCounter = value;
+ break;
+ case TOTALSALES:
+ value = copyOutInt(p.data, 2);
+ totalsales = value;
+ break;
+ case PEOPLEINHOSPITAL:
+ value = copyOutInt(p.data, 2);
+ peopleInHospital = value;
+ break;
+ case DOORBOYLINELENGTH:
+ value = copyOutInt(p.data, 2);
+ doorboyLineLength = value;
+ break;
+ case PATCOUNT:
+ value = copyOutInt(p.data, 2);
+ patientCount = value;
+ break;
+ case RECPCOUNT:
+ value = copyOutInt(p.data, 2);
+ recptionistCount = value;
+ break;
+ case DOORBCOUNT:
+ value = copyOutInt(p.data, 2);
+ doorboyCount = value;
+ break;
+ case DOCCOUNT:
+ value = copyOutInt(p.data, 2);
+ doctorCount = value;
+ break;
+ case CASHCOUNT:
+ value = copyOutInt(p.data, 2);
+ cashierCount = value;
+ break;
+ case CLERKCOUNT:
+ value = copyOutInt(p.data, 2);
+ pharmacyCount = value;
+ break;
+ case HOSPMANCOUNT:
+ value = copyOutInt(p.data, 2);
+ hospitalmanagerCount = value;
+ break;
+ case FEELIST_APPEND:
+ key = copyOutInt(p.data, 2);
+ value = copyOutInt(p.data, 6);
+ List_Append(&feeList, key, value);
+ break;
+ case QUEUE_PUSH:
+ value = copyOutInt(p.data, 2);
+ Queue_Push(&wakingDoctorList, value);
+ break;
+ case QUEUE_POP:
+ Queue_Pop(&wakingDoctorList);
+ break;
+ default:
+ break;
+ }
+ return variableToUpdate;
+ }
+ */
 int DistUpdate_Send(Packet p) {
     /* This function is used to broadcast an Update packet to every one
      */
