@@ -559,7 +559,7 @@ int DistUpdate_Send(Packet p) {
     int i, j;
     for (j = 0; j < 7; j++)
         for (i = 0; i < numberOfEntities[j]; i++)
-            Packet_Send(receiverId, recMBox, senderMBox, p);
+            Packet_Send(j, i + 1, myMbox, &p);
 }
 
 /* Hospital Entity interface for the Network Data Update */
@@ -567,8 +567,8 @@ int HDataUpdate_Recp(int id) {
     /* Creates an update packet and sends it to the network entity for processing */
     Packet p;
     int status = -1;
-    buildPacket_Receptionist(p, id);
-    status = Packet_Send(GetMachineId(), myNetThreadMbox, 0, p);
+    buildPacket_Receptionist(&p, id);
+    status = Packet_Send(GetMachineId(), myNetThreadMbox, 0, &p);
     return status;
 }
 int HDataUpdate_Pat(int id) {
@@ -587,16 +587,16 @@ int HDataUpdate_Doc(int id) {
     /* Creates an update packet and sends it to the network entity for processing */
     Packet p;
     int status = -1;
-    buildPacket_Doctor(p, id);
-    status = Packet_Send(GetMachineId(), myNetThreadMbox, 0, p);
+    buildPacket_Doctor(&p, id);
+    status = Packet_Send(GetMachineId(), myNetThreadMbox, 0, &p);
     return status;
 }
 int HDataUpdate_Cash(int id) {
     /* Creates an update packet and sends it to the network entity for processing */
     Packet p;
     int status = -1;
-    buildPacket_Cashier(p, id);
-    status = Packet_Send(GetMachineId(), myNetThreadMbox, 0, p);
+    buildPacket_Cashier(&p, id);
+    status = Packet_Send(GetMachineId(), myNetThreadMbox, 0, &p);
     return status;
 
 }
@@ -604,8 +604,8 @@ int HDataUpdate_Clerk(int id) {
     /* Creates an update packet and sends it to the network entity for processing */
     Packet p;
     int status = -1;
-    buildPacket_Clerk(p, id);
-    status = Packet_Send(GetMachineId(), myNetThreadMbox, 0, p);
+    buildPacket_Clerk(&p, id);
+    status = Packet_Send(GetMachineId(), myNetThreadMbox, 0, &p);
     return status;
 
 }
@@ -614,35 +614,35 @@ int HDataUpdate_HospMan(int id) {
     return status;
 }
 
-int HGlobalDataUpdate(int Variable, int val) {
+int HGlobalDataUpdate(short Variable, int val) {
     int status = -1;
     Packet p;
-    p = buildPacket_GlobalData(p, Variable, val);
-    status = Packet_Send(GetMachineId(), myNetThreadMbox, 0, p);
+    buildPacket_GlobalData(p, Variable, val);
+    status = Packet_Send(GetMachineId(), myNetThreadMbox, 0, &p);
     return status;
 }
 
 int HGlobalListAppendUpdate(int key, int val) {
     int status = -1;
     Packet p;
-    p = buildPacket_GlobalListAppend(p, key, val);
-    status = Packet_Send(GetMachineID(), myNetThreadMbox, 0, p);
+    buildPacket_GlobalListAppend(&p, key, val);
+    status = Packet_Send(GetMachineID(), myNetThreadMbox, 0, &p);
     return status;
 }
 
 int HGlobalQueuePopUpdate() {
     int status = -1;
     Packet p;
-    p = buildPacket_GlobalQueuePop(p);
-    status = Packet_Send(GetMachineID(), myNetThreadMbox, 0, p);
+    buildPacket_GlobalQueuePop(&p);
+    status = Packet_Send(GetMachineID(), myNetThreadMbox, 0, &p);
     return status;
 }
 
 int HGlobalQueuePushUpdate(int value) {
     int status = -1;
     Packet p;
-    p = buildPacket_GlobalQueuePush(p, value);
-    status = Packet_Send(GetMachineID(), myNetThreadMbox, 0, p);
+    buildPacket_GlobalQueuePush(&p, value);
+    status = Packet_Send(GetMachineID(), myNetThreadMbox, 0, &p);
     return status;
 }
 
@@ -658,7 +658,7 @@ int getMyNetThreadMbox() {
     /* Filled in by the initializing thread */
     status = Packet_Receive(mbox, &senderId, &senderMbox, &p);
     if (status != -1) {
-        myMailboxNumber = copyOutInt(p->data, 0);
+        myMailboxNumber = copyOutInt(p.data, 0);
     }
     return myMailboxNumber;
 }
