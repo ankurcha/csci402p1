@@ -7,6 +7,7 @@
  * Max Pflueger
  */
 
+#include "syscall.h"
 #include "p2pnetwork.h"
 #include "packet.h"
 
