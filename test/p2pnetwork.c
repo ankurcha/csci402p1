@@ -375,8 +375,7 @@ void readConfig() {
 
 int getCV_Lock_Mapping(int CVID) {
     int LockId = -1;
-    /* Do some magical mapping between */
-
+    LockId = CVID + LOCK_OFFSET;
     return LockId;
 }
 

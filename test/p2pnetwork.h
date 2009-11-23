@@ -1,5 +1,5 @@
 #ifndef P2PNETWORK_H
-#define P2PNETWORK_H 1
+#define P2PNETWORK_H
 
 #include "syscall.h"
 #include "packet.h"
@@ -10,6 +10,8 @@
 #define MAX_CV_QUEUE_LEN 100
 #define MaxEntities 50
 #define MAX_RESOURCES 50
+#define ENTITY_OFFSET 20
+#define LOCK_OFFSET 10
 
 /************************************
  ******** GLOBAL DATA ***************
@@ -146,7 +148,7 @@ int DistLock_Acquire(int name);
 int DistLock_Release(int name);
 
 /* Register/Signal/Wait/Broadcast/Destroy a Condition variable with the
- * distributed system
+ * distributed system NODEPS
  */
 int HCV_Signal(int HCVId, int HLockId);
 int HCV_Wait(int HCVId, int HLockId);
@@ -176,7 +178,7 @@ int readConfig(char *filename);
 /* Gets the mapping between the CV and its assiciated Lock */
 int getCV_Lock_Mapping(int CVID);
 
-/* Data update handling Functions */
+/* Data update handling Functions  depends on init.h and used by netthread.c*/
 int UpdateData_Patient(Packet p);
 int UpdateData_Receptionist(Packet p);
 int UpdateData_Doorboy(Packet p);
@@ -186,7 +188,7 @@ int UpdateData_Clerk(Packet p);
 int UpdateData_HospitalManager(Packet p);
 int UpdateData_Global(Packet p);
 
-/* Hospital Entity interface for the Network Data Update */
+/* Hospital Entity interface for the Network Data Update NO DEPS*/
 int HDataUpdate_Recp(int id);
 int HDataUpdate_Pat(int id);
 int HDataUpdate_Doorb(int id);
@@ -195,7 +197,7 @@ int HDataUpdate_Cash(int id);
 int HDataUpdate_Clerk(int id);
 int HDataUpdate_HospMan(int id);
 
-/* Updates the Global data variables */
+/* Updates the Global data variables NO DEPS*/
 int HGlobalDataUpdate(short Variable, int val);
 int HGlobalListAppendUpdate(int key, int value);
 int HGlobalQueuePopUpdate();

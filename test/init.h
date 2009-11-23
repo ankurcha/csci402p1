@@ -213,42 +213,42 @@ int List_IsEmpty(List *l) {
 
 int getNextRecpCV(int recepID){
     static int CVID = 0;
-    return CVID + (20 * recepID);
+    return CVID + (ENTITY_OFFSET * recepID);
 }
 
 int getNextRecpLock(int recepID){
     static int LockID = 0;
-    return LockID + (20 * recepID + 10);
+    return LockID + (ENTITY_OFFSET * recepID + LOCK_OFFSET);
 }
 
 int getNextCashCV(int cashID){
     static int CVID = 0;
-    return RECP_MAX + CVID + (20 * cashID);
+    return RECP_MAX*ENTITY_OFFSET + CVID + (ENTITY_OFFSET * cashID);
 }
 
 int getNextCashLock(int cashID){
     static int LockID = 0;
-    return RECP_MAX + LockID + (20 * cashID + 10);
+    return RECP_MAX*ENTITY_OFFSET + LockID + (ENTITY_OFFSET * cashID + LOCK_OFFSET);
 }
 
 int getNextClerkCV(int clerkID){
     static int CVID = 0;
-    return RECP_MAX + MAX_CASHIER + CVID + (20 * clerkID);
+    return (RECP_MAX + MAX_CASHIER)*ENTITY_OFFSET + CVID + (ENTITY_OFFSET * clerkID);
 }
 
 int getNextClerkLock(int clerkID){
     static int LockID = 0;
-    return RECP_MAX + MAX_CASHIER + LockID + (20 * clerkID + 10);
+    return (RECP_MAX + MAX_CASHIER)*ENTITY_OFFSET + LockID + (ENTITY_OFFSET * clerkID + LOCK_OFFSET);
 }
 
 int getNextDocCV(int docID){
     static int CVID = 0;
-    return RECP_MAX + MAX_CASHIER + MAX_DOCTORS + CVID + (20 * docID);
+    return (RECP_MAX + MAX_CASHIER + MAX_DOCTORS)*ENTITY_OFFSET + CVID + (ENTITY_OFFSET * docID);
 }
 
 int getNextDocLock(int docID){
     static int LockID = 0;
-    return RECP_MAX + MAX_CASHIER + MAX_DOCTORS + LockID + (20 * docID + 10);
+    return (RECP_MAX + MAX_CASHIER + MAX_DOCTORS)*ENTITY_OFFSET + LockID + (ENTITY_OFFSET * docID + LOCK_OFFSET);
 }
 
 void __Receptionists(Receptionists *recep, int recepID) {
@@ -281,27 +281,15 @@ void __PharmacyClerks(PharmacyClerks *pcl, int ID) {
     pcl->ClerkTransLock = getNextClerkLock(ID);
     pcl->ClerkTransCV = getNextClerkCV(ID);
 }
-
 void __Doctor(Doctor *doc, int ID) {
-    char name[20];
     doc->prescription = -1;
     doc->patientToken = -1;
     doc->peopleInLine = 0;
-    strcpy(name, "");
-    name = itoa(ID, name);
-    strcpy(doc->LineLock, strcat(name, "_LineLock"));
-    strcpy(name, "");
-    name = itoa(ID, name);
-    strcpy(doc->LineCV, strcat(name, "_LineCV"));
-    strcpy(name, "");
-    name = itoa(ID, name);
-    strcpy(doc->doorboyBreakCV, strcat(name, "_Doctor.doorboyBreakCV"));
-    strcpy(name, "");
-    name = itoa(ID, name);
-    strcpy(doc->transLock, strcat(name, "_Doctor.transLock"));
-    strcpy(name, "");
-    name = itoa(ID, name);
-    strcpy(doc->transCV, strcat(name, "_Doctor.transCV"));
+    doc->LineLock = getNextDocLock(ID);
+    doc->transLock = getNextDocLock(ID);
+    doc->LineCV = getNextDocCV(ID);
+    doc->doorboyBreakCV = getNextDocCV(ID);
+    doc->transCV = getNextDocCV(ID);
 }
 
 void createPatient() {
