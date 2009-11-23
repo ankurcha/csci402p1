@@ -39,7 +39,7 @@ all: halt\
      lockcreate destroylock createcv destroycv fork exec exectest printtest\
      test_code multih networkTestClient1 networkTestClient2\
      multiForkmatmult multiExecmatmult multiExecmatmult2 multiprint\
-     itoa queue heap packet eventDispatcher p2pnetwork\
+     itoa queue heap packet eventDispatcher hospShared p2pnetwork\
      disthosp
 
 
@@ -147,7 +147,11 @@ eventDispatcher.o: eventDispatcher.c eventDispatcher.h packet
 	$(CC) $(CFLAGS) -c eventDispatcher.c
 eventDispatcher: eventDispatcher.o
 
-p2pnetwork.o: p2pnetwork.c p2pnetwork.h packet eventDispatcher print
+hospShared.o: hospShared.c hospShared.h packet eventDispatcher print
+	$(CC) $(CFLAGS) -c hospShared.c
+hospShared: hospShared.o
+
+p2pnetwork.o: p2pnetwork.c p2pnetwork.h packet eventDispatcher print hospShared
 	$(CC) $(CFLAGS) -c p2pnetwork.c
 p2pnetwork: p2pnetwork.o
 
