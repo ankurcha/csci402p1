@@ -8,6 +8,8 @@
 #ifndef HEAP_H
 #define HEAP_H 1
 
+#include "p2pnetwork.h"
+
 struct heap_element {
 	int key;
 };
@@ -30,3 +32,5 @@ void Heap_Push(Message* start, int* length);
 Message Heap_ExtractMin(Message* start, int* length);
 
 #endif /* HEAP_H */
+
+

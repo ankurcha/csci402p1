@@ -13,9 +13,15 @@
  * and then it will send the message onto the network 
  */
 
+#ifndef EVENT_DISPATCHER_H
+#define EVENT_DISPATCHER_H 1
+
 #define MaxSendQueueSize 50
 #define MaxPendingMessagesSize 100
 #define MAXHOSTS 100
+
+#include "p2pnetwork.h"
+
 struct messageQueueElement {
 	Packet message;
 	int senderId;
@@ -62,3 +68,7 @@ void updateLastTimestampSeen(int hostID, int timestampReceived);
 /* 2. Queue up message to pending queue till further notice 
  For this we will use, void MsgQueue_Push(pendingMessagesQueue, msg);
  */
+
+#endif /*EVENT_DISPATCHER_H*/
+
+

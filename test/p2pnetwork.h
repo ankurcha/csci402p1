@@ -2,6 +2,8 @@
 #define P2PNETWORK_H 1
 
 #include "syscall.h"
+#include "eventDispatcher.h"
+
 #define MaxMailSize 40
 #define MAX_CV 50
 #define MAX_CV_QUEUE_LEN 100
