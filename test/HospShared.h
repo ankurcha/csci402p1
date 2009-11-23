@@ -17,4 +17,5 @@ Packet *buildPacket_Cashier(Packet *p, int id, int lineLength, int patToken,
         int fee, int payment, int sales);
 Packet *buildPacket_Clerk(Packet *p, int id, int patientsInLine, int payment,
         int fee, int patPrescription, int sales);
+Packet *buildPacket_GlobalData(Packet *p, short variable, int val);
 #endif /* HOSPSHARED_H_ */

@@ -146,15 +146,15 @@ int getResourceStatus(char* name) {
     for (i = 0; i < MAX_RESOURCES; i++) {
         if (!strcmp(resources[i].name, name) && resources[i].valid == 1) {
             switch (resources[i].state) {
-            case RES_HELD:
-                status = RES_HELD;
-                break;
-            case RES_REQ:
-                status = RES_REQ;
-                break;
-            default:
-                status = RES_NONE;
-                break;
+                case RES_HELD:
+                    status = RES_HELD;
+                    break;
+                case RES_REQ:
+                    status = RES_REQ;
+                    break;
+                default:
+                    status = RES_NONE;
+                    break;
             }
         }
     }
@@ -292,7 +292,7 @@ int DistLock_Acquire(int name) {
     for (j = 0; j < 7; j++) {
         for (int i = 0; i < numberOfEntities[j]; i++) {
             /* Sending LOCK_ACQUIRE to all and waiting for LOCK_OK */
-            Packet_Send(j, i+1, myMbox, pkt);
+            Packet_Send(j, i + 1, myMbox, pkt);
         }
     }
 }
@@ -305,15 +305,11 @@ int DistLock_Release(int name) {
          * Just broadcast this message to all the othe nodes */
         for (j = 0; j < 7; j++) {
             for (int i = 0; i < numberOfEntities[j]; i++) {
-                Packet_Send(j, i+1, myMbox, pkt);
+                Packet_Send(j, i + 1, myMbox, pkt);
             }
         }
         return 1; /* successfully released lock */
     }
-}
-
-int RemoteLock_Acquire(Packet pkt) {
-
 }
 
 /* this is called by an entity thread to signal a CV */
@@ -415,7 +411,7 @@ int DistCV_Wait(int CVID, int LockID) {
     /* send to every entity */
     for (j = 0; j < 7; j++) {
         for (i = 0; i < numberOfEntities[j]; i++) {
-            Packet_Send(j, i+1, myMbox, p);
+            Packet_Send(j, i + 1, myMbox, p);
         }
     }
 
@@ -443,11 +439,11 @@ int DistCV_Signal(int CVID) {
     /* send to every entity */
     for (j = 0; j < 7; j++) {
         for (i = 0; i < numberOfEntities[j]; i++) {
-            Packet_Send(j, i+1, myMbox, p);
+            Packet_Send(j, i + 1, myMbox, p);
         }
     }
 
-    if(senderId == GetMachineId() && senderMBox == myMbox) {
+    if (senderId == GetMachineId() && senderMBox == myMbox) {
         print("ERROR: I signaled my own CV?\n");
         Halt();
     }
@@ -459,7 +455,7 @@ void Process_CV_Signal(Packet pkt) {
     /* When we get a Signal we first will POP the pendingCVQueue Queue
      * Then check if the node associated with us is the one being signaled
      * If yes, we will wake it up
-     */ 
+     */
     int name;
     Packet p;
     int senderId, senderMbox;
@@ -467,7 +463,7 @@ void Process_CV_Signal(Packet pkt) {
     name = copyOutInt(pkt.data, NAME);
     p = MsgQueue_Pop(pendingCVQueue[name], &senderId, &senderMbox);
 
-    if(senderId == GetMachineId() && senderMBox == myMbox) {
+    if (senderId == GetMachineId() && senderMBox == myMbox) {
         /* wake up my entity */
         Acquire(netthread_Lock);
         Signal(netthread_CV, netthread_Lock);
@@ -515,7 +511,7 @@ void readConfig() {
 
 int getCV_Lock_Mapping(int CVID) {
     int LockId = -1;
-    /* Do some magical mapping */
+    /* Do some magical mapping between */
     return LockId;
 }
 
@@ -620,7 +616,7 @@ int HDataUpdate_Doorb(int id) {
     int status = -1;
     return status;
 }
-int HDataUpdate_Doc(int id){
+int HDataUpdate_Doc(int id) {
     /* Creates an update packet and sends it to the network entity for processing */
     Packet p;
     int status = -1;
@@ -628,7 +624,7 @@ int HDataUpdate_Doc(int id){
     status = Packet_Send(GetMachineId(), myNetThreadMbox, 0, p);
     return status;
 }
-int HDataUpdate_Cash(int id){
+int HDataUpdate_Cash(int id) {
     /* Creates an update packet and sends it to the network entity for processing */
     Packet p;
     int status = -1;
@@ -637,7 +633,7 @@ int HDataUpdate_Cash(int id){
     return status;
 
 }
-int HDataUpdate_Clerk(int id){
+int HDataUpdate_Clerk(int id) {
     /* Creates an update packet and sends it to the network entity for processing */
     Packet p;
     int status = -1;
@@ -646,20 +642,46 @@ int HDataUpdate_Clerk(int id){
     return status;
 
 }
-int HDataUpdate_HospMan(int id){
+int HDataUpdate_HospMan(int id) {
     int status = -1;
     return status;
+}
+
+int HGlobalDataUpdate(int Variable, int val) {
+    int status = -1;
+    Packet p;
+    buildPacket_GlobalData(p, Variable, val);
+    status = Packet_Send(GetMachineId(), myNetThreadMbox, 0, p);
+    return status;
+}
+
+/*
+ * Get my mailbox number from GetMachineID():0
+ */
+int getMyNetThreadMbox() {
+    int senderId, senderMbox;
+    int mbox = 0;
+    Packet p;
+    int status = -1;
+    int myMailboxNumber;
+    /* Filled in by the initializing thread */
+    status = Packet_Receive(mbox, &senderId, &senderMbox, &p);
+    if (status != -1) {
+        myMailboxNumber = copyOutInt(p->data, 0);
+    }
+    return myMailboxNumber;
 }
 
 /******************************
  ****** SYSTEM INITIALIZE *****
  ******************************/
-void initializeSystem(){
+void initializeSystem() {
     /* This function takes care of initializing the various
      * locks and other things at the system startup
      */
     /* Read all the configuration data */
     readConfig();
+    myNetThreadMbox = getMyNetThreadMbox();
     /* create system locks and CV*/
     netthread_Lock = CreateLock("netthread_Lock");
     netthread_CV = CreateCondition("netthread_CV");
