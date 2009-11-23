@@ -8,7 +8,6 @@
 #ifndef HOSPSHARED_H_
 #define HOSPSHARED_H_
 
-#include "init.h"
 
 /* Data Update packet building functions */
 Packet* buildPacket_Receptionist(Packet *p, int id);
