@@ -115,6 +115,7 @@ void doctor( ID) {
 		consultFee = (50 + (Random() % 201));
 		HLock_Acquire(feeListLock);
 		List_Append(&feeList, doctors[ID].patientToken, consultFee);
+		/** TODO: PUSH DATA TO NETWORK **/
 		HLock_Release(feeListLock);
 		/* pass the prescription to the patient and wait for them to leave */
 		print("D_");

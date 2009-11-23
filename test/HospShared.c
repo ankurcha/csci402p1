@@ -66,3 +66,15 @@ Packet *buildPacket_GlobalData(Packet *p, short variable, int val) {
     copyInInt(p->data, 2, val);
     return p;
 }
+
+Packet *buildPacket_GlobalListAppend(Packet *p, int key,
+        int val) {
+    int variable = FEELIST_APPEND;
+    p->senderId = GetMachineId();
+    p->timestamp = GetTimestamp();
+    p->packetType = GLOBAL_DATA_UPDATE;
+    copyInShort(p->data, 0, variable);
+    copyInInt(p->data, 2, key);
+    copyInInt(p->data, 6, val);
+    return p;
+}

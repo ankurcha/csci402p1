@@ -216,19 +216,19 @@ int List_IsEmpty(List *l) {
 
 void __Receptionists(Receptionists *recep, int recepID) {
     char name[20];
-    name = "";
+    strcpy(name, "");
     name = itoa(recepID, name);
     recep->peopleInLine = 0;
-    name = "";
+    strcpy(name, "");
     name = itoa(recepID, name);
     strcpy(recep->receptionCV, strcat(name, "_receptionCV"));
-    name = "";
+    strcpy(name, "");
     name = itoa(recepID, name);
     strcpy(recep->transLock, strcat(name, "_Receptionists.transLock"));
-    name = "";
+    strcpy(name, "");
     name = itoa(recepID, name);
     strcpy(recep->receptionistWaitCV, strcat(name, "_receptionistWaitCV"));
-    name = "";
+    strcpy(name, "");
     name = itoa(recepID, name);
     strcpy(recep->ReceptionistBreakCV, strcat(name, "_ReceptionistBreakCV"));
     recep->currentToken = 0;
@@ -240,16 +240,16 @@ void __Cashier(Cashier *cash, int ID) {
     cash->patToken = 0;
     cash->fee = 0;
     cash->payment = 0;
-    name = "";
+    strcpy(name, "");
     name = itoa(ID, name);
     strcpy(cash->lineCV, strcat(name, "_Cashier.lineCV"));
-    name = "";
+    strcpy(name, "");
     name = itoa(ID, name);
     strcpy(cash->transLock, strcat(name, "_Cashier.transLock"));
-    name = "";
+    strcpy(name, "");
     name = itoa(ID, name);
     strcpy(cash->transCV, strcat(name, "_Cashier.transCV"));
-    name = "";
+    strcpy(name, "");
     name = itoa(ID, name);
     strcpy(cash->breakCV, strcat(name, "_Cashier.breakCV"));
 }
@@ -261,16 +261,16 @@ void __PharmacyClerks(PharmacyClerks *pcl, int ID) {
     pcl->payment = 0;
     pcl->fee = (int) (1267) % 100;
     pcl->patPrescription = 0;
-    name = "";
+    strcpy(name, "");
     name = itoa(ID, name);
     strcpy(pcl->ClerkCV, strcat(name, "_ClerkCV"));
-    name = "";
+    strcpy(name, "");
     name = itoa(ID, name);
     strcpy(pcl->ClerkBreakCV, strcat(name, "_ClerkBreakCV"));
-    name = "";
+    strcpy(name, "");
     name = itoa(ID, name);
     strcpy(pcl->ClerkTransLock, strcat(name, "_ClerkTransLock"));
-    name = "";
+    strcpy(name, "");
     name = itoa(ID, name);
     strcpy(pcl->ClerkTransCV, strcat(name, "_ClerkTransCV"));
 }
@@ -280,21 +280,20 @@ void __Doctor(Doctor *doc, int ID) {
     char name[20];
     doc->prescription = -1;
     doc->patientToken = -1;
-
     doc->peopleInLine = 0;
-    name = "";
+    strcpy(name,"");
     name = itoa(ID, name);
     strcpy(doc->LineLock, strcat(name, "_LineLock"));
-    name = "";
+    strcpy(name, "");
     name = itoa(ID, name);
     strcpy(doc->LineCV, strcat(name, "_LineCV"));
-    name = "";
+    strcpy(name, "");
     name = itoa(ID, name);
     strcpy(doc->doorboyBreakCV, strcat(name, "_Doctor.doorboyBreakCV"));
-    name = "";
+    strcpy(name, "");
     name = itoa(ID, name);
     strcpy(doc->transLock, strcat(name, "_Doctor.transLock"));
-    name = "";
+    strcpy(name, "");
     name = itoa(ID, name);
     strcpy(doc->transCV, strcat(name, "_Doctor.transCV"));
 }

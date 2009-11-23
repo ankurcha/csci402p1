@@ -591,6 +591,11 @@ int HGlobalDataUpdate(int Variable, int val) {
     return status;
 }
 
+int HGlobalListAppendUpdate(int key, int val) {
+    int status = -1;
+    Packet p;
+}
+
 /*
  * Get my mailbox number from GetMachineID():0
  */
