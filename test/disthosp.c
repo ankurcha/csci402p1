@@ -15,48 +15,48 @@ int main() {
     int i = 0;
 
     machineID = GetMachineID();
-    
+
     /*TODO determine threadCt by reading conf file */
 
     /*TODO put msgs into mailbox 0 with mail box numbers */
 
-    switch(machineID) {
+    switch (machineID) {
         case 0: /* patients */
-            for(i=0; i < threadCt; i++) {
+            for (i = 0; i < threadCt; i++) {
                 Exec("../test/patient");
             }
             break;
         case 1: /* receptionists */
-            for(i=0; i < threadCt; i++) {
+            for (i = 0; i < threadCt; i++) {
                 Exec("../test/receptionist");
             }
             break;
         case 2: /* doorboys */
-            for(i=0; i < threadCt; i++) {
+            for (i = 0; i < threadCt; i++) {
                 Exec("../test/doorboy");
             }
             break;
         case 3: /* doctors */
-            for(i=0; i < threadCt; i++) {
+            for (i = 0; i < threadCt; i++) {
                 Exec("../test/doctor");
             }
             break;
         case 4: /* cashiers */
-            for(i=0; i < threadCt; i++) {
+            for (i = 0; i < threadCt; i++) {
                 Exec("../test/cashier");
             }
             break;
         case 5: /* clerks */
-            for(i=0; i < threadCt; i++) {
+            for (i = 0; i < threadCt; i++) {
                 Exec("../test/clerk");
             }
             break;
         case 6: /* hospital manager */
-            for(i=0; i < threadCt; i++) {
+            for (i = 0; i < threadCt; i++) {
                 Exec("../test/hospManager");
             }
             break;
-        default: 
+        default:
             print("ERROR: specified invalid machine number\n");
             return -1;
     }
