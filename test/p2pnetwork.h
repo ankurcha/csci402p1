@@ -2,7 +2,9 @@
 #define P2PNETWORK_H 1
 
 #include "syscall.h"
-#define MaxMailSize 40
+#include "packet.h"
+#include "eventDispatcher.h"
+
 #define MAX_CV 50
 #define MAX_CV_QUEUE_LEN 100
 #define MaxEntities 50
@@ -12,6 +14,7 @@
  ******** GLOBAL DATA ***************
  ************************************/
 int myNetThreadMbox;
+int readyCount;
 int numberOfEntities[7]; /* The number of entities */
 /* numberOfEntities[0] - patients
  * numberOfEntities[1] - receptionists
@@ -110,21 +113,8 @@ enum {
     MANAGER_NODE = 0x13
 };
 
-/* Define our message structure */
-enum {
-    SENDER_ID = 0, TIMESTAMP = 2, PACKET_TYPE = 6, DATA = 7
-};
-
 int myMbox;
 
-/* Easy access to the data in a message */
-struct packet {
-    int senderId;
-    int timestamp;
-    char packetType;
-    char data[MaxMailSize - DATA];
-};
-typedef struct packet Packet;
 
 /*********************************
  ********** FUNCTIONS ************
@@ -140,27 +130,6 @@ int updateResourceStatus(int resourceID, int newStatus);
 int getResourceReplies(int resourceID);
 int updateResourceReplies(int resourceID, int replies);
 
-/* These system calls for doing the netowork I/O
- * This also takes care of the protocol stack.
- */
-
-int Packet_Receive(int mbox, int *senderId, int *senderMBox,
-        Packet *receivedPacket);
-
-int Packet_Send(int receiverId, int recMBox, int senderMBox, Packet*);
-
-void SerializePacket(Packet *p, char* message);
-void DeserializePacket(Packet *p, char* message);
-
-/* Defined some methods for putting data into and out of messages */
-int copyOutInt(char* message, int index);
-void copyInInt(char* message, int index, int val);
-
-int copyOutShort(char* message, int index);
-void copyInShort(char* message, int index, int val);
-
-void copyOutData(char* message, int index, char* data, int length);
-void copyInData(char* message, int index, char* data, int length);
 
 /*********************************
  ******** MUTUAL EXCLUSION *******
