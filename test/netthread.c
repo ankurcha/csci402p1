@@ -273,7 +273,7 @@ void processLocalPacket(Packet pkt) {
         case CLERK_DATA_UPDATE:
         case MAN_DATA_UPDATE:
             /* Take care of sending updates */
-            temp = Dist_Update(pkt);
+            temp = DistUpdate_Send(pkt);
             break;
         default:
             break;

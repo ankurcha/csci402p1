@@ -9,25 +9,19 @@ void doctor( ID) {
 
 	while (1) {
 		/* acquire a doorboy */
-
 		print("D_");
 		print(itoa(ID, str));
 		print(": Alive!!\n");
-
 		HLock_Acquire(doorboyLineLock);
-
 		/* assure that there is a doorboy in line */
 		while (doorboyLineLength <= 0) {
 			if (waitingtime % 100 == 0) {
-
 				print("D_");
 				print(itoa(ID, str));
 				print(": Doctor could not find a doorboy waittime: ");
 				print(itoa(waitingtime, str));
 				print("\n");
-
 			}
-
 			HLock_Release(doorboyLineLock);
 			Yield();
 			waitingtime--;
@@ -37,17 +31,14 @@ void doctor( ID) {
 				return;
 			}
 		}
-
 		/* pull the next doorboy off the line */
-
 		print("D_");
 		print(itoa(ID, str));
 		print(":Signaling doorboy!\n");
-
 		/*wakingDoctorID = ID; */
 		Queue_Push(&wakingDoctorList, ID);
+		/** TODO: PUSH DATA TO NETWORK **/
 		HLock_Signal(doorboyLineCV, doorboyLineLock);
-
 		/* acquire the transaction lock and wait for the doorboy to arrive */
 		HLock_Acquire(doctors[ID].transLock);
 		HLock_Release(doorboyLineLock);
@@ -57,25 +48,19 @@ void doctor( ID) {
 
 		doctorBreak = 0;
 		/* go on break if so inclined */
-
 		if (test_state == 7) {
 			numYields = 35;
-
 			print("D_");
 			print(itoa(ID, str));
 			print(" :TEST7: Going on break for ");
 			print(itoa(numYields, str));
 			print(" cycles!\n");
-
-			for (i = 0; i < numYields; ++i) {
+			for (i = 0; i < numYields; ++i)
 				Yield();
-			}
-
 		} else if (Random() % 100 > 49) { /* go on break */
 			doctorBreak = 1;
 			/* 5-15 yields */
 			numYields = 5 + (Random() % 11);
-
 			/* provide a handle for test 8, only uses doctor 0 */
 			if (ID == 0 && test_state == 8) {
 				print("T8: ");
@@ -85,22 +70,17 @@ void doctor( ID) {
 			print(": Going on break for ");
 			print(itoa(numYields, str));
 			print(" cycles!\n");
-			for (i = 0; i < numYields; ++i) {
+			for (i = 0; i < numYields; ++i)
 				Yield();
-			}
 		}
-
 		/* provide a handle for test 8, only uses doctor 0 */
 		if (ID == 0 && test_state == 8 && doctorBreak)
 			print("T8: ");
-
 		if (doctorBreak)
 			print("D_");
 		print(itoa(ID, str));
 		print(": Back from Break\n");
-
 		/* inform the doorboy that I am ready for a patient */
-
 		if (test_state == 7) {
 			print("D_");
 			print(itoa(ID, str));
@@ -110,58 +90,43 @@ void doctor( ID) {
 			print("D_");
 		print(itoa(ID, str));
 		print(": Back from Break,Signalling patient to come in.\n");
-
 		HCV_Signal(doctors[ID].transCV, doctors[ID].transLock);
-
 		print("D_");
 		print(itoa(ID, str));
 		print(": Waiting for patient....\n");
-
 		/*////  PATIENT INTERACTION  ////// */
 		/* and wait for that patient to arrive */
 		HCV_Wait(doctors[ID].transCV, doctors[ID].transLock);
-
 		/* consult: 10-20 yields */
-
 		print("D_");
 		print(itoa(ID, str));
 		print(": Now Consulting patient\n");
-
 		numYields = 10 + (Random() % 11);
 		for (i = 0; i < numYields; ++i) {
 			Yield(); /* I see ... mm hmm ... does it hurt here? ... */
 		}
-
 		/* give prescription to patient */
 		doctors[ID].prescription = Random() % 100;
-
+		/** TODO: PUSH DATA TO NETWORK **/
 		/* put consultation fees into the data structure for the cashier ($50-$250) */
-
 		print("D_");
 		print(itoa(ID, str));
 		print(": Telling fee to cashiers\n");
-
 		consultFee = (50 + (Random() % 201));
 		HLock_Acquire(feeListLock);
 		List_Append(&feeList, doctors[ID].patientToken, consultFee);
 		HLock_Release(feeListLock);
-
 		/* pass the prescription to the patient and wait for them to leave */
-
 		print("D_");
 		print(itoa(ID, str));
 		print(": Waiting for the patient to leave\n");
-
 		HCV_Signal(doctors[ID].transCV, doctors[ID].transLock);
 		HCV_Wait(doctors[ID].transCV, doctors[ID].transLock);
-
 		/* done, the patient has left */
 		HLock_Release(doctors[ID].transLock);
-
 		print("D_");
 		print(itoa(ID, str));
 		print(": I'm ready for another one\n");
-
 	} /*end while */
 	Yield();
 }

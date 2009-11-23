@@ -42,24 +42,20 @@ void cashier(int ID) {
         HLock_Acquire(feeListLock);
         /* TODO: Convert this local update to a network update */
         cashiers[ID].fee = List_getValue(&feeList, cashiers[ID].patToken);
-
+        /** TODO: PUSH DATA TO NETWORK **/
         HLock_Release(feeListLock);
         /* tell patient the fee */
-
         HCV_Signal(cashiers[ID].transCV, cashiers[ID].transLock);
         /* wait for payment */
         HCV_Signal(cashiers[ID].transCV, cashiers[ID].transLock);
-
         /* add this payment to our total collected */
         HLock_Acquire(feesPaidLock);
         feesPaid += cashiers[ID].payment;
         cashiers[ID].sales += cashiers[ID].payment;
+        /** TODO: PUSH DATA TO NETWORK **/
         HLock_Release(feesPaidLock);
-        if (cashiers[ID].payment < cashiers[ID].fee) {
+        if (cashiers[ID].payment < cashiers[ID].fee)
             print("ERROR: call security, that patient didin't pay!");
-
-        }
-
         HLock_Release(cashiers[ID].transLock);
     }
     Exit(0);
