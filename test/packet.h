@@ -11,7 +11,7 @@
 
 /* Define our message structure */
 enum {
-    SENDER_ID = 0, TIMESTAMP = 2, PACKET_TYPE = 6, DATA = 7
+    NAME = 0, TIMESTAMP = 2, PACKET_TYPE = 6, DATA = 7
 };
 
 /* Easy access to the data in a message */

@@ -285,13 +285,13 @@ int DistCV_Wait(int CVID, int LockID) {
     /* send to every entity */
     for (j = 0; j < 7; j++) {
         for (i = 0; i < numberOfEntities[j]; i++) {
-            Packet_Send(j, i + 1, myMbox, p);
+            Packet_Send(j, i + 1, myMbox, &p);
         }
     }
 
     /* Also, we need to maintain a list waiting nodes */
     /* This will be popped when we receive a SIGNAL */
-    MsgQueue_Push(pendingCVQueue[CVID], p, GetMachineId(), myMbox);
+    MsgQueue_Push(&pendingCVQueue[CVID], &p, GetMachineId(), myMbox);
     return 1;
 }
 
@@ -302,7 +302,7 @@ int DistCV_Signal(int CVID) {
     int senderMBox;
     int i,j;
     Packet p;
-    Packet pkt = MsgQueue_Pop(pendingCVQueue[CVID], &senderId, &senderMBox);
+    Packet pkt = MsgQueue_Pop(&pendingCVQueue[CVID], &senderId, &senderMBox);
 
     /* Process the Wait message */
     p.senderId = GetMachineId();

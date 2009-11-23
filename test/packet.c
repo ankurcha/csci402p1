@@ -126,14 +126,14 @@ void copyInData(char* message, int index, char* data, int length) {
 }
 
 void SerializePacket(Packet *p, char* message) {
-    copyInShort(message, SENDER_ID, p->senderId);
+    copyInShort(message, NAME, p->senderId);
     copyInInt(message, TIMESTAMP, p->timestamp);
     message[PACKET_TYPE] = p->packetType;
     copyInData(message, DATA, p->data, MaxMailSize - DATA);
 }
 
 void DeserializePacket(Packet *p, char* message) {
-    p->senderId = copyOutShort(message, SENDER_ID);
+    p->senderId = copyOutShort(message, NAME);
     p->timestamp = copyOutInt(message, TIMESTAMP);
     p->packetType = message[PACKET_TYPE];
     copyOutData(message, DATA, p->data, MaxMailSize - DATA);

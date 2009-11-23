@@ -174,7 +174,7 @@ int SendToNetwork();
  * 1. Read configuration file
  */
 
-int readConfig(char *filename);
+int readConfig();
 
 /* Gets the mapping between the CV and its assiciated Lock */
 int getCV_Lock_Mapping(int CVID);
