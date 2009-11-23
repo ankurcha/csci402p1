@@ -29,6 +29,8 @@ void network_thread(int mbox) {
     int numEntities;
     int maxTS[MaxEntities];
 
+    myMbox = mbox;
+
     /* this array should make it easier to scan all entities */
     machineIndex[0] = 0;
     for(i=0; i<7; i++) {
@@ -106,7 +108,6 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
     /* Process this packet */
     switch (pkt.packetType) {
     case EMPTY:
-        /* TODO: update latest timestamp ? */
         break;
 
     case LOCK_ACQUIRE:
@@ -169,23 +170,23 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
             }
         }
         break;
+
     case CV_WAIT:
-        /* TODO: add them to the queue of requests */
+        /* add them to the queue of requests */
         name = copyOutInt(pkt.data, NAME); /* CVID */
         temp = copyOutInt(pkt.data, 4); /* LockID */
         MsgQueue_Push(pendingCVQueue[name], pkt, senderId, senderMbox);
         break;
+
     case CV_SIGNAL:
-    case CV_BROADCAST:
-        /*TODO When we get a Signal we first will POP the pendingCVQueue Queue
-         * Then check if the node associated with us is the one being signaled
-         * If yes, we will wake it up
-         */
-        int senderId = 0;
-        int senderMbox = 0;
-        name = copyOutInt(pkt.data, NAME);
-        Packet p = MsgQueue_Pop(pendingCVQueue[name], &senderId, &senderMbox);
+        Process_CV_Signal(pkt);
         break;
+
+    case CV_BROADCAST:
+        print("ERROR: external CV_BROADCAST packet received\n");
+        Halt();
+        break;
+
     case NODE_READY:
         /*TODO: add to the node ready count, once all nodes are ready,
          * start the simulation
@@ -211,40 +212,39 @@ void processLocalPacket(Packet pkt) {
     }
 
     switch (pkt.packetType) {
-    case LOCK_ACQUIRE:
-        name = copyOutInt(pkt.data, NAME);
-        DistLock_Acquire(name);
-        /* now, once we receive enough OK's,
-         * we will wake the local entity */
-        break;
+        case LOCK_ACQUIRE:
+            name = copyOutInt(pkt.data, NAME);
+            DistLock_Acquire(name);
+            /* now, once we receive enough OK's,
+             * we will wake the local entity */
+            break;
 
-    case LOCK_RELEASE:
-        name = copyOutInt(pkt.data, NAME);
-        DistLock_Release(name);
-        /* no futher action */
-        break;
+        case LOCK_RELEASE:
+            name = copyOutInt(pkt.data, NAME);
+            DistLock_Release(name);
+            /* no futher action */
+            break;
 
-    case CV_WAIT:
-        /*TODO: add them to the queue */
-        /* Get the lock ID and the CV ID */
-        name = copyOutInt(pkt.data, NAME); /* CVID */
-        temp1 = copyOutInt(pkt.data, 4); /* LockID */
-        DistCV_Wait(temp, temp1);
-        break;
+        case CV_WAIT:
+            /* Get the lock ID and the CV ID */
+            name = copyOutInt(pkt.data, NAME); /* CVID */
+            temp1 = copyOutInt(pkt.data, 4); /* LockID */
+            DistCV_Wait(name, temp1);
+            break;
 
-    case CV_SIGNAL:
-        name = copyOutInt(pkt.data, NAME); /* CVID */
-        DistCV_Signal(name);
-        /* When we want to send a signal, we should know who exactly to send
-         * the signal to ie */
-        break;
+        case CV_SIGNAL:
+            name = copyOutInt(pkt.data, NAME); /* CVID */
+            DistCV_Signal(name);
+            /* When we want to send a signal, we should know who exactly to send
+             * the signal to ie */
+            break;
 
-    case CV_BROADCAST:
-        name = copyOutInt(pkt.data, NAME); /* CVID */
-        /*TODO: I think I have to wake up the entity thread Yes*/
-        break;
-    default:
-        break;
+        case CV_BROADCAST:
+            name = copyOutInt(pkt.data, NAME); /* CVID */
+            /*TODO: I think I have to wake up the entity thread Yes*/
+            break;
+        default:
+            break;
 
     }
 }

@@ -291,9 +291,8 @@ int DistLock_Acquire(int name) {
     addResource(resourcesRequested, LOCK, temp, 0);
     for (j = 0; j < 7; j++) {
         for (int i = 0; i < numberOfEntities[j]; i++) {
-            /* TODO: Send to each entity. how? we need the receiverId and recMBox */
             /* Sending LOCK_ACQUIRE to all and waiting for LOCK_OK */
-            Packet_Send(receiverId, recMBox, 0, pkt);
+            Packet_Send(j, i+1, myMbox, pkt);
         }
     }
 }
@@ -306,8 +305,7 @@ int DistLock_Release(int name) {
          * Just broadcast this message to all the othe nodes */
         for (j = 0; j < 7; j++) {
             for (int i = 0; i < numberOfEntities[j]; i++) {
-                /* TODO: Send to each entity how? we need the receiverId and recMBox */
-                Packet_Send(receiverId, recMBox, 0, pkt);
+                Packet_Send(j, i+1, myMbox, pkt);
             }
         }
         return 1; /* successfully released lock */
@@ -318,38 +316,87 @@ int RemoteLock_Acquire(Packet pkt) {
 
 }
 
+/* this is called by an entity thread to signal a CV */
 int HCV_Signal(int HCVId, int HLockId) {
     /* Get the receiverId from the queue */
-}
-
-int HCV_Wait(int HCVId, int HLockId) {
     int status = -1;
     int CV_Lock = -1;
+    Packet p;
+
     status = getResourceStatus(HLockId);
     if (status == RES_HELD) {
         CV_Lock = getCV_Lock_Mapping(HCVId);
-        Packet p;
+
+        p.senderId = GetMachineId();
+        p.timestamp = GetTimestamp();
+        p.packetType = CV_SIGNAL;
+        copyInInt(p.data, 0, HCVId);
+        copyInInt(p.data, 4, HLockId);
+
+        /* It is assumed that by now LockId is Held and CVID which is passed is
+         * to be held */
+
+        HLock_Acquire(CV_Lock);
+        status = Packet_Send(GetMachineId(), myNetThreadMbox, 0, p);
+        HLock_Release(CV_Lock);
+
+        return 1;
+        /* We reach this point only when we got a signal message for this CV */
+    } else if (status == RES_REQ) {
+        /* We were supposed to have had the lock acquired -- this is an error */
+        print("ERROR: tried to signal a lock that was only requested\n");
+        Halt();
+        return 0;
+    } else if (status == RES_NONE) {
+        /* No record of any such Lock in my resource List!! */
+        print("ERROR: tried to signal a lock we did not own\n");
+        Halt();
+        return -1;
+    }
+    return -2;
+}
+
+/* this is called by an entity thread to wait on a CV */
+int HCV_Wait(int HCVId, int HLockId) {
+    int status = -1;
+    int CV_Lock = -1;
+    Packet p;
+
+    status = getResourceStatus(HLockId);
+    if (status == RES_HELD) {
+        CV_Lock = getCV_Lock_Mapping(HCVId);
+
         p.senderId = GetMachineId();
         p.timestamp = GetTimestamp();
         p.packetType = CV_WAIT;
         copyInInt(p.data, 0, HCVId);
-        copyInInt(p.data, 2, CV_Lock);
+        copyInInt(p.data, 4, HLockId);
+
         /* It is assumed that by now LockId is Held and CVID which is passed is
          * to be held */
         Acquire(netthread_Lock);
+
         HLock_Acquire(CV_Lock);
         status = Packet_Send(GetMachineId(), myNetThreadMbox, 0, p);
         HLock_Release(CV_Lock);
+
+        HLock_Release(HLockId);
+        /* wait for the network thread to tell us to wake */
         Wait(netthread_CV, netthread_Lock);
+
         HLock_Acquire(HLockId);
         Release(netthread_Lock);
         return 1;
         /* We reach this point only when we got a signal message for this CV */
     } else if (status == RES_REQ) {
         /* We were supposed to have had the lock acquired -- this is an error */
+        print("ERROR: tried to wait on a lock that was only requested\n");
+        Halt();
         return 0;
     } else if (status == RES_NONE) {
         /* No record of any such Lock in my resource List!! */
+        print("ERROR: tried to wait on a lock we did not own\n");
+        Halt();
         return -1;
     }
     return -2;
@@ -357,43 +404,78 @@ int HCV_Wait(int HCVId, int HLockId) {
 
 int DistCV_Wait(int CVID, int LockID) {
     Packet p;
-    int senderId = GetMachineId();
     int senderMBox = 0;
+
     p.senderId = GetMachineId();
     p.timestamp = GetTimestamp();
     p.packetType = CV_WAIT;
     copyInInt(p.data, 0, CVID);
-    copyInInt(p.data, 2, LockID);
+    copyInInt(p.data, 4, LockID);
+
+    /* send to every entity */
     for (j = 0; j < 7; j++) {
         for (i = 0; i < numberOfEntities[j]; i++) {
-            /*
-             * TODO: Send to each entity how? we need
-             * the receiverId and recMBox
-             */
-            Packet_Send(receiverId, recMBox, senderMBox, p);
+            Packet_Send(j, i+1, myMbox, p);
         }
     }
+
     /* Also, we need to maintain a list waiting nodes */
     /* This will be popped when we receive a SIGNAL */
-    MsgQueue_Push(pendingCVQueue[CVID], p, senderId, senderMBox);
+    MsgQueue_Push(pendingCVQueue[CVID], p, GetMachineId(), myMbox);
     return 1;
 }
 
 int DistCV_Signal(int CVID) {
-    /* Find out who to send this message to, Pop from the pendingCVQueue[CVID] */
+    /* send this message to everyone so they all Pop from the 
+     * pendingCVQueue[CVID] */
     int senderId;
     int senderMBox;
-    Packet pkt = MsgQueue_Pop(pendingCVQueue[CVID], &senderId, &senderMBox);
-    /* Process the Wait message */
     Packet p;
+    Packet pkt = MsgQueue_Pop(pendingCVQueue[CVID], &senderId, &senderMBox);
+
+    /* Process the Wait message */
     p.senderId = GetMachineId();
     p.timestamp = GetTimestamp();
     p.packetType = CV_SIGNAL;
     copyInInt(p.data, 0, copyOutInt(pkt.data, NAME)); /* CVID */
-    copyInInt(p.data, 2, copyOutInt(pkt.data, 4)); /* Lock ID */
-    Packet_Send(senderId, senderMBox, my, p);
+    copyInInt(p.data, 4, copyOutInt(pkt.data, 4)); /* Lock ID */
+
+    /* send to every entity */
+    for (j = 0; j < 7; j++) {
+        for (i = 0; i < numberOfEntities[j]; i++) {
+            Packet_Send(j, i+1, myMbox, p);
+        }
+    }
+
+    if(senderId == GetMachineId() && senderMBox == myMbox) {
+        print("ERROR: I signaled my own CV?\n");
+        Halt();
+    }
+
     return 1;
 }
+
+void Process_CV_Signal(Packet pkt) {
+    /* When we get a Signal we first will POP the pendingCVQueue Queue
+     * Then check if the node associated with us is the one being signaled
+     * If yes, we will wake it up
+     */ 
+    int name;
+    Packet p;
+    int senderId, senderMbox;
+
+    name = copyOutInt(pkt.data, NAME);
+    p = MsgQueue_Pop(pendingCVQueue[name], &senderId, &senderMbox);
+
+    if(senderId == GetMachineId() && senderMBox == myMbox) {
+        /* wake up my entity */
+        Acquire(netthread_Lock);
+        Signal(netthread_CV, netthread_Lock);
+        Release(netthread_Lock);
+    }
+
+}
+
 void readConfig() {
     /* Read the configuration file given as the argument and parse the numbers
      * to the global variables
