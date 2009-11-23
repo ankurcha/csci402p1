@@ -106,16 +106,14 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
     }
 
     /* Process this packet */
-    switch (pkt.packetType)
-        {
+    switch (pkt.packetType) {
         case EMPTY:
             break;
 
         case LOCK_ACQUIRE:
             name = copyOutInt(pkt.data, NAME);
             /* check if I am holding this lock */
-            switch (getResourceStatus(name))
-                {
+            switch (getResourceStatus(name)) {
                 case RES_HELD:
                     if (resources[name].timestamp > pkt.timestamp) {
                         print(
@@ -141,7 +139,7 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
                     break;
                 default:
                     print("ERROR: invalid resource status\n");
-                }
+            }
             break;
 
         case LOCK_OK:
@@ -217,7 +215,7 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
             break;
         default:
             break;
-        }
+    }
 }
 
 void processLocalPacket(Packet pkt) {
@@ -234,8 +232,7 @@ void processLocalPacket(Packet pkt) {
         totalEntities += numberOfEntities[j];
     }
 
-    switch (pkt.packetType)
-        {
+    switch (pkt.packetType) {
         case LOCK_ACQUIRE:
             name = copyOutInt(pkt.data, NAME);
             DistLock_Acquire(name);
@@ -264,7 +261,9 @@ void processLocalPacket(Packet pkt) {
             break;
         case CV_BROADCAST:
             name = copyOutInt(pkt.data, NAME); /* CVID */
-            /*TODO: I think I have to wake up the entity thread Yes*/
+            while(!MsgQueue_IsEmpty(pendingCVQueue[name])) {
+                DistCV_Signal(name);
+            }
             break;
         case RECP_DATA_UPDATE:
         case PAT_DATA_UPDATE:
@@ -278,6 +277,6 @@ void processLocalPacket(Packet pkt) {
             break;
         default:
             break;
-        }
+    }
 }
 
