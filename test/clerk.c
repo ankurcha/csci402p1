@@ -4,8 +4,8 @@ void clerk(int ID) {
     char str[50];
     while (1) {
         HLock_Acquire(ClerkLinesLock);
-
-        if (clerks[ID].patientsInLine > 0) { /* someone in line */
+        if (clerks[ID].patientsInLine > 0) {
+            /* someone in line */
             /*signal the first person */
             HCV_Signal(clerks[ID].ClerkCV, ClerkLinesLock);
         } else { /* noone in line */
@@ -16,7 +16,6 @@ void clerk(int ID) {
             print("CL_");
             print(itoa(ID, str));
             print(": Going on break\n");
-
             HCV_Wait(clerks[ID].ClerkBreakCV, ClerkLinesLock);
             HLock_Release(ClerkLinesLock);
             continue;
@@ -27,37 +26,29 @@ void clerk(int ID) {
         /*  with the patient */
         HLock_Acquire(clerks[ID].ClerkTransLock);
         HLock_Release(ClerkLinesLock);
-
         /* waiting for patient to give prescription */
         HCV_Wait(clerks[ID].ClerkTransCV, clerks[ID].ClerkTransLock);
-
         /* patient gives prescription: */
-
         print("CL_");
         print(itoa(ID, str));
         print(": gave Medicines!\n");
-
         HCV_Signal(clerks[ID].ClerkTransCV, clerks[ID].ClerkTransLock);
         /* wait for payment */
         HCV_Wait(clerks[ID].ClerkTransCV, clerks[ID].ClerkTransLock);
         /*Collect payment */
-
         print("CL_");
         print(itoa(ID, str));
         print(": The cost for the medicines are:");
         print(itoa(clerks[ID].fee, str));
         print(" Dollars\n");
-
-        if (clerks[ID].payment != clerks[ID].fee) {
+        if (clerks[ID].payment != clerks[ID].fee)
             print("ERROR: patient did not pay for medicine\n");
-        }
-
         /* add this payment to our total collected */
         HLock_Acquire(PaymentLock);
         totalsales += clerks[ID].payment;
         clerks[ID].sales += clerks[ID].payment;
+        /** TODO: PUSH DATA TO NETWORK **/
         HLock_Release(PaymentLock);
-
         HLock_Release(clerks[ID].ClerkTransLock);
     }
     Exit(0);

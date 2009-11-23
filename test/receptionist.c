@@ -27,32 +27,26 @@ void receptionist(int ID) {
 			/* prefix for test condition */
 			if (test_state == 11)
 				print("T11: ");
-
 			print("R_");
 			print(itoa(ID, str));
 			print(":Going to sleep\n");
-
 			HCV_Wait(receptionists[ID].ReceptionistBreakCV, recpLineLock);
 			HLock_Release(recpLineLock);
-
 			/*HospitalManager kicked my ass for sleeping on the job!! */
 			/*Loop back!! */
 			continue;
 		}
-
 		HLock_Acquire(receptionists[ID].transLock);
 		HLock_Release(recpLineLock);
-
 		/*Genetate token for the patient */
-
 		HLock_Acquire(TokenCounterLock);
-
 		print("R_");
 		itoa(ID, str);
 		print(str);
 		print(": Generating Token...\n");
 
 		receptionists[ID].currentToken = ++TokenCounter;
+		/** TODO: PUSH DATA TO NETWORK **/
 		HLock_Release(TokenCounterLock);
 
 		/*Sleep till you get Acknowledgement */

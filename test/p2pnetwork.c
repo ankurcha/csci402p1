@@ -608,7 +608,6 @@ int HDataUpdate_Recp(int id) {
     status = Packet_Send(GetMachineId(), myNetThreadMbox, 0, p);
     return status;
 }
-
 int HDataUpdate_Pat(int id) {
     /* Creates an update packet and sends it to the network entity for processing */
     Packet p;
@@ -659,5 +658,10 @@ void initializeSystem(){
     /* This function takes care of initializing the various
      * locks and other things at the system startup
      */
+    /* Read all the configuration data */
+    readConfig();
+    /* create system locks and CV*/
+    netthread_Lock = CreateLock("netthread_Lock");
+    netthread_CV = CreateCondition("netthread_CV");
 
 }
