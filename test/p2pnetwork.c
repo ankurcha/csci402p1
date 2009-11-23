@@ -4,11 +4,11 @@
  ******* Resource Functions ********
  ***********************************/
 
-int getResourceStatus(char* name) {
+int getResourceStatus(int name) {
     int status = RES_NONE;
     int i = 0;
     for (i = 0; i < MAX_RESOURCES; i++) {
-        if (!strcmp(resources[i].name, name) && resources[i].valid == 1) {
+        if (resources[i].name == name && resources[i].valid == 1) {
             switch (resources[i].state) {
                 case RES_HELD:
                     status = RES_HELD;
@@ -26,10 +26,10 @@ int getResourceStatus(char* name) {
 
 }
 
-int updateResourceStatus(char* name, int newStatus) {
+int updateResourceStatus(int name, int newStatus) {
     int i;
     for (i = 0; i < MAX_RESOURCES; i++) {
-        if (resources[i].valid == 1 && !strcmp(resources[i].name, name)) {
+        if (resources[i].valid == 1 && resources[i].name ==  name) {
             resources[i].state = newStatus;
             return resources[i].state;
         }
@@ -37,20 +37,20 @@ int updateResourceStatus(char* name, int newStatus) {
     return -1;
 }
 
-int getResourceReplies(int resourceID) {
+int getResourceReplies(int name) {
     int i;
     for (i = 0; i < MAX_RESOURCES; i++) {
-        if (resources[i].valid == 1 && !strcmp(resources[i].name, name)) {
+        if (resources[i].valid == 1 && resources[i].name == name) {
             return resources[i].replies;
         }
     }
     return -1;
 }
 
-int updateResourceReplies(char *name, int newReplies) {
+int updateResourceReplies(int name, int newReplies) {
     int i;
     for (i = 0; i < MAX_RESOURCES; i++) {
-        if (resources[i].valid == 1 && !strcmp(resources[i].name, name)) {
+        if (resources[i].valid == 1 && resources[i].name == name) {
             resources[i].replies = newReplies;
             return resources[i].replies;
         }
@@ -64,18 +64,18 @@ void initResources() {
         resources[i].valid = 0;
 }
 
-int addResource(char *name, int state) {
+int addResource(int name, int state) {
     int i = 0;
-    int targetpos = -1;
+    int targetPos = -1;
     for (i = 0; i < MAX_RESOURCES; i++)
         if (resources[i].valid = 0) {
-            targetpos = i;
+            targetPos = i;
             break;
         }
     if (targetPos == -1)
         return -1;
 
-    resources[targetPos].name = strcpy(resources[targetPos].name, name);
+    resources[targetPos].name = name;
     resources[targetPos].timestamp = GetTimestamp();
     resources[targetPos].valid = 1;
     resources[targetPos].replies = 0;

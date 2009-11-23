@@ -38,7 +38,7 @@ int netthread_CV; /* Used to wait on the netthread for a reply */
  */
 
 struct Resource {
-    char name[20];
+    int name;
     int timestamp; /* record when the request was made */
     char valid; /* 0 init */
     int replies; /* Number of replies that are received */
@@ -126,9 +126,9 @@ int myMbox;
  *********************************/
 void initializeSystem();
 
-void initResources(Resource arr[]);
-int addResource(Resource arr[], int id, int state);
-int deleteResource(Resource arr[], int id);
+void initResources();
+int addResource(int id, int state);
+int deleteResource(int id);
 
 int getResourceStatus(int resourceID);
 int updateResourceStatus(int resourceID, int newStatus);
