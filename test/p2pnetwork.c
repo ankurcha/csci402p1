@@ -247,7 +247,7 @@ int HCV_Wait(int HCVId, int HLockId) {
         Acquire(netthread_Lock);
 
         HLock_Acquire(CV_Lock);
-        status = Packet_Send(GetMachineId(), myNetThreadMbox, 0, p);
+        status = Packet_Send(GetMachineId(), myNetThreadMbox, 0, &p);
         HLock_Release(CV_Lock);
 
         HLock_Release(HLockId);
@@ -275,7 +275,7 @@ int HCV_Wait(int HCVId, int HLockId) {
 int DistCV_Wait(int CVID, int LockID) {
     Packet p;
     int senderMBox = 0;
-
+    int i,j;
     p.senderId = GetMachineId();
     p.timestamp = GetTimestamp();
     p.packetType = CV_WAIT;
@@ -300,6 +300,7 @@ int DistCV_Signal(int CVID) {
      * pendingCVQueue[CVID] */
     int senderId;
     int senderMBox;
+    int i,j;
     Packet p;
     Packet pkt = MsgQueue_Pop(pendingCVQueue[CVID], &senderId, &senderMBox);
 
