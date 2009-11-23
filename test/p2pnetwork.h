@@ -24,7 +24,8 @@ int numberOfEntities[7]; /* The number of entities */
  * numberOfEntities[6] - hospital managers
  */
 
-int netthread_Lock; /* We use these to interact with the netthread */
+/* TODO: Write an initialization function for p2pnetwork */
+int netthread_Lock; /* We use these to interact with the netthread.*/
 int netthread_CV; /* Used to wait on the netthread for a reply */
 
 /* We need to keep a list of the resources that we currently hold
@@ -105,6 +106,7 @@ typedef struct packet Packet;
 /*********************************
  ********** FUNCTIONS ************
  *********************************/
+void initializeSystem();
 
 void initResources(Resource arr[]);
 int addResource(Resource arr[], int id, int state);

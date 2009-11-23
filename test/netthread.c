@@ -106,116 +106,118 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
     }
 
     /* Process this packet */
-    switch (pkt.packetType) {
-    case EMPTY:
-        break;
+    switch (pkt.packetType)
+        {
+        case EMPTY:
+            break;
 
-    case LOCK_ACQUIRE:
-        name = copyOutInt(pkt.data, NAME);
-        /* check if I am holding this lock */
-        switch (getResourceStatus(name)) {
-        case RES_HELD:
-            if (resources[name].timestamp > pkt.timestamp) {
-                print(
-                        "ERROR: received an earlier request for a lock I already hold");
-                break;
-            }
-            /* fallthrough */
-        case RES_REQ:
-            if (resources[name].timestamp < pkt.timestamp) {
-                /*TODO add them to the list */
-                break;
-            }
-            /* fallthrough */
-        case RES_NONE:
-            /* Resource is not held, hence, we send out a LOCK_OK message
-             * construct a packet
+        case LOCK_ACQUIRE:
+            name = copyOutInt(pkt.data, NAME);
+            /* check if I am holding this lock */
+            switch (getResourceStatus(name))
+                {
+                case RES_HELD:
+                    if (resources[name].timestamp > pkt.timestamp) {
+                        print(
+                                "ERROR: received an earlier request for a lock I already hold");
+                        break;
+                    }
+                    /* fallthrough */
+                case RES_REQ:
+                    if (resources[name].timestamp < pkt.timestamp) {
+                        /*TODO add them to the list */
+                        break;
+                    }
+                    /* fallthrough */
+                case RES_NONE:
+                    /* Resource is not held, hence, we send out a LOCK_OK message
+                     * construct a packet
+                     */
+                    p.senderId = GetMachineId();
+                    p.timestamp = GetTimestamp();
+                    p.packet_type = LOCK_OK;
+                    copyInInt(p.data, NAME, name);
+                    Packet_Send(senderId, senderMbox, GetMachineId(), p);
+                    break;
+                default:
+                    print("ERROR: invalid resource status\n");
+                }
+            break;
+
+        case LOCK_OK:
+            /* Got a LOCK_OK so now we need to check whether we requested this
+             * Lock and if yes, we keep processing till all have replied with
+             * LOCK_OK
              */
-            p.senderId = GetMachineId();
-            p.timestamp = GetTimestamp();
-            p.packet_type = LOCK_OK;
-            copyInInt(p.data, NAME, name);
-            Packet_Send(senderId, senderMbox, GetMachineId(), p);
+            /* get the lock being referred to */
+            name = copyOutInt(pkt.data, NAME);
+            if (getResourceStatus(name) == RES_REQ) {
+                /* Yes, lock was requested */
+
+                /* Update the number of replies that we have received so far */
+                replies = getResourceReplies(name);
+                replies++;
+                updateResourceReplies(name, replies);
+
+                if (replies == totalEntities) {
+                    /* Now we have seen all the LOCK_OKs that we need and hence
+                     * we get the LOCK NOW and delete the resource from the
+                     * requestedResource and add it to the HeldResources
+                     */
+                    resources[name].status = RES_HELD;
+                    /* Now we can send a signal to the entity */
+                    Acquire(netthread_Lock);
+                    Signal(netthread_CV, netthread_Lock);
+                    Release(netthread_Lock);
+                }
+            }
+            break;
+
+        case CV_WAIT:
+            /* add them to the queue of requests */
+            name = copyOutInt(pkt.data, NAME); /* CVID */
+            temp = copyOutInt(pkt.data, 4); /* LockID */
+            MsgQueue_Push(pendingCVQueue[name], pkt, senderId, senderMbox);
+            break;
+
+        case CV_SIGNAL:
+            Process_CV_Signal(pkt);
+            break;
+
+        case CV_BROADCAST:
+            print("ERROR: external CV_BROADCAST packet received\n");
+            Halt();
+            break;
+
+        case NODE_READY:
+            /*TODO: add to the node ready count, once all nodes are ready,
+             * start the simulation
+             */
+            break;
+        case RECP_DATA_UPDATE:
+            temp = UpdateData_Receptionist(pkt);
+            break;
+        case PAT_DATA_UPDATE:
+            temp = UpdateData_Patient(pkt);
+            break;
+        case DOORB_DATA_UPDATE:
+            temp = UpdateData_Doorboy(pkt);
+            break;
+        case DOC_DATA_UPDATE:
+            temp = UpdateData_Doctor(pkt);
+            break;
+        case CASH_DATA_UPDATE:
+            temp = UpdateData_Cashier(pkt);
+            break;
+        case CLERK_DATA_UPDATE:
+            temp = UpdateData_Clerk(pkt);
+            break;
+        case MAN_DATA_UPDATE:
+            temp = UpdateData_HospitalManager(pkt);
             break;
         default:
-            print("ERROR: invalid resource status\n");
+            break;
         }
-        break;
-
-    case LOCK_OK:
-        /* Got a LOCK_OK so now we need to check whether we requested this
-         * Lock and if yes, we keep processing till all have replied with
-         * LOCK_OK
-         */
-        /* get the lock being referred to */
-        name = copyOutInt(pkt.data, NAME);
-        if (getResourceStatus(name) == RES_REQ) {
-            /* Yes, lock was requested */
-
-            /* Update the number of replies that we have received so far */
-            replies = getResourceReplies(name);
-            replies++;
-            updateResourceReplies(name, replies);
-
-            if (replies == totalEntities) {
-                /* Now we have seen all the LOCK_OKs that we need and hence
-                 * we get the LOCK NOW and delete the resource from the
-                 * requestedResource and add it to the HeldResources
-                 */
-                resources[name].status = RES_HELD;
-                /* Now we can send a signal to the entity */
-                Acquire(netthread_Lock);
-                Signal(netthread_CV, netthread_Lock);
-                Release(netthread_Lock);
-            }
-        }
-        break;
-
-    case CV_WAIT:
-        /* add them to the queue of requests */
-        name = copyOutInt(pkt.data, NAME); /* CVID */
-        temp = copyOutInt(pkt.data, 4); /* LockID */
-        MsgQueue_Push(pendingCVQueue[name], pkt, senderId, senderMbox);
-        break;
-
-    case CV_SIGNAL:
-        Process_CV_Signal(pkt);
-        break;
-
-    case CV_BROADCAST:
-        print("ERROR: external CV_BROADCAST packet received\n");
-        Halt();
-        break;
-
-    case NODE_READY:
-        /*TODO: add to the node ready count, once all nodes are ready,
-         * start the simulation
-         */
-        break;
-    case RECP_DATA_UPDATE:
-        temp = UpdateData_Receptionist(pkt);
-        break;
-    case PAT_DATA_UPDATE:
-        temp = UpdateData_Patient(pkt);
-        break;
-    case DOORB_DATA_UPDATE:
-        temp = UpdateData_Doorboy(pkt);
-        break;
-    case DOC_DATA_UPDATE:
-        temp = UpdateData_Doctor(pkt);
-        break;
-    case CASH_DATA_UPDATE:
-        temp = UpdateData_Cashier(pkt);
-        break;
-    case CLERK_DATA_UPDATE:
-        temp = UpdateData_Clerk(pkt);
-        break;
-    case MAN_DATA_UPDATE:
-        temp = UpdateData_HospitalManager(pkt);
-        break;
-    default:
-        break;
-    }
 }
 
 void processLocalPacket(Packet pkt) {
@@ -232,49 +234,50 @@ void processLocalPacket(Packet pkt) {
         totalEntities += numberOfEntities[j];
     }
 
-    switch (pkt.packetType) {
-    case LOCK_ACQUIRE:
-        name = copyOutInt(pkt.data, NAME);
-        DistLock_Acquire(name);
-        /* now, once we receive enough OK's,
-         * we will wake the local entity */
-        break;
+    switch (pkt.packetType)
+        {
+        case LOCK_ACQUIRE:
+            name = copyOutInt(pkt.data, NAME);
+            DistLock_Acquire(name);
+            /* now, once we receive enough OK's,
+             * we will wake the local entity */
+            break;
 
-    case LOCK_RELEASE:
-        name = copyOutInt(pkt.data, NAME);
-        DistLock_Release(name);
-        /* no futher action */
-        break;
+        case LOCK_RELEASE:
+            name = copyOutInt(pkt.data, NAME);
+            DistLock_Release(name);
+            /* no futher action */
+            break;
 
-    case CV_WAIT:
-        /* Get the lock ID and the CV ID */
-        name = copyOutInt(pkt.data, NAME); /* CVID */
-        temp1 = copyOutInt(pkt.data, 4); /* LockID */
-        DistCV_Wait(name, temp1);
-        break;
+        case CV_WAIT:
+            /* Get the lock ID and the CV ID */
+            name = copyOutInt(pkt.data, NAME); /* CVID */
+            temp1 = copyOutInt(pkt.data, 4); /* LockID */
+            DistCV_Wait(name, temp1);
+            break;
 
-    case CV_SIGNAL:
-        name = copyOutInt(pkt.data, NAME); /* CVID */
-        DistCV_Signal(name);
-        /* When we want to send a signal, we should know who exactly to send
-         * the signal to ie */
-        break;
-    case CV_BROADCAST:
-        name = copyOutInt(pkt.data, NAME); /* CVID */
-        /*TODO: I think I have to wake up the entity thread Yes*/
-        break;
-    case RECP_DATA_UPDATE:
-    case PAT_DATA_UPDATE:
-    case DOORB_DATA_UPDATE:
-    case DOC_DATA_UPDATE:
-    case CASH_DATA_UPDATE:
-    case CLERK_DATA_UPDATE:
-    case MAN_DATA_UPDATE:
-        /* Take care of sending updates */
-        temp = Dist_Update(pkt);
-        break;
-    default:
-        break;
-    }
+        case CV_SIGNAL:
+            name = copyOutInt(pkt.data, NAME); /* CVID */
+            DistCV_Signal(name);
+            /* When we want to send a signal, we should know who exactly to send
+             * the signal to ie */
+            break;
+        case CV_BROADCAST:
+            name = copyOutInt(pkt.data, NAME); /* CVID */
+            /*TODO: I think I have to wake up the entity thread Yes*/
+            break;
+        case RECP_DATA_UPDATE:
+        case PAT_DATA_UPDATE:
+        case DOORB_DATA_UPDATE:
+        case DOC_DATA_UPDATE:
+        case CASH_DATA_UPDATE:
+        case CLERK_DATA_UPDATE:
+        case MAN_DATA_UPDATE:
+            /* Take care of sending updates */
+            temp = Dist_Update(pkt);
+            break;
+        default:
+            break;
+        }
 }
 

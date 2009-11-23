@@ -651,3 +651,13 @@ int HDataUpdate_HospMan(int id){
     int status = -1;
     return status;
 }
+
+/******************************
+ ****** SYSTEM INITIALIZE *****
+ ******************************/
+void initializeSystem(){
+    /* This function takes care of initializing the various
+     * locks and other things at the system startup
+     */
+
+}
