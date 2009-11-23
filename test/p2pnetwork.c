@@ -436,3 +436,136 @@ int getCV_Lock_Mapping(int CVID) {
     /* Do some magical mapping */
     return LockId;
 }
+
+/* Data Update Handling Functions */
+int UpdateData_Patient(Packet p) {
+    /* !!! */
+    return 0;
+}
+
+int UpdateData_Receptionist(Packet p) {
+    int id, peopleInLine, currentToken;
+    id = copyOutInt(p.data, 0);
+    peopleInLine = copyOutInt(p.data, 4);
+    currentToken = copyOutInt(p.data, 8);
+    /* Apply the update */
+    receptionists[id].currentToken = currentToken;
+    receptionists[id].peopleInLine = peopleInLine;
+    return id;
+}
+int UpdateData_Doorboy(Packet p) {
+    /* !!! */
+    return 0;
+}
+int UpdateData_Doctor(Packet p) {
+    int id, peopleInLine, prescription, patientToken;
+    id = copyOutInt(p.data, 0);
+    prescription = copyOutInt(p.data, 4);
+    patientToken = copyOutInt(p.data, 8);
+    /* Apply update */
+    doctors[id].patientToken = patientToken;
+    doctors[id].peopleInLine = peopleInLine;
+    doctors[id].prescription = prescription;
+    return id;
+}
+
+int UpdateData_Cashier(Packet p) {
+    int id, lineLength, patToken, fee, payment, sales;
+    id = copyOutInt(p.data, 0);
+    lineLength = copyOutInt(p.data, 4);
+    patToken = copyOutInt(p.data, 8);
+    fee = copyOutInt(p.data, 12);
+    payment = copyOutInt(p.data, 16);
+    sales = copyOutInt(p.data, 20);
+    /* Apply Update */
+    cashiers[id].lineLength = lineLength;
+    cashiers[id].patToken = patToken;
+    cashiers[id].fee = fee;
+    cashiers[id].payment = payment;
+    cashiers[id].sales = sales;
+    return id;
+}
+
+int UpdateData_Clerk(Packet p) {
+    int id, patientsInLine, payment, fee, patPrescription, sales;
+    id = copyOutInt(p.data, 0);
+    patientsInLine = copyOutInt(p.data, 4);
+    payment = copyOutInt(p.data, 8);
+    fee = copyOutInt(p.data, 12);
+    patPrescription = copyOutInt(p.data, 16);
+    sales = copyOutInt(p.data, 20);
+    /* Apply Update */
+    clerks[id].patientsInLine = patientsInLine;
+    clerks[id].payment = payment;
+    clerks[id].fee = fee;
+    clerks[id].patPrescription = patPrescription;
+    clerks[id].sales = sales;
+    return id;
+}
+
+int UpdateData_HospitalManager(Packet p) {
+    /* !!! */
+    return 0;
+}
+int DistUpdate_Send(Packet p) {
+    /* This function is used to broadcast an Update packet to every one
+     */
+    int senderMBox = 0;
+    int i, j;
+    for (j = 0; j < 7; j++)
+        for (i = 0; i < numberOfEntities[j]; i++)
+            Packet_Send(receiverId, recMBox, senderMBox, p);
+}
+
+/* Hospital Entity interface for the Network Data Update */
+int HDataUpdate_Recp(int id) {
+    /* Creates an update packet and sends it to the network entity for processing */
+    Packet p;
+    int status = -1;
+    buildPacket_Receptionist(p, id);
+    status = Packet_Send(GetMachineId(), myNetThreadMbox, 0, p);
+    return status;
+}
+
+int HDataUpdate_Pat(int id) {
+    /* Creates an update packet and sends it to the network entity for processing */
+    Packet p;
+    int status = -1;
+    return status;
+}
+int HDataUpdate_Doorb(int id) {
+    /* Creates an update packet and sends it to the network entity for processing */
+    Packet p;
+    int status = -1;
+    return status;
+}
+int HDataUpdate_Doc(int id){
+    /* Creates an update packet and sends it to the network entity for processing */
+    Packet p;
+    int status = -1;
+    buildPacket_Doctor(p, id);
+    status = Packet_Send(GetMachineId(), myNetThreadMbox, 0, p);
+    return status;
+}
+int HDataUpdate_Cash(int id){
+    /* Creates an update packet and sends it to the network entity for processing */
+    Packet p;
+    int status = -1;
+    buildPacket_Cashier(p, id);
+    status = Packet_Send(GetMachineId(), myNetThreadMbox, 0, p);
+    return status;
+
+}
+int HDataUpdate_Clerk(int id){
+    /* Creates an update packet and sends it to the network entity for processing */
+    Packet p;
+    int status = -1;
+    buildPacket_Clerk(p, id);
+    status = Packet_Send(GetMachineId(), myNetThreadMbox, 0, p);
+    return status;
+
+}
+int HDataUpdate_HospMan(int id){
+    int status = -1;
+    return status;
+}

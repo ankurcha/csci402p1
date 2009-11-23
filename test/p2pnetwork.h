@@ -66,6 +66,13 @@ enum {
     CV_SIGNAL = 0x08,
     CV_BROADCAST = 0x09,
     NODE_READY = 0x0C,
+    RECP_DATA_UPDATE = 0x0D,
+    PAT_DATA_UPDATE = 0x0E,
+    DOORB_DATA_UPDATE = 0x0F,
+    DOC_DATA_UPDATE = 0x10,
+    CASH_DATA_UPDATE = 0x11,
+    CLERK_DATA_UPDATE = 0x12,
+    MAN_DATA_UPDATE = 0x13
 };
 
 /* Entity Identification */
@@ -167,5 +174,25 @@ int readConfig(char *filename);
 
 /* Gets the mapping between the CV and its assiciated Lock */
 int getCV_Lock_Mapping(int CVID);
+
+/* Data update handling Functions */
+int UpdateData_Patient(Packet p);
+int UpdateData_Receptionist(Packet p);
+int UpdateData_Doorboy(Packet p);
+int UpdateData_Doctor(Packet p);
+int UpdateData_Cashier(Packet p);
+int UpdateData_Clerk(Packet p);
+int UpdateData_HospitalManager(Packet p);
+
+/* Hospital Entity interface for the Network Data Update */
+int HDataUpdate_Recp(int id);
+int HDataUpdate_Pat(int id);
+int HDataUpdate_Doorb(int id);
+int HDataUpdate_Doc(int id);
+int HDataUpdate_Cash(int id);
+int HDataUpdate_Clerk(int id);
+int HDataUpdate_HospMan(int id);
+
+int DistUpdate_Send(Packet p);
 #endif /* P2PNETWORK_H */
 

@@ -93,12 +93,13 @@ int List_IsEmpty(List *l) {
 /*queue elements for the waking doctors list*/
 queue_element wakingdoctor_element[MAX_PATIENTS];
 
-LockId testlock;
+char testlock[20];
 /* tokenCounter for assigning tokens to patients */
-LockId TokenCounterLock;
+char TokenCounterLock[20];
 int TokenCounter = 0;
 /* global for all receptionists */
-LockId recpLineLock;
+char recpLineLock[20];
+
 /*shared data struct related to a Receptionist */
 struct Receptionists_ {
 	/* receptionist line CV */
@@ -142,6 +143,7 @@ List feeList;
 /* global for all cashiers */
 LockId cashierLineLock;
 LockId feesPaidLock;
+
 /* shared data struct related to a Cashier */
 struct Cashier_ {
 	/* line CV and length */
@@ -190,9 +192,10 @@ int totalsales = 0;
 /* hospitalLock protects the count of patients remaining in the hospital */
 char hospitalLock[20];
 int peopleInHospital = 1;
+
 struct PharmacyClerks_ {
 	int patientsInLine;
-	int state;
+	/* int state; */
 	int payment;
 	int fee;
 	int patPrescription;
@@ -209,7 +212,7 @@ typedef struct PharmacyClerks_ PharmacyClerks;
 void __PharmacyClerks(PharmacyClerks *pcl, int ID) {
 	char name[20];
 	pcl-> patientsInLine = 0;
-	pcl->state = FREE;
+	/* pcl->state = FREE; */
 	pcl->payment = 0;
 	pcl->fee = (int) (1267) % 100;
 	pcl->patPrescription = 0;
@@ -226,17 +229,16 @@ void __PharmacyClerks(PharmacyClerks *pcl, int ID) {
 	name = itoa(ID, name);
 	strcpy(pcl->ClerkTransCV, strcat(name, "_ClerkTransCV"));
 }
+
 struct Doctor_ {
 	/* line lock and CV and protected variables */
 	char LineLock[20];
 	char LineCV[20];
-	int peopleInLine;
-	/*CV for doorboys to sleep on */
 	char doorboyBreakCV[20];
-
-	/*transaction lock and CV and variables protected */
 	char transLock[20];
 	char transCV[20];
+
+	int peopleInLine;
 	int prescription;
 	int patientToken;
 };
@@ -271,6 +273,7 @@ char doorboyLineCV[20];
 int doorboyLineLength = 0;
 /*int wakingDoctorID = 0; */
 Queue wakingDoctorList;
+
 struct Doorboy_ {
 	int doorboyid;
 };
