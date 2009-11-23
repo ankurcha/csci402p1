@@ -9,7 +9,7 @@
  * All rights reserved.  See copyright.h for copyright notice and limitation 
  * of liability and disclaimer of warranty provisions.
  */
- 
+
 #ifndef SYSCALLS_H
 #define SYSCALLS_H
 
@@ -60,27 +60,25 @@
  */
 
 /* Stop Nachos, and print out performance stats */
-void Halt();		
- 
+void Halt();
 
 /* Address space control operations: Exit, Exec, and Join */
 
 /* This user program is done (status = 0 means exited normally). */
-void Exit(int status);	
+void Exit(int status);
 
 /* A unique identifier for an executing user program (address space) */
-typedef int SpaceId;	
- 
+typedef int SpaceId;
+
 /* Run the executable, stored in the Nachos file "name", and return the 
  * address space identifier
  */
 SpaceId Exec(char *name);
- 
+
 /* Only return once the the user program "id" has finished.  
  * Return the exit status.
  */
-int Join(SpaceId id); 	
- 
+int Join(SpaceId id);
 
 /* File system operations: Create, Open, Read, Write, Close
  * These functions are patterned after UNIX -- files represent
@@ -90,9 +88,9 @@ int Join(SpaceId id);
  * note that the Nachos file system has a stub implementation, which
  * will work for the purposes of testing out these routines.
  */
- 
+
 /* A unique identifier for an open Nachos file. */
-typedef int OpenFileId;	
+typedef int OpenFileId;
 
 /* when an address space starts up, it has two open files, representing 
  * keyboard input and display output (in UNIX terms, stdin and stdout).
@@ -102,7 +100,7 @@ typedef int OpenFileId;
 
 #define ConsoleInput	0  
 #define ConsoleOutput	1  
- 
+
 /* Create a Nachos file, with "name" */
 void Create(char *name, int size);
 
@@ -125,8 +123,6 @@ int Read(char *buffer, int size, OpenFileId id);
 /* Close the file, we're done reading and writing to it. */
 void Close(OpenFileId id);
 
-
-
 /* User-level thread operations: Fork and Yield.  To allow multiple
  * threads to run within a user program. 
  */
@@ -134,7 +130,7 @@ void Close(OpenFileId id);
 /* Fork a thread to run a procedure ("func") in the *same* address space 
  * as the current thread.
  */
-void Fork(void (*func)());
+void Fork(void(*func)());
 
 /* Yield the CPU to another runnable thread, whether in this address space 
  * or not. 
@@ -142,7 +138,7 @@ void Fork(void (*func)());
 void Yield();
 
 /* A unique identifier for an executing user program's address space */
-typedef int spaceId;	
+typedef int spaceId;
 
 /* Exec a thread to run a file given as an argument, return the spaceId of
  * address space of the thread thus produced
@@ -155,25 +151,21 @@ spaceId Exec(char* filename);
  */
 
 /* A unique identifier for an open Nachos Locks. */
-typedef int LockId;	
-
+typedef int LockId;
 
 LockId CreateLock(char* name);
 
- void Acquire(LockId );
+void Acquire(LockId);
 
- void Release(LockId );
- 
+void Release(LockId);
+
 /* Destroys a lock already created in the kernel structure
  */
- 
 
- 
 void DestroyLock(LockId id);
 
 /* A unique identifier for an open Nachos Condition Variables. */
-typedef int CVId;	
-
+typedef int CVId;
 
 /* Create a Condition Variable with the argument as the name, returns index into the
  * kernel structure array of Locks
@@ -181,13 +173,13 @@ typedef int CVId;
 CVId CreateCondition(char* name);
 
 /* Wait on a Condition Variable*/
-void Wait(CVId,LockId);
+void Wait(CVId, LockId);
 
 /*Signal on a Condition Variable */
-void Signal(CVId,LockId);
+void Signal(CVId, LockId);
 
 /*Broadcast on a Condition Variable */
-void Broadcast(CVId,LockId);
+void Broadcast(CVId, LockId);
 
 /* Destroys a Condition Variable already created in the kernel structure.
  */
@@ -200,9 +192,9 @@ int GetMachineID();
 
 int GetTimestamp();
 
-void Send(int receiverID,int receiverMbox,int senderMbox, char* message);
+void Send(int receiverID, int receiverMbox, int senderMbox, char* message);
 
-int Receive(int receiveMbox,int *senderID, int *senderMbox,char* message);
+int Receive(int receiveMbox, int *senderID, int *senderMbox, char* message);
 #endif /* IN_ASM */
 
 #endif /* SYSCALL_H */

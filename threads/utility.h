@@ -28,9 +28,9 @@
 // Miscellaneous useful routines
 
 #include <bool.h>
-					 	// Boolean values.  
-						// This is the same definition 
-						// as in the g++ library.
+// Boolean values.
+// This is the same definition
+// as in the g++ library.
 
 #define min(a,b)  (((a) < (b)) ? (a) : (b))
 #define max(a,b)  (((a) > (b)) ? (a) : (b))
@@ -48,9 +48,8 @@
 // This is used by Thread::Fork and for interrupt handlers, as well
 // as a couple of other places.
 
-typedef void (*VoidFunctionPtr)(int arg); 
-typedef void (*VoidNoArgFunctionPtr)(); 
-
+typedef void (*VoidFunctionPtr)(int arg);
+typedef void (*VoidNoArgFunctionPtr)();
 
 // Include interface that isolates us from the host machine system library.
 // Requires definition of bool, and VoidFunctionPtr
@@ -58,12 +57,12 @@ typedef void (*VoidNoArgFunctionPtr)();
 
 // Interface to debugging routines.
 
-extern void DebugInit(char* flags);	// enable printing debug messages
+extern void DebugInit(char* flags); // enable printing debug messages
 
-extern bool DebugIsEnabled(char flag); 	// Is this debug flag enabled?
+extern bool DebugIsEnabled(char flag); // Is this debug flag enabled?
 
-extern void DEBUG (char flag, char* format, ...);  	// Print debug message 
-							// if flag is enabled
+extern void DEBUG(char flag, char* format, ...); // Print debug message
+// if flag is enabled
 
 //----------------------------------------------------------------------
 // ASSERT
@@ -80,6 +79,5 @@ extern void DEBUG (char flag, char* format, ...);  	// Print debug message
 	fflush(stderr);							      \
         Abort();                                                              \
     }
-
 
 #endif // UTILITY_H

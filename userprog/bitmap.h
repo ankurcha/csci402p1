@@ -32,33 +32,33 @@
 // in use or free.
 
 class BitMap {
-  public:
-    BitMap(int nitems);		// Initialize a bitmap, with "nitems" bits
-				// initially, all bits are cleared.
-    ~BitMap();			// De-allocate bitmap
-    
-    void Mark(int which);   	// Set the "nth" bit
-    void Clear(int which);  	// Clear the "nth" bit
-    bool Test(int which);   	// Is the "nth" bit set?
-    int Find();            	// Return the # of a clear bit, and as a side
-				// effect, set the bit. 
-				// If no bits are clear, return -1.
-    int NumClear();		// Return the number of clear bits
+public:
+    BitMap(int nitems); // Initialize a bitmap, with "nitems" bits
+    // initially, all bits are cleared.
+    ~BitMap(); // De-allocate bitmap
 
-    void Print();		// Print contents of bitmap
-    
+    void Mark(int which); // Set the "nth" bit
+    void Clear(int which); // Clear the "nth" bit
+    bool Test(int which); // Is the "nth" bit set?
+    int Find(); // Return the # of a clear bit, and as a side
+    // effect, set the bit.
+    // If no bits are clear, return -1.
+    int NumClear(); // Return the number of clear bits
+
+    void Print(); // Print contents of bitmap
+
     // These aren't needed until FILESYS, when we will need to read and 
     // write the bitmap to a file
-    void FetchFrom(OpenFile *file); 	// fetch contents from disk 
-    void WriteBack(OpenFile *file); 	// write contents to disk
+    void FetchFrom(OpenFile *file); // fetch contents from disk
+    void WriteBack(OpenFile *file); // write contents to disk
 
-  private:
-    int numBits;			// number of bits in the bitmap
-    int numWords;			// number of words of bitmap storage
-					// (rounded up if numBits is not a
-					//  multiple of the number of bits in
-					//  a word)
-    unsigned int *map;			// bit storage
+private:
+    int numBits; // number of bits in the bitmap
+    int numWords; // number of words of bitmap storage
+    // (rounded up if numBits is not a
+    //  multiple of the number of bits in
+    //  a word)
+    unsigned int *map; // bit storage
 };
 
 #endif // BITMAP_H

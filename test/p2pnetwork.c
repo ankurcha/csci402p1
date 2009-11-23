@@ -151,7 +151,7 @@ int HLock_Acquire(int HlockId) {
 }
 
 int DistLock_Acquire(int name) {
-    /*TODO: Send a lock acquire message to all the targets */
+    /* Send a lock acquire message to all the targets */
     /* Add the requested resource to the requestedResource Array */
     addResource(resourcesRequested, LOCK, temp, 0);
     for (j = 0; j < 7; j++) {

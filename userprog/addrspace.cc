@@ -26,7 +26,10 @@
 #include "table.h"
 #include "synch.h"
 
-extern "C" { int bzero(char *, int); };
+extern "C" {
+int bzero(char *, int);
+}
+;
 
 #ifdef CHANGED
 Lock* physMemMapLock = new Lock("physMemMapLock");
@@ -34,7 +37,8 @@ BitMap physMemMap(NumPhysPages);
 Lock* childLock;
 #endif
 
-Table::Table(int s) : map(s), table(0), lock(0), size(s) {
+Table::Table(int s) :
+    map(s), table(0), lock(0), size(s) {
     table = new void *[size];
     lock = new Lock("TableLock");
 }
@@ -54,18 +58,18 @@ void *Table::Get(int i) {
     // Return the element associated with the given if, or 0 if
     // there is none.
 
-    return (i >=0 && i < size && map.Test(i)) ? table[i] : 0;
+    return (i >= 0 && i < size && map.Test(i)) ? table[i] : 0;
 }
 
 int Table::Put(void *f) {
     // Put the element in the table and return the slot it used.  Use a
     // lock so 2 files don't get the same space.
-    int i;    // to find the next slot
+    int i; // to find the next slot
 
     lock->Acquire();
     i = map.Find();
     lock->Release();
-    if ( i != -1)
+    if (i != -1)
         table[i] = f;
     return i;
 }
@@ -74,11 +78,11 @@ void *Table::Remove(int i) {
     // Remove the element associated with identifier i from the table,
     // and return it.
 
-    void *f =0;
+    void *f = 0;
 
-    if ( i >= 0 && i < size ) {
+    if (i >= 0 && i < size) {
         lock->Acquire();
-        if ( map.Test(i) ) {
+        if (map.Test(i)) {
             map.Clear(i);
             f = table[i];
             table[i] = 0;
@@ -95,19 +99,17 @@ void *Table::Remove(int i) {
 //      endian machine, and we're now running on a big endian machine.
 //----------------------------------------------------------------------
 
-static void 
-SwapHeader (NoffHeader *noffH)
-{
-        noffH->noffMagic = WordToHost(noffH->noffMagic);
-        noffH->code.size = WordToHost(noffH->code.size);
-        noffH->code.virtualAddr = WordToHost(noffH->code.virtualAddr);
-        noffH->code.inFileAddr = WordToHost(noffH->code.inFileAddr);
-        noffH->initData.size = WordToHost(noffH->initData.size);
-        noffH->initData.virtualAddr = WordToHost(noffH->initData.virtualAddr);
-        noffH->initData.inFileAddr = WordToHost(noffH->initData.inFileAddr);
-        noffH->uninitData.size = WordToHost(noffH->uninitData.size);
-        noffH->uninitData.virtualAddr = WordToHost(noffH->uninitData.virtualAddr);
-        noffH->uninitData.inFileAddr = WordToHost(noffH->uninitData.inFileAddr);
+static void SwapHeader(NoffHeader *noffH) {
+    noffH->noffMagic = WordToHost(noffH->noffMagic);
+    noffH->code.size = WordToHost(noffH->code.size);
+    noffH->code.virtualAddr = WordToHost(noffH->code.virtualAddr);
+    noffH->code.inFileAddr = WordToHost(noffH->code.inFileAddr);
+    noffH->initData.size = WordToHost(noffH->initData.size);
+    noffH->initData.virtualAddr = WordToHost(noffH->initData.virtualAddr);
+    noffH->initData.inFileAddr = WordToHost(noffH->initData.inFileAddr);
+    noffH->uninitData.size = WordToHost(noffH->uninitData.size);
+    noffH->uninitData.virtualAddr = WordToHost(noffH->uninitData.virtualAddr);
+    noffH->uninitData.inFileAddr = WordToHost(noffH->uninitData.inFileAddr);
 }
 
 //----------------------------------------------------------------------
@@ -128,9 +130,9 @@ SwapHeader (NoffHeader *noffH)
 //----------------------------------------------------------------------
 
 #ifdef CHANGED
-AddrSpace::AddrSpace(OpenFile *exec) : fileTable(MaxOpenFiles), 
-                                       locksTable(MaxLock), 
-                                       CVTable(MaxCV) 
+AddrSpace::AddrSpace(OpenFile *exec) : fileTable(MaxOpenFiles),
+locksTable(MaxLock),
+CVTable(MaxCV)
 {
     unsigned int i, size, neededPages;
     locksTableLock = new Lock("LocksTableLock");
@@ -150,24 +152,24 @@ AddrSpace::AddrSpace(OpenFile *exec) : fileTable(MaxOpenFiles),
     // Don't allocate the input or output to disk files
     fileTable.Put(0);
     fileTable.Put(0);
-                                                 
+
     // read the header into noffH
     executable->ReadAt((char *)&noffH, sizeof(noffH), 0);
 
     // switch to big endian if it is not already
-    if ((noffH.noffMagic != NOFFMAGIC) && 
-                (WordToHost(noffH.noffMagic) == NOFFMAGIC))
-            SwapHeader(&noffH);
+    if ((noffH.noffMagic != NOFFMAGIC) &&
+            (WordToHost(noffH.noffMagic) == NOFFMAGIC))
+    SwapHeader(&noffH);
     ASSERT(noffH.noffMagic == NOFFMAGIC);
 
     // calculate the size of this process
     /*
-    cerr << "Allocating an address space, exec data is as follows:\n"
-         << " codeVaddr: " << noffH.code.virtualAddr << " codeSize: " << noffH.code.size << endl
-         << " initVaddr: " << noffH.initData.virtualAddr << " initSize: " << noffH.initData.size << endl
-         << " uninitVaddr: " << noffH.uninitData.virtualAddr << " uninitSize: " << noffH.uninitData.size << endl;
-    */
-    dataSize = noffH.code.size + noffH.initData.size + noffH.uninitData.size ;
+     cerr << "Allocating an address space, exec data is as follows:\n"
+     << " codeVaddr: " << noffH.code.virtualAddr << " codeSize: " << noffH.code.size << endl
+     << " initVaddr: " << noffH.initData.virtualAddr << " initSize: " << noffH.initData.size << endl
+     << " uninitVaddr: " << noffH.uninitData.virtualAddr << " uninitSize: " << noffH.uninitData.size << endl;
+     */
+    dataSize = noffH.code.size + noffH.initData.size + noffH.uninitData.size;
     dataPages = divRoundUp(dataSize, PageSize);
 
     // necessary pages to run the process with one thread
@@ -177,33 +179,33 @@ AddrSpace::AddrSpace(OpenFile *exec) : fileTable(MaxOpenFiles),
     ASSERT(neededPages <= numPages);
 
     DEBUG('a', "Initializing address space with %d valid pages, size %d\n",
-          neededPages, neededPages * PageSize);
-    
+            neededPages, neededPages * PageSize);
+
     // set the stackTable to hold the number of stacks that may exist
     stackTableLock = new Lock("StackTableLock");
-    stackTable = new BitMap((numPages - dataPages) 
-                            / divRoundUp(UserStackSize, PageSize) );
+    stackTable = new BitMap((numPages - dataPages)
+            / divRoundUp(UserStackSize, PageSize) );
     // the first stack is in position 0
     stackTable->Mark(0);
 
     // and its stack sits in the last pages of the address space
-    unsigned int stackStart = 
-            numPages - divRoundUp(UserStackSize, PageSize);
-    
+    unsigned int stackStart =
+    numPages - divRoundUp(UserStackSize, PageSize);
+
     //Take care of the number of child processes
     //childLock = new Lock("childLock");
     this->childThreads = 0;
-    
+
     // first, set up the translation
-                                                     // TURN OFF ALL PRELOADING
-    DEBUG('a', "Initializing page table, num pages %d, size %d\n", 
-                                        numPages, size);
+    // TURN OFF ALL PRELOADING
+    DEBUG('a', "Initializing page table, num pages %d, size %d\n",
+            numPages, size);
 #ifndef USE_TLB
     pageTable = new TranslationEntry[numPages];
 #endif
 
     //*** CREATE THE PAGE TABLE ***
-    pageTableInfo = new PageTableEntry[numPages]; 
+    pageTableInfo = new PageTableEntry[numPages];
     for (i = 0; i < dataPages; i++) {
         // find a free page in physical memory
 #ifndef USE_TLB
@@ -216,9 +218,9 @@ AddrSpace::AddrSpace(OpenFile *exec) : fileTable(MaxOpenFiles),
         pageTable[i].valid = TRUE;
         pageTable[i].use = FALSE;
         pageTable[i].dirty = FALSE;
-        pageTable[i].readOnly = FALSE;  // if the code segment was entirely on 
-                                        // a separate page, we could set its 
-                                        // pages to be read-only
+        pageTable[i].readOnly = FALSE; // if the code segment was entirely on
+        // a separate page, we could set its
+        // pages to be read-only
 
         // zero out the physical memory associated with this page
         bzero(&(machine->mainMemory[PageSize * physPage]), PageSize);
@@ -239,7 +241,7 @@ AddrSpace::AddrSpace(OpenFile *exec) : fileTable(MaxOpenFiles),
 #ifndef USE_TLB
         pageTable[i].virtualPage = i;
         pageTable[i].physicalPage = 0;
-        pageTable[i].valid = FALSE;  // no physical memory for this page
+        pageTable[i].valid = FALSE; // no physical memory for this page
         pageTable[i].use = FALSE;
         pageTable[i].dirty = FALSE;
         pageTable[i].readOnly = FALSE;
@@ -268,9 +270,9 @@ AddrSpace::AddrSpace(OpenFile *exec) : fileTable(MaxOpenFiles),
         pageTable[i].valid = TRUE;
         pageTable[i].use = FALSE;
         pageTable[i].dirty = FALSE;
-        pageTable[i].readOnly = FALSE;  // if the code segment was entirely on 
-                                        // a separate page, we could set its 
-                                        // pages to be read-only
+        pageTable[i].readOnly = FALSE; // if the code segment was entirely on
+        // a separate page, we could set its
+        // pages to be read-only
 
         // zero out the physical memory associated with this page
         bzero(&(machine->mainMemory[PageSize * physPage]), PageSize);
@@ -286,12 +288,12 @@ AddrSpace::AddrSpace(OpenFile *exec) : fileTable(MaxOpenFiles),
         pageTableInfo[i].swapLocation = -1;
 #endif
     }
-    
+
     // then, copy in the code and data segments into memory
 #ifndef USE_TLB
     if (noffH.code.size > 0) {
-        DEBUG('a', "Initializing code segment, at vaddr 0x%x, size %d\n", 
-                        noffH.code.virtualAddr, noffH.code.size);
+        DEBUG('a', "Initializing code segment, at vaddr 0x%x, size %d\n",
+                noffH.code.virtualAddr, noffH.code.size);
 
         // initialize the code segment one page at a time
         int page = noffH.code.virtualAddr / PageSize;
@@ -302,8 +304,8 @@ AddrSpace::AddrSpace(OpenFile *exec) : fileTable(MaxOpenFiles),
             ASSERT(pageTable[page].valid);
             int paddr = (pageTable[page].physicalPage * PageSize) + offset;
             _size = min(code, PageSize - offset);
-            DEBUG('a', "Initializing code segment, at paddr 0x%x, size %d\n", 
-                            paddr, _size);
+            DEBUG('a', "Initializing code segment, at paddr 0x%x, size %d\n",
+                    paddr, _size);
 
             executable->ReadAt(&(machine->mainMemory[paddr]), _size, fileAddr);
 
@@ -313,8 +315,8 @@ AddrSpace::AddrSpace(OpenFile *exec) : fileTable(MaxOpenFiles),
         }
     }
     if (noffH.initData.size > 0) {
-        DEBUG('a', "Initializing initData segment, at vaddr 0x%x, size %d\n", 
-                        noffH.initData.virtualAddr, noffH.initData.size);
+        DEBUG('a', "Initializing initData segment, at vaddr 0x%x, size %d\n",
+                noffH.initData.virtualAddr, noffH.initData.size);
 
         // initialize the initData segment one page at a time
         int page = noffH.initData.virtualAddr / PageSize;
@@ -327,8 +329,8 @@ AddrSpace::AddrSpace(OpenFile *exec) : fileTable(MaxOpenFiles),
             ASSERT(pageTable[page].valid);
             int paddr = (pageTable[page].physicalPage * PageSize) + offset;
             _size = min(data, PageSize - offset);
-            DEBUG('a', "Initializing initData segment, at paddr 0x%x, size %d\n", 
-                            paddr, _size);
+            DEBUG('a', "Initializing initData segment, at paddr 0x%x, size %d\n",
+                    paddr, _size);
 
             executable->ReadAt(&(machine->mainMemory[paddr]), _size, fileAddr);
 
@@ -341,7 +343,6 @@ AddrSpace::AddrSpace(OpenFile *exec) : fileTable(MaxOpenFiles),
 }
 #endif
 
-
 //----------------------------------------------------------------------
 // AddrSpace::~AddrSpace
 //
@@ -349,8 +350,7 @@ AddrSpace::AddrSpace(OpenFile *exec) : fileTable(MaxOpenFiles),
 // 	and file tables
 //----------------------------------------------------------------------
 
-AddrSpace::~AddrSpace()
-{
+AddrSpace::~AddrSpace() {
 #ifdef CHANGED
 #ifndef USE_TLB
     // free the physical memory being used by this page table
@@ -382,7 +382,7 @@ AddrSpace::~AddrSpace()
             delete f;
         }
     }
-    
+
     // kill all child processes
     //set<PID>::iterator childItr;
     //while(childThread.size()>0){
@@ -402,15 +402,14 @@ AddrSpace::~AddrSpace()
 //	when this thread is context switched out.
 //----------------------------------------------------------------------
 
-void AddrSpace::InitRegisters()
-{
+void AddrSpace::InitRegisters() {
     int i;
 
     for (i = 0; i < NumTotalRegs; i++)
         machine->WriteRegister(i, 0);
 
     // Initial program counter -- must be location of "Start"
-    machine->WriteRegister(PCReg, 0);	
+    machine->WriteRegister(PCReg, 0);
 
     // Need to also tell MIPS where next instruction is, because
     // of branch delay possibility
@@ -422,8 +421,8 @@ void AddrSpace::InitRegisters()
 #ifdef CHANGED
     unsigned int stackRegister = numPages * PageSize - 16;
     machine->WriteRegister(StackReg, stackRegister);
-    DEBUG('a', "Initializing stack register to %x for stack 0\n", 
-          stackRegister);
+    DEBUG('a', "Initializing stack register to %x for stack 0\n",
+            stackRegister);
 #endif
 }
 
@@ -489,8 +488,8 @@ int AddrSpace::InitStack() {
     // accidentally reference off the end!
     unsigned int stackRegister = (start + stackPages) * PageSize - 16;
     machine->WriteRegister(StackReg, stackRegister);
-    DEBUG('a', "Initializing stack register to %x for stack %d\n", 
-          stackRegister, stack);
+    DEBUG('a', "Initializing stack register to %x for stack %d\n",
+            stackRegister, stack);
 
     return stack;
 }
@@ -504,11 +503,11 @@ void AddrSpace::ClearStack(int id) {
     stackTableLock->Acquire();
     if(!stackTable->Test(id)) {
         // this stack is not in use
-        cerr << "ERROR: tried to clear stack [" << id 
-             << "] that was not allocated\n";
+        cerr << "ERROR: tried to clear stack [" << id
+        << "] that was not allocated\n";
         return;
     }
-    
+
     // pages per stack
     int stackPages = divRoundUp(UserStackSize,PageSize);
 
@@ -548,8 +547,7 @@ void AddrSpace::ClearStack(int id) {
 //
 //----------------------------------------------------------------------
 
-void AddrSpace::SaveState() 
-{
+void AddrSpace::SaveState() {
 #ifdef USE_TLB
     // Save state infor from the tlb
     //bool haveLock = false;
@@ -559,7 +557,7 @@ void AddrSpace::SaveState()
     //}
     IntStatus oldLevel = interrupt->SetLevel(IntOff);
     for(int i=0; i<TLBSize; i++) {
-        if(machine->tlb[i].valid){
+        if(machine->tlb[i].valid) {
             IPT[machine->tlb[i].physicalPage].use = machine->tlb[i].use;
             IPT[machine->tlb[i].physicalPage].dirty = machine->tlb[i].dirty;
         }
@@ -577,8 +575,7 @@ void AddrSpace::SaveState()
 //	this address space can run.
 //----------------------------------------------------------------------
 
-void AddrSpace::RestoreState() 
-{
+void AddrSpace::RestoreState() {
 #ifndef USE_TLB
     machine->pageTable = pageTable;
     machine->pageTableSize = numPages;
@@ -587,7 +584,7 @@ void AddrSpace::RestoreState()
     // All the pages in the machine->TLB must be invalidated now
 #ifdef USE_TLB
     IntStatus oldLevel = interrupt->SetLevel(IntOff);
-    for(int i=0; i < TLBSize; i++){
+    for(int i=0; i < TLBSize; i++) {
         //if(machine->tlb[i].valid) {
         //    IPT[machine->tlb[i].physicalPage].use = machine->tlb[i].use;
         //    IPT[machine->tlb[i].physicalPage].dirty = machine->tlb[i].dirty;
@@ -611,9 +608,9 @@ std::string AddrSpace::readCString(char* s) {
 
     unsigned int page = (unsigned int) s / PageSize;
     if(page >= numPages || !pageTable[page].valid) {
-        cerr << "ERROR: virtual address [" << (unsigned int) s 
-             << "] passed to readCString is invalid\n"
-             << " segmentation fault?\n";
+        cerr << "ERROR: virtual address [" << (unsigned int) s
+        << "] passed to readCString is invalid\n"
+        << " segmentation fault?\n";
         return ret;
     }
     unsigned int offset = (unsigned int) s % PageSize;
@@ -630,10 +627,10 @@ std::string AddrSpace::readCString(char* s) {
             offset = 0;
             page++;
             if(page >= numPages || !pageTable[page].valid) {
-                cerr << "ERROR: virtual address [" << (unsigned int) s 
-                     << "] passed to readCString is invalid\n"
-                     << " string prematurely truncated to " << ret << endl
-                     << " segmentation fault?\n";
+                cerr << "ERROR: virtual address [" << (unsigned int) s
+                << "] passed to readCString is invalid\n"
+                << " string prematurely truncated to " << ret << endl
+                << " segmentation fault?\n";
                 return ret;
             }
         }
@@ -643,31 +640,31 @@ std::string AddrSpace::readCString(char* s) {
     return ret;
 }
 /*
-std::string AddrSpace::readCString(char* s) {
-    std::string ret = "";
-    int val = 0;
-    bool result = false;
+ std::string AddrSpace::readCString(char* s) {
+ std::string ret = "";
+ int val = 0;
+ bool result = false;
 
-    while(true) {
-        // read a byte, retry for a PageFaultException
-        result = machine->ReadMem((int) s, 1, &val);
-        while(!result) {
-            result = machine->ReadMem((int) s, 1, &val);
-        }
+ while(true) {
+ // read a byte, retry for a PageFaultException
+ result = machine->ReadMem((int) s, 1, &val);
+ while(!result) {
+ result = machine->ReadMem((int) s, 1, &val);
+ }
 
-        // break if we hit the null terminator
-        if((char) val == 0) {
-            break;
-        }
+ // break if we hit the null terminator
+ if((char) val == 0) {
+ break;
+ }
 
-        // append this char
-        ret += (char) val;
+ // append this char
+ ret += (char) val;
 
-        s++;
-    }
+ s++;
+ }
 
-    return ret;
-}
-*/
+ return ret;
+ }
+ */
 #endif
 

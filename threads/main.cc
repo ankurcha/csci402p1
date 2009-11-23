@@ -53,7 +53,6 @@
 #include "utility.h"
 #include "system.h"
 
-
 // External functions used by this file
 
 extern void ThreadTest(void), Copy(char *unixFile, char *nachosFile);
@@ -78,32 +77,30 @@ extern void Problem2(int), TestSuite(void);
 //		ex: "nachos -d +" -> argv = {"nachos", "-d", "+"}
 //----------------------------------------------------------------------
 
-int
-main(int argc, char **argv)
-{
-    int argCount;			// the number of arguments 
-					// for a particular command
+int main(int argc, char **argv) {
+    int argCount; // the number of arguments
+    // for a particular command
 
     DEBUG('t', "Entering main");
     (void) Initialize(argc, argv);
-    
-//#ifdef THREADS
-//    ThreadTest();
-//#endif
+
+    //#ifdef THREADS
+    //    ThreadTest();
+    //#endif
 #ifdef USE_TLB
     FIFOreplacementPolicy = false; // Make Random replacement policy as the default
 #endif
 
     for (argc--, argv++; argc > 0; argc -= argCount, argv += argCount) {
-	argCount = 1;
-        if (!strcmp(*argv, "-z"))               // print copyright
-            printf (copyright);
+        argCount = 1;
+        if (!strcmp(*argv, "-z")) // print copyright
+            printf ( copyright);
 #ifdef THREADS
         if (!strcmp(*argv, "-tt"))
-            ThreadTest();
-        if (!strcmp(*argv, "-T"))               // Test Suite: link for this code is at the bottom of part 1 description
-            TestSuite();
-        if (!strcmp(*argv, "-P2")) {              // Problem 2: for part 2
+        ThreadTest();
+        if (!strcmp(*argv, "-T")) // Test Suite: link for this code is at the bottom of part 1 description
+        TestSuite();
+        if (!strcmp(*argv, "-P2")) { // Problem 2: for part 2
             // allow the menu option to be specified on the command line
             if((argc > 1) && (**(argv+1) != '-')) {
                 Problem2(atoi(*(argv+1)));
@@ -114,73 +111,73 @@ main(int argc, char **argv)
         }
 #endif
 #ifdef USE_TLB
-        if(!strcmp(*argv, "-P")){
-            if(!strcmp(*(argv+1),"FIFO")){
+        if(!strcmp(*argv, "-P")) {
+            if(!strcmp(*(argv+1),"FIFO")) {
                 FIFOreplacementPolicy=true;
-            }else{
+            } else {
                 FIFOreplacementPolicy=false;
             }
             argCount = 2;
         }
 #endif
 #ifdef USER_PROGRAM
-        if (!strcmp(*argv, "-x")) {        	// run a user program
-	    ASSERT(argc > 1);
+        if (!strcmp(*argv, "-x")) { // run a user program
+            ASSERT(argc > 1);
             StartProcess(*(argv + 1));
             argCount = 2;
-        } else if (!strcmp(*argv, "-c")) {      // test the console
-	    if (argc == 1)
-	        ConsoleTest(NULL, NULL);
-	    else {
-		ASSERT(argc > 2);
-	        ConsoleTest(*(argv + 1), *(argv + 2));
-	        argCount = 3;
-	    }
-	    interrupt->Halt();		// once we start the console, then 
-					// Nachos will loop forever waiting 
-					// for console input
-	}
+        } else if (!strcmp(*argv, "-c")) { // test the console
+            if (argc == 1)
+            ConsoleTest(NULL, NULL);
+            else {
+                ASSERT(argc > 2);
+                ConsoleTest(*(argv + 1), *(argv + 2));
+                argCount = 3;
+            }
+            interrupt->Halt(); // once we start the console, then
+            // Nachos will loop forever waiting
+            // for console input
+        }
 #endif // USER_PROGRAM
 #ifdef FILESYS
-	if (!strcmp(*argv, "-cp")) { 		// copy from UNIX to Nachos
-	    ASSERT(argc > 2);
-	    Copy(*(argv + 1), *(argv + 2));
-	    argCount = 3;
-	} else if (!strcmp(*argv, "-p")) {	// print a Nachos file
-	    ASSERT(argc > 1);
-	    Print(*(argv + 1));
-	    argCount = 2;
-	} else if (!strcmp(*argv, "-r")) {	// remove Nachos file
-	    ASSERT(argc > 1);
-	    fileSystem->Remove(*(argv + 1));
-	    argCount = 2;
-	} else if (!strcmp(*argv, "-l")) {	// list Nachos directory
+        if (!strcmp(*argv, "-cp")) { // copy from UNIX to Nachos
+            ASSERT(argc > 2);
+            Copy(*(argv + 1), *(argv + 2));
+            argCount = 3;
+        } else if (!strcmp(*argv, "-p")) { // print a Nachos file
+            ASSERT(argc > 1);
+            Print(*(argv + 1));
+            argCount = 2;
+        } else if (!strcmp(*argv, "-r")) { // remove Nachos file
+            ASSERT(argc > 1);
+            fileSystem->Remove(*(argv + 1));
+            argCount = 2;
+        } else if (!strcmp(*argv, "-l")) { // list Nachos directory
             fileSystem->List();
-	} else if (!strcmp(*argv, "-D")) {	// print entire filesystem
+        } else if (!strcmp(*argv, "-D")) { // print entire filesystem
             fileSystem->Print();
-	} else if (!strcmp(*argv, "-t")) {	// performance test
+        } else if (!strcmp(*argv, "-t")) { // performance test
             PerformanceTest();
-	}
+        }
 #endif // FILESYS
 #ifdef NETWORK
         if (!strcmp(*argv, "-o")) {
-	    ASSERT(argc > 1);
-            Delay(5); 				// delay for 2 seconds
-						// to give the user time to 
-						// start up another nachos
+            ASSERT(argc > 1);
+            Delay(5); // delay for 2 seconds
+            // to give the user time to
+            // start up another nachos
             //MailTest(atoi(*(argv + 1)));
             argCount = 2;
         }
 #endif // NETWORK
     }
 
-    currentThread->Finish();	// NOTE: if the procedure "main" 
-				// returns, then the program "nachos"
-				// will exit (as any other normal program
-				// would).  But there may be other
-				// threads on the ready list.  We switch
-				// to those threads by saying that the
-				// "main" thread is finished, preventing
-				// it from returning.
-    return(0);			// Not reached...
+    currentThread->Finish(); // NOTE: if the procedure "main"
+    // returns, then the program "nachos"
+    // will exit (as any other normal program
+    // would).  But there may be other
+    // threads on the ready list.  We switch
+    // to those threads by saying that the
+    // "main" thread is finished, preventing
+    // it from returning.
+    return (0); // Not reached...
 }

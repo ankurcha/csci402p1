@@ -25,7 +25,6 @@ int numberOfEntities[7]; /* The number of entities */
  * numberOfEntities[6] - hospital managers
  */
 
-/* TODO: Write an initialization function for p2pnetwork */
 int netthread_Lock; /* We use these to interact with the netthread.*/
 int netthread_CV; /* Used to wait on the netthread for a reply */
 

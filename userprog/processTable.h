@@ -68,7 +68,6 @@ public:
                 if (parentProcess!= NULL) {
                     parentProcess->childLock->Acquire();
                     // Actually remove process from process table
-                    //TODO: don't we need the tableLock to do this? -max
                     table->erase(table->find(pid));
                     parentProcess->childCount--;
                     if (parentProcess->childCount == 0) {
@@ -79,7 +78,6 @@ public:
                     return 1;
                 }
             }else {
-                //TODO: tableLock?
                 table->erase(table->find(pid));
                 process->childLock->Release();
                 return 0;

@@ -14,13 +14,12 @@ class Table {
     void **table;
     Lock *lock;
     int size;
- public:
+public:
     Table(int);
     ~Table();
     void *Get(int);
     int Put(void *);
     void *Remove(int);
 };
-
 
 #endif // TABLE_H

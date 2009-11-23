@@ -40,18 +40,17 @@ typedef int MailBoxAddress;
 // is sent to the Network.
 
 class MailHeader {
-  public:
-    MailBoxAddress to;		// Destination mail box
-    MailBoxAddress from;	// Mail box to reply to
-    unsigned length;		// Bytes of message data (excluding the 
-				// mail header)
+public:
+    MailBoxAddress to; // Destination mail box
+    MailBoxAddress from; // Mail box to reply to
+    unsigned length; // Bytes of message data (excluding the
+    // mail header)
 };
 
 // Maximum "payload" -- real data -- that can included in a single message
 // Excluding the MailHeader and the PacketHeader
 
 #define MaxMailSize 	(MaxPacketSize - sizeof(MailHeader))
-
 
 // The following class defines the format of an incoming/outgoing 
 // "Mail" message.  The message format is layered: 
@@ -60,14 +59,14 @@ class MailHeader {
 //	data
 
 class Mail {
-  public:
-     Mail(PacketHeader pktH, MailHeader mailH, char *msgData);
-				// Initialize a mail message by
-				// concatenating the headers to the data
+public:
+    Mail(PacketHeader pktH, MailHeader mailH, char *msgData);
+    // Initialize a mail message by
+    // concatenating the headers to the data
 
-     PacketHeader pktHdr;	// Header appended by Network
-     MailHeader mailHdr;	// Header appended by PostOffice
-     char data[MaxMailSize];	// Payload -- message data
+    PacketHeader pktHdr; // Header appended by Network
+    MailHeader mailHdr; // Header appended by PostOffice
+    char data[MaxMailSize]; // Payload -- message data
 };
 
 // The following class defines a single mailbox, or temporary storage
@@ -76,18 +75,18 @@ class Mail {
 // threads on this machine.
 
 class MailBox {
-  public: 
-    MailBox();			// Allocate and initialize mail box
-    ~MailBox();			// De-allocate mail box
+public:
+    MailBox(); // Allocate and initialize mail box
+    ~MailBox(); // De-allocate mail box
 
     void Put(PacketHeader pktHdr, MailHeader mailHdr, char *data);
-   				// Atomically put a message into the mailbox
-    void Get(PacketHeader *pktHdr, MailHeader *mailHdr, char *data); 
-   				// Atomically get a message out of the 
-				// mailbox (and wait if there is no message 
-				// to get!)
-  private:
-    SynchList *messages;	// A mailbox is just a list of arrived messages
+    // Atomically put a message into the mailbox
+    void Get(PacketHeader *pktHdr, MailHeader *mailHdr, char *data);
+    // Atomically get a message out of the
+    // mailbox (and wait if there is no message
+    // to get!)
+private:
+    SynchList *messages; // A mailbox is just a list of arrived messages
 };
 
 // The following class defines a "Post Office", or a collection of 
@@ -100,42 +99,42 @@ class MailBox {
 // appropriate mailbox, waking up any threads waiting on Receive.
 
 class PostOffice {
-  public:
+public:
     PostOffice(NetworkAddress addr, double reliability, int nBoxes);
-				// Allocate and initialize Post Office
-				//   "reliability" is how many packets
-				//   get dropped by the underlying network
-    ~PostOffice();		// De-allocate Post Office data
-    
+    // Allocate and initialize Post Office
+    //   "reliability" is how many packets
+    //   get dropped by the underlying network
+    ~PostOffice(); // De-allocate Post Office data
+
     bool Send(PacketHeader pktHdr, MailHeader mailHdr, char *data);
-    				// Send a message to a mailbox on a remote 
-				   // machine.  The fromBox in the MailHeader is 
-				  // the return box for ack's.
-    
-    void Receive(int box, PacketHeader *pktHdr, 
-		MailHeader *mailHdr, char *data);
-    				// Retrieve a message from "box".  Wait if
-				    // there is no message in the box.
+    // Send a message to a mailbox on a remote
+    // machine.  The fromBox in the MailHeader is
+    // the return box for ack's.
 
-    void PostalDelivery();	// Wait for incoming messages, 
-				// and then put them in the correct mailbox
+    void
+    Receive(int box, PacketHeader *pktHdr, MailHeader *mailHdr, char *data);
+    // Retrieve a message from "box".  Wait if
+    // there is no message in the box.
 
-    void PacketSent();		// Interrupt handler, called when outgoing 
-				// packet has been put on network; next 
-				// packet can now be sent
-    void IncomingPacket();	// Interrupt handler, called when incoming
-   				// packet has arrived and can be pulled
-				// off of network (i.e., time to call 
-				// PostalDelivery)
+    void PostalDelivery(); // Wait for incoming messages,
+    // and then put them in the correct mailbox
 
-  private:
-    Network *network;		// Physical network connection
-    NetworkAddress netAddr;	// Network address of this machine
-    MailBox *boxes;		// Table of mail boxes to hold incoming mail
-    int numBoxes;		// Number of mail boxes
+    void PacketSent(); // Interrupt handler, called when outgoing
+    // packet has been put on network; next
+    // packet can now be sent
+    void IncomingPacket(); // Interrupt handler, called when incoming
+    // packet has arrived and can be pulled
+    // off of network (i.e., time to call
+    // PostalDelivery)
+
+private:
+    Network *network; // Physical network connection
+    NetworkAddress netAddr; // Network address of this machine
+    MailBox *boxes; // Table of mail boxes to hold incoming mail
+    int numBoxes; // Number of mail boxes
     Semaphore *messageAvailable;// V'ed when message has arrived from network
-    Semaphore *messageSent;	// V'ed when next message can be sent to network
-    Lock *sendLock;		// Only one outgoing message at a time
+    Semaphore *messageSent; // V'ed when next message can be sent to network
+    Lock *sendLock; // Only one outgoing message at a time
 };
 
 #endif
