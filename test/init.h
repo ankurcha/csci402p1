@@ -211,44 +211,49 @@ int List_IsEmpty(List *l) {
 
 }
 
-int getNextRecpCV(int recepID){
+int getNextRecpCV(int recepID) {
     static int CVID = 0;
     return CVID + (ENTITY_OFFSET * recepID);
 }
 
-int getNextRecpLock(int recepID){
+int getNextRecpLock(int recepID) {
     static int LockID = 0;
     return LockID + (ENTITY_OFFSET * recepID + LOCK_OFFSET);
 }
 
-int getNextCashCV(int cashID){
+int getNextCashCV(int cashID) {
     static int CVID = 0;
-    return RECP_MAX*ENTITY_OFFSET + CVID + (ENTITY_OFFSET * cashID);
+    return RECP_MAX * ENTITY_OFFSET + CVID + (ENTITY_OFFSET * cashID);
 }
 
-int getNextCashLock(int cashID){
+int getNextCashLock(int cashID) {
     static int LockID = 0;
-    return RECP_MAX*ENTITY_OFFSET + LockID + (ENTITY_OFFSET * cashID + LOCK_OFFSET);
+    return RECP_MAX * ENTITY_OFFSET + LockID + (ENTITY_OFFSET * cashID
+            + LOCK_OFFSET);
 }
 
-int getNextClerkCV(int clerkID){
+int getNextClerkCV(int clerkID) {
     static int CVID = 0;
-    return (RECP_MAX + MAX_CASHIER)*ENTITY_OFFSET + CVID + (ENTITY_OFFSET * clerkID);
+    return (RECP_MAX + MAX_CASHIER) * ENTITY_OFFSET + CVID + (ENTITY_OFFSET
+            * clerkID);
 }
 
-int getNextClerkLock(int clerkID){
+int getNextClerkLock(int clerkID) {
     static int LockID = 0;
-    return (RECP_MAX + MAX_CASHIER)*ENTITY_OFFSET + LockID + (ENTITY_OFFSET * clerkID + LOCK_OFFSET);
+    return (RECP_MAX + MAX_CASHIER) * ENTITY_OFFSET + LockID + (ENTITY_OFFSET
+            * clerkID + LOCK_OFFSET);
 }
 
-int getNextDocCV(int docID){
+int getNextDocCV(int docID) {
     static int CVID = 0;
-    return (RECP_MAX + MAX_CASHIER + MAX_DOCTORS)*ENTITY_OFFSET + CVID + (ENTITY_OFFSET * docID);
+    return (RECP_MAX + MAX_CASHIER + MAX_DOCTORS) * ENTITY_OFFSET + CVID
+            + (ENTITY_OFFSET * docID);
 }
 
-int getNextDocLock(int docID){
+int getNextDocLock(int docID) {
     static int LockID = 0;
-    return (RECP_MAX + MAX_CASHIER + MAX_DOCTORS)*ENTITY_OFFSET + LockID + (ENTITY_OFFSET * docID + LOCK_OFFSET);
+    return (RECP_MAX + MAX_CASHIER + MAX_DOCTORS) * ENTITY_OFFSET + LockID
+            + (ENTITY_OFFSET * docID + LOCK_OFFSET);
 }
 
 void __Receptionists(Receptionists *recep, int recepID) {
@@ -363,4 +368,176 @@ void createHospitalManager() {
     Exit(0);
 }
 
+/* Data Update Handling Functions */
+int UpdateData_Patient(Packet p) {
+    /* !!! */
+    return 0;
+}
+
+int UpdateData_Receptionist(Packet p) {
+    int id, peopleInLine, currentToken;
+    id = copyOutInt(p.data, 0);
+    peopleInLine = copyOutInt(p.data, 4);
+    currentToken = copyOutInt(p.data, 8);
+    /* Apply the update */
+    receptionists[id].currentToken = currentToken;
+    receptionists[id].peopleInLine = peopleInLine;
+    return id;
+}
+int UpdateData_Doorboy(Packet p) {
+    /* !!! */
+    return 0;
+}
+int UpdateData_Doctor(Packet p) {
+    int id, peopleInLine, prescription, patientToken;
+    id = copyOutInt(p.data, 0);
+    prescription = copyOutInt(p.data, 4);
+    patientToken = copyOutInt(p.data, 8);
+    /* Apply update */
+    doctors[id].patientToken = patientToken;
+    doctors[id].peopleInLine = peopleInLine;
+    doctors[id].prescription = prescription;
+    return id;
+}
+
+int UpdateData_Cashier(Packet p) {
+    int id, lineLength, patToken, fee, payment, sales;
+    id = copyOutInt(p.data, 0);
+    lineLength = copyOutInt(p.data, 4);
+    patToken = copyOutInt(p.data, 8);
+    fee = copyOutInt(p.data, 12);
+    payment = copyOutInt(p.data, 16);
+    sales = copyOutInt(p.data, 20);
+    /* Apply Update */
+    cashiers[id].lineLength = lineLength;
+    cashiers[id].patToken = patToken;
+    cashiers[id].fee = fee;
+    cashiers[id].payment = payment;
+    cashiers[id].sales = sales;
+    return id;
+}
+
+int UpdateData_Clerk(Packet p) {
+    int id, patientsInLine, payment, fee, patPrescription, sales;
+    id = copyOutInt(p.data, 0);
+    patientsInLine = copyOutInt(p.data, 4);
+    payment = copyOutInt(p.data, 8);
+    fee = copyOutInt(p.data, 12);
+    patPrescription = copyOutInt(p.data, 16);
+    sales = copyOutInt(p.data, 20);
+    /* Apply Update */
+    clerks[id].patientsInLine = patientsInLine;
+    clerks[id].payment = payment;
+    clerks[id].fee = fee;
+    clerks[id].patPrescription = patPrescription;
+    clerks[id].sales = sales;
+    return id;
+}
+
+int UpdateData_HospitalManager(Packet p) {
+    /* !!! */
+    return 0;
+}
+
+int UpdateData_Global(Packet p) {
+    int status = -1;
+    short variableToUpdate = 0x00;
+    int value = -1;
+    int key = -1;
+    variableToUpdate = copyOutShort(p.data, 0);
+    switch (variableToUpdate) {
+        case NUMDOCTORS:
+            value = copyOutInt(p.data, 2);
+            numDoctors = value;
+            break;
+        case NUMCASHIERS:
+            value = copyOutInt(p.data, 2);
+            numCashiers = value;
+            break;
+        case NUMCLERKS:
+            value = copyOutInt(p.data, 2);
+            numClerks = value;
+            break;
+        case NUMDOORBOYS:
+            value = copyOutInt(p.data, 2);
+            numDoorboys = value;
+            break;
+        case NUMRECP:
+            value = copyOutInt(p.data, 2);
+            numRecp = value;
+            break;
+        case NUMPATIENTS:
+            value = copyOutInt(p.data, 2);
+            numPatients = value;
+            break;
+        case FEESPAID:
+            value = copyOutInt(p.data, 2);
+            feesPaid = value;
+            break;
+        case TEST_STATE:
+            value = copyOutInt(p.data, 2);
+            test_state = value;
+            break;
+        case TOKENCOUNTER:
+            value = copyOutInt(p.data, 2);
+            TokenCounter = value;
+            break;
+        case TOTALSALES:
+            value = copyOutInt(p.data, 2);
+            totalsales = value;
+            break;
+        case PEOPLEINHOSPITAL:
+            value = copyOutInt(p.data, 2);
+            peopleInHospital = value;
+            break;
+        case DOORBOYLINELENGTH:
+            value = copyOutInt(p.data, 2);
+            doorboyLineLength = value;
+            break;
+        case PATCOUNT:
+            value = copyOutInt(p.data, 2);
+            patientCount = value;
+            break;
+        case RECPCOUNT:
+            value = copyOutInt(p.data, 2);
+            recptionistCount = value;
+            break;
+        case DOORBCOUNT:
+            value = copyOutInt(p.data, 2);
+            doorboyCount = value;
+            break;
+        case DOCCOUNT:
+            value = copyOutInt(p.data, 2);
+            doctorCount = value;
+            break;
+        case CASHCOUNT:
+            value = copyOutInt(p.data, 2);
+            cashierCount = value;
+            break;
+        case CLERKCOUNT:
+            value = copyOutInt(p.data, 2);
+            pharmacyCount = value;
+            break;
+        case HOSPMANCOUNT:
+            value = copyOutInt(p.data, 2);
+            hospitalmanagerCount = value;
+            break;
+        case FEELIST_APPEND:
+            key = copyOutInt(p.data, 2);
+            value = copyOutInt(p.data, 6);
+            List_Append(&feeList, key, value);
+            break;
+        case QUEUE_PUSH:
+            value = copyOutInt(p.data, 2);
+            Queue_Push(&wakingDoctorList, value);
+            break;
+        case QUEUE_POP:
+            /* NO DATA */
+            Queue_Pop(&wakingDoctorList);
+            break;
+        default:
+            break;
+    }
+    return variableToUpdate;
+}
 #endif

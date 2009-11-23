@@ -379,9 +379,9 @@ int getCV_Lock_Mapping(int CVID) {
     return LockId;
 }
 
-/* Data Update Handling Functions */
+/* Data Update Handling Functions
 int UpdateData_Patient(Packet p) {
-    /* !!! */
+
     return 0;
 }
 
@@ -390,13 +390,13 @@ int UpdateData_Receptionist(Packet p) {
     id = copyOutInt(p.data, 0);
     peopleInLine = copyOutInt(p.data, 4);
     currentToken = copyOutInt(p.data, 8);
-    /* Apply the update */
+
     receptionists[id].currentToken = currentToken;
     receptionists[id].peopleInLine = peopleInLine;
     return id;
 }
 int UpdateData_Doorboy(Packet p) {
-    /* !!! */
+
     return 0;
 }
 int UpdateData_Doctor(Packet p) {
@@ -404,7 +404,7 @@ int UpdateData_Doctor(Packet p) {
     id = copyOutInt(p.data, 0);
     prescription = copyOutInt(p.data, 4);
     patientToken = copyOutInt(p.data, 8);
-    /* Apply update */
+
     doctors[id].patientToken = patientToken;
     doctors[id].peopleInLine = peopleInLine;
     doctors[id].prescription = prescription;
@@ -419,7 +419,7 @@ int UpdateData_Cashier(Packet p) {
     fee = copyOutInt(p.data, 12);
     payment = copyOutInt(p.data, 16);
     sales = copyOutInt(p.data, 20);
-    /* Apply Update */
+
     cashiers[id].lineLength = lineLength;
     cashiers[id].patToken = patToken;
     cashiers[id].fee = fee;
@@ -436,7 +436,7 @@ int UpdateData_Clerk(Packet p) {
     fee = copyOutInt(p.data, 12);
     patPrescription = copyOutInt(p.data, 16);
     sales = copyOutInt(p.data, 20);
-    /* Apply Update */
+
     clerks[id].patientsInLine = patientsInLine;
     clerks[id].payment = payment;
     clerks[id].fee = fee;
@@ -446,7 +446,7 @@ int UpdateData_Clerk(Packet p) {
 }
 
 int UpdateData_HospitalManager(Packet p) {
-    /* !!! */
+
     return 0;
 }
 
@@ -543,7 +543,6 @@ int UpdateData_Global(Packet p) {
             Queue_Push(&wakingDoctorList, value);
             break;
         case QUEUE_POP:
-            /* NO DATA */
             Queue_Pop(&wakingDoctorList);
             break;
         default:
@@ -551,7 +550,7 @@ int UpdateData_Global(Packet p) {
     }
     return variableToUpdate;
 }
-
+*/
 int DistUpdate_Send(Packet p) {
     /* This function is used to broadcast an Update packet to every one
      */

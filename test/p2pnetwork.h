@@ -5,6 +5,7 @@
 #include "packet.h"
 #include "eventDispatcher.h"
 #include "print.h"
+#include "HospShared.h"
 
 #define MAX_CV 50
 #define MAX_CV_QUEUE_LEN 100
@@ -178,7 +179,7 @@ int readConfig(char *filename);
 /* Gets the mapping between the CV and its assiciated Lock */
 int getCV_Lock_Mapping(int CVID);
 
-/* Data update handling Functions  depends on init.h and used by netthread.c*/
+/* Data update handling Functions  depends on init.h and used by netthread.c
 int UpdateData_Patient(Packet p);
 int UpdateData_Receptionist(Packet p);
 int UpdateData_Doorboy(Packet p);
@@ -187,6 +188,7 @@ int UpdateData_Cashier(Packet p);
 int UpdateData_Clerk(Packet p);
 int UpdateData_HospitalManager(Packet p);
 int UpdateData_Global(Packet p);
+*/
 
 /* Hospital Entity interface for the Network Data Update NO DEPS*/
 int HDataUpdate_Recp(int id);
