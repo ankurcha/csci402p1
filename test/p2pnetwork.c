@@ -109,12 +109,17 @@ int IsResourcePresent(int name) {
  *******************************/
 int HLock_Release(int HlockId) {
     int status = -1;
+    Packet p;
+    p.senderId = GetMachineId();
+    p.timestamp = GetTimestamp();
+    p.packetType = LOCK_RELEASE;
+    copyInInt(p.data, 0, HlockId); /* Data part just contains the LockID */
     /* Check if I already own this lock */
     if (HlockId < 0)
         return status;
     /* Create message for Lock Release */
     /* Send message to announce release of the lock to the network entity */
-    status = Packet_Send(GetMachineId(), myNetThreadMbox, 0, p);
+    status = Packet_Send(GetMachineId(), myNetThreadMbox, 0, &p);
     /* Check for successful Multicast */
     if (status > -1)
         status = 0;
@@ -161,20 +166,25 @@ int DistLock_Acquire(int name) {
     for (j = 0; j < 7; j++) {
         for (i = 0; i < numberOfEntities[j]; i++) {
             /* Sending LOCK_ACQUIRE to all and waiting for LOCK_OK */
-            Packet_Send(j, i + 1, myMbox, &pkt);
+            Packet_Send(j, i + 1, myMbox, &p);
         }
     }
 }
 
 int DistLock_Release(int name) {
     int i, j;
-    int temp = copyOutInt(pkt.data, 0);
-    if (updateResourceStatus(temp, RES_NONE) == 1) {
+    Packet p;
+    p.senderId = GetMachineId();
+    p.timestamp = GetTimestamp();
+    p.packetType = LOCK_OK;
+    copyInInt(p.data, 0, name); /* Data part just contains the LockID */
+
+    if (updateResourceStatus(name, RES_NONE) == 1) {
         /* Lock is no longer held by the lock
          * Just broadcast this message to all the othe nodes */
         for (j = 0; j < 7; j++) {
             for (i = 0; i < numberOfEntities[j]; i++) {
-                Packet_Send(j, i + 1, myMbox, &pkt);
+                Packet_Send(j, i + 1, myMbox, &p);
             }
         }
         return 1; /* successfully released lock */
@@ -196,14 +206,11 @@ int HCV_Signal(int HCVId, int HLockId) {
         p.packetType = CV_SIGNAL;
         copyInInt(p.data, 0, HCVId);
         copyInInt(p.data, 4, HLockId);
-
         /* It is assumed that by now LockId is Held and CVID which is passed is
          * to be held */
-
         HLock_Acquire(CV_Lock);
         status = Packet_Send(GetMachineId(), myNetThreadMbox, 0, &p);
         HLock_Release(CV_Lock);
-
         return 1;
         /* We reach this point only when we got a signal message for this CV */
     } else if (status == RES_REQ) {
@@ -225,7 +232,6 @@ int HCV_Wait(int HCVId, int HLockId) {
     int status = -1;
     int CV_Lock = -1;
     Packet p;
-
     status = getResourceStatus(HLockId);
     if (status == RES_HELD) {
         CV_Lock = getCV_Lock_Mapping(HCVId);
