@@ -30,6 +30,7 @@ typedef struct Message Message;
 void Heap_Push(Message* start, int* length);
 
 /* remove the minimum value from the heap */
+/* return value is only valid until heap is modified */
 Message Heap_ExtractMin(Message* start, int* length);
 
 #endif /* HEAP_H */

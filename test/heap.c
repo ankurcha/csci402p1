@@ -8,9 +8,29 @@
 #include "heap.h"
 
 void swap_heap_elements(Message* start, int x, int y) {
-    Message temp = start[x];
-    start[x] = start[y];
-    start[y] = temp;
+    Message temp;
+    memcopy((void*) &temp, (void*) start, sizeof(Message));
+
+    /*temp.key = start[x].key;
+    temp.senderId = start[x].senderId;
+    temp.senderMbox = start[x].senderMbox;
+    temp.pkt.senderId = sender[x].pkt.senderId;
+    temp.pkt.senderId = sender[x].pkt.senderId;
+    temp.pkt.senderId = sender[x].pkt.senderId;
+    temp.pkt.senderId = sender[x].pkt.senderId;
+    for(i=0; i < sizeof(Message); i++) {
+        ((char*) &temp)[i] = ((char*) start)[i];
+    }*/
+
+    /*start[x] = start[y];*/
+    /*start[x].key = start[y].key;
+    start[x].senderId = start[y].senderId;
+    start[x].senderMbox = start[y].senderMbox;
+    start[x].pkt = sender[y].pkt;*/
+    memcopy((void*) &start[x], (void*) &start[y], sizeof(Message));
+
+    /*start[y] = temp;*/
+    memcopy((void*) &start[y], (void*) &temp, sizeof(Message));
 }
 
 void Heap_Push(Message* start, int* length) {

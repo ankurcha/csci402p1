@@ -45,5 +45,8 @@ void copyInShort(char* message, int index, int val);
 void copyOutData(char* message, int index, char* data, int length);
 void copyInData(char* message, int index, char* data, int length);
 
+/* copies right to left */
+void memcopy(void* left, void* right, int length);
+
 #endif /*PACKET_H*/
 

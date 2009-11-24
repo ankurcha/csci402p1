@@ -139,3 +139,11 @@ void DeserializePacket(Packet *p, char* message) {
     copyOutData(message, DATA, p->data, MaxMailSize - DATA);
 }
 
+/* deep copy memory y to x */
+void memcopy(void* x, void* y, int length) {
+    for(i=0; i < length; i++) {
+        *(x+i) = *(y+i);
+    }
+}
+
+
