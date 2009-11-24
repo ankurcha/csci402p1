@@ -27,7 +27,7 @@ void initializeSystem() {
     /* create system locks and CV*/
     netthread_Lock = CreateLock("netthread_Lock");
     netthread_CV = CreateCondition("netthread_CV");
-    void initResources();
+    initResources();
 }
 
 void HMultiPing() {

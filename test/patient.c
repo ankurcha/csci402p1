@@ -8,7 +8,7 @@
 /*  Max Pflueger, pflueger */
 /*  Aneesha Mathew, aneesham */
 #include "init.h"
-
+#include "netthread.c"
 void createPatient() {
     int temp;
     Acquire(creationLock);
@@ -17,6 +17,11 @@ void createPatient() {
     Release(creationLock);
     patients(temp);
     Exit(0);
+}
+
+void createNetworkThread(){
+    initializeSystem();
+    network_thread();
 }
 
 void patients(int ID) {
@@ -534,9 +539,9 @@ int main(int argc, char** argv) {
     print(itoa(numPatients, str));
     print(" Patients\n");
 
+    Fork(createNetworkThread);
     for (i = 0; i < numPatients; i++)
         Fork(createPatient);
-
 
     for (i = 0; i < 100; i++)
         Yield();
