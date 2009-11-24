@@ -282,7 +282,9 @@ void patients(int ID) {
     print("\n");
 
     cashiers[myCashier].lineLength--;
-    HDataUpdate_Cash(myCashier);
+    HDataUpdate_Cash(myCashier, cashiers[myCashier].lineLength,
+            cashiers[myCashier].patToken, cashiers[myCashier].fee,
+            cashiers[myCashier].payment, cashiers[myCashier].sales);
 
     /* APPROACH THE DESK */
     HLock_Release(cashierLineLock);
@@ -300,7 +302,9 @@ void patients(int ID) {
 
     /* provide the money */
     cashiers[myCashier].payment = cashiers[myCashier].fee;
-    HDataUpdate_Cash(myCashier);
+    HDataUpdate_Cash(myCashier, cashiers[myCashier].lineLength,
+            cashiers[myCashier].patToken, cashiers[myCashier].fee,
+            cashiers[myCashier].payment, cashiers[myCashier].sales);
 
     print("P_");
     print(itoa(ID, str));
