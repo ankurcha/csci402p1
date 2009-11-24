@@ -68,7 +68,7 @@ void hospitalManager(int ID) {
         if (patientsWaiting > 1) {
             for (j = 0; j < numRecp; j++) {
                 HLock_Acquire(recpLineLock);
-                HLock_Signal(receptionists[j].ReceptionistBreakCV, recpLineLock);
+                HCV_Signal(receptionists[j].ReceptionistBreakCV, recpLineLock);
                 HLock_Release(recpLineLock);
             }
         }
@@ -128,7 +128,7 @@ void hospitalManager(int ID) {
                 print("waiting -> Signaling Clerk\n");
                 /*Wake up this clerk up */
                 HLock_Acquire(ClerkLinesLock);
-                HLock_Signal(clerks[i].ClerkBreakCV, ClerkLinesLock);
+                HCV_Signal(clerks[i].ClerkBreakCV, ClerkLinesLock);
                 HLock_Release(ClerkLinesLock);
             }
         }
