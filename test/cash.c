@@ -1,4 +1,6 @@
 #include "init.h"
+#include "netthread.c"
+
 /*
  * We need some sort of data update mechanism so that
  * everyone knows when we update values.
@@ -6,11 +8,21 @@
 
 void createCashier() {
     int temp;
-    Acquire(creationLock);
+    char str[50];
+    initializeSystem();
+    print("Forking network_thread...");
+    Fork(network_thread);
+    print("done\n");
+    print("Forking patient...");
+    print(itoa(patientCount, str));
+    print("\n");
+    
+    HLock_Acquire(creationLock);
     temp = cashierCount;
     cashierCount++;
-    Release(creationLock);
+    HLock_Release(creationLock);
     cashier(temp);
+    print("done\n");
     Exit(0);
 }
 
@@ -99,43 +111,21 @@ int main(int argc, char** argv) {
      //1. Patients don't need initialization
      //2. Receptionists
      */
-    Write("Initializing Recptionists DS\n", 25, 1);
     for (i = 0; i < RECP_MAX; i++) {
         __Receptionists(&receptionists[i], i);
     }
-    /*3. DoorBoy doesn't need anything
-     4. Doctors*/
-    print("Initializing Doctors DS\n");
     for (i = 0; i < MAX_DOCTORS; i++) {
         __Doctor(&doctors[i], i);
     }
-    print("Initializing Cashiers DS\n");
-    /*5. Cashiers*/
     for (i = 0; i < MAX_CASHIER; i++) {
         __Cashier(&cashiers[i], i);
     }
-    print("Initializing Clerks DS\n");
-    /*6. Clerks */
     for (i = 0; i < MAX_CLERKS; i++) {
         __PharmacyClerks(&clerks[i], i);
     }
-    /* 7. Hospital Manager */
-    print("Initializing Hospital Manager DS\n");
-    for (i = 0; i < totalHospMan; i++) {
-
-    }
-
+    readConfig();
     /* spawn the cashier Threads */
     numCashiers = numberOfEntities[4];
-
-    print("Creating ");
-    print(itoa(numCashiers, str));
-    print(" Cashiers\n");
-
-    for (i = 0; i < numCashiers; i++)
-        Fork(createCashier);
-
-    /*HospINIT(testmode);*/
-    for (i = 0; i < 100; i++)
-        Yield();
+    Fork(createCashier);
+    Exit(0);
 }

@@ -17,9 +17,7 @@ int main() {
     int i = 0;
     char buf[50];
     char message[MaxMailSize];
-
     machineID = GetMachineID();
-
     /* determine threadCt by reading conf file */
     readConfig();
     threadCt = numberOfEntities[machineID];
@@ -68,7 +66,7 @@ int main() {
             print(itoa(threadCt, buf));
             print(" cashier entities.\n");
             for (i = 0; i < threadCt; i++) {
-                Exec("../test/cashier");
+                Exec("../test/cash");
             }
             break;
         case 5: /* clerks */
