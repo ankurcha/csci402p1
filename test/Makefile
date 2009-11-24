@@ -162,43 +162,43 @@ p2pnetwork: p2pnetwork.o start.o
 patient.o: patient.c print p2pnetwork
 	$(CC) $(CFLAGS) -c patient.c
 patient: patient.o start.o packet.o
-	$(LD) $(LDFLAGS) start.o patient.o string.o print.o itoa.o queue.o packet.o eventDispatcher.o p2pnetwork.o hospShared.o -o patient.coff
+	$(LD) $(LDFLAGS) start.o patient.o string.o print.o itoa.o queue.o heap.o packet.o eventDispatcher.o p2pnetwork.o hospShared.o -o patient.coff
 	../bin/coff2noff patient.coff patient
 
 receptionist.o: receptionist.c print p2pnetwork
 	$(CC) $(CFLAGS) -c receptionist.c
 receptionist: receptionist.o start.o packet.o
-	$(LD) $(LDFLAGS) start.o receptionist.o string.o print.o itoa.o queue.o packet.o eventDispatcher.o p2pnetwork.o hospShared.o -o receptionist.coff
+	$(LD) $(LDFLAGS) start.o receptionist.o string.o print.o itoa.o queue.o heap.o packet.o eventDispatcher.o p2pnetwork.o hospShared.o -o receptionist.coff
 	../bin/coff2noff receptionist.coff receptionist
 
 doorboy.o: doorboy.c print p2pnetwork
 	$(CC) $(CFLAGS) -c doorboy.c
 doorboy: doorboy.o start.o packet.o
-	$(LD) $(LDFLAGS) start.o doorboy.o string.o print.o itoa.o queue.o packet.o eventDispatcher.o p2pnetwork.o hospShared.o -o doorboy.coff
+	$(LD) $(LDFLAGS) start.o doorboy.o string.o print.o itoa.o queue.o heap.o packet.o eventDispatcher.o p2pnetwork.o hospShared.o -o doorboy.coff
 	../bin/coff2noff doorboy.coff doorboy
 
 doctor.o: doctor.c print p2pnetwork
 	$(CC) $(CFLAGS) -c doctor.c
 doctor: doctor.o start.o packet.o
-	$(LD) $(LDFLAGS) start.o doctor.o string.o print.o itoa.o queue.o packet.o eventDispatcher.o p2pnetwork.o hospShared.o -o doctor.coff
+	$(LD) $(LDFLAGS) start.o doctor.o string.o print.o itoa.o queue.o heap.o packet.o eventDispatcher.o p2pnetwork.o hospShared.o -o doctor.coff
 	../bin/coff2noff doctor.coff doctor
 
 cash.o: cash.c print p2pnetwork
 	$(CC) $(CFLAGS) -c cash.c
 cash: cash.o start.o packet.o
-	$(LD) $(LDFLAGS) start.o cash.o string.o print.o itoa.o queue.o packet.o eventDispatcher.o p2pnetwork.o hospShared.o -o cash.coff
+	$(LD) $(LDFLAGS) start.o cash.o string.o print.o itoa.o queue.o heap.o packet.o eventDispatcher.o p2pnetwork.o hospShared.o -o cash.coff
 	../bin/coff2noff cash.coff cash
 
 clerk.o: clerk.c print p2pnetwork
 	$(CC) $(CFLAGS) -c clerk.c
 clerk: clerk.o start.o packet.o
-	$(LD) $(LDFLAGS) start.o clerk.o string.o print.o itoa.o queue.o packet.o eventDispatcher.o p2pnetwork.o hospShared.o -o clerk.coff
+	$(LD) $(LDFLAGS) start.o clerk.o string.o print.o itoa.o queue.o heap.o packet.o eventDispatcher.o p2pnetwork.o hospShared.o -o clerk.coff
 	../bin/coff2noff clerk.coff clerk
 
 hospManager.o: hospManager.c print p2pnetwork
 	$(CC) $(CFLAGS) -c hospManager.c
 hospManager: hospManager.o start.o packet.o
-	$(LD) $(LDFLAGS) start.o hospManager.o string.o print.o itoa.o queue.o packet.o eventDispatcher.o p2pnetwork.o hospShared.o -o hospManager.coff
+	$(LD) $(LDFLAGS) start.o hospManager.o string.o print.o itoa.o queue.o heap.o packet.o eventDispatcher.o p2pnetwork.o hospShared.o -o hospManager.coff
 	../bin/coff2noff hospManager.coff hospManager
 
 init.o: init.c print queue
@@ -210,7 +210,7 @@ init: init.o start.o
 disthosp.o: disthosp.c print p2pnetwork packet eventDispatcher itoa
 	$(CC) $(CFLAGS) -c disthosp.c
 disthosp: disthosp.o start.o
-	$(LD) $(LDFLAGS) start.o string.o print.o itoa.o queue.o packet.o eventDispatcher.o p2pnetwork.o hospShared.o disthosp.o -o disthosp.coff
+	$(LD) $(LDFLAGS) start.o string.o print.o itoa.o queue.o heap.o packet.o eventDispatcher.o p2pnetwork.o hospShared.o disthosp.o -o disthosp.coff
 	../bin/coff2noff disthosp.coff disthosp
 
 test_code.o: test_code.c
