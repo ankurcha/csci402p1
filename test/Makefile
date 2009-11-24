@@ -196,7 +196,7 @@ clerk: clerk.o start.o packet.o
 	../bin/coff2noff clerk.coff clerk
 
 hospManager.o: hospManager.c print p2pnetwork
-	$(CC) $(CFLAGS) -c patient.c
+	$(CC) $(CFLAGS) -c hospManager.c
 hospManager: hospManager.o start.o packet.o
 	$(LD) $(LDFLAGS) start.o hospManager.o string.o print.o itoa.o queue.o packet.o eventDispatcher.o p2pnetwork.o hospShared.o -o hospManager.coff
 	../bin/coff2noff hospManager.coff hospManager
