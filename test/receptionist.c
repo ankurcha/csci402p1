@@ -83,6 +83,7 @@ void receptionist(int ID) {
 int main(int argc, char** argv) {
     int i;
     char inp[20];
+    char str[50];
     testlock = 10000;
     TokenCounterLock = 10001;
     recpLineLock = 10002;
