@@ -302,6 +302,41 @@ int HCV_Signal(int HCVId, int HLockId) {
     return -2;
 }
 
+int HCV_Broadcast(int HCVId, int HLockId) {
+    /* Get the receiverId from the queue */
+    int status = -1;
+    int CV_Lock = -1;
+    Packet p;
+
+    status = getResourceStatus(HLockId);
+    if (status == RES_HELD) {
+        CV_Lock = getCV_Lock_Mapping(HCVId);
+        p.senderId = GetMachineID();
+        p.timestamp = GetTimestamp();
+        p.packetType = CV_BROADCAST;
+        copyInInt(p.data, 0, HCVId);
+        copyInInt(p.data, 4, HLockId);
+        /* It is assumed that by now LockId is Held and CVID which is passed is
+         * to be held */
+        HLock_Acquire(CV_Lock);
+        status = Packet_Send(GetMachineID(), myNetThreadMbox, 0, &p);
+        HLock_Release(CV_Lock);
+        return 1;
+        /* We reach this point only when we got a signal message for this CV */
+    } else if (status == RES_REQ) {
+        /* We were supposed to have had the lock acquired -- this is an error */
+        print("ERROR: tried to signal a lock that was only requested\n");
+        Halt();
+        return 0;
+    } else if (status == RES_NONE) {
+        /* No record of any such Lock in my resource List!! */
+        print("ERROR: tried to signal a lock we did not own\n");
+        Halt();
+        return -1;
+    }
+    return -2;
+}
+
 /* this is called by an entity thread to wait on a CV */
 int HCV_Wait(int HCVId, int HLockId) {
     int status = -1;

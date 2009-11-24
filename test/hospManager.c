@@ -87,7 +87,7 @@ void hospitalManager(int ID) {
                 print("  -> Signal Cashier\n");
                 /*Wake up this receptionist up */
                 HLock_Acquire(cashierLineLock);
-                HLock_Broadcast(cashiers[i].breakCV, cashierLineLock);
+                HCV_Broadcast(cashiers[i].breakCV, cashierLineLock);
                 HLock_Release(cashierLineLock);
             }
         }
