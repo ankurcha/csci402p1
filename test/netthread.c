@@ -16,7 +16,7 @@
 void processExternalPacket(Packet pkt, int senderId, int senderMbox);
 void processLocalPacket(Packet pkt);
 
-void network_thread(int mbox) {
+void network_thread() {
     int i, j;
     int senderId = 0;
     int senderMbox = 0;
@@ -33,7 +33,7 @@ void network_thread(int mbox) {
         maxTS[i] = 0;
     }
     readyCount = 0;
-    myMbox = mbox;
+    /*myMbox = mbox;*/
     /* this array should make it easier to scan all entities */
     machineIndex[0] = 0;
     for (i = 0; i < 7; i++) {
