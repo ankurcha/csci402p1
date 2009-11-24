@@ -1008,8 +1008,8 @@ int Receive_Syscall(int receiveMbox, int senderIDvaddr, int senderMboxvaddr,
     senderID = pktHead.from;
     senderMbox = mailHead.from;
 
-    copyout(senderIDvaddr, sizeof(senderID), senderID);
-    copyout(senderMboxvaddr, sizeof(senderMbox), senderMbox);
+    copyout(senderIDvaddr, sizeof(senderID), (char*) &senderID);
+    copyout(senderMboxvaddr, sizeof(senderMbox), (char*) &senderMbox);
     bytesRead = copyout(vaddr, sizeof(message), message);
     return bytesRead;
 #endif
