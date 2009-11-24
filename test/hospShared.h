@@ -9,6 +9,7 @@
 #define HOSPSHARED_H_
 
 #include "p2pnetwork.h"
+#include "packet.h"
 
 /* Data Update packet building functions */
 Packet* buildPacket_Receptionist(Packet *p, int id, int peopleInLine,
