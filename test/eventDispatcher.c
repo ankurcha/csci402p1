@@ -39,7 +39,10 @@ void MsgQueue_Push(MessageQueue *q, Packet *msg, int senderId, int senderMbox) {
 
     q->queue[i].valid = 1;
     q->queue[i].next = -1;
-    q->queue[i].message = *msg;
+    q->queue[i].message.senderId = (*msg).senderId;
+    q->queue[i].message.timestamp = (*msg).timestamp;
+    q->queue[i].message.packetType = (*msg).packetType;
+    strcpy(q->queue[i].message.data, (*msg).data);
     q->queue[i].senderId = senderId;
     q->queue[i].senderMbox = senderMbox;
     q->tail = i;
