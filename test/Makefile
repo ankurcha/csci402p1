@@ -174,7 +174,7 @@ init: init.o start.o
 disthosp.o: disthosp.c print p2pnetwork packet eventDispatcher itoa
 	$(CC) $(CFLAGS) -c disthosp.c
 disthosp: disthosp.o start.o
-	$(LD) $(LDFLAGS) start.o string.o print.o itoa.o queue.o packet.o eventDispatcher.o p2pnetwork.o hospShared.o disthost.o -o disthosp.coff
+	$(LD) $(LDFLAGS) start.o string.o print.o itoa.o queue.o packet.o eventDispatcher.o p2pnetwork.o hospShared.o disthosp.o -o disthosp.coff
 	../bin/coff2noff disthosp.coff disthosp
 
 test_code.o: test_code.c
