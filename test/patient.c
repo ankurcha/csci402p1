@@ -69,7 +69,8 @@ void patients(int ID) {
     }
     /* Wait in line */
     receptionists[shortestline].peopleInLine++;
-    HDataUpdate_Recp(shortestline);
+    HDataUpdate_Recp(shortestline, receptionists[shortestline].peopleInLine,
+            receptionists[shortestline].currentToken);
     HCV_Wait(receptionists[shortestline].receptionCV, (recpLineLock));
     print("P_");
     print(itoa(ID, str));
@@ -137,7 +138,8 @@ void patients(int ID) {
         print(" : Join line and Waiting for doorboy to tell me to go\n");
     }
     doctors[myDoctor].peopleInLine++;
-    HDataUpdate_Doc(myDoctor);
+    HDataUpdate_Doc(myDoctor, doctors[myDoctor].peopleInLine,
+            doctors[myDoctor].prescription, doctors[myDoctor].patientToken);
     HCV_Wait(doctors[myDoctor].LineCV, doctors[myDoctor].LineLock);
     print("P_");
     print(itoa(ID, str));
@@ -256,7 +258,9 @@ void patients(int ID) {
     /*if(sLen > 0) {get in line} else {get in line} */
     /* there are a lot of cases here, but they all result in us getting in line */
     cashiers[myCashier].lineLength++;
-    HDataUpdate_Cash(myCashier);
+    HDataUpdate_Cash(myCashier, cashiers[myCashier].lineLength,
+            cashiers[myCashier].patToken, cashiers[myCashier].fee,
+            cashiers[myCashier].payment, cashiers[myCashier].sales);
 
     print("P_");
     print(itoa(ID, str));
@@ -365,7 +369,11 @@ void patients(int ID) {
 
     /*wait in line for my turn */
     clerks[shortestclerkline].patientsInLine++;
-    HDataUpdate_Clerk(shortestclerkline);
+    HDataUpdate_Clerk(shortestclerkline,
+            clerks[shortestclerkline].patientsInLine,
+            clerks[shortestclerkline].payment, clerks[shortestclerkline].fee,
+            clerks[shortestclerkline].patPrescription,
+            clerks[shortestclerkline].sales);
     print("P_");
     print(itoa(ID, str));
     print(": Waiting in line for clerk CL_");

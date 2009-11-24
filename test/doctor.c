@@ -105,7 +105,8 @@ void doctor( ID) {
         }
         /* give prescription to patient */
         doctors[ID].prescription = Random() % 100;
-        HDataUpdate_Doc(ID);
+        HDataUpdate_Doc(ID, doctors[ID].peopleInLine, doctors[ID].prescription,
+                doctors[ID].patientToken);
         /* put consultation fees into the data structure for the cashier ($50-$250) */
         print("D_");
         print(itoa(ID, str));

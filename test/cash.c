@@ -41,7 +41,8 @@ void cashier(int ID) {
         /* lookup value for cashiers[ID].patToken in the token table */
         HLock_Acquire(feeListLock);
         cashiers[ID].fee = List_getValue(&feeList, cashiers[ID].patToken);
-        HDataUpdate_Cash(ID);
+        HDataUpdate_Cash(ID, cashiers[ID].lineLength, cashiers[ID].patToken,
+                cashiers[ID].fee, cashiers[ID].payment, cashiers[ID].sales);
         HLock_Release(feeListLock);
         /* tell patient the fee */
         HCV_Signal(cashiers[ID].transCV, cashiers[ID].transLock);

@@ -47,7 +47,7 @@ void receptionist(int ID) {
 
         receptionists[ID].currentToken = ++TokenCounter;
         HGlobalDataUpdate(TOKENCOUNTER, TokenCounter);
-        HDataUpdate_Recp(ID);
+        HDataUpdate_Recp(ID, receptionists[ID].peopleInLine, receptionists[ID].currentToken);
 
         HLock_Release(TokenCounterLock);
 

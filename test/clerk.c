@@ -48,7 +48,8 @@ void clerk(int ID) {
         totalsales += clerks[ID].payment;
         HGlobalDataUpdate(TOTALSALES, totalsales);
         clerks[ID].sales += clerks[ID].payment;
-        HDataUpdate_Clerk(ID);
+        HDataUpdate_Clerk(ID, clerks[ID].patientsInLine, clerks[ID].payment,
+                clerks[ID].fee, clerks[ID].patPrescription, clerks[ID].sales);
         HLock_Release(PaymentLock);
         HLock_Release(clerks[ID].ClerkTransLock);
     }

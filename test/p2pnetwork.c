@@ -572,11 +572,11 @@ int DistUpdate_Send(Packet p) {
 }
 
 /* Hospital Entity interface for the Network Data Update */
-int HDataUpdate_Recp(int id) {
+int HDataUpdate_Recp(int id, int peopleInLine, int currentToken) {
     /* Creates an update packet and sends it to the network entity for processing */
     Packet p;
     int status = -1;
-    buildPacket_Receptionist(&p, id);
+    buildPacket_Receptionist(&p, id, peopleInLine, currentToken);
     status = Packet_Send(GetMachineId(), myNetThreadMbox, 0, &p);
     return status;
 }
@@ -592,28 +592,29 @@ int HDataUpdate_Doorb(int id) {
     int status = -1;
     return status;
 }
-int HDataUpdate_Doc(int id) {
+int HDataUpdate_Doc(int id, int peopleInLine, int prescription, int patientToken) {
     /* Creates an update packet and sends it to the network entity for processing */
     Packet p;
     int status = -1;
-    buildPacket_Doctor(&p, id);
+    buildPacket_Doctor(&p, id, peopleInLine, prescription, patientToken);
     status = Packet_Send(GetMachineId(), myNetThreadMbox, 0, &p);
     return status;
 }
-int HDataUpdate_Cash(int id) {
+int HDataUpdate_Cash(int id, int lineLength, int patToken,
+        int fee, int payment, int sales) {
     /* Creates an update packet and sends it to the network entity for processing */
     Packet p;
     int status = -1;
-    buildPacket_Cashier(&p, id);
+    buildPacket_Cashier(&p, id, lineLength, patToken, fee, payment, sales);
     status = Packet_Send(GetMachineId(), myNetThreadMbox, 0, &p);
     return status;
 
 }
-int HDataUpdate_Clerk(int id) {
+int HDataUpdate_Clerk(int id, int patientsInLine, int payment, int fee, int patPrescription, int sales) {
     /* Creates an update packet and sends it to the network entity for processing */
     Packet p;
     int status = -1;
-    buildPacket_Clerk(&p, id);
+    buildPacket_Clerk(&p, id, patientsInLine, payment, fee, patPrescription, sales);
     status = Packet_Send(GetMachineId(), myNetThreadMbox, 0, &p);
     return status;
 
