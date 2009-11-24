@@ -548,8 +548,6 @@ void WaitCV_Syscall(CVId cvId, LockId lockId) {
             || ConditionLockWrapper->lock == NULL || CV->cv == NULL) {
         CVTableLock->Release();
         locksTableLock->Release();
-        DEBUG('a', "%s: WaitCV_Syscall: Failed for CVId: %d lockId %d .\n",
-                currentThread->getName(), cvId, lockId);
         printf("%s: WaitCV_Syscall: Failed for CVId: %d lockId %d .\n",
                 currentThread->getName(), cvId, lockId);
         return;

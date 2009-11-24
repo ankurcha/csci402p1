@@ -8,11 +8,8 @@ int getMboxNum() {
     int senderId;
     int senderMbox;
     char message[MaxMailSize];
-
     Receive(0, &senderId, &senderMbox, message);
-
     myMbox = copyOutInt(message, 0);
-
     return myMbox;
 }
 
@@ -25,7 +22,6 @@ void initializeSystem() {
     netthread_Lock = CreateLock("netthread_Lock");
     netthread_CV = CreateCondition("netthread_CV");
     readConfig();
-    myNetThreadMbox = getMyNetThreadMbox();
     getMboxNum();
     /* create system locks and CV*/
     initResources();
@@ -37,7 +33,6 @@ void HMultiPing() {
     p.senderId = GetMachineID();
     p.timestamp = GetTimestamp();
     p.packetType = DO_PING;
-
     Packet_Send(GetMachineID(), myMbox, myMbox, &p);
 }
 
@@ -192,7 +187,7 @@ int HLock_Release(int HlockId) {
         return status;
     /* Create message for Lock Release */
     /* Send message to announce release of the lock to the network entity */
-    status = Packet_Send(GetMachineID(), myNetThreadMbox, 0, &p);
+    status = Packet_Send(GetMachineID(), myMbox, 0, &p);
     /* Check for successful Multicast */
     if (status > -1)
         status = 0;
@@ -206,6 +201,11 @@ int HLock_Acquire(int HlockId) {
      * who should get the lock, else we just keep waiting till we do get
      */
     Packet p;
+    if(netthread_Lock == -1)
+        print("netthread_lock = -1\n");
+    if(netthread_CV == -1)
+        print("netthread_CV = -1\n");
+
     p.senderId = GetMachineID();
     p.timestamp = GetTimestamp();
     p.packetType = LOCK_ACQUIRE;
@@ -216,11 +216,11 @@ int HLock_Acquire(int HlockId) {
      * receiver
      */
     Acquire(netthread_Lock);
-    status = Packet_Send(GetMachineID(), myNetThreadMbox, 0, &p);
+    status = Packet_Send(GetMachineID(), myMbox, 0, &p);
     /* Now we have to wait for the for the netthread to reply to us with
      * a go ahead this is done using a CV and a lock.
      */
-    print("Here\n");
+    print("Wait Here for lock ...\n");
     Wait(netthread_CV, netthread_Lock);
     /* When we return we are sure that we have Acquired the lock */
     Release(netthread_Lock);
@@ -287,7 +287,7 @@ int HCV_Signal(int HCVId, int HLockId) {
         /* It is assumed that by now LockId is Held and CVID which is passed is
          * to be held */
         HLock_Acquire(CV_Lock);
-        status = Packet_Send(GetMachineID(), myNetThreadMbox, 0, &p);
+        status = Packet_Send(GetMachineID(), myMbox, 0, &p);
         HLock_Release(CV_Lock);
         return 1;
         /* We reach this point only when we got a signal message for this CV */
@@ -322,7 +322,7 @@ int HCV_Broadcast(int HCVId, int HLockId) {
         /* It is assumed that by now LockId is Held and CVID which is passed is
          * to be held */
         HLock_Acquire(CV_Lock);
-        status = Packet_Send(GetMachineID(), myNetThreadMbox, 0, &p);
+        status = Packet_Send(GetMachineID(), myMbox, 0, &p);
         HLock_Release(CV_Lock);
         return 1;
         /* We reach this point only when we got a signal message for this CV */
@@ -360,7 +360,7 @@ int HCV_Wait(int HCVId, int HLockId) {
         Acquire(netthread_Lock);
 
         HLock_Acquire(CV_Lock);
-        status = Packet_Send(GetMachineID(), myNetThreadMbox, 0, &p);
+        status = Packet_Send(GetMachineID(), myMbox, 0, &p);
         HLock_Release(CV_Lock);
 
         HLock_Release(HLockId);
@@ -471,7 +471,7 @@ void readConfig() {
      */
     OpenFileId fd;
     char buf[10];
-    char temp[10];
+    char *temp = "";
     int num = 0;
     char number[10];
     int bytesread = 0;
@@ -493,7 +493,7 @@ void readConfig() {
             numberOfEntities[i] = num;
             j = 0;
             i++;
-            strcpy(temp, "");
+            temp = "";
         }
     }
     Close(fd);
@@ -525,7 +525,7 @@ int HDataUpdate_Recp(int id, int peopleInLine, int currentToken) {
     Packet p;
     int status = -1;
     buildPacket_Receptionist(&p, id, peopleInLine, currentToken);
-    status = Packet_Send(GetMachineID(), myNetThreadMbox, 0, &p);
+    status = Packet_Send(GetMachineID(), myMbox, 0, &p);
     return status;
 }
 int HDataUpdate_Pat(int id) {
@@ -546,7 +546,7 @@ int HDataUpdate_Doc(int id, int peopleInLine, int prescription,
     Packet p;
     int status = -1;
     buildPacket_Doctor(&p, id, peopleInLine, prescription, patientToken);
-    status = Packet_Send(GetMachineID(), myNetThreadMbox, 0, &p);
+    status = Packet_Send(GetMachineID(), myMbox, 0, &p);
     return status;
 }
 int HDataUpdate_Cash(int id, int lineLength, int patToken, int fee,
@@ -555,7 +555,7 @@ int HDataUpdate_Cash(int id, int lineLength, int patToken, int fee,
     Packet p;
     int status = -1;
     buildPacket_Cashier(&p, id, lineLength, patToken, fee, payment, sales);
-    status = Packet_Send(GetMachineID(), myNetThreadMbox, 0, &p);
+    status = Packet_Send(GetMachineID(), myMbox, 0, &p);
     return status;
 
 }
@@ -566,7 +566,7 @@ int HDataUpdate_Clerk(int id, int patientsInLine, int payment, int fee,
     int status = -1;
     buildPacket_Clerk(&p, id, patientsInLine, payment, fee, patPrescription,
             sales);
-    status = Packet_Send(GetMachineID(), myNetThreadMbox, 0, &p);
+    status = Packet_Send(GetMachineID(), myMbox, 0, &p);
     return status;
 
 }
@@ -579,7 +579,7 @@ int HGlobalDataUpdate(short Variable, int val) {
     int status = -1;
     Packet p;
     buildPacket_GlobalData(&p, Variable, val);
-    status = Packet_Send(GetMachineID(), myNetThreadMbox, 0, &p);
+    status = Packet_Send(GetMachineID(), myMbox, 0, &p);
     return status;
 }
 
@@ -587,7 +587,7 @@ int HGlobalListAppendUpdate(int key, int val) {
     int status = -1;
     Packet p;
     buildPacket_GlobalListAppend(&p, key, val);
-    status = Packet_Send(GetMachineID(), myNetThreadMbox, 0, &p);
+    status = Packet_Send(GetMachineID(), myMbox, 0, &p);
     return status;
 }
 
@@ -595,7 +595,7 @@ int HGlobalQueuePopUpdate() {
     int status = -1;
     Packet p;
     buildPacket_GlobalQueuePop(&p);
-    status = Packet_Send(GetMachineID(), myNetThreadMbox, 0, &p);
+    status = Packet_Send(GetMachineID(), myMbox, 0, &p);
     return status;
 }
 
@@ -603,7 +603,7 @@ int HGlobalQueuePushUpdate(int value) {
     int status = -1;
     Packet p;
     buildPacket_GlobalQueuePush(&p, value);
-    status = Packet_Send(GetMachineID(), myNetThreadMbox, 0, &p);
+    status = Packet_Send(GetMachineID(), myMbox, 0, &p);
     return status;
 }
 

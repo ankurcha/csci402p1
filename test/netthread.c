@@ -80,7 +80,7 @@ void network_thread() {
                 msgQueue[queueLength].pkt.packetType = myPacket.packetType;
                 strcpy(msgQueue[queueLength].pkt.data, myPacket.data);
                 msgQueue[queueLength].key = myPacket.timestamp;
-                Heap_Push(msgQueue, queueLength);
+                Heap_Push(msgQueue, &queueLength);
             } else {
                 print("ERROR: msgQueue ran out of space\n");
                 Halt();
@@ -88,7 +88,7 @@ void network_thread() {
 
             /* process all messages up to minTS */
             while (msgQueue[0].key < minTS) {
-                message = Heap_ExtractMin(msgQueue, queueLength);
+                message = Heap_ExtractMin(msgQueue, &queueLength);
 
                 myPacket.senderId = message->pkt.senderId;
                 myPacket.timestamp = message->pkt.timestamp;

@@ -30,8 +30,8 @@ int numberOfEntities[7];
  * numberOfEntities[6] - hospital managers
  */
 
-int netthread_Lock; /* We use these to interact with the netthread.*/
-int netthread_CV; /* Used to wait on the netthread for a reply */
+LockId netthread_Lock; /* We use these to interact with the netthread.*/
+CVId netthread_CV; /* Used to wait on the netthread for a reply */
 
 /* We need to keep a list of the resources that we currently hold
  * so, all the locks and CVs that we hold are with us are present in

@@ -13,7 +13,11 @@
 void createPatient() {
     int temp;
     char str[50];
-    print("Forking patient ");
+    initializeSystem();
+    print("Forking network_thread...");
+    Fork(network_thread);
+    print("done\n");
+    print("Forking patient...");
     print(itoa(patientCount, str));
     print("\n");
     HLock_Acquire(creationLock);
@@ -21,13 +25,7 @@ void createPatient() {
     patientCount++;
     HLock_Release(creationLock);
     patients(temp);
-    Exit(0);
-}
-
-void createNetworkThread(){
-    initializeSystem();
-    print("Forking network_thread\n");
-    network_thread();
+    print("done\n");
     Exit(0);
 }
 
@@ -527,18 +525,11 @@ int main(int argc, char** argv) {
     for (i = 0; i < MAX_CLERKS; i++) {
         __PharmacyClerks(&clerks[i], i);
     }
-
+    /*
+     * Reading config file for the patient process */
     readConfig();
 
-    numPatients = numberOfEntities[0];
-    HLock_Acquire(hospitalLock);
-    peopleInHospital = numPatients;
-    HLock_Release(hospitalLock);
-    Fork(createNetworkThread);
-    for (i = 0; i < 100; i++)
-            Yield();
-    
+    peopleInHospital = numPatients = numberOfEntities[0];
     Fork(createPatient);
-    
     Exit(0);
 }
