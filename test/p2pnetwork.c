@@ -379,7 +379,8 @@ int DistCV_Signal(int CVID) {
     int senderMBox;
     int i, j;
     Packet p;
-    Packet pkt = MsgQueue_Pop(&pendingCVQueue[CVID], &senderId, &senderMBox);
+    Packet pkt;
+    MsgQueue_Pop(&pkt, &pendingCVQueue[CVID], &senderId, &senderMBox);
 
     /* Process the Wait message */
     p.senderId = GetMachineID();
@@ -415,7 +416,7 @@ void Process_CV_Signal(Packet pkt) {
     int senderId, senderMbox;
 
     name = copyOutInt(pkt.data, NAME);
-    p = MsgQueue_Pop(&pendingCVQueue[name], &senderId, &senderMbox);
+    MsgQueue_Pop(&p, &pendingCVQueue[name], &senderId, &senderMbox);
 
     if (senderId == GetMachineID() && senderMbox == myMbox) {
         /* wake up my entity */

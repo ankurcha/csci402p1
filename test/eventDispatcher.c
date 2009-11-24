@@ -46,9 +46,8 @@ int MsgQueue_Push(MessageQueue *q, Packet *msg, int senderId, int senderMbox) {
     return i;
 }
 
-Packet MsgQueue_Pop(MessageQueue *q, int *senderId, int *senderMbox) {
+void MsgQueue_Pop(Packet *p, MessageQueue *q, int *senderId, int *senderMbox) {
     int temp;
-    Packet p;
     /* check for empty queue */
     if (q->head == -1) {
         return p;
