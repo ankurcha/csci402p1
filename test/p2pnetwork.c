@@ -1,5 +1,76 @@
 #include "p2pnetwork.h"
 
+/******************************
+ ****** SYSTEM FUNCTIONS ******
+ ******************************/
+
+int getMboxNum() {
+    int senderId;
+    int senderMbox;
+    char message[MaxMailSize];
+
+    Receive(0, &senderId, &senderMbox, message);
+
+    myMbox = copyOutInt(message, 0);
+
+    return myMbox;
+}
+
+void initializeSystem() {
+    /* This function takes care of initializing the various
+     * locks and other things at the system startup
+     */
+    /* Read all the configuration data */
+    readConfig();
+    myNetThreadMbox = getMyNetThreadMbox();
+    /* create system locks and CV*/
+    netthread_Lock = CreateLock("netthread_Lock");
+    netthread_CV = CreateCondition("netthread_CV");
+
+}
+
+void HMultiPing() {
+    Packet p;
+
+    p.senderId = GetMachineId();
+    p.timestamp = GetTimestamp();
+    p.packetType = DO_PING;
+
+    Packet_Send(GetMachineId(), myMbox, myMbox, &p);
+}
+
+void SendAll(int packetType) {
+    int i, j;
+    Packet p;
+
+    p.senderId = GetMachineId();
+    p.timestamp = GetTimestamp();
+    p.packetType = packetType;
+
+    for (j = 0; j < 7; j++) {
+        for (i = 0; i < numberOfEntities[j]; i++) {
+            if(j != GetMachineId() && (i+1) != myMbox) {
+                Packet_Send(j, i + 1, myMbox, &p);
+            }
+        }
+    }
+}
+
+void HKill() {
+    Packet p;
+
+    p.senderId = GetMachineId();
+    p.timestamp = GetTimestamp();
+    p.packetType = KILL;
+
+    Packet_Send(GetMachineId(), myMbox, myMbox, &p);
+}
+
+void Kill() {
+    SendAll(KILL);
+    Halt();
+}
+
 /***********************************
  ******* Resource Functions ********
  ***********************************/
@@ -165,8 +236,10 @@ int DistLock_Acquire(int name) {
     addResource(name, RES_REQ);
     for (j = 0; j < 7; j++) {
         for (i = 0; i < numberOfEntities[j]; i++) {
-            /* Sending LOCK_ACQUIRE to all and waiting for LOCK_OK */
-            Packet_Send(j, i + 1, myMbox, &p);
+            if(j != GetMachineId() && (i+1) != myMbox) {
+                /* Sending LOCK_ACQUIRE to all and waiting for LOCK_OK */
+                Packet_Send(j, i + 1, myMbox, &p);
+            }
         }
     }
 }
@@ -184,7 +257,9 @@ int DistLock_Release(int name) {
          * Just broadcast this message to all the othe nodes */
         for (j = 0; j < 7; j++) {
             for (i = 0; i < numberOfEntities[j]; i++) {
-                Packet_Send(j, i + 1, myMbox, &p);
+                if(j != GetMachineId() && (i+1) != myMbox) {
+                    Packet_Send(j, i + 1, myMbox, &p);
+                }
             }
         }
         return 1; /* successfully released lock */
@@ -285,7 +360,9 @@ int DistCV_Wait(int CVID, int LockID) {
     /* send to every entity */
     for (j = 0; j < 7; j++) {
         for (i = 0; i < numberOfEntities[j]; i++) {
-            Packet_Send(j, i + 1, myMbox, &p);
+            if(j != GetMachineId() && (i+1) != myMbox) {
+                Packet_Send(j, i + 1, myMbox, &p);
+            }
         }
     }
 
@@ -314,7 +391,9 @@ int DistCV_Signal(int CVID) {
     /* send to every entity */
     for (j = 0; j < 7; j++) {
         for (i = 0; i < numberOfEntities[j]; i++) {
-            Packet_Send(j, i + 1, myMbox, &p);
+            if(j != GetMachineId() && (i+1) != myMbox) {
+                Packet_Send(j, i + 1, myMbox, &p);
+            }
         }
     }
 
@@ -393,9 +472,13 @@ int DistUpdate_Send(Packet p) {
      */
     int senderMBox = 0;
     int i, j;
-    for (j = 0; j < 7; j++)
-        for (i = 0; i < numberOfEntities[j]; i++)
-            Packet_Send(j, i + 1, myMbox, &p);
+    for (j = 0; j < 7; j++) {
+        for (i = 0; i < numberOfEntities[j]; i++) {
+            if(j != GetMachineId() && (i+1) != myMbox) {
+                Packet_Send(j, i + 1, myMbox, &p);
+            }
+        }
+    }
 }
 
 /* Hospital Entity interface for the Network Data Update */
@@ -499,18 +582,3 @@ int getMyNetThreadMbox() {
     return myMailboxNumber;
 }
 
-/******************************
- ****** SYSTEM INITIALIZE *****
- ******************************/
-void initializeSystem() {
-    /* This function takes care of initializing the various
-     * locks and other things at the system startup
-     */
-    /* Read all the configuration data */
-    readConfig();
-    myNetThreadMbox = getMyNetThreadMbox();
-    /* create system locks and CV*/
-    netthread_Lock = CreateLock("netthread_Lock");
-    netthread_CV = CreateCondition("netthread_CV");
-
-}

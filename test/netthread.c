@@ -228,6 +228,20 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
         case GLOBAL_DATA_UPDATE:
             UpdateData_Global(pkt);
             break;
+        case DO_PING:
+            SendAll(PONG);
+            break;
+        case PING:
+            p.senderId = GetMachineID();
+            p.timestamp = GetTimestamp();
+            p.packetType = PONG;
+            Packet_Send(senderId, senderMbox, myMbox, &p);
+            break;
+        case PONG:
+            break;
+        case KILL:
+            Halt();
+            break;
         default:
             break;
     }
@@ -290,6 +304,16 @@ void processLocalPacket(Packet pkt) {
         case GLOBAL_DATA_UPDATE:
             /* Take care of sending updates */
             temp = DistUpdate_Send(pkt);
+            break;
+        case DO_PING:
+            SendAll(DO_PING);
+            break;
+        case PING:
+        case PONG:
+            print("ERROR: Entity send me a ping/pong\n");
+            break;
+        case KILL:
+            Kill();
             break;
         default:
             break;
