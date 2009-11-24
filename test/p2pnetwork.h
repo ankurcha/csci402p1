@@ -78,7 +78,11 @@ enum {
     CASH_DATA_UPDATE = 0x11,
     CLERK_DATA_UPDATE = 0x12,
     MAN_DATA_UPDATE = 0x13,
-    GLOBAL_DATA_UPDATE = 0x14
+    GLOBAL_DATA_UPDATE = 0x14,
+    DO_PING = 0x15,
+    PING = 0x16,
+    PONG = 0x17,
+    KILL = 0x18
 };
 
 /* Global Variable Identification */
@@ -124,6 +128,9 @@ int myMbox;
 /*********************************
  ********** FUNCTIONS ************
  *********************************/
+
+int getMboxNum();
+
 void initializeSystem();
 
 void initResources();
@@ -134,6 +141,15 @@ int getResourceStatus(int resourceID);
 int updateResourceStatus(int resourceID, int newStatus);
 int getResourceReplies(int resourceID);
 int updateResourceReplies(int resourceID, int replies);
+
+void SendAll(int packetType);
+
+/* tell everyone to exchange packets */
+void HMultiPing();
+
+/* end all network threads */
+void HKill();
+void Kill();
 
 /*********************************
  ******** MUTUAL EXCLUSION *******
