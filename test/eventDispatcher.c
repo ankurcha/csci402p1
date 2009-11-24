@@ -22,7 +22,7 @@ void Init_MsgQueue(MessageQueue *q, QueueElement *queueElements, int length) {
     return;
 }
 
-int MsgQueue_Push(MessageQueue *q, Packet *msg, int senderId, int senderMbox) {
+void MsgQueue_Push(MessageQueue *q, Packet *msg, int senderId, int senderMbox) {
     int i = 0;
     while (i < q->length) {
         if (!q->queue[i].valid)
