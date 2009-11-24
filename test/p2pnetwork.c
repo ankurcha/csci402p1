@@ -32,24 +32,24 @@ void initializeSystem() {
 void HMultiPing() {
     Packet p;
 
-    p.senderId = GetMachineId();
+    p.senderId = GetMachineID();
     p.timestamp = GetTimestamp();
     p.packetType = DO_PING;
 
-    Packet_Send(GetMachineId(), myMbox, myMbox, &p);
+    Packet_Send(GetMachineID(), myMbox, myMbox, &p);
 }
 
 void SendAll(int packetType) {
     int i, j;
     Packet p;
 
-    p.senderId = GetMachineId();
+    p.senderId = GetMachineID();
     p.timestamp = GetTimestamp();
     p.packetType = packetType;
 
     for (j = 0; j < 7; j++) {
         for (i = 0; i < numberOfEntities[j]; i++) {
-            if (j != GetMachineId() && (i + 1) != myMbox) {
+            if (j != GetMachineID() && (i + 1) != myMbox) {
                 Packet_Send(j, i + 1, myMbox, &p);
             }
         }
@@ -59,11 +59,11 @@ void SendAll(int packetType) {
 void HKill() {
     Packet p;
 
-    p.senderId = GetMachineId();
+    p.senderId = GetMachineID();
     p.timestamp = GetTimestamp();
     p.packetType = KILL;
 
-    Packet_Send(GetMachineId(), myMbox, myMbox, &p);
+    Packet_Send(GetMachineID(), myMbox, myMbox, &p);
 }
 
 void Kill() {
@@ -236,7 +236,7 @@ int DistLock_Acquire(int name) {
     addResource(name, RES_REQ);
     for (j = 0; j < 7; j++) {
         for (i = 0; i < numberOfEntities[j]; i++) {
-            if (j != GetMachineId() && (i + 1) != myMbox) {
+            if (j != GetMachineID() && (i + 1) != myMbox) {
                 /* Sending LOCK_ACQUIRE to all and waiting for LOCK_OK */
                 Packet_Send(j, i + 1, myMbox, &p);
             }
@@ -257,7 +257,7 @@ int DistLock_Release(int name) {
          * Just broadcast this message to all the othe nodes */
         for (j = 0; j < 7; j++) {
             for (i = 0; i < numberOfEntities[j]; i++) {
-                if (j != GetMachineId() && (i + 1) != myMbox) {
+                if (j != GetMachineID() && (i + 1) != myMbox) {
                     Packet_Send(j, i + 1, myMbox, &p);
                 }
             }
@@ -360,7 +360,7 @@ int DistCV_Wait(int CVID, int LockID) {
     /* send to every entity */
     for (j = 0; j < 7; j++) {
         for (i = 0; i < numberOfEntities[j]; i++) {
-            if (j != GetMachineId() && (i + 1) != myMbox) {
+            if (j != GetMachineID() && (i + 1) != myMbox) {
                 Packet_Send(j, i + 1, myMbox, &p);
             }
         }
@@ -391,7 +391,7 @@ int DistCV_Signal(int CVID) {
     /* send to every entity */
     for (j = 0; j < 7; j++) {
         for (i = 0; i < numberOfEntities[j]; i++) {
-            if (j != GetMachineId() && (i + 1) != myMbox) {
+            if (j != GetMachineID() && (i + 1) != myMbox) {
                 Packet_Send(j, i + 1, myMbox, &p);
             }
         }
@@ -474,7 +474,7 @@ int DistUpdate_Send(Packet p) {
     int i, j;
     for (j = 0; j < 7; j++) {
         for (i = 0; i < numberOfEntities[j]; i++) {
-            if (j != GetMachineId() && (i + 1) != myMbox) {
+            if (j != GetMachineID() && (i + 1) != myMbox) {
                 Packet_Send(j, i + 1, myMbox, &p);
             }
         }
