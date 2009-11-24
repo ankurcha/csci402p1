@@ -1,4 +1,4 @@
-w/*    Hospital Management Simulation */
+/*    Hospital Management Simulation */
 /* */
 /*    Patient Thread Function */
 /*  */
