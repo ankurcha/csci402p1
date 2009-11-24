@@ -7,8 +7,9 @@
 /*
  * Packets for the shared data updates.
  */
+#include "hospShared.c"
 
-Packet* buildPacket_Receptionist(Packet *p, int id, int peopleInLine,
+Packet *buildPacket_Receptionist(Packet *p, int id, int peopleInLine,
         int currentToken) {
     p->senderId = GetMachineId();
     p->timestamp = GetTimestamp();

@@ -31,7 +31,19 @@ IV. Implementation:
     + Files Modified
 
     + Files added
-
+        test/cash.c
+        test/clerk.c
+        test/disthosp.c
+        test/doctor.c
+        test/doorboy.c
+        test/eventDispatcher.c
+        test/eventDispatcher.h
+        test/heap.c
+        test/heap.h
+        test/hospManager.c
+        test/hospShared.c
+        test/hospShared.h
+        
     + Data Structures added, and the file they were added to.
 
     + Data Structures modified, and the file they were added to.
