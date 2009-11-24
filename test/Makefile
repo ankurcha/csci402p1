@@ -29,7 +29,7 @@ LD = $(GCCDIR)ld
 CPP = $(GCCDIR)cpp
 
 INCDIR =-I../userprog -I../threads
-CFLAGS = -G 0 -c $(INCDIR)
+CFLAGS = -ffreestanding -G 0 -c $(INCDIR)
 
 
 all: halt\
