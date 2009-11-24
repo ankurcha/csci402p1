@@ -467,33 +467,29 @@ void readConfig() {
      * to the global variables
      */
     OpenFileId fd;
-    char buf[100];
+    char buf[10];
     char temp[10];
     int num;
     int bytesread;
     int i, j, k;
     int start = 0;
     int end = -1;
-    fd = Open("configfile", 10);
-    bytesread = Read(buf, 100, fd);
-    Close(fd);
-    end = 0;
-    for (k = 0; k < 7; k++) {
-        /* Parse the comma separated numbers */
-        for (i = 0; i < bytesread; i++) {
-            if (buf[i] != ',') {
-                end++;
-            }
+    fd = Open("../test/configfile", 10);
+    bytesread = Read(buf, 1, fd);
+    while (i < 7) {
+        bytesread = Read(buf, 1, fd);
+        if (buf[0] != '\n') {
+            temp[j] = buf[0];
+            j++;
+        } else {
+            num = atoi(temp);
+            print("Reading Config:");
+            print(temp);
+            print("\n");
+            j = 0;
+            strcpy(temp, "");
+            numberOfEntities[i] = num;
         }
-        /* copy the number string to temp */
-        for (j = start; j < end; j++)
-            temp[j - start] = buf[j];
-        print("Reading Config:");
-        print(temp);
-        print("\n");
-        numberOfEntities[k] = atoi(temp);
-        end++;
-        start = end;
     }
     return;
 }
