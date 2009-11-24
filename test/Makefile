@@ -147,22 +147,22 @@ packet.o: packet.c packet.h
 	$(CC) $(CFLAGS) -c packet.c
 packet: packet.o
 
-eventDispatcher.o: eventDispatcher.c eventDispatcher.h packet
+eventDispatcher.o: eventDispatcher.c eventDispatcher.h packet string
 	$(CC) $(CFLAGS) -c eventDispatcher.c
-eventDispatcher: eventDispatcher.o
+eventDispatcher: eventDispatcher.o string.o
 
 hospShared.o: hospShared.c hospShared.h packet eventDispatcher print
 	$(CC) $(CFLAGS) -c hospShared.c
 hospShared: hospShared.o start.o
 
-p2pnetwork.o: p2pnetwork.c p2pnetwork.h print itoa packet eventDispatcher hospShared
+p2pnetwork.o: p2pnetwork.c p2pnetwork.h print itoa queue packet eventDispatcher hospShared
 	$(CC) $(CFLAGS) -c p2pnetwork.c
 p2pnetwork: p2pnetwork.o start.o
 
 patient.o: patient.c print p2pnetwork
 	$(CC) $(CFLAGS) -c patient.c
 patient: patient.o start.o packet.o
-	$(LD) $(LDFLAGS) start.o patient.o print.o itoa.o packet.o eventDispatcher.o p2pnetwork.o hospShared.o -o patient.coff
+	$(LD) $(LDFLAGS) start.o patient.o string.o print.o itoa.o queue.o packet.o eventDispatcher.o p2pnetwork.o hospShared.o -o patient.coff
 	../bin/coff2noff patient.coff patient
 
 init.o: init.c print queue
