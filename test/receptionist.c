@@ -6,9 +6,8 @@
  *  Copyright 2009 University of Southern California. All rights reserved.
  *
  */
-
 #include "init.h"
-
+#include "netthread.c"
 void createReceptionist() {
     int temp;
     char str[50];

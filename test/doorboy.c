@@ -1,4 +1,5 @@
 #include "init.h"
+#include "netthread.c"
 
 void createDoorBoy() {
     int temp;

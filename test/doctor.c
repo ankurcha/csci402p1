@@ -1,4 +1,5 @@
 #include "init.h"
+#include "netthread.c"
 
 void createDoctor() {
     int temp;
