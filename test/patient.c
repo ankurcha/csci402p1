@@ -12,8 +12,9 @@
 
 void createPatient() {
     int temp;
+    char str[50];
     print("Forking patient ");
-    print(itoa(patientCount));
+    print(itoa(patientCount, str));
     print("\n");
     HLock_Acquire(creationLock);
     temp = patientCount;
