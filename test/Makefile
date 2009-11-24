@@ -37,7 +37,7 @@ all: halt\
      sort\
      testfiles\
      lockcreate destroylock createcv destroycv fork exec exectest printtest\
-     test_code multih networkTestClient1 networkTestClient2\
+     test_code multih networkTestClient1 networkTestClient2 atoi\
      multiForkmatmult multiExecmatmult multiExecmatmult2 multiprint\
      itoa queue heap packet eventDispatcher hospShared p2pnetwork\
      patient string disthosp
@@ -123,6 +123,10 @@ printtest: printtest.o start.o
 	$(LD) $(LDFLAGS) start.o printtest.o -o printtest.coff
 	../bin/coff2noff printtest.coff printtest
 
+atoi.o: atoi.c atoi.h
+	$(CC) $(CFLAGS) -c atoi.c
+atoi: atoi.o
+
 itoa.o: itoa.c itoa.h
 	$(CC) $(CFLAGS) -c itoa.c
 itoa: itoa.o
@@ -155,14 +159,14 @@ hospShared.o: hospShared.c hospShared.h packet eventDispatcher print
 	$(CC) $(CFLAGS) -c hospShared.c
 hospShared: hospShared.o start.o
 
-p2pnetwork.o: p2pnetwork.c p2pnetwork.h print packet eventDispatcher hospShared
+p2pnetwork.o: p2pnetwork.c p2pnetwork.h print atoi packet eventDispatcher hospShared
 	$(CC) $(CFLAGS) -c p2pnetwork.c
 p2pnetwork: p2pnetwork.o start.o
 
 patient.o: patient.c print p2pnetwork
 	$(CC) $(CFLAGS) -c patient.c
 patient: patient.o start.o packet.o
-	$(LD) $(LDFLAGS) start.o print.o packet.o eventDispatcher.o p2pnetwork.o hospShared.o -o patient.coff
+	$(LD) $(LDFLAGS) start.o print.o atoi.o packet.o eventDispatcher.o p2pnetwork.o hospShared.o -o patient.coff
 	../bin/coff2noff patient.coff patient
 
 init.o: init.c print queue
