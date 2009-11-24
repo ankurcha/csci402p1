@@ -10,6 +10,7 @@
 #include "syscall.h"
 #include "print.h"
 #include "heap.h"
+#include "string.h"
 
 #define MaxMsgQueue 200
 
@@ -74,7 +75,10 @@ void network_thread() {
             if (queueLength < MaxMsgQueue) {
                 msgQueue[queueLength].senderId = senderId;
                 msgQueue[queueLength].senderMbox = senderMbox;
-                msgQueue[queueLength].pkt = myPacket;
+                msgQueue[queueLength].pkt.senderId = myPacket.senderId;
+                msgQueue[queueLength].pkt.timestamp = myPacket.timestamp;
+                msgQueue[queueLength].pkt.packetType = myPacket.packetType;
+                strcpy(msgQueue[queueLength].pkt.data, myPacket.data);
                 msgQueue[queueLength].key = myPacket.timestamp;
                 Heap_Push(msgQueue, queueLength);
             } else {
@@ -85,7 +89,10 @@ void network_thread() {
             /* process all messages up to minTS */
             while (msgQueue[0].key < minTS) {
                 message = Heap_ExtractMin(msgQueue, queueLength);
-                myPacket = message.pkt;
+                myPacket.senderId = message.pkt.senderId;
+                myPacket.timestamp = message.pkt.timestamp;
+                myPacket.packetType = message.pkt.packetType;
+                strcpy(myPacket.data, message.pkt.data);
                 senderId = message.senderId;
                 senderMbox = message.senderMbox;
 
@@ -103,7 +110,7 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
     int replies = -1;
     int numEntities = 0;
     int name;
-    int i,j;
+    int i, j;
     Packet p;
     for (j = 0; j < 7; j++) {
         numEntities += numberOfEntities[j];
@@ -247,7 +254,7 @@ void processLocalPacket(Packet pkt) {
     int status = -1;
     int numEntities = 0;
     int temp, temp1;
-    int i,j,k;
+    int i, j, k;
     int name;
     Packet p;
     int senderId, senderMbox;
