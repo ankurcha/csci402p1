@@ -47,7 +47,7 @@ void network_thread() {
 
     /* Begin an infinite loop where we wait for data from the network */
     while (1) {
-        Packet_Receive(myMbox, senderId, senderMbox, myPacket);
+        Packet_Receive(myMbox, &senderId, &senderMbox, &myPacket);
 
         if (senderMbox != 0) {
             /* process a packet from another entity on the network */
@@ -138,7 +138,7 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
                     p.timestamp = GetTimestamp();
                     p.packetType = LOCK_OK;
                     copyInInt(p.data, NAME, name);
-                    Packet_Send(senderId, senderMbox, GetMachineID(), p);
+                    Packet_Send(senderId, senderMbox, GetMachineID(), &p);
                     break;
                 default:
                     print("ERROR: invalid resource status\n");
@@ -164,7 +164,7 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
                      * we get the LOCK NOW and delete the resource from the
                      * requestedResource and add it to the HeldResources
                      */
-                    resources[name].status = RES_HELD;
+                    resources[name].state = RES_HELD;
                     /* Now we can send a signal to the entity */
                     Acquire(netthread_Lock);
                     Signal(netthread_CV, netthread_Lock);
@@ -247,6 +247,7 @@ void processLocalPacket(Packet pkt) {
     int status = -1;
     int totalEntities = 0;
     int temp, temp1;
+    int i,j,k;
     int name;
     Packet p;
     int i, senderId, senderMbox;
@@ -283,7 +284,7 @@ void processLocalPacket(Packet pkt) {
             break;
         case CV_BROADCAST:
             name = copyOutInt(pkt.data, NAME); /* CVID */
-            while (!MsgQueue_IsEmpty(pendingCVQueue[name])) {
+            while (!MsgQueue_IsEmpty(&pendingCVQueue[name])) {
                 DistCV_Signal(name);
             }
             break;
