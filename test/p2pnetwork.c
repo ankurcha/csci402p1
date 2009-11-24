@@ -475,7 +475,6 @@ void readConfig() {
     int start = 0;
     int end = -1;
     fd = Open("configfile", 10);
-    bytesread = Read(buf, 1, fd);
     while (i < 7) {
         bytesread = Read(buf, 1, fd);
         if (buf[0] != '\n') {
@@ -487,6 +486,7 @@ void readConfig() {
             print(temp);
             print("\n");
             j = 0;
+            i++;
             strcpy(temp, "");
             numberOfEntities[i] = num;
         }
