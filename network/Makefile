@@ -9,7 +9,7 @@
 # of liability and disclaimer of warranty provisions.
 
 DEFINES = -DUSER_PROGRAM -DFILESYS_NEEDED -DFILESYS_STUB -DNETWORK -DVM
-INCPATH = -I../filesys -I../bin -I../userprog -I../threads -I../machine -I../network -I../vm 
+INCPATH = -I../filesys -I../bin -I../userprog -I../threads -I../machine -I../network 
 HFILES = $(THREAD_H) $(USERPROG_H) $(VM_H) $(NETWORK_H)
 CFILES = $(THREAD_C) $(USERPROG_C) $(VM_C) $(NETWORK_C)
 C_OFILES = $(THREAD_O) $(USERPROG_O) $(VM_O) $(NETWORK_O)
