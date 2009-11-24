@@ -491,6 +491,7 @@ void readConfig() {
             numberOfEntities[i] = num;
         }
     }
+    Close(fd);
     return;
 }
 
