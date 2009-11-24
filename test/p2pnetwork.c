@@ -49,7 +49,7 @@ void SendAll(int packetType) {
 
     for (j = 0; j < 7; j++) {
         for (i = 0; i < numberOfEntities[j]; i++) {
-            if(j != GetMachineId() && (i+1) != myMbox) {
+            if (j != GetMachineId() && (i + 1) != myMbox) {
                 Packet_Send(j, i + 1, myMbox, &p);
             }
         }
@@ -236,7 +236,7 @@ int DistLock_Acquire(int name) {
     addResource(name, RES_REQ);
     for (j = 0; j < 7; j++) {
         for (i = 0; i < numberOfEntities[j]; i++) {
-            if(j != GetMachineId() && (i+1) != myMbox) {
+            if (j != GetMachineId() && (i + 1) != myMbox) {
                 /* Sending LOCK_ACQUIRE to all and waiting for LOCK_OK */
                 Packet_Send(j, i + 1, myMbox, &p);
             }
@@ -257,7 +257,7 @@ int DistLock_Release(int name) {
          * Just broadcast this message to all the othe nodes */
         for (j = 0; j < 7; j++) {
             for (i = 0; i < numberOfEntities[j]; i++) {
-                if(j != GetMachineId() && (i+1) != myMbox) {
+                if (j != GetMachineId() && (i + 1) != myMbox) {
                     Packet_Send(j, i + 1, myMbox, &p);
                 }
             }
@@ -360,7 +360,7 @@ int DistCV_Wait(int CVID, int LockID) {
     /* send to every entity */
     for (j = 0; j < 7; j++) {
         for (i = 0; i < numberOfEntities[j]; i++) {
-            if(j != GetMachineId() && (i+1) != myMbox) {
+            if (j != GetMachineId() && (i + 1) != myMbox) {
                 Packet_Send(j, i + 1, myMbox, &p);
             }
         }
@@ -391,7 +391,7 @@ int DistCV_Signal(int CVID) {
     /* send to every entity */
     for (j = 0; j < 7; j++) {
         for (i = 0; i < numberOfEntities[j]; i++) {
-            if(j != GetMachineId() && (i+1) != myMbox) {
+            if (j != GetMachineId() && (i + 1) != myMbox) {
                 Packet_Send(j, i + 1, myMbox, &p);
             }
         }
@@ -474,7 +474,7 @@ int DistUpdate_Send(Packet p) {
     int i, j;
     for (j = 0; j < 7; j++) {
         for (i = 0; i < numberOfEntities[j]; i++) {
-            if(j != GetMachineId() && (i+1) != myMbox) {
+            if (j != GetMachineId() && (i + 1) != myMbox) {
                 Packet_Send(j, i + 1, myMbox, &p);
             }
         }
@@ -502,7 +502,8 @@ int HDataUpdate_Doorb(int id) {
     int status = -1;
     return status;
 }
-int HDataUpdate_Doc(int id, int peopleInLine, int prescription, int patientToken) {
+int HDataUpdate_Doc(int id, int peopleInLine, int prescription,
+        int patientToken) {
     /* Creates an update packet and sends it to the network entity for processing */
     Packet p;
     int status = -1;
@@ -510,7 +511,8 @@ int HDataUpdate_Doc(int id, int peopleInLine, int prescription, int patientToken
     status = Packet_Send(GetMachineID(), myNetThreadMbox, 0, &p);
     return status;
 }
-int HDataUpdate_Cash(int id, int lineLength, int patToken, int fee, int payment, int sales) {
+int HDataUpdate_Cash(int id, int lineLength, int patToken, int fee,
+        int payment, int sales) {
     /* Creates an update packet and sends it to the network entity for processing */
     Packet p;
     int status = -1;
@@ -519,11 +521,13 @@ int HDataUpdate_Cash(int id, int lineLength, int patToken, int fee, int payment,
     return status;
 
 }
-int HDataUpdate_Clerk(int id, int patientsInLine, int payment, int fee, int patPrescription, int sales) {
+int HDataUpdate_Clerk(int id, int patientsInLine, int payment, int fee,
+        int patPrescription, int sales) {
     /* Creates an update packet and sends it to the network entity for processing */
     Packet p;
     int status = -1;
-    buildPacket_Clerk(&p, id, patientsInLine, payment, fee, patPrescription, sales);
+    buildPacket_Clerk(&p, id, patientsInLine, payment, fee, patPrescription,
+            sales);
     status = Packet_Send(GetMachineID(), myNetThreadMbox, 0, &p);
     return status;
 

@@ -196,23 +196,26 @@ void readConfig();
 int getCV_Lock_Mapping(int CVID);
 
 /* Data update handling Functions  depends on init.h and used by netthread.c
-int UpdateData_Patient(Packet p);
-int UpdateData_Receptionist(Packet p);
-int UpdateData_Doorboy(Packet p);
-int UpdateData_Doctor(Packet p);
-int UpdateData_Cashier(Packet p);
-int UpdateData_Clerk(Packet p);
-int UpdateData_HospitalManager(Packet p);
-int UpdateData_Global(Packet p);
-*/
+ int UpdateData_Patient(Packet p);
+ int UpdateData_Receptionist(Packet p);
+ int UpdateData_Doorboy(Packet p);
+ int UpdateData_Doctor(Packet p);
+ int UpdateData_Cashier(Packet p);
+ int UpdateData_Clerk(Packet p);
+ int UpdateData_HospitalManager(Packet p);
+ int UpdateData_Global(Packet p);
+ */
 
 /* Hospital Entity interface for the Network Data Update NO DEPS*/
 int HDataUpdate_Recp(int id, int peopleInLine, int currentToken);
 int HDataUpdate_Pat(int id);
 int HDataUpdate_Doorb(int id);
-int HDataUpdate_Doc(int id, int peopleInLine, int prescription, int patientToken);
-int HDataUpdate_Cash(int id, int lineLength, int patToken, int fee, int payment, int sales);
-int HDataUpdate_Clerk(int id, int patientsInLine, int payment, int fee, int patPrescription, int sales);
+int HDataUpdate_Doc(int id, int peopleInLine, int prescription,
+        int patientToken);
+int HDataUpdate_Cash(int id, int lineLength, int patToken, int fee,
+        int payment, int sales);
+int HDataUpdate_Clerk(int id, int patientsInLine, int payment, int fee,
+        int patPrescription, int sales);
 int HDataUpdate_HospMan(int id);
 
 /* Updates the Global data variables NO DEPS*/

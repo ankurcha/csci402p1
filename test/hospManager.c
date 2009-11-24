@@ -42,6 +42,7 @@ void hospitalManager(int ID) {
             Yield();
             sleeptime--;
         } while (sleeptime > 0);
+        HMultiPing();
         /*I am on rounds now, Time to kick some ass */
         print("H_");
         print(itoa(ID, str));
@@ -166,6 +167,7 @@ void hospitalManager(int ID) {
             }
         }
     }
+    HKill();
     Exit(0);
 }
 
