@@ -26,7 +26,7 @@ void cashier(int ID) {
             print("Cash_");
             print(itoa(ID, str));
             print(":  someone in my line...\n");
-            HLock_Signal(cashiers[ID].lineCV, cashierLineLock);
+            HCV_Signal(cashiers[ID].lineCV, cashierLineLock);
         } else { /* noone in line */
             /* go on break */
             /* prefix for test condition */
@@ -35,7 +35,7 @@ void cashier(int ID) {
             print("Cash_");
             print(itoa(ID, str));
             print(":  No one in line... going on break\n");
-            HLock_Wait(cashiers[ID].breakCV, cashierLineLock);
+            HCV_Wait(cashiers[ID].breakCV, cashierLineLock);
             Release(cashierLineLock);
             continue;
         }
