@@ -12,16 +12,20 @@
 
 void createPatient() {
     int temp;
-    Acquire(creationLock);
+    print("Forking patient ");
+    print(itoa(patientCount));
+    print("\n");
+    HLock_Acquire(creationLock);
     temp = patientCount;
     patientCount++;
-    Release(creationLock);
+    HLock_Release(creationLock);
     patients(temp);
     Exit(0);
 }
 
 void createNetworkThread(){
     initializeSystem();
+    print("Forking network_thread\n");
     network_thread();
     Exit(0);
 }
@@ -542,9 +546,11 @@ int main(int argc, char** argv) {
     print(" Patients\n");
 
     Fork(createNetworkThread);
-    for (i = 0; i < numPatients; i++)
-        Fork(createPatient);
 
     for (i = 0; i < 100; i++)
-        Yield();
+            Yield();
+
+    for (i = 0; i < numPatients; i++)
+        Fork(createPatient);
+    Exit(0);
 }
