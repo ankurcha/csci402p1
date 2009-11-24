@@ -16,7 +16,7 @@ int strlen(const char *str) {
     return (s - str);
 }
 
-char* strcat(char *dst, char *src) {
+char* strcat(char *dst, const char *src) {
     while (*dst++)
         ;
     while (*dst++ = *src++)
