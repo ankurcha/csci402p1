@@ -76,6 +76,6 @@ Message* Heap_ExtractMin(Message* start, int* length) {
         xc2 = (x << 1) + 2;
     }
 
-    return start[*length];
+    return &start[*length];
 }
 
