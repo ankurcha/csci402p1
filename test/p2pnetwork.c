@@ -23,10 +23,11 @@ void initializeSystem() {
     /* Read all the configuration data */
     readConfig();
     myNetThreadMbox = getMyNetThreadMbox();
+    getMboxNum();
     /* create system locks and CV*/
     netthread_Lock = CreateLock("netthread_Lock");
     netthread_CV = CreateCondition("netthread_CV");
-
+    void initResources();
 }
 
 void HMultiPing() {
