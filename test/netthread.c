@@ -32,10 +32,8 @@ void network_thread(int mbox) {
     for (i = 0; i < MaxEntities; i++) {
         maxTS[i] = 0;
     }
-
     readyCount = 0;
     myMbox = mbox;
-
     /* this array should make it easier to scan all entities */
     machineIndex[0] = 0;
     for (i = 0; i < 7; i++) {
@@ -114,7 +112,6 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
     switch (pkt.packetType) {
         case EMPTY:
             break;
-
         case LOCK_ACQUIRE:
             name = copyOutInt(pkt.data, NAME);
             /* check if I am holding this lock */
@@ -146,7 +143,6 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
                     print("ERROR: invalid resource status\n");
             }
             break;
-
         case LOCK_OK:
             /* Got a LOCK_OK so now we need to check whether we requested this
              * Lock and if yes, we keep processing till all have replied with
@@ -175,23 +171,19 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
                 }
             }
             break;
-
         case CV_WAIT:
             /* add them to the queue of requests */
             name = copyOutInt(pkt.data, NAME); /* CVID */
             temp = copyOutInt(pkt.data, 4); /* LockID */
             MsgQueue_Push(pendingCVQueue[name], pkt, senderId, senderMbox);
             break;
-
         case CV_SIGNAL:
             Process_CV_Signal(pkt);
             break;
-
         case CV_BROADCAST:
             print("ERROR: external CV_BROADCAST packet received\n");
             Halt();
             break;
-
         case NODE_READY:
             /* add to the node ready count, once all nodes are ready,
              * start the simulation

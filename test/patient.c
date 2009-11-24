@@ -536,7 +536,6 @@ int main(int argc, char** argv) {
 
     for (i = 0; i < numPatients; i++)
         Fork(createPatient);
-
     for (i = 0; i < 100; i++)
         Yield();
 }
