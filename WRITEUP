@@ -29,6 +29,9 @@ III. Design:
 IV. Implementation:
 
     + Files Modified
+        userprog/exception.cc
+        userprog/addrspace.h|c
+        userprog/syscall.h
 
     + Files added
         test/cash.c

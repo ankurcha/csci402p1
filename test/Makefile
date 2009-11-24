@@ -40,7 +40,7 @@ all: halt\
      test_code multih networkTestClient1 networkTestClient2\
      multiForkmatmult multiExecmatmult multiExecmatmult2 multiprint\
      itoa queue heap packet eventDispatcher hospShared p2pnetwork\
-     disthosp patient string
+     patient string disthosp
 
 
 start.o: start.s ../userprog/syscall.h
@@ -171,7 +171,7 @@ init: init.o start.o
 	$(LD) $(LDFLAGS) start.o init.o -o init.coff
 	../bin/coff2noff init.coff init
 
-disthosp.o: disthosp.c print p2pnetwork
+disthosp.o: disthosp.c print p2pnetwork 
 	$(CC) $(CFLAGS) -c disthosp.c
 disthosp: disthosp.o start.o
 	$(LD) $(LDFLAGS) start.o print.o p2pnetwork.o -o disthosp.coff
