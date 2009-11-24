@@ -23,7 +23,7 @@ void network_thread() {
     int senderMbox = 0;
     Packet myPacket;
     Message msgQueue[MaxMsgQueue];
-    Message message;
+    Message* message;
     int queueLength = 0;
     int minTS;
     int machineIndex[7];
@@ -89,12 +89,13 @@ void network_thread() {
             /* process all messages up to minTS */
             while (msgQueue[0].key < minTS) {
                 message = Heap_ExtractMin(msgQueue, queueLength);
-                myPacket.senderId = message.pkt.senderId;
-                myPacket.timestamp = message.pkt.timestamp;
-                myPacket.packetType = message.pkt.packetType;
-                strcpy(myPacket.data, message.pkt.data);
-                senderId = message.senderId;
-                senderMbox = message.senderMbox;
+
+                myPacket.senderId = message->pkt.senderId;
+                myPacket.timestamp = message->pkt.timestamp;
+                myPacket.packetType = message->pkt.packetType;
+                strcpy(myPacket.data, message->pkt.data);
+                senderId = message->senderId;
+                senderMbox = message->senderMbox;
 
                 processExternalPacket(myPacket, senderId, senderMbox);
             }
