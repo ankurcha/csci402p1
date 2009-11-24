@@ -49,13 +49,13 @@ void doctor(int ID) {
         /*wakingDoctorID = ID; */
         Queue_Push(&wakingDoctorList, ID);
         HGlobalQueuePushUpdate(ID);
-        HLock_Signal(doorboyLineCV, doorboyLineLock);
+        HCV_Signal(doorboyLineCV, doorboyLineLock);
         /* acquire the transaction lock and wait for the doorboy to arrive */
         HLock_Acquire(doctors[ID].transLock);
         HLock_Release(doorboyLineLock);
 
         /*////  DOORBOY INTERACTION  ////// */
-        HLock_Wait(doctors[ID].transCV, doctors[ID].transLock);
+        HCV_Wait(doctors[ID].transCV, doctors[ID].transLock);
         doctorBreak = 0;
         /* go on break if so inclined */
         if (test_state == 7) {
@@ -94,7 +94,7 @@ void doctor(int ID) {
             print("D_");
             print(itoa(ID, str));
             print(
-                    ":TEST7: Back from Break,HLock_Signalling patient to come in.\n");
+                    ":TEST7: Back from Break,HCV_Signalling patient to come in.\n");
         } else
             print("D_");
         print(itoa(ID, str));
