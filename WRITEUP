@@ -43,9 +43,19 @@ IV. Implementation:
         test/hospManager.c
         test/hospShared.c
         test/hospShared.h
-        
+        test/init.h
+        test/itoa.c
+        test/itoa.h
+        test/p2pnetwork.c
+        test/p2pnetwork.h
+        test/packet.c
+        test/packet.h
+        test/patient.c
+        test/receptionist.c
+        test/string.c
+        test/string.h
     + Data Structures added, and the file they were added to.
-
+        
     + Data Structures modified, and the file they were added to.
 
     + Functions added and in which file.
