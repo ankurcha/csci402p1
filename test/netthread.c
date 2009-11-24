@@ -250,7 +250,7 @@ void processLocalPacket(Packet pkt) {
     int i,j,k;
     int name;
     Packet p;
-    int i, senderId, senderMbox;
+    int senderId, senderMbox;
     for (j = 0; j < 7; j++) {
         totalEntities += numberOfEntities[j];
     }
