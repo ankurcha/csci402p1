@@ -191,10 +191,10 @@ int UpdateData_Global(Packet p);
 */
 
 /* Hospital Entity interface for the Network Data Update NO DEPS*/
-int HDataUpdate_Recp(int id, int peopleInLine, int prescription, int patientToken);
+int HDataUpdate_Recp(int id, int peopleInLine, int currentToken);
 int HDataUpdate_Pat(int id);
 int HDataUpdate_Doorb(int id);
-int HDataUpdate_Doc(int id);
+int HDataUpdate_Doc(int id, int peopleInLine, int prescription, int patientToken);
 int HDataUpdate_Cash(int id, int lineLength, int patToken, int fee, int payment, int sales);
 int HDataUpdate_Clerk(int id, int patientsInLine, int payment, int fee, int patPrescription, int sales);
 int HDataUpdate_HospMan(int id);
