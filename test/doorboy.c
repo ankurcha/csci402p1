@@ -1,6 +1,6 @@
 #include "init.h"
 
-void doorboy( ID) {
+void doorboy(int ID) {
     char str[50];
     int myDoctor = 0;
     char doorboyBreak = 0;
