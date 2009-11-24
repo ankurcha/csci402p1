@@ -21,12 +21,13 @@ void initializeSystem() {
      * locks and other things at the system startup
      */
     /* Read all the configuration data */
+    print("Initializing Netthread\n");
+    netthread_Lock = CreateLock("netthread_Lock");
+    netthread_CV = CreateCondition("netthread_CV");
     readConfig();
     myNetThreadMbox = getMyNetThreadMbox();
     getMboxNum();
     /* create system locks and CV*/
-    netthread_Lock = CreateLock("netthread_Lock");
-    netthread_CV = CreateCondition("netthread_CV");
     initResources();
 }
 
@@ -219,6 +220,7 @@ int HLock_Acquire(int HlockId) {
     /* Now we have to wait for the for the netthread to reply to us with
      * a go ahead this is done using a CV and a lock.
      */
+    print("Here\n");
     Wait(netthread_CV, netthread_Lock);
     /* When we return we are sure that we have Acquired the lock */
     Release(netthread_Lock);
@@ -479,6 +481,7 @@ void readConfig() {
     int start = 0;
     int end = -1;
     fd = Open("configfile", 10);
+    print("Reading configfile...\n");
     while (i < 7) {
         bytesread = Read(buf, 1, fd);
         if (buf[0] != '\n') {
@@ -487,10 +490,7 @@ void readConfig() {
         } else {
             temp[j] = 0;
             num = atoi(temp);
-            print("Reading Config:");
             numberOfEntities[i] = num;
-            print(itoa(num));
-            print("\n");
             j = 0;
             i++;
             strcpy(temp, "");

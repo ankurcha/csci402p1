@@ -37,39 +37,11 @@
 #endif
 
 using namespace std;
-#ifdef NETWORK
-/*
- class Packet {
- public:
- int senderId;
- int timestamp;
- char data[MaxMailSize - 2 * sizeof(int)];
-
- // message MUST be a pointer to a char array of MaxMailSize
- char* Serialize(char *message){
- message[1] = senderId;
- mesage[0] = senderId >> 8;
- message[3] = timestamp;
- message[2] = timestamp >> 8;
- for(unsigned i = 4; i< MaxMailSize; i++)
- message[i] = data[i-4];
- return message;
- }
-
- void Deserialize(char *message){
- senderId = (int)((message[0] * 256) + message[1]);
- timestamp = (int)((message[2] * 256) + message[3]);
- for(unsigned i=4; i< MaxMailSize; i++)
- data[i-4] = message[i];
- }
- };
- */
-#endif
-
 extern "C" {
 int bzero(char *, int);
 }
 ;
+
 Lock *processTableLock = new Lock("processTableLock");
 Lock* locksTableLock = new Lock("locksTableLock");
 Lock* CVTableLock = new Lock("CVTableLock");
@@ -1183,6 +1155,7 @@ void ExceptionHandler(ExceptionType which) {
 #ifdef USE_TLB
     else if(which == PageFaultException) {
         DEBUG('s',"Caught PageFaultException!\n");
+        cout << "page fault\n";
         handlePageFaultException(machine->ReadRegister(BadVAddrReg));
     }
 #endif 

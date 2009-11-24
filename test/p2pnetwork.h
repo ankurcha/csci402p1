@@ -19,8 +19,9 @@
  ************************************/
 int myNetThreadMbox;
 int readyCount;
-int numberOfEntities[7]; /* The number of entities */
-/* numberOfEntities[0] - patients
+int numberOfEntities[7]; 
+/* The number of entities
+ * numberOfEntities[0] - patients
  * numberOfEntities[1] - receptionists
  * numberOfEntities[2] - doorboy
  * numberOfEntities[3] - doctors

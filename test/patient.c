@@ -527,17 +527,18 @@ int main(int argc, char** argv) {
     for (i = 0; i < MAX_CLERKS; i++) {
         __PharmacyClerks(&clerks[i], i);
     }
-    numPatients = numberOfEntities[1];
+
+    readConfig();
+
+    numPatients = numberOfEntities[0];
     HLock_Acquire(hospitalLock);
     peopleInHospital = numPatients;
     HLock_Release(hospitalLock);
     Fork(createNetworkThread);
-    print("Creating ");
-    print(itoa(numPatients, str));
-    print(" Patients\n");
     for (i = 0; i < 100; i++)
             Yield();
-    for (i = 0; i < numPatients; i++)
-        Fork(createPatient);
+    
+    Fork(createPatient);
+    
     Exit(0);
 }
