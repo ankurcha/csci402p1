@@ -48,7 +48,7 @@ void Heap_Push(Message* start, int* length) {
     return;
 }
 
-Message Heap_ExtractMin(Message* start, int* length) {
+Message* Heap_ExtractMin(Message* start, int* length) {
     int x = 0;
     int xc1 = 1;
     int xc2 = 2;
