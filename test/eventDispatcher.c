@@ -30,7 +30,7 @@ void MsgQueue_Push(MessageQueue *q, Packet *msg, int senderId, int senderMbox) {
         i++;
     }
     if (i == q->length) {
-        return -1;
+        return;
     }
     if (q->tail == -1)
         q->head = i;
@@ -43,7 +43,7 @@ void MsgQueue_Push(MessageQueue *q, Packet *msg, int senderId, int senderMbox) {
     q->queue[i].senderId = senderId;
     q->queue[i].senderMbox = senderMbox;
     q->tail = i;
-    return i;
+    return;
 }
 
 void MsgQueue_Pop(Packet *p, MessageQueue *q, int *senderId, int *senderMbox) {
