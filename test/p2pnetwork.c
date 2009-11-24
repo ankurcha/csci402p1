@@ -216,6 +216,7 @@ int HLock_Acquire(int HlockId) {
      * receiver
      */
     Acquire(netthread_Lock);
+    print("Sending packet to netthread\n");
     status = Packet_Send(GetMachineID(), myMbox, 0, &p);
     /* Now we have to wait for the for the netthread to reply to us with
      * a go ahead this is done using a CV and a lock.

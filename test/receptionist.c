@@ -15,10 +15,9 @@ void createReceptionist() {
     print("Forking network_thread...");
     Fork(network_thread);
     print("done\n");
-    print("Forking receptionist...");
-    print(itoa(patientCount, str));
-    print("\n");
-
+    print("Forking receptionist# ");
+    print(itoa(patientCount+1, str));
+    print("...");
     HLock_Acquire(creationLock);
     temp = recptionistCount;
     recptionistCount++;
