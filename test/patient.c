@@ -9,6 +9,16 @@
 /*  Aneesha Mathew, aneesham */
 #include "init.h"
 
+void createPatient() {
+    int temp;
+    Acquire(creationLock);
+    temp = patientCount;
+    patientCount++;
+    Release(creationLock);
+    patients(temp);
+    Exit(0);
+}
+
 void patients(int ID) {
     char str[50];
     /* declare variables */

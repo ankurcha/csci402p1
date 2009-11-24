@@ -1,5 +1,15 @@
 #include "init.h"
 
+void createPharmacyClerk() {
+    int temp;
+    Acquire(creationLock);
+    temp = pharmacyCount;
+    pharmacyCount++;
+    Release(creationLock);
+    clerk(temp);
+    Exit(0);
+}
+
 void clerk(int ID) {
     char str[50];
     while (1) {

@@ -3,6 +3,17 @@
  * We need some sort of data update mechanism so that
  * everyone knows when we update values.
  */
+
+void createCashier() {
+    int temp;
+    Acquire(creationLock);
+    temp = cashierCount;
+    cashierCount++;
+    Release(creationLock);
+    cashier(temp);
+    Exit(0);
+}
+
 void cashier(int ID) {
     char str[50];
     print("Cash_");

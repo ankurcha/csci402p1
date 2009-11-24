@@ -1,5 +1,15 @@
 #include "init.h"
 
+void createDoorBoy() {
+    int temp;
+    Acquire(creationLock);
+    temp = doorboyCount;
+    doorboyCount++;
+    Release(creationLock);
+    doorboy(temp);
+    Exit(0);
+}
+
 void doorboy(int ID) {
     char str[50];
     int myDoctor = 0;

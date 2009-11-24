@@ -9,6 +9,16 @@
 
 #include "init.h"
 
+void createReceptionist() {
+    int temp;
+    Acquire(creationLock);
+    temp = recptionistCount;
+    recptionistCount++;
+    Release(creationLock);
+    receptionist(temp);
+    Exit(0);
+}
+
 void receptionist(int ID) {
     char str[50];
     while (1) {

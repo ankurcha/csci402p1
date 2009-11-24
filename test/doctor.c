@@ -1,5 +1,16 @@
 #include "init.h"
 
+void createDoctor() {
+    int temp;
+    Acquire(creationLock);
+    temp = doctorCount;
+    doctorCount++;
+    Release(creationLock);
+    doctor(temp);
+    Exit(0);
+
+}
+
 void doctor(int ID) {
     char str[50];
     /* declare variables */

@@ -21,6 +21,7 @@
 #define MAXHOSTS 100
 
 #include "packet.h"
+#include "string.h"
 
 struct messageQueueElement {
     Packet message;

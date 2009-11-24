@@ -1,5 +1,15 @@
 #include "init.h"
 
+void createHospitalManager() {
+    int temp;
+    Acquire(creationLock);
+    temp = hospitalmanagerCount;
+    hospitalmanagerCount++;
+    Release(creationLock);
+    hospitalManager(temp);
+    Exit(0);
+}
+
 void hospitalManager(int ID) {
     char str[50];
     int sleeptime = 0;
