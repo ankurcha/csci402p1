@@ -9,7 +9,7 @@
 
 void swap_heap_elements(Message* start, int x, int y) {
     Message temp;
-    memcopy((void*) &temp, (void*) start, sizeof(Message));
+    memcopy((char*) &temp, (char*) start, sizeof(Message));
 
     /*temp.key = start[x].key;
     temp.senderId = start[x].senderId;
@@ -27,10 +27,10 @@ void swap_heap_elements(Message* start, int x, int y) {
     start[x].senderId = start[y].senderId;
     start[x].senderMbox = start[y].senderMbox;
     start[x].pkt = sender[y].pkt;*/
-    memcopy((void*) &start[x], (void*) &start[y], sizeof(Message));
+    memcopy((char*) &start[x], (char*) &start[y], sizeof(Message));
 
     /*start[y] = temp;*/
-    memcopy((void*) &start[y], (void*) &temp, sizeof(Message));
+    memcopy((char*) &start[y], (char*) &temp, sizeof(Message));
 }
 
 void Heap_Push(Message* start, int* length) {
