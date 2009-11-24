@@ -47,7 +47,8 @@ void receptionist(int ID) {
 
         receptionists[ID].currentToken = ++TokenCounter;
         HGlobalDataUpdate(TOKENCOUNTER, TokenCounter);
-        HDataUpdate_Recp(ID, receptionists[ID].peopleInLine, receptionists[ID].currentToken);
+        HDataUpdate_Recp(ID, receptionists[ID].peopleInLine,
+                receptionists[ID].currentToken);
 
         HLock_Release(TokenCounterLock);
 
@@ -72,18 +73,18 @@ void receptionist(int ID) {
 int main(int argc, char** argv) {
     int i;
     char inp[20];
-    strcpy(testlock, "TestLock");
-    strcpy(TokenCounterLock, "TokenCounterLock");
-    strcpy(recpLineLock, "recpLineLock");
-    strcpy(feeListLock, "feeListLock");
-    strcpy(cashierLineLock, "cashierLineLock");
-    strcpy(feesPaidLock, "feesPaidLock");
-    strcpy(ClerkLinesLock, "ClerkLineLock");
-    strcpy(PaymentLock, "PaymentLock");
-    strcpy(hospitalLock, "HospitalLock");
-    strcpy(doorboyLineLock, "doorboyLineLock");
-    strcpy(doorboyLineCV, "doorboyLineCV");
-    strcpy(creationLock, "creationLock");
+    testlock = 10000;
+    TokenCounterLock = 10001;
+    recpLineLock = 10002;
+    feeListLock = 10003;
+    cashierLineLock = 10004;
+    feesPaidLock = 10005;
+    ClerkLinesLock = 10006;
+    PaymentLock = 10007;
+    hospitalLock = 10008;
+    doorboyLineLock = 10008;
+    doorboyLineCV = 10009;
+    creationLock = 10010;
     wakingDoctorList.queue = wakingdoctor_element;
     wakingDoctorList.length = MAX_PATIENTS;
     wakingDoctorList.head = -1;
