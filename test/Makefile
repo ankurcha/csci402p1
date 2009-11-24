@@ -40,7 +40,7 @@ all: halt\
      test_code multih networkTestClient1 networkTestClient2\
      multiForkmatmult multiExecmatmult multiExecmatmult2 multiprint\
      itoa queue heap packet eventDispatcher hospShared p2pnetwork\
-     disthosp
+     patient string disthosp
 
 
 start.o: start.s ../userprog/syscall.h
@@ -139,6 +139,10 @@ heap.o: heap.c heap.h packet.h
 	$(CC) $(CFLAGS) -c heap.c
 heap: heap.o
 
+string.o: string.c string.h string.h
+	$(CC) $(CFLAGS) -c string.c
+string: string.o
+
 packet.o: packet.c packet.h
 	$(CC) $(CFLAGS) -c packet.c
 packet: packet.o
@@ -149,11 +153,17 @@ eventDispatcher: eventDispatcher.o
 
 hospShared.o: hospShared.c hospShared.h packet eventDispatcher print
 	$(CC) $(CFLAGS) -c hospShared.c
-hospShared: hospShared.o
+hospShared: hospShared.o start.o
 
-p2pnetwork.o: p2pnetwork.c p2pnetwork.h packet eventDispatcher print hospShared
+p2pnetwork.o: p2pnetwork.c p2pnetwork.h print packet eventDispatcher hospShared
 	$(CC) $(CFLAGS) -c p2pnetwork.c
-p2pnetwork: p2pnetwork.o
+p2pnetwork: p2pnetwork.o start.o
+
+patient.o: patient.c print p2pnetwork
+	$(CC) $(CFLAGS) -c patient.c
+patient: patient.o start.o
+	$(LD) $(LDFLAGS) start.o print.o p2pnetwork.o -o patient.coff
+	../bin/coff2noff patient.coff patient
 
 init.o: init.c print queue
 	$(CC) $(CFLAGS) -c init.c
@@ -161,7 +171,7 @@ init: init.o start.o
 	$(LD) $(LDFLAGS) start.o init.o -o init.coff
 	../bin/coff2noff init.coff init
 
-disthosp.o: disthosp.c print p2pnetwork
+disthosp.o: disthosp.c print p2pnetwork 
 	$(CC) $(CFLAGS) -c disthosp.c
 disthosp: disthosp.o start.o
 	$(LD) $(LDFLAGS) start.o print.o p2pnetwork.o -o disthosp.coff

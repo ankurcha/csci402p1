@@ -168,6 +168,13 @@ LockId doorboyLineLock;
 CVId doorboyLineCV;
 
 /**** FUNCTIONS ****/
+void patients(int ID);
+void cashier(int ID);
+void clerk(int ID);
+void doctor(int ID);
+void doorboy(int ID);
+void hospitalManager(int ID);
+void receptionist(int ID);
 
 int List_Append(List* l, int key, int val) {
     if (l == 0) {

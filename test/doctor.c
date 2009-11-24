@@ -1,6 +1,6 @@
 #include "init.h"
 
-void doctor( ID) {
+void doctor(int ID) {
     char str[50];
     /* declare variables */
     int waitingtime = 10000;

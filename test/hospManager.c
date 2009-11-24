@@ -1,7 +1,5 @@
 #include "init.h"
 
-int testmode = 0;
-
 void hospitalManager(int ID) {
     char str[50];
     int sleeptime = 0;

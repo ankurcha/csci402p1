@@ -76,7 +76,8 @@ void patients(int ID) {
     print(itoa(ID, str));
     print(" Got woken up, get out of line and going to counter for token\n");
     receptionists[shortestline].peopleInLine--;
-    HDataUpdate_Recp(shortestline);
+    HDataUpdate_Recp(shortestline, receptionists[shortestline].peopleInLine,
+            receptionists[shortestline].currentToken);
     /*wait for the receptionist to prepare token for me, till then I wait */
     HLock_Release(recpLineLock);
     HLock_Acquire(receptionists[shortestline].transLock);
@@ -145,7 +146,8 @@ void patients(int ID) {
     print(itoa(ID, str));
     print(" : Doorboy told me to go to doctor, proceeding....\n");
     doctors[myDoctor].peopleInLine--;
-    HDataUpdate_Doc(myDoctor);
+    HDataUpdate_Doc(myDoctor, doctors[myDoctor].peopleInLine,
+            doctors[myDoctor].prescription, doctors[myDoctor].patientToken);
     /* move into the doctor's transaction lock */
     HLock_Release(doctors[myDoctor].LineLock);
     print("P_");
@@ -164,7 +166,8 @@ void patients(int ID) {
 
     /*The doctor is waiting for me to provide my info, oblige him!! */
     doctors[myDoctor].patientToken = myToken;
-    HDataUpdate_Doc(myDoctor);
+    HDataUpdate_Doc(myDoctor, doctors[myDoctor].peopleInLine,
+            doctors[myDoctor].prescription, doctors[myDoctor].patientToken);
     /* hand off to the doctor thread for consultation */
     if (test_state == 7) {
         print("P_");
@@ -279,7 +282,9 @@ void patients(int ID) {
     print("\n");
 
     cashiers[myCashier].lineLength--;
-    HDataUpdate_Cash(myCashier);
+    HDataUpdate_Cash(myCashier, cashiers[myCashier].lineLength,
+            cashiers[myCashier].patToken, cashiers[myCashier].fee,
+            cashiers[myCashier].payment, cashiers[myCashier].sales);
 
     /* APPROACH THE DESK */
     HLock_Release(cashierLineLock);
@@ -287,7 +292,9 @@ void patients(int ID) {
 
     /* provide token to cashier */
     cashiers[myCashier].patToken = myToken;
-    HDataUpdate_Cash(myCashier);
+    HDataUpdate_Cash(myCashier, cashiers[myCashier].lineLength,
+            cashiers[myCashier].patToken, cashiers[myCashier].fee,
+            cashiers[myCashier].payment, cashiers[myCashier].sales);
 
     /* wait for cashier to come back with the fee */
     HCV_Signal(cashiers[myCashier].transCV, cashiers[myCashier].transLock);
@@ -295,7 +302,9 @@ void patients(int ID) {
 
     /* provide the money */
     cashiers[myCashier].payment = cashiers[myCashier].fee;
-    HDataUpdate_Cash(myCashier);
+    HDataUpdate_Cash(myCashier, cashiers[myCashier].lineLength,
+            cashiers[myCashier].patToken, cashiers[myCashier].fee,
+            cashiers[myCashier].payment, cashiers[myCashier].sales);
 
     print("P_");
     print(itoa(ID, str));
@@ -390,7 +399,11 @@ void patients(int ID) {
             " Got woken up, got out of line and going to the Pharmacy CLerk to give prescription.\n");
 
     clerks[shortestclerkline].patientsInLine--;
-    HDataUpdate_Clerk(shortestclerkline);
+    HDataUpdate_Clerk(shortestclerkline,
+            clerks[shortestclerkline].patientsInLine,
+            clerks[shortestclerkline].payment, clerks[shortestclerkline].fee,
+            clerks[shortestclerkline].patPrescription,
+            clerks[shortestclerkline].sales);
     HLock_Release(ClerkLinesLock);
     HLock_Acquire(clerks[shortestclerkline].ClerkTransLock);
     /*signal ParmacyClerk that i am ready to give Prescription */
@@ -402,7 +415,11 @@ void patients(int ID) {
     /*Entered the line no need to hold all lines others may now continue */
     /*wait for the PharmacyClerk to Get the prescription from me.. so I wait */
     clerks[shortestclerkline].patPrescription = myPrescription;
-    HDataUpdate_Clerk(shortestclerkline);
+    HDataUpdate_Clerk(shortestclerkline,
+            clerks[shortestclerkline].patientsInLine,
+            clerks[shortestclerkline].payment, clerks[shortestclerkline].fee,
+            clerks[shortestclerkline].patPrescription,
+            clerks[shortestclerkline].sales);
     print("P_");
     print(itoa(ID, str));
     print(": Gave prescriptiong, waiting for medicines.\n");
@@ -420,7 +437,11 @@ void patients(int ID) {
     print(": Got Medicines, making payment.\n");
 
     clerks[shortestclerkline].payment = clerks[shortestclerkline].fee;
-    HDataUpdate_Clerk(shortestclerkline);
+    HDataUpdate_Clerk(shortestclerkline,
+            clerks[shortestclerkline].patientsInLine,
+            clerks[shortestclerkline].payment, clerks[shortestclerkline].fee,
+            clerks[shortestclerkline].patPrescription,
+            clerks[shortestclerkline].sales);
     /* done */
     HCV_Signal(clerks[shortestclerkline].ClerkTransCV,
             clerks[shortestclerkline].ClerkTransLock);
