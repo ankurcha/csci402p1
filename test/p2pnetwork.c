@@ -470,6 +470,7 @@ void readConfig() {
     char buf[10];
     char temp[10];
     int num;
+    char number[10];
     int bytesread;
     int i, j, k;
     int start = 0;
@@ -483,7 +484,7 @@ void readConfig() {
         } else {
             num = atoi(temp);
             print("Reading Config:");
-            print(temp);
+            print(itoa(num));
             print("\n");
             j = 0;
             i++;
