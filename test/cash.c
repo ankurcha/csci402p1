@@ -63,7 +63,8 @@ void cashier(int ID) {
         HLock_Acquire(feesPaidLock);
         feesPaid += cashiers[ID].payment;
         cashiers[ID].sales += cashiers[ID].payment;
-        HDataUpdate_Cash(ID);
+        HDataUpdate_Cash(ID, cashiers[ID].lineLength, cashiers[ID].patToken,
+                cashiers[ID].fee, cashiers[ID].payment, cashiers[ID].sales);
         HLock_Release(feesPaidLock);
         if (cashiers[ID].payment < cashiers[ID].fee)
             print("ERROR: call security, that patient didin't pay!");
