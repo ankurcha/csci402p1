@@ -241,6 +241,7 @@ int DistLock_Acquire(int name) {
     for (j = 0; j < 7; j++) {
         for (i = 0; i < numberOfEntities[j]; i++) {
             if (j != GetMachineID() && (i + 1) != myMbox) {
+                print("Sending acquire packet to others\n");
                 /* Sending LOCK_ACQUIRE to all and waiting for LOCK_OK */
                 Packet_Send(j, i + 1, myMbox, &p);
             }
