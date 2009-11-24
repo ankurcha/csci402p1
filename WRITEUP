@@ -55,7 +55,14 @@ IV. Implementation:
         test/string.c
         test/string.h
     + Data Structures added, and the file they were added to.
-        
+        - test/packet.h
+            Packet{
+                int senderId;
+                int timestamp;
+                char data[MaxDataSize];
+            };
+         - test/eventDispatcher.h
+            
     + Data Structures modified, and the file they were added to.
 
     + Functions added and in which file.

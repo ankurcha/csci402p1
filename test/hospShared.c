@@ -7,7 +7,7 @@
 /*
  * Packets for the shared data updates.
  */
-#include "hospShared.c"
+#include "hospShared.h"
 
 Packet *buildPacket_Receptionist(Packet *p, int id, int peopleInLine,
         int currentToken) {
