@@ -2,11 +2,21 @@
 
 void createHospitalManager() {
     int temp;
-    Acquire(creationLock);
+    char str[50];
+    initializeSystem();
+    print("Forking network_thread...");
+    Fork(network_thread);
+    print("done\n");
+    print("Forking hospital Manager...");
+    print(itoa(patientCount, str));
+    print("\n");
+
+    HLock_Acquire(creationLock);
     temp = hospitalmanagerCount;
     hospitalmanagerCount++;
-    Release(creationLock);
+    HLock_Release(creationLock);
     hospitalManager(temp);
+    print("done\n");
     Exit(0);
 }
 

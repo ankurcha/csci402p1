@@ -11,11 +11,21 @@
 
 void createReceptionist() {
     int temp;
-    Acquire(creationLock);
+    char str[50];
+    initializeSystem();
+    print("Forking network_thread...");
+    Fork(network_thread);
+    print("done\n");
+    print("Forking receptionist...");
+    print(itoa(patientCount, str));
+    print("\n");
+
+    HLock_Acquire(creationLock);
     temp = recptionistCount;
     recptionistCount++;
-    Release(creationLock);
+    HLock_Release(creationLock);
     receptionist(temp);
+    print("done\n");
     Exit(0);
 }
 

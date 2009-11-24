@@ -7,7 +7,7 @@ void createDoctor() {
     print("Forking network_thread...");
     Fork(network_thread);
     print("done\n");
-    print("Forking patient...");
+    print("Forking doctor...");
     print(itoa(patientCount, str));
     print("\n");
 
