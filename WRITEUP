@@ -1,6 +1,6 @@
 Title: Writeup for Project 4, Fall 2009
 
-Date: 11/01/2009
+Date: 11/22/2009
 
 Group Num 11: Name              Email               Student ID
               Ankur Chauhan     ankurcha@usc.edu    8478-1604-85
@@ -10,21 +10,48 @@ Group Num 11: Name              Email               Student ID
  vim:textwidth=75
 
 I. Requirements:
-    Part 1:
+    For this assignment we are required to port our multi-threaded hospital
+    simulation into a networked hospital simulation.  Each hospital entity is
+    required to exist at a unique position in the network, and will be composed
+    of at least an entity thread and networking thread.  The entity thread
+    should communicate exclusively with its networking thread, and the
+    networking thread should take care of responding to external requests and
+    sending packets for the entity thread.  The OS should not be modified in
+    any way that is specific to the hospital simulation.  All synchronization
+    must be done in a fully distributed manner.
         
 II. Assumptions:
+    - Reliable network: this simulation is not designed to handle lost packets
+         or threads that die unexpectedly or lose connectivity.  
+    - Packet ordering: we assume that all packets from a given sender will
+         arrive in the order they were sent (NOT true between multiple senders)
+    - Functions provided by NACHOS are generally bug free and perform as
+         specified.
+    - File system system calls are correct as provided.
+    - Condition variable and Lock implementations will be identical to
+         project 1.
+    - Programs are provided with adequate stack space to avoid overflow.
+    - Physical memory is sufficiently large to accomidate all processes.
+         (i.e. simulated physical memory size can be increased until it is
+         sufficient for all processes)
         
 III. Design:
 
-    Part 1:
-	+ Configuration file design
-	    The configuration file is used to tell the number of entities of each type that we wish to create.
-	    The format of the configuration is fairly simple.
-		Number of Patients, Number of Receptionists, Number of Door boys, Number of Doctors, 
-		Number of Cashiers, Number of Clerks, Number of Hospital Managers
-		
-		Example configuration file
-		  20,3,2,2,3,2,1
+    Note: regarding the hosptial simulation we will only focus on design
+          elements that have changed since project 2.
+
+    + We chose to use the memory paradigm from project 2 for this project.
+
+    + Configuration file design
+            The configuration file is used to tell the number of entities of
+            each type that we wish to create.
+        The format of the configuration is fairly simple.
+                Number of Patients, Number of Receptionists, Number of Door
+                boys, Number of Doctors, Number of Cashiers, Number of Clerks,
+                Number of Hospital Managers
+        
+        Example configuration file
+          20,3,2,2,3,2,1
 
 IV. Implementation:
 
@@ -49,6 +76,7 @@ IV. Implementation:
         test/init.h
         test/itoa.c
         test/itoa.h
+        test/netthread.c
         test/p2pnetwork.c
         test/p2pnetwork.h
         test/packet.c
