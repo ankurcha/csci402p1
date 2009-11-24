@@ -9,6 +9,7 @@
 /*  Aneesha Mathew, aneesham */
 #include "init.h"
 #include "netthread.c"
+
 void createPatient() {
     int temp;
     Acquire(creationLock);
@@ -22,6 +23,7 @@ void createPatient() {
 void createNetworkThread(){
     initializeSystem();
     network_thread();
+    Exit(0);
 }
 
 void patients(int ID) {
