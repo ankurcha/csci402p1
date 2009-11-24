@@ -474,7 +474,7 @@ void readConfig() {
     int i, j, k;
     int start = 0;
     int end = -1;
-    fd = Open("../test/configfile", 10);
+    fd = Open("configfile", 10);
     bytesread = Read(buf, 1, fd);
     while (i < 7) {
         bytesread = Read(buf, 1, fd);
