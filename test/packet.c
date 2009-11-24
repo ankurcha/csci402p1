@@ -141,6 +141,7 @@ void DeserializePacket(Packet *p, char* message) {
 
 /* deep copy memory y to x */
 void memcopy(void* x, void* y, int length) {
+    int i=0;
     for(i=0; i < length; i++) {
         *(x+i) = *(y+i);
     }
