@@ -484,12 +484,12 @@ void readConfig() {
         } else {
             num = atoi(temp);
             print("Reading Config:");
+            numberOfEntities[i] = num;
             print(itoa(num));
             print("\n");
             j = 0;
             i++;
             strcpy(temp, "");
-            numberOfEntities[i] = num;
         }
     }
     Close(fd);
