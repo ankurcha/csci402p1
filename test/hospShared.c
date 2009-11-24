@@ -11,7 +11,7 @@
 
 Packet *buildPacket_Receptionist(Packet *p, int id, int peopleInLine,
         int currentToken) {
-    p->senderId = GetMachineId();
+    p->senderId = GetMachineID();
     p->timestamp = GetTimestamp();
     p->packetType = RECP_DATA_UPDATE;
     copyInInt(p->data, 0, id);
@@ -21,7 +21,7 @@ Packet *buildPacket_Receptionist(Packet *p, int id, int peopleInLine,
 }
 
 Packet *buildPacket_Doctor(Packet *p, int id, int peopleInLine, int prescription, int patientToken) {
-    p->senderId = GetMachineId();
+    p->senderId = GetMachineID();
     p->timestamp = GetTimestamp();
     p->packetType = DOC_DATA_UPDATE;
     copyInInt(p->data, 0, id);
@@ -32,7 +32,7 @@ Packet *buildPacket_Doctor(Packet *p, int id, int peopleInLine, int prescription
 }
 
 Packet *buildPacket_Cashier(Packet *p, int id, int lineLength, int patToken, int fee, int payment, int sales) {
-    p->senderId = GetMachineId();
+    p->senderId = GetMachineID();
     p->timestamp = GetTimestamp();
     p->packetType = CASH_DATA_UPDATE;
     copyInInt(p->data, 0, id);
@@ -46,7 +46,7 @@ Packet *buildPacket_Cashier(Packet *p, int id, int lineLength, int patToken, int
 }
 
 Packet *buildPacket_Clerk(Packet *p, int id, int patientsInLine, int payment, int fee, int patPrescription, int sales) {
-    p->senderId = GetMachineId();
+    p->senderId = GetMachineID();
     p->timestamp = GetTimestamp();
     p->packetType = CLERK_DATA_UPDATE;
     copyInInt(p->data, 0, id);
@@ -59,7 +59,7 @@ Packet *buildPacket_Clerk(Packet *p, int id, int patientsInLine, int payment, in
 }
 
 Packet *buildPacket_GlobalData(Packet *p, short variable, int val) {
-    p->senderId = GetMachineId();
+    p->senderId = GetMachineID();
     p->timestamp = GetTimestamp();
     p->packetType = GLOBAL_DATA_UPDATE;
     copyInShort(p->data, 0, variable);
@@ -69,7 +69,7 @@ Packet *buildPacket_GlobalData(Packet *p, short variable, int val) {
 
 Packet *buildPacket_GlobalListAppend(Packet *p, int key, int val) {
     int variable = FEELIST_APPEND;
-    p->senderId = GetMachineId();
+    p->senderId = GetMachineID();
     p->timestamp = GetTimestamp();
     p->packetType = GLOBAL_DATA_UPDATE;
     copyInShort(p->data, 0, variable);
@@ -83,7 +83,7 @@ Packet *buildPacket_GlobalQueuePush(Packet *p, int val) {
 }
 Packet *buildPacket_GlobalQueuePop(Packet *p) {
     int variable = QUEUE_POP;
-    p->senderId = GetMachineId();
+    p->senderId = GetMachineID();
     p->timestamp = GetTimestamp();
     p->packetType = GLOBAL_DATA_UPDATE;
     copyInShort(p->data, 0, variable);

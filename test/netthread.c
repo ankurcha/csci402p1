@@ -136,11 +136,11 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
                     /* Resource is not held, hence, we send out a LOCK_OK message
                      * construct a packet
                      */
-                    p.senderId = GetMachineId();
+                    p.senderId = GetMachineID();
                     p.timestamp = GetTimestamp();
                     p.packet_type = LOCK_OK;
                     copyInInt(p.data, NAME, name);
-                    Packet_Send(senderId, senderMbox, GetMachineId(), p);
+                    Packet_Send(senderId, senderMbox, GetMachineID(), p);
                     break;
                 default:
                     print("ERROR: invalid resource status\n");

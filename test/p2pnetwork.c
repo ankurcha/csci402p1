@@ -110,7 +110,7 @@ int IsResourcePresent(int name) {
 int HLock_Release(int HlockId) {
     int status = -1;
     Packet p;
-    p.senderId = GetMachineId();
+    p.senderId = GetMachineID();
     p.timestamp = GetTimestamp();
     p.packetType = LOCK_RELEASE;
     copyInInt(p.data, 0, HlockId); /* Data part just contains the LockID */
@@ -119,7 +119,7 @@ int HLock_Release(int HlockId) {
         return status;
     /* Create message for Lock Release */
     /* Send message to announce release of the lock to the network entity */
-    status = Packet_Send(GetMachineId(), myNetThreadMbox, 0, &p);
+    status = Packet_Send(GetMachineID(), myNetThreadMbox, 0, &p);
     /* Check for successful Multicast */
     if (status > -1)
         status = 0;
@@ -133,7 +133,7 @@ int HLock_Acquire(int HlockId) {
      * who should get the lock, else we just keep waiting till we do get
      */
     Packet p;
-    p.senderId = GetMachineId();
+    p.senderId = GetMachineID();
     p.timestamp = GetTimestamp();
     p.packetType = LOCK_ACQUIRE;
     copyInInt(p.data, 0, HlockId); /* Data part just contains the LockID */
@@ -143,7 +143,7 @@ int HLock_Acquire(int HlockId) {
      * receiver
      */
     Acquire(netthread_Lock);
-    status = Packet_Send(GetMachineId(), myNetThreadMbox, 0, &p);
+    status = Packet_Send(GetMachineID(), myNetThreadMbox, 0, &p);
     /* Now we have to wait for the for the netthread to reply to us with
      * a go ahead this is done using a CV and a lock.
      */
@@ -158,7 +158,7 @@ int DistLock_Acquire(int name) {
     /* Send a lock acquire message to all the targets */
     /* Add the requested resource to the requestedResource Array */
     Packet p;
-    p.senderId = GetMachineId();
+    p.senderId = GetMachineID();
     p.timestamp = GetTimestamp();
     p.packetType = LOCK_ACQUIRE;
     copyInInt(p.data, 0, name); /* Data part just contains the LockID */
@@ -174,7 +174,7 @@ int DistLock_Acquire(int name) {
 int DistLock_Release(int name) {
     int i, j;
     Packet p;
-    p.senderId = GetMachineId();
+    p.senderId = GetMachineID();
     p.timestamp = GetTimestamp();
     p.packetType = LOCK_OK;
     copyInInt(p.data, 0, name); /* Data part just contains the LockID */
@@ -201,7 +201,7 @@ int HCV_Signal(int HCVId, int HLockId) {
     status = getResourceStatus(HLockId);
     if (status == RES_HELD) {
         CV_Lock = getCV_Lock_Mapping(HCVId);
-        p.senderId = GetMachineId();
+        p.senderId = GetMachineID();
         p.timestamp = GetTimestamp();
         p.packetType = CV_SIGNAL;
         copyInInt(p.data, 0, HCVId);
@@ -209,7 +209,7 @@ int HCV_Signal(int HCVId, int HLockId) {
         /* It is assumed that by now LockId is Held and CVID which is passed is
          * to be held */
         HLock_Acquire(CV_Lock);
-        status = Packet_Send(GetMachineId(), myNetThreadMbox, 0, &p);
+        status = Packet_Send(GetMachineID(), myNetThreadMbox, 0, &p);
         HLock_Release(CV_Lock);
         return 1;
         /* We reach this point only when we got a signal message for this CV */
@@ -236,7 +236,7 @@ int HCV_Wait(int HCVId, int HLockId) {
     if (status == RES_HELD) {
         CV_Lock = getCV_Lock_Mapping(HCVId);
 
-        p.senderId = GetMachineId();
+        p.senderId = GetMachineID();
         p.timestamp = GetTimestamp();
         p.packetType = CV_WAIT;
         copyInInt(p.data, 0, HCVId);
@@ -247,7 +247,7 @@ int HCV_Wait(int HCVId, int HLockId) {
         Acquire(netthread_Lock);
 
         HLock_Acquire(CV_Lock);
-        status = Packet_Send(GetMachineId(), myNetThreadMbox, 0, &p);
+        status = Packet_Send(GetMachineID(), myNetThreadMbox, 0, &p);
         HLock_Release(CV_Lock);
 
         HLock_Release(HLockId);
@@ -276,7 +276,7 @@ int DistCV_Wait(int CVID, int LockID) {
     Packet p;
     int senderMBox = 0;
     int i, j;
-    p.senderId = GetMachineId();
+    p.senderId = GetMachineID();
     p.timestamp = GetTimestamp();
     p.packetType = CV_WAIT;
     copyInInt(p.data, 0, CVID);
@@ -291,7 +291,7 @@ int DistCV_Wait(int CVID, int LockID) {
 
     /* Also, we need to maintain a list waiting nodes */
     /* This will be popped when we receive a SIGNAL */
-    MsgQueue_Push(&pendingCVQueue[CVID], &p, GetMachineId(), myMbox);
+    MsgQueue_Push(&pendingCVQueue[CVID], &p, GetMachineID(), myMbox);
     return 1;
 }
 
@@ -305,7 +305,7 @@ int DistCV_Signal(int CVID) {
     Packet pkt = MsgQueue_Pop(&pendingCVQueue[CVID], &senderId, &senderMBox);
 
     /* Process the Wait message */
-    p.senderId = GetMachineId();
+    p.senderId = GetMachineID();
     p.timestamp = GetTimestamp();
     p.packetType = CV_SIGNAL;
     copyInInt(p.data, 0, copyOutInt(pkt.data, NAME)); /* CVID */
@@ -318,7 +318,7 @@ int DistCV_Signal(int CVID) {
         }
     }
 
-    if (senderId == GetMachineId() && senderMBox == myMbox) {
+    if (senderId == GetMachineID() && senderMBox == myMbox) {
         print("ERROR: I signaled my own CV?\n");
         Halt();
     }
@@ -338,7 +338,7 @@ void Process_CV_Signal(Packet pkt) {
     name = copyOutInt(pkt.data, NAME);
     p = MsgQueue_Pop(&pendingCVQueue[name], &senderId, &senderMbox);
 
-    if (senderId == GetMachineId() && senderMbox == myMbox) {
+    if (senderId == GetMachineID() && senderMbox == myMbox) {
         /* wake up my entity */
         Acquire(netthread_Lock);
         Signal(netthread_CV, netthread_Lock);
@@ -404,7 +404,7 @@ int HDataUpdate_Recp(int id, int peopleInLine, int currentToken) {
     Packet p;
     int status = -1;
     buildPacket_Receptionist(&p, id, peopleInLine, currentToken);
-    status = Packet_Send(GetMachineId(), myNetThreadMbox, 0, &p);
+    status = Packet_Send(GetMachineID(), myNetThreadMbox, 0, &p);
     return status;
 }
 int HDataUpdate_Pat(int id) {
@@ -424,7 +424,7 @@ int HDataUpdate_Doc(int id, int peopleInLine, int prescription, int patientToken
     Packet p;
     int status = -1;
     buildPacket_Doctor(&p, id, peopleInLine, prescription, patientToken);
-    status = Packet_Send(GetMachineId(), myNetThreadMbox, 0, &p);
+    status = Packet_Send(GetMachineID(), myNetThreadMbox, 0, &p);
     return status;
 }
 int HDataUpdate_Cash(int id, int lineLength, int patToken, int fee, int payment, int sales) {
@@ -432,7 +432,7 @@ int HDataUpdate_Cash(int id, int lineLength, int patToken, int fee, int payment,
     Packet p;
     int status = -1;
     buildPacket_Cashier(&p, id, lineLength, patToken, fee, payment, sales);
-    status = Packet_Send(GetMachineId(), myNetThreadMbox, 0, &p);
+    status = Packet_Send(GetMachineID(), myNetThreadMbox, 0, &p);
     return status;
 
 }
@@ -441,7 +441,7 @@ int HDataUpdate_Clerk(int id, int patientsInLine, int payment, int fee, int patP
     Packet p;
     int status = -1;
     buildPacket_Clerk(&p, id, patientsInLine, payment, fee, patPrescription, sales);
-    status = Packet_Send(GetMachineId(), myNetThreadMbox, 0, &p);
+    status = Packet_Send(GetMachineID(), myNetThreadMbox, 0, &p);
     return status;
 
 }
@@ -454,7 +454,7 @@ int HGlobalDataUpdate(short Variable, int val) {
     int status = -1;
     Packet p;
     buildPacket_GlobalData(&p, Variable, val);
-    status = Packet_Send(GetMachineId(), myNetThreadMbox, 0, &p);
+    status = Packet_Send(GetMachineID(), myNetThreadMbox, 0, &p);
     return status;
 }
 
