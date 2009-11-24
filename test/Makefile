@@ -162,7 +162,7 @@ p2pnetwork: p2pnetwork.o start.o
 patient.o: patient.c print p2pnetwork
 	$(CC) $(CFLAGS) -c patient.c
 patient: patient.o start.o packet.o
-	$(LD) $(LDFLAGS) start.o print.o packet.o p2pnetwork.o eventDispatcher.o p2pnetwork.o -o patient.coff
+	$(LD) $(LDFLAGS) start.o print.o packet.o eventDispatcher.o p2pnetwork.o hospShared.o -o patient.coff
 	../bin/coff2noff patient.coff patient
 
 init.o: init.c print queue
