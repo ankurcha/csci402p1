@@ -600,8 +600,7 @@ int HDataUpdate_Doc(int id, int peopleInLine, int prescription, int patientToken
     status = Packet_Send(GetMachineId(), myNetThreadMbox, 0, &p);
     return status;
 }
-int HDataUpdate_Cash(int id, int lineLength, int patToken,
-        int fee, int payment, int sales) {
+int HDataUpdate_Cash(int id, int lineLength, int patToken, int fee, int payment, int sales) {
     /* Creates an update packet and sends it to the network entity for processing */
     Packet p;
     int status = -1;
