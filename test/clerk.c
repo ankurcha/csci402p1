@@ -2,11 +2,21 @@
 
 void createPharmacyClerk() {
     int temp;
-    Acquire(creationLock);
+    char str[50];
+    initializeSystem();
+    print("Forking network_thread...");
+    Fork(network_thread);
+    print("done\n");
+    print("Forking patient...");
+    print(itoa(patientCount, str));
+    print("\n");
+
+    HLock_Acquire(creationLock);
     temp = pharmacyCount;
     pharmacyCount++;
-    Release(creationLock);
+    HLock_Release(creationLock);
     clerk(temp);
+    print("done\n");
     Exit(0);
 }
 
