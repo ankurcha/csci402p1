@@ -40,7 +40,7 @@ all: halt\
      test_code multih networkTestClient1 networkTestClient2\
      multiForkmatmult multiExecmatmult multiExecmatmult2 multiprint\
      itoa queue heap packet eventDispatcher hospShared p2pnetwork\
-     disthosp patient
+     disthosp patient string
 
 
 start.o: start.s ../userprog/syscall.h
@@ -139,6 +139,10 @@ heap.o: heap.c heap.h packet.h
 	$(CC) $(CFLAGS) -c heap.c
 heap: heap.o
 
+string.o: string.c string.h string.h
+	$(CC) $(CFLAGS) -c string.c
+string: string.o
+
 packet.o: packet.c packet.h
 	$(CC) $(CFLAGS) -c packet.c
 packet: packet.o
@@ -149,11 +153,11 @@ eventDispatcher: eventDispatcher.o
 
 hospShared.o: hospShared.c hospShared.h packet eventDispatcher print
 	$(CC) $(CFLAGS) -c hospShared.c
-hospShared: hospShared.o
+hospShared: hospShared.o start.o
 
 p2pnetwork.o: p2pnetwork.c p2pnetwork.h print packet eventDispatcher hospShared
 	$(CC) $(CFLAGS) -c p2pnetwork.c
-p2pnetwork: p2pnetwork.o
+p2pnetwork: p2pnetwork.o start.o
 
 patient.o: patient.c print p2pnetwork
 	$(CC) $(CFLAGS) -c patient.c
