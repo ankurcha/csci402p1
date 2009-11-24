@@ -470,10 +470,12 @@ void readConfig() {
     OpenFileId fd;
     char buf[10];
     char temp[10];
-    int num;
+    int num = 0;
     char number[10];
-    int bytesread;
-    int i, j, k;
+    int bytesread = 0;
+    int i = 0;
+    int j = 0;
+    int k = 0;
     int start = 0;
     int end = -1;
     fd = Open("configfile", 10);
@@ -483,6 +485,7 @@ void readConfig() {
             temp[j] = buf[0];
             j++;
         } else {
+            temp[j] = 0;
             num = atoi(temp);
             print("Reading Config:");
             numberOfEntities[i] = num;
