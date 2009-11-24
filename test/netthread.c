@@ -101,12 +101,12 @@ void network_thread() {
 void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
     int temp;
     int replies = -1;
-    int totalEntities = 0;
+    int numEntities = 0;
     int name;
     int i,j;
     Packet p;
     for (j = 0; j < 7; j++) {
-        totalEntities += numberOfEntities[j];
+        numEntities += numberOfEntities[j];
     }
 
     /* Process this packet */
@@ -159,7 +159,7 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
                 replies++;
                 updateResourceReplies(name, replies);
 
-                if (replies == totalEntities) {
+                if (replies == numEntities) {
                     /* Now we have seen all the LOCK_OKs that we need and hence
                      * we get the LOCK NOW and delete the resource from the
                      * requestedResource and add it to the HeldResources
@@ -245,14 +245,14 @@ void processLocalPacket(Packet pkt) {
 
     /* Process this packet */
     int status = -1;
-    int totalEntities = 0;
+    int numEntities = 0;
     int temp, temp1;
     int i,j,k;
     int name;
     Packet p;
     int senderId, senderMbox;
     for (j = 0; j < 7; j++) {
-        totalEntities += numberOfEntities[j];
+        numEntities += numberOfEntities[j];
     }
 
     switch (pkt.packetType) {
