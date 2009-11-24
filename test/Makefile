@@ -171,10 +171,10 @@ init: init.o start.o
 	$(LD) $(LDFLAGS) start.o init.o -o init.coff
 	../bin/coff2noff init.coff init
 
-disthosp.o: disthosp.c print p2pnetwork 
+disthosp.o: disthosp.c print p2pnetwork packet eventDispatcher itoa
 	$(CC) $(CFLAGS) -c disthosp.c
 disthosp: disthosp.o start.o
-	$(LD) $(LDFLAGS) start.o print.o p2pnetwork.o -o disthosp.coff
+	$(LD) $(LDFLAGS) start.o itoa.o print.o packet.o disthosp.o p2pnetwork.o eventDispatcher.o -o disthosp.coff
 	../bin/coff2noff disthosp.coff disthosp
 
 test_code.o: test_code.c
