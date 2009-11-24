@@ -26,7 +26,7 @@ void cashier(int ID) {
             print("Cash_");
             print(itoa(ID, str));
             print(":  someone in my line...\n");
-            HLock_Signal(cashiers[ID].lineCV, cashierLineLock);
+            HCV_Signal(cashiers[ID].lineCV, cashierLineLock);
         } else { /* noone in line */
             /* go on break */
             /* prefix for test condition */
@@ -35,7 +35,7 @@ void cashier(int ID) {
             print("Cash_");
             print(itoa(ID, str));
             print(":  No one in line... going on break\n");
-            HLock_Wait(cashiers[ID].breakCV, cashierLineLock);
+            HCV_Wait(cashiers[ID].breakCV, cashierLineLock);
             Release(cashierLineLock);
             continue;
         }
@@ -63,7 +63,8 @@ void cashier(int ID) {
         HLock_Acquire(feesPaidLock);
         feesPaid += cashiers[ID].payment;
         cashiers[ID].sales += cashiers[ID].payment;
-        HDataUpdate_Cash(ID);
+        HDataUpdate_Cash(ID, cashiers[ID].lineLength, cashiers[ID].patToken,
+                cashiers[ID].fee, cashiers[ID].payment, cashiers[ID].sales);
         HLock_Release(feesPaidLock);
         if (cashiers[ID].payment < cashiers[ID].fee)
             print("ERROR: call security, that patient didin't pay!");
@@ -75,6 +76,7 @@ void cashier(int ID) {
 int main(int argc, char** argv) {
     int i;
     char inp[20];
+    char str[50];
     testlock = 10000;
     TokenCounterLock = 10001;
     recpLineLock = 10002;

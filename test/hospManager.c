@@ -68,7 +68,7 @@ void hospitalManager(int ID) {
         if (patientsWaiting > 1) {
             for (j = 0; j < numRecp; j++) {
                 HLock_Acquire(recpLineLock);
-                HLock_Signal(receptionists[j].ReceptionistBreakCV, recpLineLock);
+                HCV_Signal(receptionists[j].ReceptionistBreakCV, recpLineLock);
                 HLock_Release(recpLineLock);
             }
         }
@@ -87,7 +87,7 @@ void hospitalManager(int ID) {
                 print("  -> Signal Cashier\n");
                 /*Wake up this receptionist up */
                 HLock_Acquire(cashierLineLock);
-                HLock_Broadcast(cashiers[i].breakCV, cashierLineLock);
+                HCV_Broadcast(cashiers[i].breakCV, cashierLineLock);
                 HLock_Release(cashierLineLock);
             }
         }
@@ -128,7 +128,7 @@ void hospitalManager(int ID) {
                 print("waiting -> Signaling Clerk\n");
                 /*Wake up this clerk up */
                 HLock_Acquire(ClerkLinesLock);
-                HLock_Signal(clerks[i].ClerkBreakCV, ClerkLinesLock);
+                HCV_Signal(clerks[i].ClerkBreakCV, ClerkLinesLock);
                 HLock_Release(ClerkLinesLock);
             }
         }
@@ -184,6 +184,7 @@ void hospitalManager(int ID) {
 int main(int argc, char** argv) {
     int i;
     char inp[20];
+    char str[50];
     testlock = 10000;
     TokenCounterLock = 10001;
     recpLineLock = 10002;
