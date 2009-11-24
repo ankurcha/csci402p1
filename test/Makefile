@@ -166,7 +166,7 @@ patient: patient.o start.o packet.o
 	../bin/coff2noff patient.coff patient
 
 receptionist.o: receptionist.c print p2pnetwork
-	$(CC) $(CFLAGS) -c receptionistt.c
+	$(CC) $(CFLAGS) -c receptionist.c
 receptionist: receptionist.o start.o packet.o
 	$(LD) $(LDFLAGS) start.o receptionist.o string.o print.o itoa.o queue.o packet.o eventDispatcher.o p2pnetwork.o hospShared.o -o receptionist.coff
 	../bin/coff2noff receptionist.coff receptionist
