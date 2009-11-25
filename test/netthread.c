@@ -49,7 +49,9 @@ void network_thread() {
     /* Begin an infinite loop where we wait for data from the network */
     while (1) {
         Packet_Receive(myMbox, &senderId, &senderMbox, &myPacket);
+        print("Received a packet!\n");
         if (senderMbox != 0) {
+            print("  From someone else!\n");
             /* process a packet from another entity on the network */
             /* updates the maxTS for this entitiy */
             /* senderId is the machine num, remember mbox 0 is reserved */
@@ -244,6 +246,7 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
             Packet_Send(senderId, senderMbox, myMbox, &p);
             break;
         case PONG:
+            print("Received PONG\n");
             break;
         case KILL:
             Halt();
