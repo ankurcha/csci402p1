@@ -43,6 +43,7 @@ void HMultiPing() {
 void SendAll(int packetType) {
     int i, j;
     Packet p;
+    char buf[11];
 
     p.senderId = GetMachineID();
     p.timestamp = GetTimestamp();
@@ -53,6 +54,14 @@ void SendAll(int packetType) {
             if (j == GetMachineID() && (i + 1) == myMbox) {
                 continue;
             }
+            print("sendall-ing packet to machine ");
+            print(itoa(j, buf));
+            print(" and mbox ");
+            print(itoa(i+1, buf));
+            print(" from mbox ");
+            print(itoa(myMbox, buf));
+            print("\n");
+
             Packet_Send(j, i + 1, myMbox, &p);
         }
     }
