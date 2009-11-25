@@ -127,3 +127,6 @@ VI. Discussion:
     + Explanation
 
 VII. Miscellaneous:
+    When compiling our user programs in the test directory, use make, not gmake
+    (still use gmake everywhere else).
+
