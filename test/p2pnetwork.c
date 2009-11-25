@@ -234,12 +234,14 @@ int DistLock_Acquire(int name) {
     int i, j;
     /* Send a lock acquire message to all the targets */
     /* Add the requested resource to the requestedResource Array */
-    Packet p;
+    Packet p,pkt;
+    int senderId, senderMBox;
     p.senderId = GetMachineID();
     p.timestamp = GetTimestamp();
     p.packetType = LOCK_ACQUIRE;
     copyInInt(p.data, 0, name); /* Data part just contains the LockID */
     addResource(name, RES_REQ);
+    MsgQueue_Pop(&pkt, &pendingLockQueue[name], &senderId, &senderMBox);
     for (j = 0; j < 7; j++) {
         for (i = 0; i < numberOfEntities[j]; i++) {
             if (j != GetMachineID() && (i + 1) != myMbox) {
