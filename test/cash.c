@@ -29,6 +29,7 @@ void createCashier() {
 
 void cashier(int ID) {
     char str[50];
+    HNodeReady();
     print("Cash_");
     print(itoa(ID, str));
     print(":  Alive!!\n");

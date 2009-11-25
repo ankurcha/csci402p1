@@ -45,6 +45,7 @@ void patients(int ID) {
     int shortestclerkline = 0;
     int length = 0;
     len = receptionists[0].peopleInLine;
+    HNodeReady();
     /*//////////////////////////////////////////////// */
     /*//// Begin interaction with Receptionist /////// */
     /*//////////////////////////////////////////////// */

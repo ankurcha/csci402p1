@@ -28,7 +28,7 @@ void doctor(int ID) {
     int waitingtime = 10000;
     int i, numYields, consultFee;
     char doctorBreak = 0;
-
+    HNodeReady();
     while (1) {
         /* acquire a doorboy */
         print("D_");

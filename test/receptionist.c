@@ -16,7 +16,7 @@ void createReceptionist() {
     Fork(network_thread);
     print("done\n");
     print("Forking receptionist# ");
-    print(itoa(patientCount+1, str));
+    print(itoa(myMbox, str));
     print("...");
 /*
     HLock_Acquire(creationLock);
@@ -31,6 +31,7 @@ void createReceptionist() {
 
 void receptionist(int ID) {
     char str[50];
+    HNodeReady();
     while (1) {
 
         print("R_");

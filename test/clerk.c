@@ -22,6 +22,7 @@ void createPharmacyClerk() {
 
 void clerk(int ID) {
     char str[50];
+    HNodeReady();
     print("Clerk Alive!!\n");
     while (1) {
         HLock_Acquire(ClerkLinesLock);

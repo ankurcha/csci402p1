@@ -195,6 +195,7 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
             /* add to the node ready count, once all nodes are ready,
              * start the simulation
              */
+            print("Received NODE_READY\n");
             readyCount++;
             if (readyCount < numEntities) {
                 break;
@@ -204,6 +205,7 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
             /* fallthrough */
         case GO:
             /* wake entity thread*/
+            print("GOOGOGOOGOGOG\n");
             Acquire(netthread_Lock);
             Signal(netthread_CV, netthread_Lock);
             Release(netthread_Lock);
@@ -304,6 +306,7 @@ void processLocalPacket(Packet pkt) {
             }
             break;
         case NODE_READY:
+            print("SendAll NODE_READY\n");
             SendAll(NODE_READY);
             break;
         case RECP_DATA_UPDATE:

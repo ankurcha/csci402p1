@@ -4,9 +4,10 @@
 void pinger(){
     int i = 0;
     while(1){
-        for(i=0; i< 100; i++) {
+        for(i=0; i< 1000; i++) {
             Yield();
         }
+        print("PING!!...\n");
         HMultiPing();
     }
     HPing_NetThread();
@@ -40,6 +41,7 @@ void hospitalManager(int ID) {
     int test5cycles = 1;
     int patientsWaiting = 0;
     int i, j, sum;
+    HNodeReady();
 
     print("H_");
     print(itoa(ID, str));

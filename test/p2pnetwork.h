@@ -85,7 +85,8 @@ enum {
     DO_PING = 0x15,
     PING = 0x16,
     PONG = 0x17,
-    KILL = 0x18
+    KILL = 0x18,
+    GO = 0x19
 };
 
 /* Global Variable Identification */

@@ -26,7 +26,7 @@ void doorboy(int ID) {
     char str[50];
     int myDoctor = 0;
     char doorboyBreak = 0;
-
+    HNodeReady();
     while (1) {
 
         print("DB_");
