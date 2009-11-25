@@ -1010,8 +1010,7 @@ int Send_Syscall(int receiverID, int receiverMbox, int senderMbox, int vaddr) {
         // Send the message to other client
         bool retVal = postOffice->Send(pktHead, mailHead, message);
         if (!retVal) {
-            printf("Cannot Send\n");
-            interrupt->Halt();
+            DEBUG('a', "Cannot Send\n");
         } else {
             fflush(stdout);
             delete[] message;

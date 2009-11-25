@@ -49,7 +49,6 @@ void network_thread() {
     /* Begin an infinite loop where we wait for data from the network */
     while (1) {
         Packet_Receive(myMbox, &senderId, &senderMbox, &myPacket);
-        print("Packet received on myMbox\n");
         if (senderMbox != 0) {
             /* process a packet from another entity on the network */
             /* updates the maxTS for this entitiy */
@@ -261,18 +260,12 @@ void processLocalPacket(Packet pkt) {
     for (j = 0; j < 7; j++) {
         numEntities += numberOfEntities[j];
     }
-    print("Processing Local Packet\n");
-    print("Type: ");
-    itoa(pkt.packetType, str);
-    print(str);
-    print("\n");
     switch (pkt.packetType) {
         case EMPTY:
-            print("EMPTY PACKET\n");
+            print("!!!!!!!!!!!!!!!!!!!!!EMPTY PACKET!!!!!!!!!!!!!!!!!\n");
             Halt();
             break;
         case LOCK_ACQUIRE:
-            print("LOCK_ACQUIRE_LOCAL\n");
             name = copyOutInt(pkt.data, NAME);
             DistLock_Acquire(name);
             /* now, once we receive enough OK's,

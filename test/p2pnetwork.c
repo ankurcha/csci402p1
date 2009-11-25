@@ -10,12 +10,8 @@ int getMboxNum() {
     char str[20];
     char message[MaxMailSize];
     myMbox = -1;
-    print("Getting my mailbox number...");
     Receive(0, &senderId, &senderMbox, message);
     myMbox = copyOutInt(message, 0);
-    itoa(myMbox, str);
-    print(str);
-    print("Got it\n");
     return myMbox;
 }
 
@@ -222,12 +218,10 @@ int HLock_Acquire(int HlockId) {
      * receiver
      */
     Acquire(netthread_Lock);
-    print("Sending packet to netthread\n");
     status = Packet_Send(GetMachineID(), myMbox, 0, &p);
     /* Now we have to wait for the for the netthread to reply to us with
      * a go ahead this is done using a CV and a lock.
      */
-    print("Wait Here for lock ...\n");
     Wait(netthread_CV, netthread_Lock);
     /* When we return we are sure that we have Acquired the lock */
     Release(netthread_Lock);
@@ -239,24 +233,19 @@ int DistLock_Acquire(int name) {
     /* Send a lock acquire message to all the targets */
     /* Add the requested resource to the requestedResource Array */
     Packet p;
-    print("DistLock_Acquire\n");
     p.senderId = GetMachineID();
     p.timestamp = GetTimestamp();
     p.packetType = LOCK_ACQUIRE;
     copyInInt(p.data, 0, name); /* Data part just contains the LockID */
     addResource(name, RES_REQ);
-    print("Sending acquire packet to others");
     for (j = 0; j < 7; j++) {
         for (i = 0; i < numberOfEntities[j]; i++) {
-            print(".");
             if (j != GetMachineID() && (i + 1) != myMbox) {
-                print("Sending..\n");
                 /* Sending LOCK_ACQUIRE to all and waiting for LOCK_OK */
                 Packet_Send(j, i + 1, myMbox, &p);
             }
         }
     }
-    print("Done with DistLock_Acquire\n");
 }
 
 int DistLock_Release(int name) {

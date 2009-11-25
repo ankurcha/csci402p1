@@ -1,6 +1,16 @@
 #include "init.h"
 #include "netthread.c"
 
+void pinger(){
+    int i = 0;
+    while(1){
+        for(i=0; i< 100; i++) {
+            Yield();
+        }
+        HMultiPing();
+    }
+    Exit(0);
+}
 void createHospitalManager() {
     int temp;
     char str[50];
@@ -17,6 +27,7 @@ void createHospitalManager() {
     hospitalmanagerCount++;
     HLock_Release(creationLock);
 */
+    Fork(pinger);
     hospitalManager(myMbox);
     print("done\n");
     Exit(0);
@@ -64,7 +75,6 @@ void hospitalManager(int ID) {
             Yield();
             sleeptime--;
         } while (sleeptime > 0);
-        HMultiPing();
         /*I am on rounds now, Time to kick some ass */
         print("H_");
         print(itoa(ID, str));
