@@ -11,13 +11,13 @@ void createDoctor() {
     print("Forking doctor...");
     print(itoa(patientCount, str));
     print("\n");
-
+/*
     HLock_Acquire(creationLock);
     temp = doctorCount;
     doctorCount++;
     HLock_Release(creationLock);
-
-    doctor(temp);
+*/
+    doctor(myMbox);
     print("done\n");
     Exit(0);
 }
@@ -206,14 +206,9 @@ int main(int argc, char** argv) {
     }
 
     /*1. Doctors */
+    readConfig();
     numDoctors = numberOfEntities[3];
 
-    print("Creating ");
-    print(itoa(numDoctors, str));
-    print(" Doctors\n");
-    for (i = 0; i < numDoctors; i++)
-        Fork(createDoctor);
-
-    for (i = 0; i < 100; i++)
-        Yield();
+    Fork(createDoctor);
+    Exit(0);
 }

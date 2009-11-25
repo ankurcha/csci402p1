@@ -16,13 +16,13 @@ void createCashier() {
     print("Forking cashier...");
     print(itoa(patientCount, str));
     print("\n");
-    
+/*    
     HLock_Acquire(creationLock);
     temp = cashierCount;
     cashierCount++;
     HLock_Release(creationLock);
-
-    cashier(temp);
+*/
+    cashier(myMbox);
     print("done\n");
     Exit(0);
 }
@@ -124,6 +124,7 @@ int main(int argc, char** argv) {
     for (i = 0; i < MAX_CLERKS; i++) {
         __PharmacyClerks(&clerks[i], i);
     }
+
     readConfig();
     /* spawn the cashier Threads */
     numCashiers = numberOfEntities[4];

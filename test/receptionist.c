@@ -18,13 +18,13 @@ void createReceptionist() {
     print("Forking receptionist# ");
     print(itoa(patientCount+1, str));
     print("...");
-
+/*
     HLock_Acquire(creationLock);
     temp = recptionistCount;
     recptionistCount++;
     HLock_Release(creationLock);
-    
-    receptionist(temp);
+*/    
+    receptionist(myMbox);
     print("done\n");
     Exit(0);
 }

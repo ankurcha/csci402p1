@@ -5,7 +5,31 @@
  */
 
 #include "packet.h"
+void printHex(char *message, int len){
+    int i = 0;
+    char a;
+    char str[2*MaxMailSize+1];
+    if(len > MaxMailSize){
+        print("LEN must be 40\n");
+        len = MaxMailSize;
+    }
 
+    for(i=0;i<len; i++){
+        a = message[i];
+        if((a>>4) < 10){
+            str[2*i] = (a>>4) + '0';
+        }else{
+           str[2*i] = (a>>4) + 'A';
+        }
+       if((a%16) <10){
+            str[2*i+1] = (a%16) + '0';
+        }else{
+           str[2*i+1] = (a%16) + 'A';
+        }
+    }
+    str[2*i] = 0;
+    print(str);
+}
 int Packet_Receive(int mbox, int* senderId, int* senderMBox,
         Packet *receivedPacket) {
     /* This function performs a read and put the fields in the respective places
@@ -130,9 +154,15 @@ void SerializePacket(Packet *p, char* message) {
     copyInInt(message, TIMESTAMP, p->timestamp);
     message[PACKET_TYPE] = p->packetType;
     copyInData(message, DATA, p->data, MaxMailSize - DATA);
+    print("Ser: ");
+    printHex(message, 40);
+    print("\n");
 }
 
 void DeserializePacket(Packet *p, char* message) {
+    print("De-ser: ");
+    printHex(message, 40);
+    print("\n");
     p->senderId = copyOutShort(message, NAME);
     p->timestamp = copyOutInt(message, TIMESTAMP);
     p->packetType = message[PACKET_TYPE];
