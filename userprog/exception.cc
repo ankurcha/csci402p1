@@ -949,6 +949,16 @@ void handlePageFaultException(int vAddr) {
 }
 #endif
 
+// reverse the bytes of an int
+int revBytes(int x) {
+    int y = 0;
+    for(int i=0; i < 4; i++) {
+        y = y<<8 + ((x >> (i*8)) & 0xff);
+    }
+    return y;
+}
+
+
 /* 
  * Receives the  message sent to mbox. 
  * Returns the number of bytes received
@@ -975,8 +985,11 @@ int Receive_Syscall(int receiveMbox, int senderIDvaddr, int senderMboxvaddr,
     senderID = pktHead.from;
     senderMbox = mailHead.from;
 
-    copyout(senderIDvaddr, sizeof(senderID)-1, (char*) &senderID);
-    copyout(senderMboxvaddr, sizeof(senderMbox)-1, (char*) &senderMbox);
+    int rsID = revBytes(senderID);
+    int rsMbox = revBytes(senderMbox);
+
+    copyout(senderIDvaddr, sizeof(senderID)-1, (char*) &rsID);
+    copyout(senderMboxvaddr, sizeof(senderMbox)-1, (char*) &rsMbox);
     bytesRead = copyout(vaddr, MaxMailSize-1, message);
     delete[] message;
     return bytesRead;
