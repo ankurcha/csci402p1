@@ -29,6 +29,7 @@ void network_thread() {
     int machineIndex[7];
     int numEntities;
     int maxTS[MaxEntities];
+    char buf[30];
 
     for (i = 0; i < MaxEntities; i++) {
         maxTS[i] = 0;
@@ -49,7 +50,13 @@ void network_thread() {
     /* Begin an infinite loop where we wait for data from the network */
     while (1) {
         Packet_Receive(myMbox, &senderId, &senderMbox, &myPacket);
-        print("Received a packet!\n");
+
+        print("Received a packet from senderId ");
+        print(itoa(senderId, buf));
+        print(" and mbox ");
+        print(itoa(senderMbox, buf));
+        print("\n");
+
         if (senderMbox != 0) {
             print("  From someone else!\n");
             /* process a packet from another entity on the network */
@@ -63,6 +70,8 @@ void network_thread() {
                 Halt();
             }
 
+            print("1");
+
             /* update minTS */
             minTS = maxTS[0];
             for (i = 1; i < numEntities; i++) {
@@ -70,6 +79,8 @@ void network_thread() {
                     minTS = maxTS[i];
                 }
             }
+
+            print("2");
 
             /* enqueue this packet */
             if (queueLength < MaxMsgQueue) {
@@ -86,9 +97,13 @@ void network_thread() {
                 Halt();
             }
 
+            print("3");
+
             /* process all messages up to minTS */
             while (msgQueue[0].key < minTS) {
                 message = Heap_ExtractMin(msgQueue, &queueLength);
+
+                print("4");
 
                 myPacket.senderId = message->pkt.senderId;
                 myPacket.timestamp = message->pkt.timestamp;
@@ -98,6 +113,8 @@ void network_thread() {
                 senderMbox = message->senderMbox;
 
                 processExternalPacket(myPacket, senderId, senderMbox);
+
+                print("5");
             }
         } else {
             /* process a packet from my matching entity thread */
