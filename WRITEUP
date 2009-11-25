@@ -310,9 +310,44 @@ IV. Implementation:
             void processExternalPacket(Packet pkt, int senderId, int senderMbox);
             void processLocalPacket(Packet pkt);
             void network_thread();
-    
-    + Functions modified and in which file.
-        
+        - test/heap.h|c
+            void Heap_Push(Message* start, int* length);
+            Message* Heap_ExtractMin(Message* start, int* length);
+        - test/string.h|c
+            int strlen(const char *str);
+            char* strcat(char *dst, const char *src);
+            int strcmp(const char *dst, const char *src);
+            char* strcpy(char *s1, const char *s2);
+        - test/patient.c
+            void createpatient();
+            void patient();
+            void main();
+        - test/receptionist.c
+            void createreceptionist();
+            void receptionist();
+            void main();
+        - test/doorboy.c
+            void createdoorboy();
+            void doorboy();
+            void main();
+        - test/doctor.c
+            void createdoctor();
+            void doctor();
+            void main();
+        - test/cash.c
+            void createcashier();
+            void cash();
+            void main();
+        - test/clerk.c
+            void createclerk();
+            void clerk();
+            void main();
+        - test/hospManager
+            void pinger();
+            void createHospitalManager();
+            void hospitalManager();
+            void main();
+
 V. Testing: (For each test case, you must show)
     + How to test
         To run the simulation you need 7 separate windows. Now in these windows
@@ -327,6 +362,7 @@ V. Testing: (For each test case, you must show)
 
         * You also have to make sure that a configuration file as described
           above has been placed in the current directory.
+        * It may take a moment for nachos to setup and start. Be patient. :)
 
     + Test Output
         The above commands would start the hospital simulation and each screen
@@ -348,8 +384,8 @@ VI. Discussion:
         interactions being logged to standard output.
 
     + Explanation
-        As the the expectation and the results match, we conclude that both 
-        the parts have been properly implemented.
+        As the the expectation and the results match, we conclude that
+        the hospital simulation has been properly implemented.
 
 VII. Miscellaneous:
     When compiling our user programs in the test directory, use make, not gmake
