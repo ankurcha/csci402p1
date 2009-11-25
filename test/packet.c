@@ -44,7 +44,7 @@ int Packet_Receive(int mbox, int* senderId, int* senderMBox,
     char data[MaxMailSize];
 
     /* actually get the data into the char *data variable */
-    status = Receive(mbox, &senderId, &senderMBox, data);
+    status = Receive(mbox, senderId, senderMBox, data);
 
     /* Deserialize the data to get the packet into receivedPacket*/
     if (status != -1) {
