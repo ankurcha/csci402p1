@@ -530,7 +530,6 @@ int main(int argc, char** argv) {
     /*
      * Reading config file for the patient process */
     readConfig();
-
     peopleInHospital = numPatients = numberOfEntities[0];
     Fork(createPatient);
     Exit(0);

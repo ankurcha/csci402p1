@@ -219,33 +219,25 @@ int main(int argc, char** argv) {
      //1. Patients don't need initialization
      //2. Receptionists
      */
-    Write("Initializing Recptionists DS\n", 25, 1);
     for (i = 0; i < RECP_MAX; i++) {
         __Receptionists(&receptionists[i], i);
     }
     /*3. DoorBoy doesn't need anything
      4. Doctors*/
-    print("Initializing Doctors DS\n");
     for (i = 0; i < MAX_DOCTORS; i++) {
         __Doctor(&doctors[i], i);
     }
-    print("Initializing Cashiers DS\n");
     /*5. Cashiers*/
     for (i = 0; i < MAX_CASHIER; i++) {
         __Cashier(&cashiers[i], i);
     }
-    print("Initializing Clerks DS\n");
     /*6. Clerks */
     for (i = 0; i < MAX_CLERKS; i++) {
         __PharmacyClerks(&clerks[i], i);
     }
-    /* 7. Hospital Manager */
-    print("Initializing Hospital Manager DS\n");
-    for (i = 0; i < totalHospMan; i++) {
-
-    }
-
     print("Creating 1 Hospital Manager \n");
+    readConfig();
+
     Fork(createHospitalManager);
 
     for (i = 0; i < 100; i++)
