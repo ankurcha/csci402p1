@@ -135,12 +135,16 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
                 case RES_REQ:
                     if (resources[name].timestamp < pkt.timestamp) {
                         /*TODO add them to the list */
+                        MsgQueue_Push(&pendingLockQueue[name], &pkt, senderId, senderMbox); 
                         break;
+                    }else if(resource[name].timestamp == pkt.timestamp){
+                        if(senderId*1000+senderMbox > GetMachineId()*1000+myMbox)
+                            MsgQueue_Push(&pendingLockQueue[name], &pkt, senderId, senderMbox);
                     }
                     /* fallthrough */
                 case RES_NONE:
                     /* Resource is not held, hence, we send out a LOCK_OK message
-                     * construct a packet
+                     * construct a packet/
                      */
                     p.senderId = GetMachineID();
                     p.timestamp = GetTimestamp();
