@@ -123,6 +123,6 @@ int main(int argc, char** argv) {
     /*Spawning Pharmacys clerks */
     readConfig();
     numClerks = numberOfEntities[5];
-    Fork(createPharmacyClerk);
+    createPharmacyClerk();
     Exit(0);
 }

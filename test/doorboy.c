@@ -184,7 +184,7 @@ int main(int argc, char** argv) {
     readConfig();
     numDoctors = numberOfEntities[2];
     numDoorboys = numDoctors;
-    Fork(createDoorBoy);
+    createDoorBoy();
     Exit(0);
 }
 

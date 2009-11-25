@@ -129,6 +129,6 @@ int main(int argc, char** argv) {
     readConfig();
     /* spawn the cashier Threads */
     numCashiers = numberOfEntities[4];
-    Fork(createCashier);
+    createCashier();
     Exit(0);
 }

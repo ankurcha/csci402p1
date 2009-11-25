@@ -135,7 +135,7 @@ int main(int argc, char** argv) {
     }
     readConfig();
     numRecp = numberOfEntities[1];
-    Fork(createReceptionist);
+    createReceptionist();
     Exit(0);
 }
 
