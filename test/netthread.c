@@ -33,7 +33,7 @@ void network_thread() {
     for (i = 0; i < MaxEntities; i++) {
         maxTS[i] = 0;
     }
-    readyCount = 0;
+    readyCount = 1;
     /*myMbox = mbox;*/
     /* this array should make it easier to scan all entities */
     machineIndex[0] = 0;
@@ -197,12 +197,17 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
              * start the simulation
              */
             readyCount++;
-            if (readyCount == numEntities) {
-                /* wake entity thread*/
-                Acquire(netthread_Lock);
-                Signal(netthread_CV, netthread_Lock);
-                Release(netthread_Lock);
+            if (readyCount < numEntities) {
+                break;
             }
+
+            SendAll(GO);
+            /* fallthrough */
+        case GO:
+            /* wake entity thread*/
+            Acquire(netthread_Lock);
+            Signal(netthread_CV, netthread_Lock);
+            Release(netthread_Lock);
             break;
         case RECP_DATA_UPDATE:
             temp = UpdateData_Receptionist(pkt);
@@ -304,6 +309,9 @@ void processLocalPacket(Packet pkt) {
             while (!MsgQueue_IsEmpty(&pendingCVQueue[name])) {
                 DistCV_Signal(name);
             }
+            break;
+        case NODE_READY:
+            SendAll(NODE_READY);
             break;
         case RECP_DATA_UPDATE:
         case PAT_DATA_UPDATE:
