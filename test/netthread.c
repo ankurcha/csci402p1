@@ -138,7 +138,7 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
                         MsgQueue_Push(&pendingLockQueue[name], &pkt, senderId, senderMbox); 
                         break;
                     }else if(resources[name].timestamp == pkt.timestamp){
-                        if(senderId*1000+senderMbox > GetMachineId()*1000+myMbox){
+                        if(senderId*1000+senderMbox > GetMachineID()*1000+myMbox){
                             MsgQueue_Push(&pendingLockQueue[name], &pkt, senderId, senderMbox);
                             break;
                         }
@@ -290,11 +290,12 @@ void processLocalPacket(Packet pkt) {
             print("LOCK_RELEASE_LOCAL\n");
             name = copyOutInt(pkt.data, NAME);
             DistLock_Release(name);
+            /* pop the request from the queue */
+
             /* no futher action */
             break;
 
         case CV_WAIT:
-
             name = copyOutInt(pkt.data, NAME); /* CVID */
             temp1 = copyOutInt(pkt.data, 4); /* LockID */
             DistCV_Wait(name, temp1);
