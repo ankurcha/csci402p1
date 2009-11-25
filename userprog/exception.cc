@@ -975,9 +975,10 @@ int Receive_Syscall(int receiveMbox, int senderIDvaddr, int senderMboxvaddr,
     senderID = pktHead.from;
     senderMbox = mailHead.from;
 
-    copyout(senderIDvaddr, sizeof(senderID), (char*) &senderID);
-    copyout(senderMboxvaddr, sizeof(senderMbox), (char*) &senderMbox);
-    bytesRead = copyout(vaddr, sizeof(message), message);
+    copyout(senderIDvaddr, sizeof(senderID)-1, (char*) &senderID);
+    copyout(senderMboxvaddr, sizeof(senderMbox)-1, (char*) &senderMbox);
+    bytesRead = copyout(vaddr, MaxMailSize-1, message);
+    delete[] message;
     return bytesRead;
 #endif
 
@@ -993,7 +994,7 @@ int Send_Syscall(int receiverID, int receiverMbox, int senderMbox, int vaddr) {
     // We could modify the syscall to be told the number of bytes to read, 
     // but that is really just compromising the interface for the sake of 
     // careless developers (us).
-    int bytesRead = copyin(vaddr, MaxMailSize-1 , message);
+    int bytesRead = copyin(vaddr, MaxMailSize-1, message);
     // message = pkt.Serialize(message);
 
     if (bytesRead != -1) {
@@ -1013,11 +1014,13 @@ int Send_Syscall(int receiverID, int receiverMbox, int senderMbox, int vaddr) {
             interrupt->Halt();
         } else {
             fflush(stdout);
+            delete[] message;
             return retVal;
         }
     } else {
         DEBUG('a', "Failed to read Payload\n");
     }
+    delete[] message;
     return -1;
 #endif
 }
