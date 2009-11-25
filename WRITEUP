@@ -53,6 +53,40 @@ III. Design:
         Example configuration file
           20,3,2,2,3,2,1
 
+    + Hospital Layout
+        Our hospital runs 7 instances of nachos, one for each type of hospital
+        entity.  Each hospital entity is run as a process within nachos, and
+        has two threads, an entity thread and a networking thread.  The
+        hospital manager also has a third thread to ping the hospial on a
+        regular basis and prevent a lockup due to old timestamps.  The total
+        ordering algorithm always holds at least n-1 messages it cannot
+        process, so it is essential to keep packets flowing.
+
+    + Network Thread
+        We designed our network thread to be the same for all hospital
+        entities.  It is provided in the file netthread.c.  In that file is the
+        main network thread function that will be forked by all hospital
+        entities.  The job of the network thread is to do all communication
+        between this hospital entity and all the other entities in the
+        hospital.  It exchanges data with the entity thread by using a shared
+        global data structure.  All of the global data structures are
+        replicated across the all entities, and protected by distributed locks.
+        When an entity wants to do something with the network, it sends a
+        packet to its network thread specifying what to do.  If necessary the
+        entity thread waits for the network thread to tell it to continue.
+
+        The network thread processes message from its entity thread
+        immediately, but it waits on total ordering for messages from external
+        entities.  It does this by maintaining a priority queue of all the
+        messages that have not yet been processed.  When a message is received
+        it is inserted into the queue and the max timestamp for the sending
+        entity is updated.  The min of max timestamp across all entities is
+        updated, and then messages are popped off the top of the priority queue
+        until the next one has a timestamp that is too large.  Then the thread
+        waits on another receive.
+
+    + Hospital Entity Threads
+
 IV. Implementation:
 
     + Files Modified
@@ -127,3 +161,6 @@ VI. Discussion:
     + Explanation
 
 VII. Miscellaneous:
+    When compiling our user programs in the test directory, use make, not gmake
+    (still use gmake everywhere else).
+
