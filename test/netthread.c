@@ -137,9 +137,11 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
                         /*TODO add them to the list */
                         MsgQueue_Push(&pendingLockQueue[name], &pkt, senderId, senderMbox); 
                         break;
-                    }else if(resource[name].timestamp == pkt.timestamp){
-                        if(senderId*1000+senderMbox > GetMachineId()*1000+myMbox)
+                    }else if(resources[name].timestamp == pkt.timestamp){
+                        if(senderId*1000+senderMbox > GetMachineID()*1000+myMbox){
                             MsgQueue_Push(&pendingLockQueue[name], &pkt, senderId, senderMbox);
+                            break;
+                        }
                     }
                     /* fallthrough */
                 case RES_NONE:
@@ -282,19 +284,18 @@ void processLocalPacket(Packet pkt) {
         case LOCK_ACQUIRE:
             name = copyOutInt(pkt.data, NAME);
             DistLock_Acquire(name);
-            /* now, once we receive enough OK's,
-             * we will wake the local entity */
             break;
 
         case LOCK_RELEASE:
             print("LOCK_RELEASE_LOCAL\n");
             name = copyOutInt(pkt.data, NAME);
             DistLock_Release(name);
+            /* pop the request from the queue */
+
             /* no futher action */
             break;
 
         case CV_WAIT:
-
             name = copyOutInt(pkt.data, NAME); /* CVID */
             temp1 = copyOutInt(pkt.data, 4); /* LockID */
             DistCV_Wait(name, temp1);
