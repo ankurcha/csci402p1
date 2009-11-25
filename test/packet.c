@@ -154,19 +154,19 @@ void SerializePacket(Packet *p, char* message) {
     copyInInt(message, TIMESTAMP, p->timestamp);
     message[PACKET_TYPE] = p->packetType;
     copyInData(message, DATA, p->data, MaxMailSize - DATA);
-    
+   /* 
     print("Ser: ");
     printHex(message, 40);
     print("\n");
-   
+   */
 }
 
 void DeserializePacket(Packet *p, char* message) {
-    
+    /*
     print("De-ser: ");
     printHex(message, 40);
     print("\n");
-    
+    */
     p->senderId = copyOutShort(message, NAME);
     p->timestamp = copyOutInt(message, TIMESTAMP);
     p->packetType = message[PACKET_TYPE];
