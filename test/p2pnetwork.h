@@ -198,16 +198,8 @@ void readConfig();
 /* Gets the mapping between the CV and its assiciated Lock */
 int getCV_Lock_Mapping(int CVID);
 
-/* Data update handling Functions  depends on init.h and used by netthread.c
- int UpdateData_Patient(Packet p);
- int UpdateData_Receptionist(Packet p);
- int UpdateData_Doorboy(Packet p);
- int UpdateData_Doctor(Packet p);
- int UpdateData_Cashier(Packet p);
- int UpdateData_Clerk(Packet p);
- int UpdateData_HospitalManager(Packet p);
- int UpdateData_Global(Packet p);
- */
+/* Create Node Ready */
+void HNodeReady();
 
 /* Hospital Entity interface for the Network Data Update NO DEPS*/
 int HDataUpdate_Recp(int id, int peopleInLine, int currentToken);
@@ -221,6 +213,9 @@ int HDataUpdate_Clerk(int id, int patientsInLine, int payment, int fee,
         int patPrescription, int sales);
 int HDataUpdate_HospMan(int id);
 
+/* Ping my network Thread for life! */
+void HPing_NetThread();
+
 /* Updates the Global data variables NO DEPS*/
 int HGlobalDataUpdate(short Variable, int val);
 int HGlobalListAppendUpdate(int key, int value);
@@ -228,5 +223,6 @@ int HGlobalQueuePopUpdate();
 int HGlobalQueuePushUpdate(int value);
 int DistUpdate_Send(Packet p);
 int DistGlobalData_Send(Packet p);
+
 #endif /* P2PNETWORK_H */
 

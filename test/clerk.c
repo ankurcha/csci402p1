@@ -9,8 +9,6 @@ void createPharmacyClerk() {
     Fork(network_thread);
     print("done\n");
     print("Forking clerk...");
-    print(itoa(patientCount, str));
-    print("\n");
 /*
     HLock_Acquire(creationLock);
     temp = pharmacyCount;
@@ -24,6 +22,7 @@ void createPharmacyClerk() {
 
 void clerk(int ID) {
     char str[50];
+    print("Clerk Alive!!\n");
     while (1) {
         HLock_Acquire(ClerkLinesLock);
         if (clerks[ID].patientsInLine > 0) {
@@ -104,36 +103,25 @@ int main(int argc, char** argv) {
      //1. Patients don't need initialization
      //2. Receptionists
      */
-    Write("Initializing Recptionists DS\n", 25, 1);
     for (i = 0; i < RECP_MAX; i++) {
         __Receptionists(&receptionists[i], i);
     }
     /*3. DoorBoy doesn't need anything
      4. Doctors*/
-    print("Initializing Doctors DS\n");
     for (i = 0; i < MAX_DOCTORS; i++) {
         __Doctor(&doctors[i], i);
     }
-    print("Initializing Cashiers DS\n");
     /*5. Cashiers*/
     for (i = 0; i < MAX_CASHIER; i++) {
         __Cashier(&cashiers[i], i);
     }
-    print("Initializing Clerks DS\n");
-    /*6. Clerks */
     for (i = 0; i < MAX_CLERKS; i++) {
         __PharmacyClerks(&clerks[i], i);
-    }
-    /* 7. Hospital Manager */
-    print("Initializing Hospital Manager DS\n");
-    for (i = 0; i < totalHospMan; i++) {
-
     }
 
     /*Spawning Pharmacys clerks */
     readConfig();
     numClerks = numberOfEntities[5];
-    
     Fork(createPharmacyClerk);
     Exit(0);
 }

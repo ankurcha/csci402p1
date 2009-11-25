@@ -313,9 +313,9 @@ void processLocalPacket(Packet pkt) {
             SendAll(DO_PING);
             break;
         case PING:
-            Acquire(ping_Lock)
-            Signal(ping_CV, ping_Lock)
-            Release(ping_Lock)
+            Acquire(ping_Lock);
+            Signal(ping_CV, ping_Lock);
+            Release(ping_Lock);
             break;
         case PONG:
             print("ERROR: Entity send me a pong\n");

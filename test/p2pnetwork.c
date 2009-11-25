@@ -627,3 +627,31 @@ int getMyNetThreadMbox() {
     return myMailboxNumber;
 }
 
+/* Ping Network thread to see if it is alive */
+
+void HPing_NetThread(){
+    Packet p;
+    p.senderId = GetMachineID();
+    p.timestamp = GetTimestamp();
+    p.packetType = PING;
+    /* No Data */
+
+    Acquire(ping_Lock);
+    Packet_Send(GetMachineID, myMbox, 0, &p);
+    Wait(ping_CV, ping_Lock);
+    Release(ping_Lock);
+}
+
+/* Send Packet declaring that the entity is ready to process */
+void HNodeReady(){
+    Packet p;
+    p.senderId = GetMachineID();
+    p.timestamp = GetTimestamp();
+    p.packetType = NODE_READY;
+    /* NO DATA */
+
+    Acquire(netthread_Lock);
+    Packet_Send(GetMachineID(), myMbox, 0, &p);
+    Wait(netthread_CV, netthread_Lock);
+    Release(netthread_Lock);
+}

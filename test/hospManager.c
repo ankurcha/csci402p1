@@ -9,6 +9,7 @@ void pinger(){
         }
         HMultiPing();
     }
+    HPing_NetThread();
     Exit(0);
 }
 void createHospitalManager() {
