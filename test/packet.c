@@ -30,6 +30,7 @@ void printHex(char *message, int len){
     str[2*i] = 0;
     print(str);
 }
+
 int Packet_Receive(int mbox, int* senderId, int* senderMBox,
         Packet *receivedPacket) {
     /* This function performs a read and put the fields in the respective places
@@ -42,9 +43,12 @@ int Packet_Receive(int mbox, int* senderId, int* senderMBox,
 
     int status = -1;
     char data[MaxMailSize];
+    int sender, smb;
 
     /* actually get the data into the char *data variable */
-    status = Receive(mbox, senderId, senderMBox, data);
+    status = Receive(mbox, &sender, &smb, data);
+    *senderId = sender;
+    *senderMBox = smb;
 
     /* Deserialize the data to get the packet into receivedPacket*/
     if (status != -1) {
