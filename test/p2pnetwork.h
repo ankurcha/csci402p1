@@ -9,6 +9,8 @@
 
 #define MAX_CV 50
 #define MAX_CV_QUEUE_LEN 100
+#define MAX_LOCK 50
+#define MAX_LOCK_QUEUE_LEN 100
 #define MaxEntities 50
 #define MAX_RESOURCES 50
 #define ENTITY_OFFSET 20
@@ -62,6 +64,9 @@ enum {
 /* to track of the nodes that are waiting */
 QueueElement queue[MAX_CV][MAX_CV_QUEUE_LEN];
 MessageQueue pendingCVQueue[MAX_CV]; /* use push and pop only */
+
+QueueElement lockqueue[MAX_LOCK][MAX_LOCK_QUEUE_LEN];
+MessageQueue pendingLockQueue[MAX_LOCK];
 /* with great power comes a new namespace - here we have none!!*/
 
 /* Packet types */

@@ -51,7 +51,16 @@ III. Design:
                 Number of Hospital Managers
         
         Example configuration file
-          20,3,2,2,3,2,1
+          20
+          3
+          2
+          2
+          3
+          2
+          1
+        
+        This configuration file MUST be named 'configfile' and must be placed
+        in the same folder as the one where we are running nachos.
 
     + Hospital Layout
         Our hospital runs 7 instances of nachos, one for each type of hospital
@@ -86,6 +95,31 @@ III. Design:
         waits on another receive.
 
     + Hospital Entity Threads
+        The hospital entity threads have been more or less unaltered from that
+        of project 1 and hence should be expected to behave in the same manner. The
+        changes which were made to the system in order for it to become a completely
+        distributed network application is that it first of all sends out a NODE_READY
+        packet at the start of the thread and waits for a GO reply from the other
+        packets. This assures us that once the node starts to execute all the other
+        nodes (as per the config file) have been spawned and are running as expected.
+    
+        Each of the hospital entities are divided into separate user programs and are
+        all spawned using the distHosp user program which reads the config file and
+        spawns the required number of user programs of the required type. The entity
+        that is spawned is determined by the machine id passed (-m) parameter to
+        nachos. Hence, for 0 we get patients, 1 - receptionists, 2 - doorboys, 3 -
+        doctors, 4 - cashiers, 5 - clerks, 6 - hospital manager.
+        
+        To enable network based functionality for Locks and the CVs are acquired /
+        released / Wait / Signal / Broadcast using the HLock_Acquire / HLock_Release /
+        HCV_Wait / HCV_Signal / HCV_Broadcast. As the data changes in any one of the
+        network it has to be propogated thoughout the network and updated everywhere
+        else, to support this we have many HUpdate_ prefixed functions which take care
+        of any such updation. These fuctions either work on specific data structures eg
+        the fee list or the walkingDoctorID queue or they are generic for the other
+        globally defined data. For the globally defined data we have enumerated an
+        identifier for each one of them so that we can easily identify which one has to
+        be updated when we get a DATA_UPDATE request.
 
 IV. Implementation:
 
@@ -127,10 +161,75 @@ IV. Implementation:
                 char data[MaxDataSize];
             };
          - test/eventDispatcher.h
+         - test/p2pnetwork.h
+            int myNetThreadMbox;
+            int readyCount;
+            int numberOfEntities[7];   
             
-    + Data Structures modified, and the file they were added to.
+            LockId netthread_Lock;
+            CVId netthread_CV;
+            LockId ping_Lock;
+            CVId ping_CV;
+            
+            struct Resource {
+                int name;
+                int timestamp; /* record when the request was made */
+                char valid; /* 0 init */
+                int replies; /* Number of replies that are received */
+                int state; /* can be RES_HELD or RES_REQ or RES_NONE */
+            };
+            
+            Resource resources[MAX_RESOURCES];
+            enum {
+                  RES_HELD, RES_REQ, RES_NONE
+            };
+            QueueElement queue[MAX_CV][MAX_CV_QUEUE_LEN];
+            MessageQueue pendingCVQueue[MAX_CV];
+            
+            enum {
+                EMPTY = 0x00,
+                LOCK_ACQUIRE = 0x01,
+                LOCK_RELEASE = 0x02,
+                LOCK_OK = 0x04,
+                CV_WAIT = 0x07,
+                CV_SIGNAL = 0x08,
+                CV_BROADCAST = 0x09,
+                NODE_READY = 0x0C,
+                RECP_DATA_UPDATE = 0x0D,
+                PAT_DATA_UPDATE = 0x0E,
+                DOORB_DATA_UPDATE = 0x0F,
+                DOC_DATA_UPDATE = 0x10,
+                CASH_DATA_UPDATE = 0x11,
+                CLERK_DATA_UPDATE = 0x12,
+                MAN_DATA_UPDATE = 0x13,
+                GLOBAL_DATA_UPDATE = 0x14,
+                DO_PING = 0x15,
+                PING = 0x16,
+                PONG = 0x17,
+                KILL = 0x18,
+                GO = 0x19
+            };
+    
+            /* Entity Identification */
+            enum {
+                RECEPTIONIST_NODE = 0x0D,
+                PATIENT_NODE = 0x0E,
+                DOCTOR_NODE = 0x0F,
+                DOORBOY_NODE = 0x10,
+                CASHIER_NODE = 0x11,
+                CLERK_NODE = 0x12,
+                MANAGER_NODE = 0x13
+            };
 
-    + Functions added and in which file.
+            int myMbox;
+
+    + Data Structures modified, and the file they were added to.
+            All the project 3 specific datastructures have been either removed
+            or surrounded using macro gaurd. This enabled us to go forward using the the
+            project with all the system calls developed as a part of the project 3. Only
+            the memory management (TLB) based things have been thrown out.        +
+    
+    Functions added and in which file.
         - test/hospShared.h|c
             Packet* buildPacket_Receptionist(Packet *p, int id, int peopleInLine,
                     int currentToken);
@@ -145,9 +244,75 @@ IV. Implementation:
             Packet *buildPacket_GlobalQueuePush(Packet *p, int val);
             Packet *buildPacket_GlobalQueuePop(Packet *p);
         
-        - test/
-    + Functions modified and in which file.
+        - test/p2pnetwork.h|c
+            int getMboxNum();
+            void initializeSystem();
+            void initResources();
+            int addResource(int id, int state);
+            int deleteResource(int id);
+            int getResourceStatus(int resourceID);
+            int updateResourceStatus(int resourceID, int newStatus);
+            int getResourceReplies(int resourceID);
+            int updateResourceReplies(int resourceID, int replies);
+            void SendAll(int packetType);
+            void HMultiPing();
+            void HKill();
+            void Kill();
+            int HLock_Acquire(int HlockId);
+            int HLock_Release(int HlockId);
+            int DistLock_Acquire(int name);
+            int DistLock_Release(int name);
+            int HCV_Signal(int HCVId, int HLockId);
+            int HCV_Wait(int HCVId, int HLockId);
+            int HCV_Broadcast(int HCVId, int HLockId);
+            int DistCV_Wait(int CVID, int LockID);
+            int DistCV_Signal(int CVID);
+            void Process_CV_Signal(Packet pkt);
+            int SyncPrint(char *, int EntityID);
+            int HTable_Update(int tableId, int key, int value);
+            int SendToNetwork();
+            void readConfig();
+            int getCV_Lock_Mapping(int CVID);
+            void HNodeReady();
+            int HDataUpdate_Recp(int id, int peopleInLine, int currentToken);
+            int HDataUpdate_Pat(int id);
+            int HDataUpdate_Doorb(int id);
+            int HDataUpdate_Doc(int id, int peopleInLine, int prescription,
+                                int patientToken);
+            int HDataUpdate_Cash(int id, int lineLength, int patToken, int fee,
+                                int payment, int sales);
+            int HDataUpdate_Clerk(int id, int patientsInLine, int payment, int fee,
+                                int patPrescription, int sales);
+            int HDataUpdate_HospMan(int id);
+            void HPing_NetThread();
+            int HGlobalDataUpdate(short Variable, int val);
+            int HGlobalListAppendUpdate(int key, int value);
+            int HGlobalQueuePopUpdate();
+            int HGlobalQueuePushUpdate(int value);
+            int DistUpdate_Send(Packet p);
+            int DistGlobalData_Send(Packet p);
+        - test/packet.h|c
+            int Packet_Receive(int mbox, int *senderId, int *senderMBox,
+                    Packet *receivedPacket);
 
+            int Packet_Send(int receiverId, int recMBox, int senderMBox, Packet*);
+
+            void SerializePacket(Packet *p, char* message);
+            void DeserializePacket(Packet *p, char* message);
+            int copyOutInt(char* message, int index);
+            void copyInInt(char* message, int index, int val);
+            int copyOutShort(char* message, int index);
+            void copyInShort(char* message, int index, int val);
+            void copyOutData(char* message, int index, char* data, int length);
+            void copyInData(char* message, int index, char* data, int length);
+            void memcopy(char* left, char* right, int length);
+        - test/netthread.c
+            void processExternalPacket(Packet pkt, int senderId, int senderMbox);
+            void processLocalPacket(Packet pkt);
+            void network_thread();
+    
+    + Functions modified and in which file.
+        
 V. Testing: (For each test case, you must show)
     + How to test
 
