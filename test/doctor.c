@@ -206,14 +206,9 @@ int main(int argc, char** argv) {
     }
 
     /*1. Doctors */
+    readConfig();
     numDoctors = numberOfEntities[3];
 
-    print("Creating ");
-    print(itoa(numDoctors, str));
-    print(" Doctors\n");
-    for (i = 0; i < numDoctors; i++)
-        Fork(createDoctor);
-
-    for (i = 0; i < 100; i++)
-        Yield();
+    Fork(createDoctor);
+    Exit(0);
 }

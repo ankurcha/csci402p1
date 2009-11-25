@@ -239,7 +239,5 @@ int main(int argc, char** argv) {
     readConfig();
 
     Fork(createHospitalManager);
-
-    for (i = 0; i < 100; i++)
-        Yield();
+    Exit(0);
 }

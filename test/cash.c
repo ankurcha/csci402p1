@@ -124,6 +124,7 @@ int main(int argc, char** argv) {
     for (i = 0; i < MAX_CLERKS; i++) {
         __PharmacyClerks(&clerks[i], i);
     }
+
     readConfig();
     /* spawn the cashier Threads */
     numCashiers = numberOfEntities[4];

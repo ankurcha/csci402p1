@@ -131,13 +131,9 @@ int main(int argc, char** argv) {
     }
 
     /*Spawning Pharmacys clerks */
+    readConfig();
     numClerks = numberOfEntities[5];
-    print("Creating ");
-    print(itoa(numClerks, str));
-    print(" Clerks\n");
-    for (i = 0; i < numClerks; i++)
-        Fork(createPharmacyClerk);
-
-    for (i = 0; i < 100; i++)
-        Yield();
+    
+    Fork(createPharmacyClerk);
+    Exit(0);
 }
