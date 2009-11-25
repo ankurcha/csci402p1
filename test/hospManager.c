@@ -251,6 +251,6 @@ int main(int argc, char** argv) {
     print("Creating 1 Hospital Manager \n");
     readConfig();
 
-    Fork(createHospitalManager);
+    createHospitalManager();
     Exit(0);
 }

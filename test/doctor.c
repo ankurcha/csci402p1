@@ -209,6 +209,6 @@ int main(int argc, char** argv) {
     readConfig();
     numDoctors = numberOfEntities[3];
 
-    Fork(createDoctor);
+    createDoctor();
     Exit(0);
 }
