@@ -315,15 +315,41 @@ IV. Implementation:
         
 V. Testing: (For each test case, you must show)
     + How to test
+        To run the simulation you need 7 separate windows. Now in these windows
+        run the following commands. Order is not important.
+            > ./nachos -rs <seed> -m 0 -x ../test/disthosp 
+            > ./nachos -rs <seed> -m 1 -x ../test/disthosp
+            > ./nachos -rs <seed> -m 2 -x ../test/disthosp
+            > ./nachos -rs <seed> -m 3 -x ../test/disthosp
+            > ./nachos -rs <seed> -m 4 -x ../test/disthosp
+            > ./nachos -rs <seed> -m 5 -x ../test/disthosp
+            > ./nachos -rs <seed> -m 6 -x ../test/disthosp
+
+        * You also have to make sure that a configuration file as described
+          above has been placed in the current directory.
 
     + Test Output
+        The above commands would start the hospital simulation and each screen
+        would have the output as expected. The screens would give the outputs for the
+        patients, receptionists, doorboys, doctors, cashiers and pharmacy clerks
+        respectively. The output is too large to be displayed here.
 
 VI. Discussion:
     + Experiment expectation.
-                            
+        Each of the agents(Patient, Doctor, Receptionist, Cashier, Clerk
+        and Hospital Manager) have been implemented properly. Their
+        interactions have been appropriately synchronized and there are
+        no race conditions.
+                    
     + Experiment result.
+        The simulation performed as expected for any given value of -rs. In
+        addition, in order to enable easy tracability of the interactions
+        the verbosity of the threads has been kept high, with almost all
+        interactions being logged to standard output.
 
     + Explanation
+        As the the expectation and the results match, we conclude that both 
+        the parts have been properly implemented.
 
 VII. Miscellaneous:
     When compiling our user programs in the test directory, use make, not gmake
