@@ -21,7 +21,7 @@ char* strcat(char *dst, const char *src) {
         ;
     while (*dst++ = *src++)
         ;
-    return *dst;
+    return dst;
 }
 
 int strcmp(const char *s1, const char *s2) {
