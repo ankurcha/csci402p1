@@ -21,6 +21,7 @@ void createCashier() {
     temp = cashierCount;
     cashierCount++;
     HLock_Release(creationLock);
+
     cashier(temp);
     print("done\n");
     Exit(0);

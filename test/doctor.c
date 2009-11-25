@@ -16,6 +16,7 @@ void createDoctor() {
     temp = doctorCount;
     doctorCount++;
     HLock_Release(creationLock);
+
     doctor(temp);
     print("done\n");
     Exit(0);

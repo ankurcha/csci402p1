@@ -16,6 +16,7 @@ void createDoorBoy() {
     temp = doorboyCount;
     doorboyCount++;
     HLock_Release(creationLock);
+
     doorboy(temp);
     print("done\n");
     Exit(0);

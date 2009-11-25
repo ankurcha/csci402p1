@@ -16,6 +16,7 @@ void createHospitalManager() {
     temp = hospitalmanagerCount;
     hospitalmanagerCount++;
     HLock_Release(creationLock);
+
     hospitalManager(temp);
     print("done\n");
     Exit(0);

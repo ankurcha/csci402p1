@@ -16,6 +16,7 @@ void createPharmacyClerk() {
     temp = pharmacyCount;
     pharmacyCount++;
     HLock_Release(creationLock);
+
     clerk(temp);
     print("done\n");
     Exit(0);
