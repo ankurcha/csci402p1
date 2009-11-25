@@ -87,9 +87,7 @@ int main() {
             itoa(threadCt, buf);
             print(buf);
             print(" hospManager entity.\n");
-            for (i = 0; i < threadCt; i++) {
-                Exec("../test/hospManager");
-            }
+            Exec("../test/hospManager");
             break;
         default:
             print("ERROR: specified invalid machine number\n");

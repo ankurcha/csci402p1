@@ -112,7 +112,7 @@ int copyout(unsigned int vaddr, int len, char *buf) {
 
     while (n >= 0 && n <= len) {
         // Note that we check every byte's address
-        result = machine->WriteMem(vaddr, 1, (int) (buf[n++]));
+        result = machine->WriteMem(vaddr, 1, int(buf[n++]));
         while (!result) {
             return -1;
         }

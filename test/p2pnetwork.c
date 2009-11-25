@@ -20,6 +20,7 @@ void initializeSystem() {
      * locks and other things at the system startup
      */
     /* Read all the configuration data */
+    int i;
     print("Initializing Netthread\n");
     netthread_Lock = CreateLock("netthread_Lock");
     netthread_CV = CreateCondition("netthread_CV");
@@ -29,6 +30,10 @@ void initializeSystem() {
     getMboxNum();
     /* create system locks and CV*/
     initResources();
+    for(i = 0;i<MAX_CV;i++)
+        Init_MsgQueue(&pendingCVQueue[i], queue[i], MAX_CV_QUEUE_LEN);
+    for(i = 0; i< MAX_LOCK;i++)
+        Init_MsgQueue(&pendingLockQueue[i], lockqueue[i], MAX_LOCK_QUEUE_LEN);
 }
 
 void HMultiPing() {
@@ -55,11 +60,11 @@ void SendAll(int packetType) {
                 continue;
             }
             print("sendall-ing packet to machine ");
-            print(itoa(j, buf));
+            print((char*)itoa(j, buf));
             print(" and mbox ");
-            print(itoa(i+1, buf));
+            print((char*)itoa(i+1, buf));
             print(" from mbox ");
-            print(itoa(myMbox, buf));
+            print((char*)itoa(myMbox, buf));
             print("\n");
 
             Packet_Send(j, i + 1, myMbox, &p);
@@ -252,14 +257,12 @@ int DistLock_Acquire(int name) {
     copyInInt(p.data, 0, name); /* Data part just contains the LockID */
     addResource(name, RES_REQ);
     MsgQueue_Pop(&pkt, &pendingLockQueue[name], &senderId, &senderMBox);
-    for (j = 0; j < 7; j++) {
-        for (i = 0; i < numberOfEntities[j]; i++) {
-            if (j != GetMachineID() && (i + 1) != myMbox) {
+    for (j = 0; j < 7; j++) 
+        for (i = 0; i < numberOfEntities[j]; i++) 
+            if (j != GetMachineID() && (i + 1) != myMbox) 
                 /* Sending LOCK_ACQUIRE to all and waiting for LOCK_OK */
                 Packet_Send(j, i + 1, myMbox, &p);
-            }
-        }
-    }
+    return 0;
 }
 
 int DistLock_Release(int name) {
@@ -273,15 +276,14 @@ int DistLock_Release(int name) {
     if (updateResourceStatus(name, RES_NONE) == 1) {
         /* Lock is no longer held by the lock
          * Just broadcast this message to all the othe nodes */
-        for (j = 0; j < 7; j++) {
-            for (i = 0; i < numberOfEntities[j]; i++) {
-                if (j != GetMachineID() && (i + 1) != myMbox) {
+        for (j = 0; j < 7; j++)
+            for (i = 0; i < numberOfEntities[j]; i++) 
+                if (j != GetMachineID() && (i + 1) != myMbox) 
                     Packet_Send(j, i + 1, myMbox, &p);
-                }
-            }
-        }
+
         return 1; /* successfully released lock */
     }
+    return 0;
 }
 
 /* this is called by an entity thread to signal a CV */
