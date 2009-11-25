@@ -21,7 +21,6 @@ int main() {
     /* determine threadCt by reading conf file */
     readConfig();
     threadCt = numberOfEntities[machineID];
-
     /* put msgs into mailbox 0 with mail box numbers */
     for(i=0; i < threadCt; i++) {
         copyInInt(message, 0, i+1);
@@ -31,7 +30,8 @@ int main() {
     switch (machineID) {
         case 0: /* patients */
             print("disthosp: preparing to create ");
-            print(itoa(threadCt, buf));
+            itoa(threadCt, buf);
+            print(buf);
             print(" patient entities.\n");
             for (i = 0; i < threadCt; i++) {
                 Exec("../test/patient");
@@ -39,7 +39,8 @@ int main() {
             break;
         case 1: /* receptionists */
             print("disthosp: preparing to create ");
-            print(itoa(threadCt, buf));
+            itoa(threadCt, buf);
+            print(buf);
             print(" receptionist entities.\n");
             for (i = 0; i < threadCt; i++) {
                 Exec("../test/receptionist");
@@ -47,7 +48,8 @@ int main() {
             break;
         case 2: /* doorboys */
             print("disthosp: preparing to create ");
-            print(itoa(threadCt, buf));
+            itoa(threadCt, buf);
+            print(buf);
             print(" doorboy entities.\n");
             for (i = 0; i < threadCt; i++) {
                 Exec("../test/doorboy");
@@ -55,7 +57,8 @@ int main() {
             break;
         case 3: /* doctors */
             print("disthosp: preparing to create ");
-            print(itoa(threadCt, buf));
+            itoa(threadCt, buf);
+            print(buf);
             print(" doctor entities.\n");
             for (i = 0; i < threadCt; i++) {
                 Exec("../test/doctor");
@@ -63,7 +66,8 @@ int main() {
             break;
         case 4: /* cashiers */
             print("disthosp: preparing to create ");
-            print(itoa(threadCt, buf));
+            itoa(threadCt, buf);
+            print(buf);
             print(" cashier entities.\n");
             for (i = 0; i < threadCt; i++) {
                 Exec("../test/cash");
@@ -71,7 +75,8 @@ int main() {
             break;
         case 5: /* clerks */
             print("disthosp: preparing to create ");
-            print(itoa(threadCt, buf));
+            itoa(threadCt, buf);
+            print(buf);
             print(" clerk entities.\n");
             for (i = 0; i < threadCt; i++) {
                 Exec("../test/clerk");
@@ -79,7 +84,8 @@ int main() {
             break;
         case 6: /* hospital manager */
             print("disthosp: preparing to create ");
-            print(itoa(threadCt, buf));
+            itoa(threadCt, buf);
+            print(buf);
             print(" hospManager entity.\n");
             for (i = 0; i < threadCt; i++) {
                 Exec("../test/hospManager");

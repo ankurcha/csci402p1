@@ -49,10 +49,9 @@ void network_thread() {
     /* Begin an infinite loop where we wait for data from the network */
     while (1) {
         Packet_Receive(myMbox, &senderId, &senderMbox, &myPacket);
-
+        print("Packet received on myMbox\n");
         if (senderMbox != 0) {
             /* process a packet from another entity on the network */
-
             /* updates the maxTS for this entitiy */
             /* senderId is the machine num, remember mbox 0 is reserved */
             i = machineIndex[senderId] + senderMbox - 1;
@@ -116,7 +115,7 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
     for (j = 0; j < 7; j++) {
         numEntities += numberOfEntities[j];
     }
-
+    print("Processing External Packet\n");
     /* Process this packet */
     switch (pkt.packetType) {
         case EMPTY:
@@ -250,21 +249,30 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
 
 void processLocalPacket(Packet pkt) {
     /* My entity thread wants my attention */
-
     /* Process this packet */
     int status = -1;
     int numEntities = 0;
     int temp, temp1;
     int i, j, k;
     int name;
+    char str[20];
     Packet p;
     int senderId, senderMbox;
     for (j = 0; j < 7; j++) {
         numEntities += numberOfEntities[j];
     }
-
+    print("Processing Local Packet\n");
+    print("Type: ");
+    itoa(pkt.packetType, str);
+    print(str);
+    print("\n");
     switch (pkt.packetType) {
+        case EMPTY:
+            print("EMPTY PACKET\n");
+            Halt();
+            break;
         case LOCK_ACQUIRE:
+            print("LOCK_ACQUIRE_LOCAL\n");
             name = copyOutInt(pkt.data, NAME);
             DistLock_Acquire(name);
             /* now, once we receive enough OK's,
@@ -272,13 +280,14 @@ void processLocalPacket(Packet pkt) {
             break;
 
         case LOCK_RELEASE:
+            print("LOCK_RELEASE_LOCAL\n");
             name = copyOutInt(pkt.data, NAME);
             DistLock_Release(name);
             /* no futher action */
             break;
 
         case CV_WAIT:
-            /* Get the lock ID and the CV ID */
+
             name = copyOutInt(pkt.data, NAME); /* CVID */
             temp1 = copyOutInt(pkt.data, 4); /* LockID */
             DistCV_Wait(name, temp1);

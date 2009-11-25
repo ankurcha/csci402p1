@@ -7,9 +7,15 @@
 int getMboxNum() {
     int senderId;
     int senderMbox;
+    char str[20];
     char message[MaxMailSize];
+    myMbox = -1;
+    print("Getting my mailbox number...");
     Receive(0, &senderId, &senderMbox, message);
     myMbox = copyOutInt(message, 0);
+    itoa(myMbox, str);
+    print(str);
+    print("Got it\n");
     return myMbox;
 }
 
@@ -233,20 +239,24 @@ int DistLock_Acquire(int name) {
     /* Send a lock acquire message to all the targets */
     /* Add the requested resource to the requestedResource Array */
     Packet p;
+    print("DistLock_Acquire\n");
     p.senderId = GetMachineID();
     p.timestamp = GetTimestamp();
     p.packetType = LOCK_ACQUIRE;
     copyInInt(p.data, 0, name); /* Data part just contains the LockID */
     addResource(name, RES_REQ);
+    print("Sending acquire packet to others");
     for (j = 0; j < 7; j++) {
         for (i = 0; i < numberOfEntities[j]; i++) {
+            print(".");
             if (j != GetMachineID() && (i + 1) != myMbox) {
-                print("Sending acquire packet to others\n");
+                print("Sending..\n");
                 /* Sending LOCK_ACQUIRE to all and waiting for LOCK_OK */
                 Packet_Send(j, i + 1, myMbox, &p);
             }
         }
     }
+    print("Done with DistLock_Acquire\n");
 }
 
 int DistLock_Release(int name) {
