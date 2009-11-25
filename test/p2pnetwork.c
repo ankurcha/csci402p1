@@ -649,7 +649,7 @@ void HPing_NetThread(){
     /* No Data */
 
     Acquire(ping_Lock);
-    Packet_Send(GetMachineID, myMbox, 0, &p);
+    Packet_Send(GetMachineID(), myMbox, 0, &p);
     Wait(ping_CV, ping_Lock);
     Release(ping_Lock);
 }
