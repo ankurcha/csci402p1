@@ -11,13 +11,13 @@ void createDoctor() {
     print("Forking doctor...");
     print(itoa(patientCount, str));
     print("\n");
-
+/*
     HLock_Acquire(creationLock);
     temp = doctorCount;
     doctorCount++;
     HLock_Release(creationLock);
-
-    doctor(temp);
+*/
+    doctor(myMbox);
     print("done\n");
     Exit(0);
 }

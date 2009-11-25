@@ -11,13 +11,13 @@ void createPharmacyClerk() {
     print("Forking clerk...");
     print(itoa(patientCount, str));
     print("\n");
-
+/*
     HLock_Acquire(creationLock);
     temp = pharmacyCount;
     pharmacyCount++;
     HLock_Release(creationLock);
-
-    clerk(temp);
+*/
+    clerk(myMbox);
     print("done\n");
     Exit(0);
 }

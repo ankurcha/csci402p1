@@ -16,13 +16,13 @@ void createCashier() {
     print("Forking cashier...");
     print(itoa(patientCount, str));
     print("\n");
-    
+/*    
     HLock_Acquire(creationLock);
     temp = cashierCount;
     cashierCount++;
     HLock_Release(creationLock);
-
-    cashier(temp);
+*/
+    cashier(myMbox);
     print("done\n");
     Exit(0);
 }
