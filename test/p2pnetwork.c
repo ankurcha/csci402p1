@@ -23,6 +23,8 @@ void initializeSystem() {
     print("Initializing Netthread\n");
     netthread_Lock = CreateLock("netthread_Lock");
     netthread_CV = CreateCondition("netthread_CV");
+    ping_Lock = CreateLock("ping_Lock");
+    ping_CV = CreateCondition("ping_CV");
     readConfig();
     getMboxNum();
     /* create system locks and CV*/

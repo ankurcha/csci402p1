@@ -32,6 +32,8 @@ int numberOfEntities[7];
 
 LockId netthread_Lock; /* We use these to interact with the netthread.*/
 CVId netthread_CV; /* Used to wait on the netthread for a reply */
+LockId ping_Lock; /* lock for the line below */
+CVId ping_CV; /* used to wait to see if a netthred is still alive */
 
 /* We need to keep a list of the resources that we currently hold
  * so, all the locks and CVs that we hold are with us are present in
