@@ -1014,7 +1014,7 @@ int Send_Syscall(int receiverID, int receiverMbox, int senderMbox, int vaddr) {
         } else {
             fflush(stdout);
             delete[] message;
-            return retVal;
+            return 1;
         }
     } else {
         DEBUG('a', "Failed to read Payload\n");
