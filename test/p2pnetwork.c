@@ -151,7 +151,7 @@ void initResources() {
         resources[i].valid = 0;
 }
 
-int addResource(int name, int state) {
+int addResource(int name, int state, int timestamp) {
     int i = 0;
     int targetPos = -1;
     for (i = 0; i < MAX_RESOURCES; i++)
@@ -163,7 +163,7 @@ int addResource(int name, int state) {
         return -1;
 
     resources[targetPos].name = name;
-    resources[targetPos].timestamp = GetTimestamp();
+    resources[targetPos].timestamp = timestamp;
     resources[targetPos].valid = 1;
     resources[targetPos].replies = 0;
     resources[targetPos].state = state;
