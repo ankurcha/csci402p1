@@ -42,7 +42,7 @@ void HMultiPing() {
     p.senderId = GetMachineID();
     p.timestamp = GetTimestamp();
     p.packetType = DO_PING;
-    Packet_Send(GetMachineID(), myMbox, myMbox, &p);
+    Packet_Send(GetMachineID(), myMbox, 0, &p);
 }
 
 void SendAll(int packetType) {
@@ -66,6 +66,7 @@ void SendAll(int packetType) {
             print(" from mbox ");
             print((char*)itoa(myMbox, buf));
             print("\n");
+
             Packet_Send(j, i + 1, myMbox, &p);
         }
     }
@@ -254,7 +255,7 @@ int DistLock_Acquire(int name) {
     p.timestamp = GetTimestamp();
     p.packetType = LOCK_ACQUIRE;
     copyInInt(p.data, 0, name); /* Data part just contains the LockID */
-    addResource(name, RES_REQ);
+    addResource(name, RES_REQ, p.timestamp);
     MsgQueue_Pop(&pkt, &pendingLockQueue[name], &senderId, &senderMBox);
     for (j = 0; j < 7; j++) 
         for (i = 0; i < numberOfEntities[j]; i++) 
