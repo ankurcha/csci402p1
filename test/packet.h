@@ -17,7 +17,7 @@ enum {
 /* Easy access to the data in a message */
 struct packet {
     int senderId;
-    int timestamp;
+    unsigned int timestamp;
     char packetType;
     char data[MaxMailSize - DATA];
 };
