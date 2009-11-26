@@ -366,7 +366,16 @@ int HCV_Wait(int HCVId, int HLockId) {
     int status = -1;
     int CV_Lock = -1;
     Packet p;
+    char buf[30];
+
     status = getResourceStatus(HLockId);
+
+    print("Tyring to wait on lock ");
+    print((char*) itoa(HCVId, buf));
+    print(" with lock ");
+    print((char*) itoa(HLockId, buf));
+    print("\n");
+
     if (status == RES_HELD) {
         CV_Lock = getCV_Lock_Mapping(HCVId);
 
