@@ -67,7 +67,6 @@ int Packet_Send(int receiverId, int recMBox, int senderMBox, Packet* p) {
     int status = -1;
     char message[MaxMailSize];
 
-    p->timestamp = GetTimestamp();
     SerializePacket(p, message);
 
     /* Now that we have the packet serialized in message,
