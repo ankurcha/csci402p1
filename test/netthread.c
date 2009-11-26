@@ -91,7 +91,7 @@ void network_thread() {
             print("2");
 
             /* some packet types do not need in-order processing, others do */
-            switch(pkt.packetType) {
+            switch(myPacket.packetType) {
                 case EMPTY:
                 case LOCK_ACQUIRE:
                 case LOCK_RELEASE:
@@ -104,7 +104,7 @@ void network_thread() {
                 case GO:
 
                     print("7");
-                    processExternalPacket(pkt, senderId, senderMbox);
+                    processExternalPacket(myPacket, senderId, senderMbox);
                     print("8");
                     break;
 
