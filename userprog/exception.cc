@@ -33,6 +33,7 @@
 #include <sstream>
 #include <vector>
 #ifdef CHANGED
+#include <climits>
 #include <algorithm>
 #endif
 
@@ -1059,7 +1060,7 @@ unsigned int GetTimestamp_Syscall() {
         starting_TS = myTimestamp; 
     }
 
-    return (unsigned int) (myTimestamp - starting_TS);
+    return  (unsigned int) ((myTimestamp - starting_TS)%INT_MAX);
 }
 
 void ExceptionHandler(ExceptionType which) {
