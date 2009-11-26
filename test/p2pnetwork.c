@@ -209,7 +209,9 @@ int HLock_Release(int HlockId) {
         return status;
     /* Create message for Lock Release */
     /* Send message to announce release of the lock to the network entity */
+
     status = Packet_Send(GetMachineID(), myMbox, 0, &p);
+    
     /* Check for successful Multicast */
     if (status > -1)
         status = 0;
@@ -225,6 +227,7 @@ int HLock_Acquire(int HlockId) {
     Packet p;
     if(netthread_Lock == -1)
         print("netthread_lock = -1\n");
+    
     if(netthread_CV == -1)
         print("netthread_CV = -1\n");
 
@@ -260,11 +263,19 @@ int DistLock_Acquire(int name) {
     p.packetType = LOCK_ACQUIRE;
     copyInInt(p.data, 0, name); /* Data part just contains the LockID */
     addResource(name, RES_REQ, p.timestamp);
-    for (j = 0; j < 7; j++) 
-        for (i = 0; i < numberOfEntities[j]; i++) 
-            if (j != GetMachineID() && (i + 1) != myMbox) 
-                /* Sending LOCK_ACQUIRE to all and waiting for LOCK_OK */
+    
+    print("Requested Resource\n");
+    print("Sending requests to all\n");
+    
+    for (j = 0; j < 7; j++){ 
+        for (i = 0; i < numberOfEntities[j]; i++){ 
+            if (j != GetMachineID() && (i + 1) != myMbox){ 
                 Packet_Send(j, i + 1, myMbox, &p);
+            }
+        }
+    }
+    
+    print("Sent requests to all\n"); 
     return 0;
 }
 

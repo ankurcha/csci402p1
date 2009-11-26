@@ -63,6 +63,7 @@ void network_thread() {
             /* senderId is the machine num, remember mbox 0 is reserved */
             i = machineIndex[senderId] + senderMbox - 1;
             if (myPacket.timestamp > maxTS[i]) {
+                print("maxTS updated\n");
                 maxTS[i] = myPacket.timestamp;
             } else {
                 print("ASSUMPTION VIOLATED: packet received out of order\n");
@@ -169,7 +170,6 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
     /* Process this packet */
     switch (pkt.packetType) {
         case EMPTY:
-            break;
         case LOCK_ACQUIRE:
             print("Got a LOCK_ACQUIRE!!!\n");
             name = copyOutInt(pkt.data, NAME);
@@ -334,6 +334,7 @@ void processLocalPacket(Packet pkt) {
             Halt();
             break;
         case LOCK_ACQUIRE:
+            print("LOCAL_LOCK_ACQUIRE\n");
             name = copyOutInt(pkt.data, NAME);
             DistLock_Acquire(name);
             break;
