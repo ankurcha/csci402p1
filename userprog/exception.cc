@@ -953,7 +953,8 @@ void handlePageFaultException(int vAddr) {
 int revBytes(int x) {
     int y = 0;
     for(int i=0; i < 4; i++) {
-        y = y<<8 + ((x >> (i*8)) & 0xff);
+        y = (y<<8) + (x & 0xff);
+        x = x >> 8;
     }
     return y;
 }
@@ -987,6 +988,8 @@ int Receive_Syscall(int receiveMbox, int senderIDvaddr, int senderMboxvaddr,
 
     int rsID = revBytes(senderID);
     int rsMbox = revBytes(senderMbox);
+
+    cout << "--Got a packet from senderID " << rsID << " and mbox " << rsMbox << endl;
 
     copyout(senderIDvaddr, sizeof(senderID)-1, (char*) &rsID);
     copyout(senderMboxvaddr, sizeof(senderMbox)-1, (char*) &rsMbox);
