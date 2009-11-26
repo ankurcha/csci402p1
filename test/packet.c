@@ -53,7 +53,6 @@ int Packet_Receive(int mbox, int* senderId, int* senderMBox,
     /* Deserialize the data to get the packet into receivedPacket*/
     if (status != -1) {
         DeserializePacket(receivedPacket, data);
-        print(itoa(receivedPacket->timestamp, str));
     }
 
     return status;
