@@ -166,7 +166,6 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
     }
     numEntities--;
     print("Processing External Packet\n");
-    Halt();
     /* Process this packet */
     switch (pkt.packetType) {
         case EMPTY:
