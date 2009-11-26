@@ -127,24 +127,25 @@ void network_thread() {
 
                     print("4");
 
-                    /* process all messages up to minTS */
-                    while (msgQueue[0].key < minTS) {
-                        message = Heap_ExtractMin(msgQueue, &queueLength);
-
-                        print("5");
-
-                        myPacket.senderId = message->pkt.senderId;
-                        myPacket.timestamp = message->pkt.timestamp;
-                        myPacket.packetType = message->pkt.packetType;
-                        strcpy(myPacket.data, message->pkt.data);
-                        senderId = message->senderId;
-                        senderMbox = message->senderMbox;
-
-                        processExternalPacket(myPacket, senderId, senderMbox);
-
-                        print("6");
-                    }
                     break;
+            }
+
+            /* process all messages up to minTS */
+            while (msgQueue[0].key < minTS) {
+                message = Heap_ExtractMin(msgQueue, &queueLength);
+
+                print("5");
+
+                myPacket.senderId = message->pkt.senderId;
+                myPacket.timestamp = message->pkt.timestamp;
+                myPacket.packetType = message->pkt.packetType;
+                strcpy(myPacket.data, message->pkt.data);
+                senderId = message->senderId;
+                senderMbox = message->senderMbox;
+
+                processExternalPacket(myPacket, senderId, senderMbox);
+
+                print("6");
             }
         } else {
             /* process a packet from my matching entity thread */
