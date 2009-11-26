@@ -57,6 +57,8 @@ void network_thread() {
         print(itoa(senderId, buf));
         print(" and mbox ");
         print(itoa(senderMbox, buf));
+        print(" with timestamp ");
+        print((char*) itoa(myPacket.timestamp, buf));
         print("\n");
 
         if (senderMbox != 0) {
