@@ -25,10 +25,10 @@ void network_thread() {
     Message msgQueue[MaxMsgQueue];
     Message* message;
     int queueLength = 0;
-    int minTS;
+    unsigned int minTS;
     int machineIndex[7];
     int numEntities;
-    int maxTS[MaxEntities];
+    unsigned int maxTS[MaxEntities];
     char buf[30];
 
     for (i = 0; i < MaxEntities; i++) {
