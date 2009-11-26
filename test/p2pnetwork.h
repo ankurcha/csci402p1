@@ -143,7 +143,7 @@ int getMboxNum();
 void initializeSystem();
 
 void initResources();
-int addResource(int id, int state);
+int addResource(int id, int state, int timestamp);
 int deleteResource(int id);
 
 int getResourceStatus(int resourceID);

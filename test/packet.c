@@ -44,7 +44,7 @@ int Packet_Receive(int mbox, int* senderId, int* senderMBox,
     int status = -1;
     char data[MaxMailSize];
     int sender, smb;
-
+    char str[20];
     /* actually get the data into the char *data variable */
     status = Receive(mbox, &sender, &smb, data);
     *senderId = sender;
@@ -53,6 +53,7 @@ int Packet_Receive(int mbox, int* senderId, int* senderMBox,
     /* Deserialize the data to get the packet into receivedPacket*/
     if (status != -1) {
         DeserializePacket(receivedPacket, data);
+        print(itoa(receivedPacket->timestamp, str));
     }
 
     return status;
