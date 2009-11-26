@@ -226,7 +226,6 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
             if (readyCount < numEntities) {
                 break;
             }
-
             SendAll(GO);
             /* fallthrough */
         case GO:
@@ -264,6 +263,7 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
             SendAll(PONG);
             break;
         case PING:
+            print("Receiver PING\n");
             p.senderId = GetMachineID();
             p.timestamp = GetTimestamp();
             p.packetType = PONG;

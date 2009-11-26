@@ -988,7 +988,6 @@ int Receive_Syscall(int receiveMbox, int senderIDvaddr, int senderMboxvaddr,
 
     int rsID = revBytes(senderID);
     int rsMbox = revBytes(senderMbox);
-
     cout << "--Got a packet from senderID " << rsID << " and mbox " << rsMbox << endl;
 
     copyout(senderIDvaddr, sizeof(senderID)-1, (char*) &rsID);
@@ -1047,7 +1046,16 @@ int GetMachineID_Syscall() {
 }
 
 int GetTimestamp_Syscall() {
-    return (int) time(NULL);
+    static int starting_TS = -1;
+    if(starting_TS == -1)
+        starting_TS = time(NULL);
+    struct timeval tv;
+    struct timezone tz;
+    struct tm *tm;
+    gettimeofday(&tv, &tz);
+    tm=localtime(&tv.tv_sec);
+    unsigned int myTimestamp = (unsigned int)(tv.tv_usec); 
+    return (int) myTimestamp;
 }
 
 void ExceptionHandler(ExceptionType which) {
