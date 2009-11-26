@@ -50,7 +50,6 @@ void network_thread() {
     /* Begin an infinite loop where we wait for data from the network */
     while (1) {
         Packet_Receive(myMbox, &senderId, &senderMbox, &myPacket);
-
         print("Received a packet from senderId ");
         print(itoa(senderId, buf));
         print(" and mbox ");
