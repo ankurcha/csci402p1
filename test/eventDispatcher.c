@@ -49,11 +49,11 @@ void MsgQueue_Push(MessageQueue *q, Packet *msg, int senderId, int senderMbox) {
     return;
 }
 
-void MsgQueue_Pop(Packet *p, MessageQueue *q, int *senderId, int *senderMbox) {
+int MsgQueue_Pop(Packet *p, MessageQueue *q, int *senderId, int *senderMbox) {
     int temp;
     /* check for empty queue */
     if (q->head == -1) {
-        return;
+        return -1;
     }
 
     temp = q->head;
@@ -76,6 +76,7 @@ void MsgQueue_Pop(Packet *p, MessageQueue *q, int *senderId, int *senderMbox) {
     (*p).timestamp = q->queue[temp].message.timestamp;
     (*p).packetType = q->queue[temp].message.packetType;
     strcpy((*p).data, q->queue[temp].message.data);
+    return 0;
 }
 
 char MsgQueue_IsEmpty(MessageQueue *q) {

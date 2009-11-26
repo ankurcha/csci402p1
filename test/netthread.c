@@ -66,6 +66,7 @@ void network_thread() {
             /* senderId is the machine num, remember mbox 0 is reserved */
             i = machineIndex[senderId] + senderMbox - 1;
             if (myPacket.timestamp > maxTS[i]) {
+                print("maxTS updated\n");
                 maxTS[i] = myPacket.timestamp;
             } else {
                 print("ASSUMPTION VIOLATED: packet received out of order\n");
@@ -176,10 +177,11 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
     /* Process this packet */
     switch (pkt.packetType) {
         case EMPTY:
-            break;
         case LOCK_ACQUIRE:
+            print("Got a LOCK_ACQUIRE!!!\n");
             name = copyOutInt(pkt.data, NAME);
             /* check if I am holding this lock */
+            print("Checking resource status\n");
             switch (getResourceStatus(name)) {
                 case RES_HELD:
                     if (resources[name].timestamp > pkt.timestamp) {
@@ -194,7 +196,7 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
                         MsgQueue_Push(&pendingLockQueue[name], &pkt, senderId, senderMbox); 
                         break;
                     }else if(resources[name].timestamp == pkt.timestamp){
-                        if(senderId*1000+senderMbox > GetMachineID()*1000+myMbox){
+                        if(senderId*1000 + senderMbox > GetMachineID() * 1000+myMbox){
                             MsgQueue_Push(&pendingLockQueue[name], &pkt, senderId, senderMbox);
                             break;
                         }
@@ -220,10 +222,10 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
              * LOCK_OK
              */
             /* get the lock being referred to */
+            print("Received LOCK_OK");
             name = copyOutInt(pkt.data, NAME);
             if (getResourceStatus(name) == RES_REQ) {
                 /* Yes, lock was requested */
-
                 /* Update the number of replies that we have received so far */
                 replies = getResourceReplies(name);
                 replies++;
@@ -351,6 +353,7 @@ void processLocalPacket(Packet pkt) {
             Halt();
             break;
         case LOCK_ACQUIRE:
+            print("LOCAL_LOCK_ACQUIRE\n");
             name = copyOutInt(pkt.data, NAME);
             DistLock_Acquire(name);
             break;

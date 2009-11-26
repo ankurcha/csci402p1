@@ -17,7 +17,6 @@ void createPharmacyClerk() {
 */
     clerk(myMbox);
     print("done\n");
-    Exit(0);
 }
 
 void clerk(int ID) {

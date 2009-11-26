@@ -51,9 +51,7 @@ int Packet_Receive(int mbox, int* senderId, int* senderMBox,
     *senderMBox = smb;
 
     /* Deserialize the data to get the packet into receivedPacket*/
-    if (status != -1) {
-        DeserializePacket(receivedPacket, data);
-    }
+    DeserializePacket(receivedPacket, data);
 
     return status;
 }
