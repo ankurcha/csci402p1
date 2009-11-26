@@ -977,6 +977,7 @@ int Receive_Syscall(int receiveMbox, int senderIDvaddr, int senderMboxvaddr,
 
     PacketHeader pktHead;
     MailHeader mailHead;
+
     if (receiveMbox >=0) {
         postOffice->Receive(receiveMbox, &pktHead, &mailHead, message);
     } else {
@@ -990,7 +991,6 @@ int Receive_Syscall(int receiveMbox, int senderIDvaddr, int senderMboxvaddr,
     int rsID = revBytes(senderID);
     int rsMbox = revBytes(senderMbox);
     cout << "--Got a packet from senderID " << rsID << " and mbox " << rsMbox << endl;
-
     copyout(senderIDvaddr, sizeof(senderID)-1, (char*) &rsID);
     copyout(senderMboxvaddr, sizeof(senderMbox)-1, (char*) &rsMbox);
     bytesRead = copyout(vaddr, MaxMailSize-1, message);
@@ -1059,7 +1059,6 @@ unsigned int GetTimestamp_Syscall() {
     if(starting_TS == -1){
         starting_TS = myTimestamp; 
     }
-
     return  (unsigned int) ((myTimestamp - starting_TS)%INT_MAX);
 }
 
@@ -1160,6 +1159,7 @@ void ExceptionHandler(ExceptionType which) {
                 rv = GetMachineID_Syscall();
                 break;
                 case SC_GetTimestamp:
+                DEBUG('a', "Get current timestamp in microseconds\n");
                 rv = GetTimestamp_Syscall();
                 break;
                 case SC_Receive:

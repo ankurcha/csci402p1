@@ -7,7 +7,7 @@ void pinger(){
         for(i=0; i< 1000; i++) {
             Yield();
         }
-        print("PING!!...\n");
+        print("Sending DO_PING...\n");
         HMultiPing();
     }
     HPing_NetThread();
