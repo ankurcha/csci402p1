@@ -370,7 +370,7 @@ int HCV_Wait(int HCVId, int HLockId) {
 
     status = getResourceStatus(HLockId);
 
-    print("Tyring to wait on lock ");
+    print("Tyring to wait on CV ");
     print((char*) itoa(HCVId, buf));
     print(" with lock ");
     print((char*) itoa(HLockId, buf));
