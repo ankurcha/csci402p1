@@ -38,7 +38,7 @@ void network_thread() {
     /*myMbox = mbox;*/
     /* this array should make it easier to scan all entities */
     machineIndex[0] = 0;
-    for (i = 0; i < 7; i++) {
+    for (i = 1; i < 7; i++) {
         machineIndex[i] = machineIndex[i - 1] + numberOfEntities[i - 1];
     }
     numEntities = machineIndex[6] + numberOfEntities[6];
