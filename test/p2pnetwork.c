@@ -50,11 +50,15 @@ void HMultiPing() {
 void SendAll(int packetType) {
     int i, j;
     Packet p;
-    char buf[11];
+    char buf[20];
 
     p.senderId = GetMachineID();
     p.timestamp = GetTimestamp();
     p.packetType = packetType;
+
+    print("Created a packet with timestamp ");
+    print((char*) itoa(p.timestamp, buf));
+    print("\n");
 
     for (j = 0; j < 7; j++) {
         for (i = 0; i < numberOfEntities[j]; i++) {
