@@ -66,6 +66,15 @@ void network_thread() {
                 maxTS[i] = myPacket.timestamp;
             } else {
                 print("ASSUMPTION VIOLATED: packet received out of order\n");
+                print("  from sender ");
+                print((char*) itoa(senderId, buf));
+                print(" and mbox ");
+                print((char*) itoa(senderMbox, buf));
+                print(".  New TS: ");
+                print((char*) itoa(myPacket.timestamp, buf));
+                print(" Old TS: ");
+                print((char*) itoa(maxTS[i], buf));
+                print("\n");
                 Halt();
             }
 
