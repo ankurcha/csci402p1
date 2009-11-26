@@ -1045,17 +1045,21 @@ int GetMachineID_Syscall() {
 #endif
 }
 
-int GetTimestamp_Syscall() {
-    static int starting_TS = -1;
-    if(starting_TS == -1)
-        starting_TS = time(NULL);
+unsigned int GetTimestamp_Syscall() {
+    static long long starting_TS = -1;
     struct timeval tv;
     struct timezone tz;
     struct tm *tm;
+    
     gettimeofday(&tv, &tz);
     tm=localtime(&tv.tv_sec);
-    unsigned int myTimestamp = (unsigned int)(tv.tv_usec); 
-    return (int) myTimestamp;
+    long long myTimestamp = ((long long)(tv.tv_usec + tv.tv_sec*1000000)); 
+
+    if(starting_TS == -1){
+        starting_TS = myTimestamp; 
+    }
+
+    return (unsigned int) (myTimestamp - starting_TS);
 }
 
 void ExceptionHandler(ExceptionType which) {

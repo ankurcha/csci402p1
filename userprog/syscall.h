@@ -190,7 +190,7 @@ int Random();
 
 int GetMachineID();
 
-int GetTimestamp();
+unsigned int GetTimestamp();
 
 void Send(int receiverID, int receiverMbox, int senderMbox, char* message);
 
