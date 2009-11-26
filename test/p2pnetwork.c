@@ -247,17 +247,20 @@ int HLock_Acquire(int HlockId) {
 }
 
 int DistLock_Acquire(int name) {
-    int i, j;
     /* Send a lock acquire message to all the targets */
     /* Add the requested resource to the requestedResource Array */
+    int i, j;
     Packet p,pkt;
     int senderId, senderMBox;
+
     p.senderId = GetMachineID();
     p.timestamp = GetTimestamp();
     p.packetType = LOCK_ACQUIRE;
     copyInInt(p.data, 0, name); /* Data part just contains the LockID */
+
     addResource(name, RES_REQ, p.timestamp);
-    MsgQueue_Pop(&pkt, &pendingLockQueue[name], &senderId, &senderMBox);
+    /*MsgQueue_Pop(&pkt, &pendingLockQueue[name], &senderId, &senderMBox);*/
+
     for (j = 0; j < 7; j++) 
         for (i = 0; i < numberOfEntities[j]; i++) 
             if (j != GetMachineID() && (i + 1) != myMbox) 
