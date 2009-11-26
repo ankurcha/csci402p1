@@ -35,7 +35,10 @@ void network_thread() {
         maxTS[i] = 0;
     }
     readyCount = 1;
+
+    going = 0;
     /*myMbox = mbox;*/
+
     /* this array should make it easier to scan all entities */
     machineIndex[0] = 0;
     for (i = 1; i < 7; i++) {
@@ -263,10 +266,13 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
             /* fallthrough */
         case GO:
             /* wake entity thread*/
-            print("GOOGOGOOGOGOG\n");
-            Acquire(netthread_Lock);
-            Signal(netthread_CV, netthread_Lock);
-            Release(netthread_Lock);
+            if(!going) {
+                print("GOGOGO\n");
+                Acquire(netthread_Lock);
+                Signal(netthread_CV, netthread_Lock);
+                Release(netthread_Lock);
+                going = 1;
+            }
             break;
         case RECP_DATA_UPDATE:
             temp = UpdateData_Receptionist(pkt);

@@ -255,15 +255,15 @@ int DistLock_Acquire(int name) {
     /* Send a lock acquire message to all the targets */
     /* Add the requested resource to the requestedResource Array */
     int i, j;
-    Packet p, pkt;
+    Packet p,pkt;
     int senderId, senderMBox;
 
     p.senderId = GetMachineID();
     p.timestamp = GetTimestamp();
     p.packetType = LOCK_ACQUIRE;
     copyInInt(p.data, 0, name); /* Data part just contains the LockID */
+
     addResource(name, RES_REQ, p.timestamp);
-    
     print("Requested Resource\n");
     print("Sending requests to all\n");
     
