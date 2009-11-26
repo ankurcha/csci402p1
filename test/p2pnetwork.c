@@ -57,6 +57,7 @@ void SendAll(int packetType) {
     for (j = 0; j < 7; j++) {
         for (i = 0; i < numberOfEntities[j]; i++) {
             if (j == GetMachineID() && (i + 1) == myMbox) {
+                print("sendall skipping myself\n");
                 continue;
             }
             print("sendall-ing packet to machine ");

@@ -11,7 +11,7 @@
 
 #include "itoa.h"
 
-char* itoa(int a, char *str) {
+char* itoa(unsigned int a, char *str) {
     int i = 0;
     int j = 0;
     char rts[50];

@@ -25,10 +25,10 @@ void network_thread() {
     Message msgQueue[MaxMsgQueue];
     Message* message;
     int queueLength = 0;
-    int minTS;
+    unsigned int minTS;
     int machineIndex[7];
     int numEntities;
-    int maxTS[MaxEntities];
+    unsigned int maxTS[MaxEntities];
     char buf[30];
 
     for (i = 0; i < MaxEntities; i++) {
@@ -66,6 +66,15 @@ void network_thread() {
                 maxTS[i] = myPacket.timestamp;
             } else {
                 print("ASSUMPTION VIOLATED: packet received out of order\n");
+                print("  from sender ");
+                print((char*) itoa(senderId, buf));
+                print(" and mbox ");
+                print((char*) itoa(senderMbox, buf));
+                print(".  New TS: ");
+                print((char*) itoa(myPacket.timestamp, buf));
+                print(" Old TS: ");
+                print((char*) itoa(maxTS[i], buf));
+                print("\n");
                 Halt();
             }
 
@@ -81,28 +90,51 @@ void network_thread() {
 
             print("2");
 
-            /* enqueue this packet */
-            if (queueLength < MaxMsgQueue) {
-                msgQueue[queueLength].senderId = senderId;
-                msgQueue[queueLength].senderMbox = senderMbox;
-                msgQueue[queueLength].pkt.senderId = myPacket.senderId;
-                msgQueue[queueLength].pkt.timestamp = myPacket.timestamp;
-                msgQueue[queueLength].pkt.packetType = myPacket.packetType;
-                strcpy(msgQueue[queueLength].pkt.data, myPacket.data);
-                msgQueue[queueLength].key = myPacket.timestamp;
-                Heap_Push(msgQueue, &queueLength);
-            } else {
-                print("ERROR: msgQueue ran out of space\n");
-                Halt();
-            }
+            /* some packet types do not need in-order processing, others do */
+            switch(pkt.packetType) {
+                case EMPTY:
+                case LOCK_ACQUIRE:
+                case LOCK_RELEASE:
+                case LOCK_OK:
+                case NODE_READY:
+                case DO_PING:
+                case PING:
+                case PONG:
+                case KILL:
+                case GO:
 
-            print("3");
+                    print("7");
+                    processExternalPacket(pkt, senderId, senderMbox);
+                    print("8");
+                    break;
+
+                default:
+                    print("3");
+                    /* enqueue this packet */
+                    if (queueLength < MaxMsgQueue) {
+                        msgQueue[queueLength].senderId = senderId;
+                        msgQueue[queueLength].senderMbox = senderMbox;
+                        msgQueue[queueLength].pkt.senderId = myPacket.senderId;
+                        msgQueue[queueLength].pkt.timestamp = myPacket.timestamp;
+                        msgQueue[queueLength].pkt.packetType = myPacket.packetType;
+                        strcpy(msgQueue[queueLength].pkt.data, myPacket.data);
+                        msgQueue[queueLength].key = myPacket.timestamp;
+                        Heap_Push(msgQueue, &queueLength);
+                    } else {
+                        print("ERROR: msgQueue ran out of space\n");
+                        Halt();
+                    }
+
+                    print("4");
+
+                    break;
+            }
 
             /* process all messages up to minTS */
             while (msgQueue[0].key < minTS) {
                 message = Heap_ExtractMin(msgQueue, &queueLength);
 
-                print("4");
+                print("5");
 
                 myPacket.senderId = message->pkt.senderId;
                 myPacket.timestamp = message->pkt.timestamp;
@@ -113,7 +145,7 @@ void network_thread() {
 
                 processExternalPacket(myPacket, senderId, senderMbox);
 
-                print("5");
+                print("6");
             }
         } else {
             /* process a packet from my matching entity thread */
