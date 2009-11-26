@@ -28,7 +28,6 @@ void createPatient() {
 */
     patients(myMbox);
     print("done\n");
-    Exit(0);
 }
 
 void patients(int ID) {

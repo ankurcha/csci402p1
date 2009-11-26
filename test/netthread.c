@@ -91,7 +91,7 @@ void network_thread() {
             print("2");
 
             /* some packet types do not need in-order processing, others do */
-            switch(pkt.packetType) {
+            switch(myPacket.packetType) {
                 case EMPTY:
                 case LOCK_ACQUIRE:
                 case LOCK_RELEASE:
@@ -104,7 +104,7 @@ void network_thread() {
                 case GO:
 
                     print("7");
-                    processExternalPacket(pkt, senderId, senderMbox);
+                    processExternalPacket(myPacket, senderId, senderMbox);
                     print("8");
                     break;
 
@@ -166,14 +166,15 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
     }
     numEntities--;
     print("Processing External Packet\n");
-    Halt();
     /* Process this packet */
     switch (pkt.packetType) {
         case EMPTY:
             break;
         case LOCK_ACQUIRE:
+            print("Got a LOCK_ACQUIRE!!!\n");
             name = copyOutInt(pkt.data, NAME);
             /* check if I am holding this lock */
+            print("Checking resource status\n");
             switch (getResourceStatus(name)) {
                 case RES_HELD:
                     if (resources[name].timestamp > pkt.timestamp) {
@@ -188,7 +189,7 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
                         MsgQueue_Push(&pendingLockQueue[name], &pkt, senderId, senderMbox); 
                         break;
                     }else if(resources[name].timestamp == pkt.timestamp){
-                        if(senderId*1000+senderMbox > GetMachineID()*1000+myMbox){
+                        if(senderId*1000 + senderMbox > GetMachineID() * 1000+myMbox){
                             MsgQueue_Push(&pendingLockQueue[name], &pkt, senderId, senderMbox);
                             break;
                         }
@@ -214,10 +215,10 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
              * LOCK_OK
              */
             /* get the lock being referred to */
+            print("Received LOCK_OK");
             name = copyOutInt(pkt.data, NAME);
             if (getResourceStatus(name) == RES_REQ) {
                 /* Yes, lock was requested */
-
                 /* Update the number of replies that we have received so far */
                 replies = getResourceReplies(name);
                 replies++;
