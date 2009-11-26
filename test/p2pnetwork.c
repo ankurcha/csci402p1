@@ -57,7 +57,6 @@ void SendAll(int packetType) {
     for (j = 0; j < 7; j++) {
         for (i = 0; i < numberOfEntities[j]; i++) {
             if (j == GetMachineID() && (i + 1) == myMbox) {
-                continue;
             }
             print("sendall-ing packet to machine ");
             print((char*)itoa(j, buf));
@@ -66,7 +65,6 @@ void SendAll(int packetType) {
             print(" from mbox ");
             print((char*)itoa(myMbox, buf));
             print("\n");
-
             Packet_Send(j, i + 1, myMbox, &p);
         }
     }

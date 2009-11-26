@@ -133,7 +133,9 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
     for (j = 0; j < 7; j++) {
         numEntities += numberOfEntities[j];
     }
+    numEntities--;
     print("Processing External Packet\n");
+    Halt();
     /* Process this packet */
     switch (pkt.packetType) {
         case EMPTY:
@@ -293,6 +295,7 @@ void processLocalPacket(Packet pkt) {
     for (j = 0; j < 7; j++) {
         numEntities += numberOfEntities[j];
     }
+    numEntities--;
     switch (pkt.packetType) {
         case EMPTY:
             print("!!!!!!!!!!!!!!!!!!!!!EMPTY PACKET!!!!!!!!!!!!!!!!!\n");

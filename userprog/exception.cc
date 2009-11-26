@@ -1026,10 +1026,10 @@ int Send_Syscall(int receiverID, int receiverMbox, int senderMbox, int vaddr) {
             DEBUG('a', "Cannot Send\n");
         } else {
             fflush(stdout);
-            delete[] message;
             return 1;
         }
     } else {
+        printf("Failed To Read Payload\n");
         DEBUG('a', "Failed to read Payload\n");
     }
     delete[] message;
