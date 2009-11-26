@@ -161,11 +161,15 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
     int name;
     int i, j;
     Packet p;
+    char buf[30];
+
     for (j = 0; j < 7; j++) {
         numEntities += numberOfEntities[j];
     }
     numEntities--;
+
     print("Processing External Packet\n");
+
     /* Process this packet */
     switch (pkt.packetType) {
         case EMPTY:
@@ -221,6 +225,10 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
                 replies = getResourceReplies(name);
                 replies++;
                 updateResourceReplies(name, replies);
+                
+                print("Received LOCK_OK num: ");
+                print((char*) itoa(replies, buf));
+                print("\n");
 
                 if (replies == numEntities) {
                     /* Now we have seen all the LOCK_OKs that we need and hence
@@ -326,6 +334,11 @@ void processLocalPacket(Packet pkt) {
         numEntities += numberOfEntities[j];
     }
     numEntities--;
+
+    print("Processing Local Packet of type: ");
+    print((char*) itoa(pkt.packetType, str));
+    print("\n");
+
     switch (pkt.packetType) {
         case EMPTY:
             print("!!!!!!!!!!!!!!!!!!!!!EMPTY PACKET!!!!!!!!!!!!!!!!!\n");
