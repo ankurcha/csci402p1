@@ -68,7 +68,7 @@ void network_thread() {
             /* senderId is the machine num, remember mbox 0 is reserved */
             i = machineIndex[senderId] + senderMbox - 1;
             if (myPacket.timestamp > maxTS[i]) {
-                print("maxTS updated\n");
+                /*print("maxTS updated\n");*/
                 maxTS[i] = myPacket.timestamp;
             } else {
                 print("ASSUMPTION VIOLATED: packet received out of order\n");
@@ -84,7 +84,7 @@ void network_thread() {
                 Halt();
             }
 
-            print("1");
+            /*print("1");*/
 
             /* update minTS */
             minTS = maxTS[0];
@@ -94,7 +94,7 @@ void network_thread() {
                 }
             }
 
-            print("2");
+            /*print("2");*/
 
             /* some packet types do not need in-order processing, others do */
             switch(myPacket.packetType) {
@@ -109,13 +109,13 @@ void network_thread() {
                 case KILL:
                 case GO:
 
-                    print("7");
+                    /*print("7");*/
                     processExternalPacket(myPacket, senderId, senderMbox);
-                    print("8");
+                    /*print("8");*/
                     break;
 
                 default:
-                    print("3");
+                    /*print("3");*/
                     /* enqueue this packet */
                     if (queueLength < MaxMsgQueue) {
                         msgQueue[queueLength].senderId = senderId;
@@ -131,7 +131,7 @@ void network_thread() {
                         Halt();
                     }
 
-                    print("4");
+                    /*print("4");*/
 
                     break;
             }
@@ -140,7 +140,7 @@ void network_thread() {
             while (msgQueue[0].key < minTS) {
                 message = Heap_ExtractMin(msgQueue, &queueLength);
 
-                print("5");
+                /*print("5");*/
 
                 myPacket.senderId = message->pkt.senderId;
                 myPacket.timestamp = message->pkt.timestamp;
@@ -151,7 +151,7 @@ void network_thread() {
 
                 processExternalPacket(myPacket, senderId, senderMbox);
 
-                print("6");
+                /*print("6");*/
             }
         } else {
             /* process a packet from my matching entity thread */
