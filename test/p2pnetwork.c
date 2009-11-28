@@ -55,17 +55,17 @@ void SendAll(int packetType) {
     p.senderId = GetMachineID();
     p.timestamp = GetTimestamp();
     p.packetType = packetType;
-
+#ifdef DEBUG
     print("Created a packet with timestamp ");
     print((char*) itoa(p.timestamp, buf));
     print("\n");
-
+#endif
     for (j = 0; j < 7; j++) {
         for (i = 0; i < numberOfEntities[j]; i++) {
             if (j == GetMachineID() && (i + 1) == myMbox) {
-                print("sendall skipping myself\n");
                 continue;
             }
+#ifdef DEBUG
             print("sendall-ing packet to machine ");
             print((char*)itoa(j, buf));
             print(" and mbox ");
@@ -73,7 +73,7 @@ void SendAll(int packetType) {
             print(" from mbox ");
             print((char*)itoa(myMbox, buf));
             print("\n");
-
+#endif
             Packet_Send(j, i + 1, myMbox, &p);
         }
     }
@@ -266,20 +266,22 @@ int DistLock_Acquire(int name) {
     p.timestamp = GetTimestamp();
     p.packetType = LOCK_ACQUIRE;
     copyInInt(p.data, 0, name); /* Data part just contains the LockID */
-
     addResource(name, RES_REQ, p.timestamp);
+#ifdef DEBUG
     print("Requested Resource\n");
     print("Sending requests to all\n");
-    
+#endif
+    print("Sending Acquire request to all\n");
+
     for (j = 0; j < 7; j++){ 
         for (i = 0; i < numberOfEntities[j]; i++){ 
-            if (j != GetMachineID() && (i + 1) != myMbox){ 
+            if (j == GetMachineID() && (i + 1) == myMbox){ 
+                continue;
+            }else{
                 Packet_Send(j, i + 1, myMbox, &p);
             }
         }
     }
-    
-    print("Sent requests to all\n"); 
     return 0;
 }
 
@@ -439,7 +441,9 @@ int DistCV_Wait(int CVID, int LockID) {
     /* send to every entity */
     for (j = 0; j < 7; j++) {
         for (i = 0; i < numberOfEntities[j]; i++) {
-            if (j != GetMachineID() && (i + 1) != myMbox) {
+            if (j == GetMachineID() && (i + 1) == myMbox){
+               continue;
+            }else{
                 Packet_Send(j, i + 1, myMbox, &p);
             }
         }
@@ -471,7 +475,9 @@ int DistCV_Signal(int CVID) {
     /* send to every entity */
     for (j = 0; j < 7; j++) {
         for (i = 0; i < numberOfEntities[j]; i++) {
-            if (j != GetMachineID() && (i + 1) != myMbox) {
+            if (j == GetMachineID() && (i + 1) == myMbox){
+               continue;
+            }else{
                 Packet_Send(j, i + 1, myMbox, &p);
             }
         }
@@ -553,9 +559,10 @@ int DistUpdate_Send(Packet p) {
     int i, j;
     for (j = 0; j < 7; j++) {
         for (i = 0; i < numberOfEntities[j]; i++) {
-            if (j != GetMachineID() && (i + 1) != myMbox) {
+            if (j == GetMachineID() && (i + 1) == myMbox)
+                continue;
+            else 
                 Packet_Send(j, i + 1, myMbox, &p);
-            }
         }
     }
 }

@@ -4,7 +4,7 @@
 void pinger(){
     int i = 0;
     while(1){
-        for(i=0; i< 1000; i++) {
+        for(i=0; i< 10000; i++) {
             Yield();
         }
         print("Sending DO_PING...\n");

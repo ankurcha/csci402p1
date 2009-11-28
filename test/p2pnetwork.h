@@ -78,20 +78,20 @@ enum {
     CV_WAIT = 0x07,
     CV_SIGNAL = 0x08,
     CV_BROADCAST = 0x09,
-    NODE_READY = 0x0C,
-    RECP_DATA_UPDATE = 0x0D,
-    PAT_DATA_UPDATE = 0x0E,
-    DOORB_DATA_UPDATE = 0x0F,
-    DOC_DATA_UPDATE = 0x10,
-    CASH_DATA_UPDATE = 0x11,
-    CLERK_DATA_UPDATE = 0x12,
-    MAN_DATA_UPDATE = 0x13,
-    GLOBAL_DATA_UPDATE = 0x14,
-    DO_PING = 0x15,
-    PING = 0x16,
-    PONG = 0x17,
-    KILL = 0x18,
-    GO = 0x19
+    NODE_READY = 0x0A,
+    RECP_DATA_UPDATE = 0x0B,
+    PAT_DATA_UPDATE = 0x0C,
+    DOORB_DATA_UPDATE = 0x0D,
+    DOC_DATA_UPDATE = 0x0E,
+    CASH_DATA_UPDATE = 0x0F,
+    CLERK_DATA_UPDATE = 0x10,
+    MAN_DATA_UPDATE = 0x11,
+    GLOBAL_DATA_UPDATE = 0x12,
+    DO_PING = 0x13,
+    PING = 0x14,
+    PONG = 0x15,
+    KILL = 0x16,
+    GO = 0x17
 };
 
 /* Global Variable Identification */
@@ -121,7 +121,7 @@ enum {
     QUEUE_POP = 0x16
 };
 
-/* Entity Identification */
+/* Entity Identification 
 enum {
     RECEPTIONIST_NODE = 0x0D,
     PATIENT_NODE = 0x0E,
@@ -131,7 +131,7 @@ enum {
     CLERK_NODE = 0x12,
     MANAGER_NODE = 0x13
 };
-
+*/
 int myMbox;
 char going;
 

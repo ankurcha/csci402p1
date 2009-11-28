@@ -622,10 +622,6 @@ int Random_Syscall() {
     return Random();
 }
 
-int getTimestamp() {
-    return (int) time(NULL);
-}
-
 #ifdef USE_TLB
 void CopyTranslationEntry(TranslationEntry* sourceTE,TranslationEntry* destTE) {
     // Perform deep copy the source to the destination
@@ -990,7 +986,7 @@ int Receive_Syscall(int receiveMbox, int senderIDvaddr, int senderMboxvaddr,
 
     int rsID = revBytes(senderID);
     int rsMbox = revBytes(senderMbox);
-    cout << "--Got a packet from senderID " << rsID << " and mbox " << rsMbox << endl;
+    //cout << "--Got a packet from senderID " << rsID << " and mbox " << rsMbox << endl;
     copyout(senderIDvaddr, sizeof(senderID)-1, (char*) &rsID);
     copyout(senderMboxvaddr, sizeof(senderMbox)-1, (char*) &rsMbox);
     bytesRead = copyout(vaddr, MaxMailSize-1, message);
@@ -1059,7 +1055,6 @@ unsigned int GetTimestamp_Syscall() {
     }
 
     unsigned int ret = (epoch - starting_TS)*1000000 + tv.tv_usec;
-    cout << "----Get time got " << ret << endl;
 
     return ret;
 }

@@ -28,6 +28,7 @@ void network_thread() {
     unsigned int minTS;
     int machineIndex[7];
     int numEntities;
+    int l = 0;
     unsigned int maxTS[MaxEntities];
     char buf[30];
 
@@ -59,10 +60,13 @@ void network_thread() {
         print(itoa(senderMbox, buf));
         print(" with timestamp ");
         print((char*) itoa(myPacket.timestamp, buf));
+        print(" packetType: ");
+        print(itoa(myPacket.packetType, buf));
         print("\n");
-
         if (senderMbox != 0) {
+#ifdef DEBUG
             print("  From someone else!\n");
+#endif
             /* process a packet from another entity on the network */
             /* updates the maxTS for this entitiy */
             /* senderId is the machine num, remember mbox 0 is reserved */
@@ -173,12 +177,13 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
         numEntities += numberOfEntities[j];
     }
     numEntities--;
-
-    print("Processing External Packet\n");
-
+    print("Processing External Packet Type: ");
+    print(itoa(pkt.packetType,buf));
+    print("\n");
     /* Process this packet */
     switch (pkt.packetType) {
         case EMPTY:
+            print("Empty packet received!\n");
         case LOCK_ACQUIRE:
             print("Got a LOCK_ACQUIRE!!!\n");
             name = copyOutInt(pkt.data, NAME);
@@ -224,7 +229,9 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
              * LOCK_OK
              */
             /* get the lock being referred to */
-            print("Received LOCK_OK");
+            print("Received LOCK_OK from senderId: ");
+            print(itoa(pkt.senderId, buf));
+            print("\n");
             name = copyOutInt(pkt.data, NAME);
             if (getResourceStatus(name) == RES_REQ) {
                 /* Yes, lock was requested */
@@ -232,11 +239,9 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
                 replies = getResourceReplies(name);
                 replies++;
                 updateResourceReplies(name, replies);
-                
                 print("Received LOCK_OK num: ");
                 print((char*) itoa(replies, buf));
                 print("\n");
-
                 if (replies == numEntities) {
                     /* Now we have seen all the LOCK_OKs that we need and hence
                      * we get the LOCK NOW and delete the resource from the
@@ -252,11 +257,13 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
             break;
         case CV_WAIT:
             /* add them to the queue of requests */
+            print("Got a CV_WAIT!\n");
             name = copyOutInt(pkt.data, NAME); /* CVID */
             temp = copyOutInt(pkt.data, 4); /* LockID */
             MsgQueue_Push(&pendingCVQueue[name], &pkt, senderId, senderMbox);
             break;
         case CV_SIGNAL:
+            print("Got CV_SIGNAL\n");
             Process_CV_Signal(pkt);
             break;
         case CV_BROADCAST:
@@ -312,7 +319,7 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
             SendAll(PONG);
             break;
         case PING:
-            print("Receiver PING\n");
+            print("Received PING\n");
             p.senderId = GetMachineID();
             p.timestamp = GetTimestamp();
             p.packetType = PONG;
@@ -345,14 +352,14 @@ void processLocalPacket(Packet pkt) {
     }
     numEntities--;
 
+#ifdef DEBUG
     print("Processing Local Packet of type: ");
     print((char*) itoa(pkt.packetType, str));
     print("\n");
-
+#endif
     switch (pkt.packetType) {
         case EMPTY:
             print("!!!!!!!!!!!!!!!!!!!!!EMPTY PACKET!!!!!!!!!!!!!!!!!\n");
-            Halt();
             break;
         case LOCK_ACQUIRE:
             print("LOCAL_LOCK_ACQUIRE\n");
@@ -388,7 +395,9 @@ void processLocalPacket(Packet pkt) {
             }
             break;
         case NODE_READY:
+#ifdef DEBUG
             print("SendAll NODE_READY\n");
+#endif
             SendAll(NODE_READY);
             break;
         case RECP_DATA_UPDATE:

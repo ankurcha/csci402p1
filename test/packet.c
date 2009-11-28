@@ -73,17 +73,17 @@ int Packet_Send(int receiverId, int recMBox, int senderMBox, Packet* p) {
     int status = -1;
     unsigned char message[MaxMailSize];
     unsigned char buf[30];
-
+#ifdef DEBUG
     print("Preparing to send packet with TS:");
     print((char*) itoa(p->timestamp, buf));
     print("\n");
-
+#endif
     SerializePacket(p, message);
-
+#ifdef DEBUG
     print("Serialized to: ");
     printHex(message, MaxMailSize);
     print("\n");
-
+#endif
     /* Now that we have the packet serialized in message,
      * do a send till we are sure that this host receives it,
      **************** THIS IS A BLOCKING SEND ********************
@@ -170,6 +170,7 @@ void copyInData(unsigned char* message, int index, unsigned char* data, int leng
 }
 
 void SerializePacket(Packet *p, unsigned char* message) {
+    char buf[20];
     copyInShort(message, NAME, p->senderId);
     copyInInt(message, TIMESTAMP, p->timestamp);
     message[PACKET_TYPE] = p->packetType;
