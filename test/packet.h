@@ -18,8 +18,8 @@ enum {
 struct packet {
     int senderId;
     unsigned int timestamp;
-    char packetType;
-    char data[MaxMailSize - DATA];
+    unsigned char packetType;
+    unsigned char data[MaxMailSize - DATA];
 };
 typedef struct packet Packet;
 
@@ -32,18 +32,18 @@ int Packet_Receive(int mbox, int *senderId, int *senderMBox,
 
 int Packet_Send(int receiverId, int recMBox, int senderMBox, Packet*);
 
-void SerializePacket(Packet *p, char* message);
-void DeserializePacket(Packet *p, char* message);
+void SerializePacket(Packet *p, unsigned char* message);
+void DeserializePacket(Packet *p, unsigned char* message);
 
 /* Defined some methods for putting data into and out of messages */
-int copyOutInt(char* message, int index);
-void copyInInt(char* message, int index, int val);
+int copyOutInt(unsigned char* message, int index);
+void copyInInt(unsigned char* message, int index, int val);
 
-int copyOutShort(char* message, int index);
-void copyInShort(char* message, int index, int val);
+int copyOutShort(unsigned char* message, int index);
+void copyInShort(unsigned char* message, int index, int val);
 
-void copyOutData(char* message, int index, char* data, int length);
-void copyInData(char* message, int index, char* data, int length);
+void copyOutData(unsigned char* message, int index, unsigned char* data, int length);
+void copyInData(unsigned char* message, int index, unsigned char* data, int length);
 
 /* copies right to left */
 void memcopy(char* left, char* right, int length);

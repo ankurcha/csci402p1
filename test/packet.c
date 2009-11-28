@@ -5,10 +5,13 @@
  */
 
 #include "packet.h"
-void printHex(char *message, int len){
+void printHex(unsigned char *message, int len){
     int i = 0;
-    char a;
-    char str[2*MaxMailSize+1];
+    unsigned char a;
+    unsigned int b;
+    unsigned char str[2*MaxMailSize+1];
+    char buf[30];
+
     if(len > MaxMailSize){
         print("LEN must be 40\n");
         len = MaxMailSize;
@@ -16,15 +19,19 @@ void printHex(char *message, int len){
 
     for(i=0;i<len; i++){
         a = message[i];
-        if((a>>4) < 10){
-            str[2*i] = (a>>4) + '0';
+        b = a;
+        print((char*) itoa(b, buf));
+        print(" ");
+
+        if((a/16) < 10){
+            str[2*i] = (a/16) + '0';
         }else{
-           str[2*i] = (a>>4) + 'A';
+           str[2*i] = (a/16) + 'A' -10;
         }
        if((a%16) <10){
-            str[2*i+1] = (a%16) + '0';
+            str[2*i+1] = (a & 0x0f) + '0';
         }else{
-           str[2*i+1] = (a%16) + 'A';
+           str[2*i+1] = (a & 0x0f) + 'A' - 10;
         }
     }
     str[2*i] = 0;
@@ -42,9 +49,10 @@ int Packet_Receive(int mbox, int* senderId, int* senderMBox,
      */
 
     int status = -1;
-    char data[MaxMailSize];
+    unsigned char data[MaxMailSize];
     int sender, smb;
-    char str[20];
+    unsigned char str[20];
+
     /* actually get the data into the char *data variable */
     status = Receive(mbox, &sender, &smb, data);
     *senderId = sender;
@@ -63,9 +71,18 @@ int Packet_Send(int receiverId, int recMBox, int senderMBox, Packet* p) {
      */
 
     int status = -1;
-    char message[MaxMailSize];
+    unsigned char message[MaxMailSize];
+    unsigned char buf[30];
+
+    print("Preparing to send packet with TS:");
+    print((char*) itoa(p->timestamp, buf));
+    print("\n");
 
     SerializePacket(p, message);
+
+    print("Serialized to: ");
+    printHex(message, MaxMailSize);
+    print("\n");
 
     /* Now that we have the packet serialized in message,
      * do a send till we are sure that this host receives it,
@@ -88,8 +105,8 @@ int Packet_Send(int receiverId, int recMBox, int senderMBox, Packet* p) {
  ******* PACKET MANIPULATION *************
  *****************************************/
 
-int copyOutInt(char* message, int index) {
-    int val = 0;
+int copyOutInt(unsigned char* message, int index) {
+    unsigned int val = 0;
     unsigned int i = 0;
 
     for (i = 0; i < 4; i++) {
@@ -99,7 +116,7 @@ int copyOutInt(char* message, int index) {
     return val;
 }
 
-void copyInInt(char* message, int index, int val) {
+void copyInInt(unsigned char* message, int index, int val) {
     unsigned int i = 0;
 
     for (i = 0; i < 4; i++) {
@@ -107,8 +124,8 @@ void copyInInt(char* message, int index, int val) {
     }
 }
 
-int copyOutShort(char* message, int index) {
-    int val = 0;
+int copyOutShort(unsigned char* message, int index) {
+    unsigned int val = 0;
     unsigned int i = 0;
 
     for (i = 0; i < 2; i++) {
@@ -118,7 +135,7 @@ int copyOutShort(char* message, int index) {
     return val;
 }
 
-void copyInShort(char* message, int index, int val) {
+void copyInShort(unsigned char* message, int index, int val) {
     unsigned int i = 0;
 
     for (i = 0; i < 2; i++) {
@@ -126,7 +143,7 @@ void copyInShort(char* message, int index, int val) {
     }
 }
 
-void copyOutData(char* message, int index, char* data, int length) {
+void copyOutData(unsigned char* message, int index, unsigned char* data, int length) {
     unsigned int i = 0;
 
     if (index + length > MaxMailSize) {
@@ -139,7 +156,7 @@ void copyOutData(char* message, int index, char* data, int length) {
     }
 }
 
-void copyInData(char* message, int index, char* data, int length) {
+void copyInData(unsigned char* message, int index, unsigned char* data, int length) {
     unsigned int i = 0;
 
     if (index + length > MaxMailSize) {
@@ -152,7 +169,7 @@ void copyInData(char* message, int index, char* data, int length) {
     }
 }
 
-void SerializePacket(Packet *p, char* message) {
+void SerializePacket(Packet *p, unsigned char* message) {
     copyInShort(message, NAME, p->senderId);
     copyInInt(message, TIMESTAMP, p->timestamp);
     message[PACKET_TYPE] = p->packetType;
@@ -164,7 +181,7 @@ void SerializePacket(Packet *p, char* message) {
    */
 }
 
-void DeserializePacket(Packet *p, char* message) {
+void DeserializePacket(Packet *p, unsigned char* message) {
     /*
     print("De-ser: ");
     printHex(message, 40);
