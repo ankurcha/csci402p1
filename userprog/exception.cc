@@ -103,7 +103,7 @@ int copyin(unsigned int vaddr, int len, char *buf) {
     return len;
 }
 
-int copyout(unsigned int vaddr, int len, char *buf) {
+int copyout(unsigned int vaddr, int len, unsigned char *buf) {
     // Copy len bytes to the current thread's virtual address vaddr.
     // Return the number of bytes so written, or -1 if an error
     // occors.  Errors can generally mean a bad virtual address was
@@ -241,7 +241,7 @@ int Read_Syscall(unsigned int vaddr, int len, int id) {
         //Reading from the keyboard
         scanf("%s", buf);
 
-        if (copyout(vaddr, len, buf) == -1) {
+        if (copyout(vaddr, len, (unsigned char*) buf) == -1) {
             printf("%s", "Bad pointer passed to Read: data not copied\n");
         }
     } else {
@@ -249,7 +249,7 @@ int Read_Syscall(unsigned int vaddr, int len, int id) {
             len = f->Read(buf, len);
             if (len > 0) {
                 //Read something from the file. Put into user's address space
-                if (copyout(vaddr, len, buf) == -1) {
+                if (copyout(vaddr, len, (unsigned char*) buf) == -1) {
                     printf("%s",
                             "Bad pointer passed to Read: data not copied\n");
                 }
@@ -987,9 +987,9 @@ int Receive_Syscall(int receiveMbox, int senderIDvaddr, int senderMboxvaddr,
     int rsID = revBytes(senderID);
     int rsMbox = revBytes(senderMbox);
     //cout << "--Got a packet from senderID " << rsID << " and mbox " << rsMbox << endl;
-    copyout(senderIDvaddr, sizeof(senderID)-1, (char*) &rsID);
-    copyout(senderMboxvaddr, sizeof(senderMbox)-1, (char*) &rsMbox);
-    bytesRead = copyout(vaddr, MaxMailSize-1, message);
+    copyout(senderIDvaddr, sizeof(senderID)-1, (unsigned char*) &rsID);
+    copyout(senderMboxvaddr, sizeof(senderMbox)-1, (unsigned char*) &rsMbox);
+    bytesRead = copyout(vaddr, MaxMailSize-1, (unsigned char*) message);
     delete[] message;
     return bytesRead;
 #endif

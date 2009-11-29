@@ -120,7 +120,7 @@ void copyInInt(unsigned char* message, int index, int val) {
     unsigned int i = 0;
 
     for (i = 0; i < 4; i++) {
-        message[i + index] = (val >> (8 * (3 - i))) & 0xFF;
+        message[i + index] = (((unsigned int) val) >> (8 * (3 - i))) & 0xFF;
     }
 }
 
@@ -139,7 +139,7 @@ void copyInShort(unsigned char* message, int index, int val) {
     unsigned int i = 0;
 
     for (i = 0; i < 2; i++) {
-        message[i + index] = (val >> (8 * (1 - i))) & 0xFF;
+        message[i + index] = (((unsigned int) val) >> (8 * (1 - i))) & 0xFF;
     }
 }
 

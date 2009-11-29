@@ -217,7 +217,7 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
                     p.timestamp = GetTimestamp();
                     p.packetType = LOCK_OK;
                     copyInInt(p.data, NAME, name);
-                    Packet_Send(senderId, senderMbox, GetMachineID(), &p);
+                    Packet_Send(senderId, senderMbox, myMbox, &p);
                     break;
                 default:
                     print("ERROR: invalid resource status\n");
