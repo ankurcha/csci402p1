@@ -117,7 +117,7 @@ int getResourceTimestamp(int name) {
     if(name >= MAX_RESOURCES) {
         return -1;
     }
-    if(resource[name].valid == 0) {
+    if(resources[name].valid == 0) {
         return -1;
     }
     return resources[name].timestamp;
@@ -155,9 +155,11 @@ int addResource(int name, int state, int timestamp) {
     int i = 0;
     int targetPos = -1;
     char str[20];
+
     print("Adding Resource: ");
-    print(itoa(name, str));
+    print((char*) itoa(name, str));
     print(" RES_REQ\n");
+
     targetPos = name;
     if(targetPos > MAX_RESOURCES)
         return -1;
