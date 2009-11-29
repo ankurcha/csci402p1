@@ -191,18 +191,18 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
             print("Checking resource status\n");
             switch (getResourceStatus(name)) {
                 case RES_HELD:
-                    if (resources[name].timestamp > pkt.timestamp) {
+                    if (getResourceTimestamp(name) > pkt.timestamp) {
                         print(
                                 "ERROR: received an earlier request for a lock I already hold");
                         break;
                     }
                     /* fallthrough */
                 case RES_REQ:
-                    if (resources[name].timestamp < pkt.timestamp) {
+                    if (getResourceTimestamp(name) < pkt.timestamp) {
                         /*TODO add them to the list */
                         MsgQueue_Push(&pendingLockQueue[name], &pkt, senderId, senderMbox); 
                         break;
-                    }else if(resources[name].timestamp == pkt.timestamp){
+                    }else if(getResourceTimestamp(name) == pkt.timestamp){
                         if(senderId*1000 + senderMbox > GetMachineID() * 1000+myMbox){
                             MsgQueue_Push(&pendingLockQueue[name], &pkt, senderId, senderMbox);
                             break;
@@ -247,7 +247,7 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
                      * we get the LOCK NOW and delete the resource from the
                      * requestedResource and add it to the HeldResources
                      */
-                    resources[name].state = RES_HELD;
+                    updateResourceStatus(name, RES_HELD);
                     /* Now we can send a signal to the entity */
                     Acquire(netthread_Lock);
                     Signal(netthread_CV, netthread_Lock);

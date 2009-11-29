@@ -114,10 +114,24 @@ int getResourceStatus(int name) {
                     status = RES_NONE;
                     break;
             }
+            break;
         }
     }
     return status;
 
+}
+
+int getResourceTimestamp(int name) {
+    int timestamp = 0;
+    int i = 0;
+    for(i=0; i < MAX_RESOURCES; i++) {
+        if (resources[i].name == name && resources[i].valid == 1) {
+            timestamp = resources[i].timestamp;
+            break;
+        }
+    }
+
+    return timestamp;
 }
 
 int updateResourceStatus(int name, int newStatus) {

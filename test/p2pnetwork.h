@@ -148,6 +148,7 @@ int addResource(int id, int state, int timestamp);
 int deleteResource(int id);
 
 int getResourceStatus(int resourceID);
+int getResourceTimestamp(int resourceID);
 int updateResourceStatus(int resourceID, int newStatus);
 int getResourceReplies(int resourceID);
 int updateResourceReplies(int resourceID, int replies);
