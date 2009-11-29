@@ -7,8 +7,8 @@
 int getMboxNum() {
     int senderId;
     int senderMbox;
-    char str[20];
-    char message[MaxMailSize];
+    unsigned char str[20];
+    unsigned char message[MaxMailSize];
     myMbox = -1;
     Receive(0, &senderId, &senderMbox, message);
     myMbox = copyOutInt(message, 0);
@@ -22,6 +22,7 @@ void initializeSystem() {
     /* Read all the configuration data */
     int i;
     print("Initializing Netthread\n");
+    initResources();
     netthread_Lock = CreateLock("netthread_Lock");
     netthread_CV = CreateCondition("netthread_CV");
     ping_Lock = CreateLock("ping_Lock");
@@ -29,7 +30,6 @@ void initializeSystem() {
     readConfig();
     getMboxNum();
     /* create system locks and CV*/
-    initResources();
 
     for(i = 0;i<MAX_CV;i++)
         Init_MsgQueue(&pendingCVQueue[i], queue[i], MAX_CV_QUEUE_LEN);
@@ -101,24 +101,16 @@ void Kill() {
 int getResourceStatus(int name) {
     int status = RES_NONE;
     int i = 0;
-    for (i = 0; i < MAX_RESOURCES; i++) {
-        if (resources[i].name == name && resources[i].valid == 1) {
-            switch (resources[i].state) {
-                case RES_HELD:
-                    status = RES_HELD;
-                    break;
-                case RES_REQ:
-                    status = RES_REQ;
-                    break;
-                default:
-                    status = RES_NONE;
-                    break;
-            }
-            break;
-        }
-    }
-    return status;
+    char str[20];
+    if(name > MAX_RESOURCES)
+        return -1;
+    else
+        status =  resources[name].state;
 
+    print("Resource status: ");
+    print(itoa(status, str));
+    print("\n");
+    return status;
 }
 
 int getResourceTimestamp(int name) {
@@ -136,53 +128,45 @@ int getResourceTimestamp(int name) {
 
 int updateResourceStatus(int name, int newStatus) {
     int i;
-    for (i = 0; i < MAX_RESOURCES; i++) {
-        if (resources[i].valid == 1 && resources[i].name == name) {
-            resources[i].state = newStatus;
-            return resources[i].state;
-        }
-    }
-    return -1;
+    if(newStatus > MAX_RESOURCES)
+        return -1;
+    else
+        return resources[name].state = newStatus;
 }
 
 int getResourceReplies(int name) {
     int i;
-    for (i = 0; i < MAX_RESOURCES; i++) {
-        if (resources[i].valid == 1 && resources[i].name == name) {
-            return resources[i].replies;
-        }
-    }
-    return -1;
+    if(resources[name].valid == 0)
+        return -1;
+    else
+        return resources[name].replies;
 }
 
 int updateResourceReplies(int name, int newReplies) {
     int i;
-    for (i = 0; i < MAX_RESOURCES; i++) {
-        if (resources[i].valid == 1 && resources[i].name == name) {
-            resources[i].replies = newReplies;
-            return resources[i].replies;
-        }
-    }
-    return -1;
+    if(resources[name].valid == 0)
+        return -1;
+    else
+        return resources[name].replies;
 }
 
 void initResources() {
     int i = 0;
     for (i = 0; i < MAX_RESOURCES; i++)
         resources[i].valid = 0;
+        resources[i].state = RES_NONE;
 }
 
 int addResource(int name, int state, int timestamp) {
     int i = 0;
     int targetPos = -1;
-    for (i = 0; i < MAX_RESOURCES; i++)
-        if (resources[i].valid = 0) {
-            targetPos = i;
-            break;
-        }
-    if (targetPos == -1)
+    char str[20];
+    print("Adding Resource: ");
+    print(itoa(name, str));
+    print(" RES_REQ\n");
+    targetPos = name;
+    if(targetPos > MAX_RESOURCES)
         return -1;
-
     resources[targetPos].name = name;
     resources[targetPos].timestamp = timestamp;
     resources[targetPos].valid = 1;
@@ -193,23 +177,18 @@ int addResource(int name, int state, int timestamp) {
 
 int deleteResource(int name) {
     int i = 0;
-    for (i = 0; i < MAX_RESOURCES; i++) {
-        if (resources[i].name == name) {
-            resources[i].valid = 0;
-            return 1;
-        }
-    }
-    return 0;
+    if(name > MAX_RESOURCES)
+        return -1;
+    else
+        return resources[name].valid = 0;
 }
 
 int IsResourcePresent(int name) {
     int i = 0;
-    for (i = 0; i < MAX_RESOURCES; i++) {
-        if (resources[i].name == name && resources[i].valid == 1) {
-            return 1;
-        }
-    }
-    return 0;
+    if (resources[name].name == name && resources[name].valid == 1)
+        return resources[name].valid;
+    else
+        return 0;
 }
 
 /*******************************
@@ -273,6 +252,7 @@ int DistLock_Acquire(int name) {
     /* Send a lock acquire message to all the targets */
     /* Add the requested resource to the requestedResource Array */
     int i, j;
+    int status;
     Packet p,pkt;
     int senderId, senderMBox;
 
@@ -280,7 +260,11 @@ int DistLock_Acquire(int name) {
     p.timestamp = GetTimestamp();
     p.packetType = LOCK_ACQUIRE;
     copyInInt(p.data, 0, name); /* Data part just contains the LockID */
-    addResource(name, RES_REQ, p.timestamp);
+    status = addResource(name, RES_REQ, p.timestamp);
+    if( status == -1){
+        print("Problem Adding the RES_REQ\n");
+        Halt();
+    }
 #ifdef DEBUG
     print("Requested Resource\n");
     print("Sending requests to all\n");
@@ -393,7 +377,7 @@ int HCV_Wait(int HCVId, int HLockId) {
     int status = -1;
     int CV_Lock = -1;
     Packet p;
-    char buf[30];
+    unsigned char buf[30];
 
     status = getResourceStatus(HLockId);
 
@@ -531,8 +515,8 @@ void readConfig() {
      * to the global variables
      */
     OpenFileId fd;
-    char buf[10];
-    char *temp = "";
+    unsigned char buf[10];
+    unsigned char *temp = "";
     int num = 0;
     char number[10];
     int bytesread = 0;

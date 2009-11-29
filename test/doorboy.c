@@ -3,7 +3,7 @@
 
 void createDoorBoy() {
     int temp;
-    char str[50];
+    unsigned char str[50];
     initializeSystem();
     print("Forking network_thread...");
     Fork(network_thread);
@@ -23,9 +23,9 @@ void createDoorBoy() {
 }
 
 void doorboy(int ID) {
-    char str[50];
+    unsigned char str[50];
     int myDoctor = 0;
-    char doorboyBreak = 0;
+    unsigned char doorboyBreak = 0;
     HNodeReady();
     while (1) {
 

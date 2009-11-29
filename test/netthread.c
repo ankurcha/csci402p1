@@ -30,7 +30,7 @@ void network_thread() {
     int numEntities;
     int l = 0;
     unsigned int maxTS[MaxEntities];
-    char buf[30];
+    unsigned char buf[30];
 
     for (i = 0; i < MaxEntities; i++) {
         maxTS[i] = 0;
@@ -171,7 +171,7 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
     int name;
     int i, j;
     Packet p;
-    char buf[30];
+    unsigned char buf[30];
 
     for (j = 0; j < 7; j++) {
         numEntities += numberOfEntities[j];
@@ -236,6 +236,7 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
             if (getResourceStatus(name) == RES_REQ) {
                 /* Yes, lock was requested */
                 /* Update the number of replies that we have received so far */
+                print("Got a reply for my requested LOCK\n");
                 replies = getResourceReplies(name);
                 replies++;
                 updateResourceReplies(name, replies);
@@ -248,6 +249,7 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
                      * requestedResource and add it to the HeldResources
                      */
                     updateResourceStatus(name, RES_HELD);
+                    print("Holding the Lock Now!\n");
                     /* Now we can send a signal to the entity */
                     Acquire(netthread_Lock);
                     Signal(netthread_CV, netthread_Lock);
@@ -344,7 +346,7 @@ void processLocalPacket(Packet pkt) {
     int temp, temp1;
     int i, j, k;
     int name;
-    char str[20];
+    unsigned char str[20];
     Packet p;
     int senderId, senderMbox;
     for (j = 0; j < 7; j++) {

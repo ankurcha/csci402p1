@@ -15,7 +15,7 @@ void pinger(){
 }
 void createHospitalManager() {
     int temp;
-    char str[50];
+    unsigned char str[50];
     initializeSystem();
     print("Forking network_thread...");
     Fork(network_thread);
@@ -36,7 +36,7 @@ void createHospitalManager() {
 }
 
 void hospitalManager(int ID) {
-    char str[50];
+    unsigned char str[50];
     int sleeptime = 0;
     int test5cycles = 1;
     int patientsWaiting = 0;

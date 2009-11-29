@@ -3,7 +3,7 @@
 
 void createDoctor() {
     int temp;
-    char str[50];
+    unsigned char str[50];
     initializeSystem();
     print("Forking network_thread...");
     Fork(network_thread);
@@ -23,11 +23,11 @@ void createDoctor() {
 }
 
 void doctor(int ID) {
-    char str[50];
+    unsigned char str[50];
     /* declare variables */
     int waitingtime = 10000;
     int i, numYields, consultFee;
-    char doctorBreak = 0;
+    unsigned char doctorBreak = 0;
     HNodeReady();
     while (1) {
         /* acquire a doorboy */

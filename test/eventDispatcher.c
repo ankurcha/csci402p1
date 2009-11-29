@@ -79,7 +79,7 @@ int MsgQueue_Pop(Packet *p, MessageQueue *q, int *senderId, int *senderMbox) {
     return 0;
 }
 
-char MsgQueue_IsEmpty(MessageQueue *q) {
+unsigned char MsgQueue_IsEmpty(MessageQueue *q) {
     if (q->head == -1) {
         if (q->tail != -1)
             print("ERROR: queue is headless! run for your lives!\n");
