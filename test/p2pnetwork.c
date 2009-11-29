@@ -102,7 +102,7 @@ int getResourceStatus(int name) {
     int status = RES_NONE;
     int i = 0;
     char str[20];
-    if(name > MAX_RESOURCES)
+    if(name >= MAX_RESOURCES)
         return -1;
     else
         status =  resources[name].state;
@@ -114,28 +114,23 @@ int getResourceStatus(int name) {
 }
 
 int getResourceTimestamp(int name) {
-    int timestamp = 0;
-    int i = 0;
-    for(i=0; i < MAX_RESOURCES; i++) {
-        if (resources[i].name == name && resources[i].valid == 1) {
-            timestamp = resources[i].timestamp;
-            break;
-        }
+    if(name >= MAX_RESOURCES) {
+        return -1;
     }
-
-    return timestamp;
+    if(resource[name].valid == 0) {
+        return -1;
+    }
+    return resources[name].timestamp;
 }
 
 int updateResourceStatus(int name, int newStatus) {
-    int i;
-    if(newStatus > MAX_RESOURCES)
+    if(name >= MAX_RESOURCES)
         return -1;
     else
         return resources[name].state = newStatus;
 }
 
 int getResourceReplies(int name) {
-    int i;
     if(resources[name].valid == 0)
         return -1;
     else
@@ -143,7 +138,6 @@ int getResourceReplies(int name) {
 }
 
 int updateResourceReplies(int name, int newReplies) {
-    int i;
     if(resources[name].valid == 0)
         return -1;
     else
@@ -177,7 +171,7 @@ int addResource(int name, int state, int timestamp) {
 
 int deleteResource(int name) {
     int i = 0;
-    if(name > MAX_RESOURCES)
+    if(name >= MAX_RESOURCES)
         return -1;
     else
         return resources[name].valid = 0;
