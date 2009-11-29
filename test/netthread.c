@@ -192,15 +192,21 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
             switch (getResourceStatus(name)) {
                 case RES_HELD:
                     if (getResourceTimestamp(name) > pkt.timestamp) {
-                        print(
-                                "ERROR: received an earlier request for a lock I already hold");
+                        print("Warning: received an earlier request for a lock I already hold");
+                        MsgQueue_Push(&pendingLockQueue[name], 
+                                      &pkt, 
+                                      senderId, 
+                                      senderMbox); 
                         break;
                     }
                     /* fallthrough */
                 case RES_REQ:
                     if (getResourceTimestamp(name) < pkt.timestamp) {
                         /*TODO add them to the list */
-                        MsgQueue_Push(&pendingLockQueue[name], &pkt, senderId, senderMbox); 
+                        MsgQueue_Push(&pendingLockQueue[name], 
+                                      &pkt, 
+                                      senderId, 
+                                      senderMbox); 
                         break;
                     }else if(getResourceTimestamp(name) == pkt.timestamp){
                         if(senderId*1000 + senderMbox > GetMachineID() * 1000+myMbox){
