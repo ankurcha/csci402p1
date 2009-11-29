@@ -15,8 +15,8 @@ int main() {
     int machineID = 0;
     int threadCt = 0;
     int i = 0;
-    char buf[50];
-    char message[MaxMailSize];
+    unsigned char buf[50];
+    unsigned char message[MaxMailSize];
     machineID = GetMachineID();
     /* determine threadCt by reading conf file */
     readConfig();

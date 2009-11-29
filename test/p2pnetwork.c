@@ -7,8 +7,8 @@
 int getMboxNum() {
     int senderId;
     int senderMbox;
-    char str[20];
-    char message[MaxMailSize];
+    unsigned char str[20];
+    unsigned char message[MaxMailSize];
     myMbox = -1;
     Receive(0, &senderId, &senderMbox, message);
     myMbox = copyOutInt(message, 0);
@@ -379,7 +379,7 @@ int HCV_Wait(int HCVId, int HLockId) {
     int status = -1;
     int CV_Lock = -1;
     Packet p;
-    char buf[30];
+    unsigned char buf[30];
 
     status = getResourceStatus(HLockId);
 
@@ -517,8 +517,8 @@ void readConfig() {
      * to the global variables
      */
     OpenFileId fd;
-    char buf[10];
-    char *temp = "";
+    unsigned char buf[10];
+    unsigned char *temp = "";
     int num = 0;
     char number[10];
     int bytesread = 0;

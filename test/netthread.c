@@ -30,7 +30,7 @@ void network_thread() {
     int numEntities;
     int l = 0;
     unsigned int maxTS[MaxEntities];
-    char buf[30];
+    unsigned char buf[30];
 
     for (i = 0; i < MaxEntities; i++) {
         maxTS[i] = 0;
@@ -171,7 +171,7 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
     int name;
     int i, j;
     Packet p;
-    char buf[30];
+    unsigned char buf[30];
 
     for (j = 0; j < 7; j++) {
         numEntities += numberOfEntities[j];
@@ -344,7 +344,7 @@ void processLocalPacket(Packet pkt) {
     int temp, temp1;
     int i, j, k;
     int name;
-    char str[20];
+    unsigned char str[20];
     Packet p;
     int senderId, senderMbox;
     for (j = 0; j < 7; j++) {

@@ -11,10 +11,10 @@
 
 #include "itoa.h"
 
-char* itoa(unsigned int a, char *str) {
+char* itoa(unsigned int a, unsigned char *str) {
     int i = 0;
     int j = 0;
-    char rts[50];
+    unsigned char rts[50];
 
     /* print the string in reverse */
     do {
@@ -34,9 +34,9 @@ char* itoa(unsigned int a, char *str) {
     return str;
 }
 
-int atoi(char* str) {
+int atoi(unsigned char* str) {
     int sum = 0;
-    char neg = 0;
+    unsigned char neg = 0;
     int i = 0;
 
     /* clear out the non-int stuff */

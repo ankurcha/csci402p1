@@ -28,7 +28,7 @@ struct messageQueueElement {
     int senderId;
     int senderMbox;
     int next; /* init = -1*/
-    char valid; /* intit = 0 */
+    unsigned char valid; /* intit = 0 */
 };
 
 typedef struct messageQueueElement QueueElement;
@@ -47,7 +47,7 @@ typedef struct MessageQueue MessageQueue;
 void Init_MsgQueue(MessageQueue *q, QueueElement *queueElements, int length);
 void MsgQueue_Push(MessageQueue *q, Packet *msg, int senderId, int senderMbox);
 int MsgQueue_Pop(Packet *p, MessageQueue *q, int *senderId, int *senderMbox);
-char MsgQueue_IsEmpty(MessageQueue *q);
+unsigned char MsgQueue_IsEmpty(MessageQueue *q);
 
 /* FIFO Queue for the send messages, used by the event dispatcher */
 /* This process handles the messages that are meant to be sent */

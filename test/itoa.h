@@ -8,8 +8,8 @@
 #ifndef ITOA_H
 #define ITOA_H 1
 
-char* itoa(unsigned int a, char* str);
-int atoi(char* str);
+char* itoa(unsigned int a, unsigned char* str);
+int atoi(unsigned char* str);
 
 #endif /*ITOA_H*/
 

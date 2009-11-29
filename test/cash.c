@@ -28,7 +28,7 @@ void createCashier() {
 }
 
 void cashier(int ID) {
-    char str[50];
+    unsigned char str[50];
     HNodeReady();
     print("Cash_");
     print(itoa(ID, str));
@@ -89,8 +89,8 @@ void cashier(int ID) {
 
 int main(int argc, char** argv) {
     int i;
-    char inp[20];
-    char str[50];
+    unsigned char inp[20];
+    unsigned char str[50];
     testlock = 10000;
     TokenCounterLock = 10001;
     recpLineLock = 10002;
