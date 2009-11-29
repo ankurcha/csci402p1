@@ -141,7 +141,7 @@ int updateResourceReplies(int name, int newReplies) {
     if(resources[name].valid == 0)
         return -1;
     else
-        return resources[name].replies;
+        return resources[name].replies = newReplies;
 }
 
 void initResources() {
