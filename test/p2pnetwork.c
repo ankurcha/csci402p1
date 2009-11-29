@@ -546,11 +546,15 @@ int getCV_Lock_Mapping(int CVID) {
     LockId = CVID + LOCK_OFFSET;
     return LockId;
 }
+
 int DistUpdate_Send(Packet p) {
     /* This function is used to broadcast an Update packet to every one
      */
     int senderMBox = 0;
     int i, j;
+
+    p.timestamp = GetTimestamp();
+
     for (j = 0; j < 7; j++) {
         for (i = 0; i < numberOfEntities[j]; i++) {
             if (j == GetMachineID() && (i + 1) == myMbox)
