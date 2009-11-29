@@ -236,6 +236,7 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
             if (getResourceStatus(name) == RES_REQ) {
                 /* Yes, lock was requested */
                 /* Update the number of replies that we have received so far */
+                print("Got a reply for my requested LOCK\n");
                 replies = getResourceReplies(name);
                 replies++;
                 updateResourceReplies(name, replies);
@@ -247,6 +248,7 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
                      * we get the LOCK NOW and delete the resource from the
                      * requestedResource and add it to the HeldResources
                      */
+                    print("Holding the Lock Now!\n");
                     resources[name].state = RES_HELD;
                     /* Now we can send a signal to the entity */
                     Acquire(netthread_Lock);
