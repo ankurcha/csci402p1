@@ -54,7 +54,7 @@ typedef struct Resource Resource;
 Resource resources[MAX_RESOURCES];
 
 enum {
-    RES_HELD, RES_REQ, RES_NONE
+    RES_NONE, RES_REQ, RES_HELD
 };
 
 /* Requests that are queued 
