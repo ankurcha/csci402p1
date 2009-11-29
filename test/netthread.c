@@ -12,7 +12,7 @@
 #include "heap.h"
 #include "string.h"
 
-#define MaxMsgQueue 200
+#define MaxMsgQueue 2000
 
 void processExternalPacket(Packet pkt, int senderId, int senderMbox);
 void processLocalPacket(Packet pkt);
@@ -54,6 +54,7 @@ void network_thread() {
     /* Begin an infinite loop where we wait for data from the network */
     while (1) {
         Packet_Receive(myMbox, &senderId, &senderMbox, &myPacket);
+#ifdef DEBUG
         print("Received a packet from senderId ");
         print(itoa(senderId, buf));
         print(" and mbox ");
@@ -63,6 +64,7 @@ void network_thread() {
         print(" packetType: ");
         print(itoa(myPacket.packetType, buf));
         print("\n");
+#endif
         if (senderMbox != 0) {
 #ifdef DEBUG
             print("  From someone else!\n");
@@ -184,6 +186,7 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
     switch (pkt.packetType) {
         case EMPTY:
             print("Empty packet received!\n");
+
         case LOCK_ACQUIRE:
             print("Got a LOCK_ACQUIRE!!!\n");
             name = copyOutInt(pkt.data, NAME);
@@ -223,6 +226,7 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
                     print("ERROR: invalid resource status\n");
             }
             break;
+
         case LOCK_OK:
             /* Got a LOCK_OK so now we need to check whether we requested this
              * Lock and if yes, we keep processing till all have replied with
@@ -243,7 +247,7 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
                 print("Received LOCK_OK num: ");
                 print((char*) itoa(replies, buf));
                 print("\n");
-                if (replies == numEntities -1 ) {
+                if (replies == (numEntities-1)) {
                     /* Now we have seen all the LOCK_OKs that we need and hence
                      * we get the LOCK NOW and delete the resource from the
                      * requestedResource and add it to the HeldResources
