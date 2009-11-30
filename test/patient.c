@@ -125,7 +125,7 @@ void patients(int ID) {
     print(" to continue, I am done\n");
     /*Release transaction lock */
     HLock_Release(receptionists[shortestline].transLock);
-
+    print("Released Txn Lock\n");
     /*///////////////////////////////////////////////// */
     /*///// Interaction with Doctor and Doorboy /////// */
     /*///////////////////////////////////////////////// */
