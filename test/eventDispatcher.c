@@ -42,7 +42,7 @@ void MsgQueue_Push(MessageQueue *q, Packet *msg, int senderId, int senderMbox) {
     q->queue[i].message.senderId = (*msg).senderId;
     q->queue[i].message.timestamp = (*msg).timestamp;
     q->queue[i].message.packetType = (*msg).packetType;
-    strcpy(q->queue[i].message.data, (*msg).data);
+    memcopy(q->queue[i].message.data, (*msg).data, MaxMailSize - DATA);
     q->queue[i].senderId = senderId;
     q->queue[i].senderMbox = senderMbox;
     q->tail = i;
@@ -75,7 +75,7 @@ int MsgQueue_Pop(Packet *p, MessageQueue *q, int *senderId, int *senderMbox) {
     (*p).senderId = q->queue[temp].message.senderId;
     (*p).timestamp = q->queue[temp].message.timestamp;
     (*p).packetType = q->queue[temp].message.packetType;
-    strcpy((*p).data, q->queue[temp].message.data);
+    memcopy((*p).data, q->queue[temp].message.data, MaxMailSize - DATA);
     return 0;
 }
 

@@ -459,7 +459,6 @@ int DistCV_Signal(int CVID) {
     Packet pkt;
     MsgQueue_Pop(&pkt, &pendingCVQueue[CVID], &senderId, &senderMBox);
 
-    /* Process the Wait message */
     p.senderId = GetMachineID();
     p.timestamp = GetTimestamp();
     p.packetType = CV_SIGNAL;

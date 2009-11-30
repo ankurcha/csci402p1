@@ -127,7 +127,7 @@ void network_thread() {
                         msgQueue[queueLength].pkt.senderId = myPacket.senderId;
                         msgQueue[queueLength].pkt.timestamp = myPacket.timestamp;
                         msgQueue[queueLength].pkt.packetType = myPacket.packetType;
-                        strcpy(msgQueue[queueLength].pkt.data, myPacket.data);
+                        memcopy(msgQueue[queueLength].pkt.data, myPacket.data, MaxMailSize - DATA);
                         msgQueue[queueLength].key = myPacket.timestamp;
                         Heap_Push(msgQueue, &queueLength);
                     } else {
@@ -149,7 +149,7 @@ void network_thread() {
                 myPacket.senderId = message->pkt.senderId;
                 myPacket.timestamp = message->pkt.timestamp;
                 myPacket.packetType = message->pkt.packetType;
-                strcpy(myPacket.data, message->pkt.data);
+                memcopy(myPacket.data, message->pkt.data, MaxMailSize - DATA);
                 senderId = message->senderId;
                 senderMbox = message->senderMbox;
 
