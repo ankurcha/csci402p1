@@ -14,6 +14,12 @@ void createPatient() {
     int temp;
     char str[50];
     initializeSystem();
+    numPatients = numberOfEntities[0];
+    numRecp = numberOfEntities[1];
+    numDoctors = numberOfEntities[2];
+    numDoorboys = numberOfEntities[3];
+    numCashiers = numberOfEntities[4];
+    numClerks = numberOfEntities[5];
     print("Forking network_thread...");
     Fork(network_thread);
     print("done\n");
@@ -132,6 +138,7 @@ void patients(int ID) {
 
     /*Calculate which doctor I want to see */
     myDoctor = (int) (Random()) % numDoctors;
+    print("Selecting doctor\n");
     if (test_state == 2) {
         print("P_");
         print(itoa(ID, str));

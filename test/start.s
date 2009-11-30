@@ -208,7 +208,7 @@ Broadcast:
     .end Broadcast
 
     .globl Random
-	.ent	Random
+    .ent   Random
 Random:
     addiu $2,$0,SC_Random
     syscall

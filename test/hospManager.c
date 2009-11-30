@@ -17,6 +17,12 @@ void createHospitalManager() {
     int temp;
     unsigned char str[50];
     initializeSystem();
+    numPatients = numberOfEntities[0];
+    numRecp = numberOfEntities[1];
+    numDoctors = numberOfEntities[2];
+    numDoorboys = numberOfEntities[3];
+    numCashiers = numberOfEntities[4];
+    numClerks = numberOfEntities[5];
     print("Forking network_thread...");
     Fork(network_thread);
     print("done\n");
