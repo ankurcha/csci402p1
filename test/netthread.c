@@ -249,7 +249,7 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
                 print("Received LOCK_OK num: ");
                 print((char*) itoa(replies, buf));
                 print("\n");
-                if (replies == numEntities -1 ) {
+                if (replies == (numEntities-1) ) {
                     /* Now we have seen all the LOCK_OKs that we need and hence
                      * we get the LOCK NOW and delete the resource from the
                      * requestedResource and add it to the HeldResources
