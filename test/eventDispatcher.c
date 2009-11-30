@@ -36,7 +36,6 @@ void MsgQueue_Push(MessageQueue *q, Packet *msg, int senderId, int senderMbox) {
         q->head = i;
     else
         q->queue[q->tail].next = i;
-
     q->queue[i].valid = 1;
     q->queue[i].next = -1;
     q->queue[i].message.senderId = (*msg).senderId;
@@ -55,9 +54,7 @@ int MsgQueue_Pop(Packet *p, MessageQueue *q, int *senderId, int *senderMbox) {
     if (q->head == -1) {
         return -1;
     }
-
     temp = q->head;
-
     /* check if we popped the last element */
     if (q->tail == q->head) {
         q->head = -1;

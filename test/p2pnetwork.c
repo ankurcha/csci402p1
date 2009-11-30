@@ -30,17 +30,14 @@ void initializeSystem() {
     readConfig();
     getMboxNum();
     /* create system locks and CV*/
-
     for(i = 0;i<MAX_CV;i++)
         Init_MsgQueue(&pendingCVQueue[i], queue[i], MAX_CV_QUEUE_LEN);
-
     for(i = 0; i< MAX_LOCK;i++)
         Init_MsgQueue(&pendingLockQueue[i], lockqueue[i], MAX_LOCK_QUEUE_LEN);
 }
 
 void HMultiPing() {
     Packet p;
-
     p.senderId = GetMachineID();
     p.timestamp = GetTimestamp();
     p.packetType = DO_PING;
@@ -51,7 +48,6 @@ void SendAll(int packetType) {
     int i, j;
     Packet p;
     char buf[20];
-
     p.senderId = GetMachineID();
     p.timestamp = GetTimestamp();
     p.packetType = packetType;
@@ -81,11 +77,9 @@ void SendAll(int packetType) {
 
 void HKill() {
     Packet p;
-
     p.senderId = GetMachineID();
     p.timestamp = GetTimestamp();
     p.packetType = KILL;
-
     Packet_Send(GetMachineID(), myMbox, myMbox, &p);
 }
 
@@ -106,7 +100,6 @@ int getResourceStatus(int name) {
         return -1;
     else
         status =  resources[name].state;
-
     print("Resource status: ");
     print(itoa(status, str));
     print("\n");
@@ -155,11 +148,9 @@ int addResource(int name, int state, int timestamp) {
     int i = 0;
     int targetPos = -1;
     char str[20];
-
     print("Adding Resource: ");
     print((char*) itoa(name, str));
     print(" RES_REQ\n");
-
     targetPos = name;
     if(targetPos > MAX_RESOURCES)
         return -1;
@@ -202,7 +193,6 @@ int HLock_Release(int HlockId) {
         return status;
     /* Create message for Lock Release */
     /* Send message to announce release of the lock to the network entity */
-
     status = Packet_Send(GetMachineID(), myMbox, 0, &p);
     
     /* Check for successful Multicast */
@@ -223,12 +213,10 @@ int HLock_Acquire(int HlockId) {
     
     if(netthread_CV == -1)
         print("netthread_CV = -1\n");
-
     p.senderId = GetMachineID();
     p.timestamp = GetTimestamp();
     p.packetType = LOCK_ACQUIRE;
     copyInInt(p.data, 0, HlockId); /* Data part just contains the LockID */
-
     /* We have now built the packet and now we should do the following
      * 1. Send a message to the network-thread(mbox)
      * receiver
@@ -251,7 +239,6 @@ int DistLock_Acquire(int name) {
     int status;
     Packet p,pkt;
     int senderId, senderMBox;
-
     p.senderId = GetMachineID();
     p.timestamp = GetTimestamp();
     p.packetType = LOCK_ACQUIRE;
@@ -266,7 +253,6 @@ int DistLock_Acquire(int name) {
     print("Sending requests to all\n");
 #endif
     print("Sending Acquire request to all\n");
-
     for (j = 0; j < 7; j++){ 
         for (i = 0; i < numberOfEntities[j]; i++){ 
             if (j == GetMachineID() && (i + 1) == myMbox){ 
@@ -293,7 +279,6 @@ int DistLock_Release(int name) {
                     Packet_Send(senderToId, senderToMbox, myMbox, &p);
         }
     }
-
     return 1; /* successfully released lock */
 }
 
@@ -303,7 +288,6 @@ int HCV_Signal(int HCVId, int HLockId) {
     int status = -1;
     int CV_Lock = -1;
     Packet p;
-
     status = getResourceStatus(HLockId);
     if (status == RES_HELD) {
         CV_Lock = getCV_Lock_Mapping(HCVId);
@@ -338,7 +322,6 @@ int HCV_Broadcast(int HCVId, int HLockId) {
     int status = -1;
     int CV_Lock = -1;
     Packet p;
-
     status = getResourceStatus(HLockId);
     if (status == RES_HELD) {
         CV_Lock = getCV_Lock_Mapping(HCVId);
@@ -374,36 +357,28 @@ int HCV_Wait(int HCVId, int HLockId) {
     int CV_Lock = -1;
     Packet p;
     unsigned char buf[30];
-
     status = getResourceStatus(HLockId);
-
     print("Tyring to wait on CV ");
     print((char*) itoa(HCVId, buf));
     print(" with lock ");
     print((char*) itoa(HLockId, buf));
     print("\n");
-
     if (status == RES_HELD) {
         CV_Lock = getCV_Lock_Mapping(HCVId);
-
         p.senderId = GetMachineID();
         p.timestamp = GetTimestamp();
         p.packetType = CV_WAIT;
         copyInInt(p.data, 0, HCVId);
         copyInInt(p.data, 4, HLockId);
-
         /* It is assumed that by now LockId is Held and CVID which is passed is
          * to be held */
         Acquire(netthread_Lock);
-
         HLock_Acquire(CV_Lock);
         status = Packet_Send(GetMachineID(), myMbox, 0, &p);
         HLock_Release(CV_Lock);
-
         HLock_Release(HLockId);
         /* wait for the network thread to tell us to wake */
         Wait(netthread_CV, netthread_Lock);
-
         HLock_Acquire(HLockId);
         Release(netthread_Lock);
         return 1;
@@ -431,7 +406,6 @@ int DistCV_Wait(int CVID, int LockID) {
     p.packetType = CV_WAIT;
     copyInInt(p.data, 0, CVID);
     copyInInt(p.data, 4, LockID);
-
     /* send to every entity */
     for (j = 0; j < 7; j++) {
         for (i = 0; i < numberOfEntities[j]; i++) {
@@ -442,7 +416,6 @@ int DistCV_Wait(int CVID, int LockID) {
             }
         }
     }
-
     /* Also, we need to maintain a list waiting nodes */
     /* This will be popped when we receive a SIGNAL */
     MsgQueue_Push(&pendingCVQueue[CVID], &p, GetMachineID(), myMbox);
@@ -464,7 +437,6 @@ int DistCV_Signal(int CVID) {
     p.packetType = CV_SIGNAL;
     copyInInt(p.data, 0, copyOutInt(pkt.data, NAME)); /* CVID */
     copyInInt(p.data, 4, copyOutInt(pkt.data, 4)); /* Lock ID */
-
     /* send to every entity */
     for (j = 0; j < 7; j++) {
         for (i = 0; i < numberOfEntities[j]; i++) {
@@ -475,12 +447,10 @@ int DistCV_Signal(int CVID) {
             }
         }
     }
-
     if (senderId == GetMachineID() && senderMBox == myMbox) {
         print("ERROR: I signaled my own CV?\n");
         Halt();
     }
-
     return 1;
 }
 
@@ -492,17 +462,14 @@ void Process_CV_Signal(Packet pkt) {
     int name;
     Packet p;
     int senderId, senderMbox;
-
     name = copyOutInt(pkt.data, NAME);
     MsgQueue_Pop(&p, &pendingCVQueue[name], &senderId, &senderMbox);
-
     if (senderId == GetMachineID() && senderMbox == myMbox) {
         /* wake up my entity */
         Acquire(netthread_Lock);
         Signal(netthread_CV, netthread_Lock);
         Release(netthread_Lock);
     }
-
 }
 
 void readConfig() {
