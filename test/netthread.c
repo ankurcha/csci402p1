@@ -1,4 +1,4 @@
-/*  Provide a function to become the network thread
+/*  pROVIDe a function to become the network thread
  *  that will work with our distributed hospital entities.
  *
  *  USC CS 402 Group 11
@@ -253,7 +253,7 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
                 print("Received LOCK_OK num: ");
                 print((char*) itoa(replies, buf));
                 print("\n");
-                if (replies == (numEntities-1)) {
+                if (replies == (numEntities-1) ) {
                     /* Now we have seen all the LOCK_OKs that we need and hence
                      * we get the LOCK NOW and delete the resource from the
                      * requestedResource and add it to the HeldResources
