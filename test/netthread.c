@@ -12,7 +12,7 @@
 #include "heap.h"
 #include "string.h"
 
-#define MaxMsgQueue 2000
+#define MaxMsgQueue 200
 
 void processExternalPacket(Packet pkt, int senderId, int senderMbox);
 void processLocalPacket(Packet pkt);
@@ -407,9 +407,7 @@ void processLocalPacket(Packet pkt) {
             }
             break;
         case NODE_READY:
-#ifdef DEBUG
             print("SendAll NODE_READY\n");
-#endif
             SendAll(NODE_READY);
             break;
         case RECP_DATA_UPDATE:

@@ -17,7 +17,7 @@ void createPatient() {
     print("Forking network_thread...");
     Fork(network_thread);
     print("done\n");
-    print("Forking patient...");
+    print("Forking patient... ");
     print(itoa(patientCount, str));
     print("\n");
 /*
@@ -26,6 +26,7 @@ void createPatient() {
     patientCount++;
     HLock_Release(creationLock);
 */
+    print("Starting patient...\n");
     patients(myMbox);
     print("done\n");
 }
@@ -44,6 +45,7 @@ void patients(int ID) {
     int shortestclerkline = 0;
     int length = 0;
     len = receptionists[0].peopleInLine;
+    print("Patient Ready...\n");
     HNodeReady();
     /*//////////////////////////////////////////////// */
     /*//// Begin interaction with Receptionist /////// */

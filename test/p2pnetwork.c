@@ -47,29 +47,15 @@ void HMultiPing() {
 void SendAll(int packetType) {
     int i, j;
     Packet p;
-    char buf[20];
+    print("SendALL\n");
     p.senderId = GetMachineID();
     p.timestamp = GetTimestamp();
     p.packetType = packetType;
-#ifdef DEBUG
-    print("Created a packet with timestamp ");
-    print((char*) itoa(p.timestamp, buf));
-    print("\n");
-#endif
     for (j = 0; j < 7; j++) {
         for (i = 0; i < numberOfEntities[j]; i++) {
             if (j == GetMachineID() && (i + 1) == myMbox) {
                 continue;
             }
-#ifdef DEBUG
-            print("sendall-ing packet to machine ");
-            print((char*)itoa(j, buf));
-            print(" and mbox ");
-            print((char*)itoa(i+1, buf));
-            print(" from mbox ");
-            print((char*)itoa(myMbox, buf));
-            print("\n");
-#endif
             Packet_Send(j, i + 1, myMbox, &p);
         }
     }
@@ -660,6 +646,7 @@ void HNodeReady(){
     /* NO DATA */
 
     Acquire(netthread_Lock);
+    print("Sending local Ready packet\n");
     Packet_Send(GetMachineID(), myMbox, 0, &p);
     Wait(netthread_CV, netthread_Lock);
     Release(netthread_Lock);

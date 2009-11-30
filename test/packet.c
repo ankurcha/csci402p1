@@ -75,10 +75,13 @@ int Packet_Send(int receiverId, int recMBox, int senderMBox, Packet* p) {
     unsigned char buf[30];
 #ifdef DEBUG
     print("Preparing to send packet with TS:");
-    print((char*) itoa(p->timestamp, buf));
+    itoa(p->timestamp, buf);
+    print(buf);
     print("\n");
 #endif
+
     SerializePacket(p, message);
+
 #ifdef DEBUG
     print("Serialized to: ");
     printHex(message, MaxMailSize);
@@ -97,7 +100,6 @@ int Packet_Send(int receiverId, int recMBox, int senderMBox, Packet* p) {
     /* Finally, We were able to successfully send to the receiver host
      * now just return status to the calling function
      */
-
     return status;
 }
 

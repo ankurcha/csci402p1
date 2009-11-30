@@ -12,7 +12,7 @@
 #define MAX_LOCK 50
 #define MAX_LOCK_QUEUE_LEN 100
 #define MaxEntities 50
-#define MAX_RESOURCES 15000
+#define MAX_RESOURCES 25000
 #define ENTITY_OFFSET 20
 #define LOCK_OFFSET 10
 
