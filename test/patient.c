@@ -139,6 +139,7 @@ void patients(int ID) {
     /*Calculate which doctor I want to see */
     myDoctor = (int) (Random()) % numDoctors;
     print("Selecting doctor\n");
+    print("\n");
     if (test_state == 2) {
         print("P_");
         print(itoa(ID, str));
@@ -155,7 +156,9 @@ void patients(int ID) {
     } else {
         print("P_");
         print(itoa(ID, str));
-        print(" : Going to meet doctor D_\n");
+        print(" : Going to meet doctor D_");
+        print(itoa(myDoctor, str));
+        print("\n");
     }
     /* Acquire doc's line lock */
     HLock_Acquire(doctors[myDoctor].LineLock);

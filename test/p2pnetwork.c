@@ -47,7 +47,6 @@ void HMultiPing() {
 void SendAll(int packetType) {
     int i, j;
     Packet p;
-    print("SendALL\n");
     p.senderId = GetMachineID();
     p.timestamp = GetTimestamp();
     p.packetType = packetType;
@@ -86,9 +85,11 @@ int getResourceStatus(int name) {
         return -1;
     else
         status =  resources[name].state;
+#ifdef DEBUG
     print("Resource status: ");
     print(itoa(status, str));
     print("\n");
+#endif
     return status;
 }
 
@@ -134,9 +135,11 @@ int addResource(int name, int state, int timestamp) {
     int i = 0;
     int targetPos = -1;
     char str[20];
+#ifdef DEBUG
     print("Adding Resource: ");
     print((char*) itoa(name, str));
     print(" RES_REQ\n");
+#endif
     targetPos = name;
     if(targetPos > MAX_RESOURCES)
         return -1;
@@ -238,7 +241,6 @@ int DistLock_Acquire(int name) {
     print("Requested Resource\n");
     print("Sending requests to all\n");
 #endif
-    print("Sending Acquire request to all\n");
     for (j = 0; j < 7; j++){ 
         for (i = 0; i < numberOfEntities[j]; i++){ 
             if (j == GetMachineID() && (i + 1) == myMbox){ 
@@ -433,10 +435,12 @@ int DistCV_Signal(int CVID) {
             }
         }
     }
+    /*
     if (senderId == GetMachineID() && senderMBox == myMbox) {
         print("ERROR: I signaled my own CV?\n");
         Halt();
     }
+    */
     return 1;
 }
 
@@ -646,7 +650,6 @@ void HNodeReady(){
     /* NO DATA */
 
     Acquire(netthread_Lock);
-    print("Sending local Ready packet\n");
     Packet_Send(GetMachineID(), myMbox, 0, &p);
     Wait(netthread_CV, netthread_Lock);
     Release(netthread_Lock);

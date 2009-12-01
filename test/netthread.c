@@ -12,7 +12,7 @@
 #include "heap.h"
 #include "string.h"
 
-#define MaxMsgQueue 200
+#define MaxMsgQueue 2000
 
 void processExternalPacket(Packet pkt, int senderId, int senderMbox);
 void processLocalPacket(Packet pkt);
@@ -179,23 +179,23 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
         numEntities += numberOfEntities[j];
     }
     numEntities--;
+#ifdef DEBUG
     print("Processing External Packet Type: ");
     print(itoa(pkt.packetType,buf));
     print("\n");
+#endif
     /* Process this packet */
     switch (pkt.packetType) {
         case EMPTY:
-            print("Empty packet received!\n");
-
         case LOCK_ACQUIRE:
-            print("Got a LOCK_ACQUIRE!!!\n");
+#ifdef DEBUG
+            print("Got remote LOCK_ACQUIRE\n");
+#endif
             name = copyOutInt(pkt.data, NAME);
             /* check if I am holding this lock */
-            print("Checking resource status\n");
             switch (getResourceStatus(name)) {
                 case RES_HELD:
                     if (getResourceTimestamp(name) > pkt.timestamp) {
-                        print("Warning: received an earlier request for a lock I already hold");
                         MsgQueue_Push(&pendingLockQueue[name], 
                                       &pkt, 
                                       senderId, 
@@ -205,7 +205,6 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
                     /* fallthrough */
                 case RES_REQ:
                     if (getResourceTimestamp(name) < pkt.timestamp) {
-                        /*TODO add them to the list */
                         MsgQueue_Push(&pendingLockQueue[name], 
                                       &pkt, 
                                       senderId, 
@@ -239,27 +238,24 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
              * LOCK_OK
              */
             /* get the lock being referred to */
-            print("Received LOCK_OK from senderId: ");
-            print(itoa(pkt.senderId, buf));
-            print("\n");
             name = copyOutInt(pkt.data, NAME);
             if (getResourceStatus(name) == RES_REQ) {
                 /* Yes, lock was requested */
                 /* Update the number of replies that we have received so far */
-                print("Got a reply for my requested LOCK\n");
                 replies = getResourceReplies(name);
                 replies++;
                 updateResourceReplies(name, replies);
+#ifdef DEBUG
                 print("Received LOCK_OK num: ");
                 print((char*) itoa(replies, buf));
                 print("\n");
+#endif
                 if (replies == (numEntities-1) ) {
                     /* Now we have seen all the LOCK_OKs that we need and hence
                      * we get the LOCK NOW and delete the resource from the
                      * requestedResource and add it to the HeldResources
                      */
                     updateResourceStatus(name, RES_HELD);
-                    print("Holding the Lock Now!\n");
                     /* Now we can send a signal to the entity */
                     Acquire(netthread_Lock);
                     Signal(netthread_CV, netthread_Lock);
@@ -269,13 +265,11 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
             break;
         case CV_WAIT:
             /* add them to the queue of requests */
-            print("Got a CV_WAIT!\n");
             name = copyOutInt(pkt.data, NAME); /* CVID */
             temp = copyOutInt(pkt.data, 4); /* LockID */
             MsgQueue_Push(&pendingCVQueue[name], &pkt, senderId, senderMbox);
             break;
         case CV_SIGNAL:
-            print("Got CV_SIGNAL\n");
             Process_CV_Signal(pkt);
             break;
         case CV_BROADCAST:
@@ -286,7 +280,9 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
             /* add to the node ready count, once all nodes are ready,
              * start the simulation
              */
+#ifdef DEBUG
             print("Received NODE_READY\n");
+#endif
             readyCount++;
             if (readyCount < numEntities) {
                 break;
@@ -296,7 +292,6 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
         case GO:
             /* wake entity thread*/
             if(!going) {
-                print("GOGOGO\n");
                 Acquire(netthread_Lock);
                 Signal(netthread_CV, netthread_Lock);
                 Release(netthread_Lock);
@@ -331,14 +326,12 @@ void processExternalPacket(Packet pkt, int senderId, int senderMbox) {
             SendAll(PONG);
             break;
         case PING:
-            print("Received PING\n");
             p.senderId = GetMachineID();
             p.timestamp = GetTimestamp();
             p.packetType = PONG;
             Packet_Send(senderId, senderMbox, myMbox, &p);
             break;
         case PONG:
-            print("Received PONG\n");
             break;
         case KILL:
             Halt();
@@ -374,26 +367,18 @@ void processLocalPacket(Packet pkt) {
             print("!!!!!!!!!!!!!!!!!!!!!EMPTY PACKET!!!!!!!!!!!!!!!!!\n");
             break;
         case LOCK_ACQUIRE:
-            print("LOCAL_LOCK_ACQUIRE\n");
             name = copyOutInt(pkt.data, NAME);
             DistLock_Acquire(name);
             break;
-
         case LOCK_RELEASE:
-            print("LOCK_RELEASE_LOCAL\n");
             name = copyOutInt(pkt.data, NAME);
             DistLock_Release(name);
-            /* pop the request from the queue */
-
-            /* no futher action */
             break;
-
         case CV_WAIT:
             name = copyOutInt(pkt.data, NAME); /* CVID */
             temp1 = copyOutInt(pkt.data, 4); /* LockID */
             DistCV_Wait(name, temp1);
             break;
-
         case CV_SIGNAL:
             name = copyOutInt(pkt.data, NAME); /* CVID */
             DistCV_Signal(name);
@@ -407,7 +392,6 @@ void processLocalPacket(Packet pkt) {
             }
             break;
         case NODE_READY:
-            print("SendAll NODE_READY\n");
             SendAll(NODE_READY);
             break;
         case RECP_DATA_UPDATE:
